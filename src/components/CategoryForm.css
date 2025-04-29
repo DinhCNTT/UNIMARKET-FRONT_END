@@ -1,0 +1,101 @@
+.category-page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Thay đổi từ center -> flex-start để form không bị đẩy xuống giữa */
+    align-items: center;
+    width: calc(90vw - 190px);
+    min-height: 100vh; /* Thay height bằng min-height */
+    background: white;
+    padding: 40px 20px; /* Tăng padding top */
+    margin-left: 250px;
+}
+
+/* Tiêu đề */
+.category-title {
+    text-align: center;
+    margin-bottom: 30px; /* Giảm margin */
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Form nhập liệu */
+.category-form {
+    width: 100%;
+    max-width: 600px; /* Giảm max-width */
+    min-height: auto; /* Bỏ min-height cố định */
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Làm mềm shadow */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Thêm gap giữa các form group */
+}
+
+/* Các nhóm input */
+.category-form-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Thêm gap giữa label và input */
+}
+
+.category-form-group label {
+    font-weight: 500;
+    color: #555;
+    font-size: 15px;
+}
+
+/* Input và select */
+.category-form-group input,
+.category-form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border 0.2s;
+}
+
+.category-form-group input:focus,
+.category-form-group select:focus {
+    border-color: #ff9d0b;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 157, 11, 0.2);
+}
+
+/* Nút Thêm Danh Mục */
+.category-submit-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    background: #ff9d0b;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.category-submit-button:hover {
+    background: #e68a00;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .category-page-container {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    .category-form {
+        padding: 20px;
+        box-shadow: none;
+    }
+}

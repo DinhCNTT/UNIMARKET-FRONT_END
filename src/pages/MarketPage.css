@@ -1,0 +1,7 @@
+.marketplace-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Căn giữa theo chiều ngang */
+  
+}
+

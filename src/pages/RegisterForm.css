@@ -1,0 +1,157 @@
+/* Định dạng container chính */
+.register-container {
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 100vh; /* Chiều cao chiếm toàn bộ màn hình */
+    width: 100vw; /* Đảm bảo chiếm toàn bộ chiều rộng */
+    background-color: white !important; /* Chuyển sang nền trắng */
+}
+
+/* Định dạng form */
+form {
+    display: flex;
+    flex-direction: column; /* Xếp các input theo chiều dọc */
+    align-items: center;
+    background: white !important; /* Chuyển nền sang màu trắng */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Giảm độ sáng của bóng */
+    width: 100%;
+    max-width: 400px; /* Giới hạn chiều rộng form */
+}
+
+
+
+
+/* Tiêu đề */
+h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Ô nhập liệu */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc; /* Làm viền sáng hơn */
+    border-radius: 5px;
+    background: white !important; /* Chuyển nền sang màu trắng */
+    color: black !important; /* Chuyển chữ thành màu đen để dễ nhìn */
+    font-size: 16px;
+}
+/* Tiêu đề "Đăng ký tài khoản" */
+h2 {
+    color: black !important; /* Chuyển màu chữ thành đen */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+
+/* Nút đăng ký */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #e68900;
+}
+
+/* Điều khoản */
+.terms {
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.terms a {
+    color: orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.terms a:hover {
+    text-decoration: underline;
+}
+
+/* Hoặc đăng nhập bằng mạng xã hội */
+.or {
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+/* Nút đăng nhập mạng xã hội */
+.social-login {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.social-login button {
+    flex: 1;
+    padding: 8px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Màu nền của các nút mạng xã hội */
+.facebook {
+    background-color: #3b5998;
+}
+
+.google {
+    background-color: #db4437;
+}
+
+.apple {
+    background-color: #000;
+}
+
+/* Hover hiệu ứng */
+.facebook:hover {
+    background-color: #2d4373;
+}
+
+.google:hover {
+    background-color: #a42820;
+}
+
+.apple:hover {
+    background-color: #333;
+}
+
+/* Link chuyển sang đăng nhập */
+.login-link {
+    text-align: center;
+    color: white;
+    margin-top: 10px;
+}
+
+.login-link a {
+    color: orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}

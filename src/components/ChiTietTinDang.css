@@ -1,0 +1,258 @@
+/* Bố cục phần tin đăng */
+.chi-tiet-tin-dang {
+    width: 90%;
+    margin-top: 100px;  /* Đẩy phần tử xuống từ trên */
+    margin-left: 165px; /* Căn phần tử sang phải */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    min-height: 1000px;
+  }
+
+  
+  /* Thanh tên người bán */
+/* Thanh tên người bán */
+.seller-info {
+    background-color: #f5f5f5;
+    padding: 6px;
+    border-radius: 5px;
+    margin-top: 20px; /* Cách từ số điện thoại */
+  }
+  
+  .seller-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+  /* Bố cục phần ảnh + thông tin */
+  .tin-dang-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px; /* Khoảng cách giữa ảnh và info */
+    flex-wrap: wrap;
+  }
+  
+  /* Phần ảnh bên trái */
+  .image-container {
+    width: 30%;
+  }
+  
+  .image-container img {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  
+  /* Phần thông tin bên phải */
+  .chi-tiet-tin-dang-info {
+    flex: 1;
+  }
+  
+  .chi-tiet-tin-dang-info h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .chi-tiet-tin-dang-info h2 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .chi-tiet-tin-dang-info p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  
+  .chi-tiet-tin-dang-info p:nth-child(2) {
+    color: #e74c3c; /* Giá */
+  }
+  
+  .chi-tiet-tin-dang-info strong {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Nút số điện thoại */
+  .sdt-chat {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Giảm khoảng cách giữa các phần tử */
+    flex-wrap: wrap; /* Đảm bảo các phần tử không tràn */
+  }
+  
+  /* Chỉnh lại vị trí nút số điện thoại */
+  .sdt-chat .sdt {
+    background-color: #f1c40f;
+    color: #fff;
+    padding: 3px 8px;  /* Điều chỉnh padding để nút ngắn lại */
+    font-size: 14px;
+    border: 1px solid #ccc; /* Thêm border mỏng cho nút */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    text-align: center;
+    width: auto;
+  }
+  
+  .sdt-chat .sdt:hover {
+    background-color: #e67e22;
+  }
+  
+  .tin-dang-tuong-tu h2 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  /* Container ngang scroll được */
+  .similar-posts-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
+  /* Ẩn thanh cuộn */
+  .similar-posts-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Card từng tin */
+  .similar-post-card {
+    min-width: 200px;
+    max-width: 220px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+  
+  .similar-post-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Ảnh */
+  .image-wrapper {
+    position: relative;
+  }
+  
+  .image-wrapper img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  /* Số ảnh */
+  .image-count {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(0,0,0,0.6);
+    color: white;
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 5px;
+  }
+  
+  /* Tiêu đề */
+  .similar-post-card h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    height: 40px;
+    overflow: hidden;
+    line-height: 1.2;
+  }
+  
+  /* Giá */
+  .similar-post-card .gia {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Địa chỉ + ngày đăng */
+  .similar-post-card p {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 4px 0;
+  }
+  
+  .similar-post-card .nho {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .similar-posts-wrapper {
+    position: relative;
+  }
+  
+  .similar-posts-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 16px;
+    padding: 10px 0;
+  }
+  
+  .similar-post-card {
+    min-width: 200px;
+    flex-shrink: 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+  }
+  
+  /* Nút cuộn trái/phải */
+  .scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  .scroll-btn:hover {
+    opacity: 1;
+  }
+  
+  .scroll-btn.left {
+    left: -18px;
+  }
+  
+  .scroll-btn.right {
+    right: -18px;
+  }
+  
+  /* Mô tả chi tiết */
+  .mo-ta-chi-tiet {
+    margin-top: 40px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+  }
+  

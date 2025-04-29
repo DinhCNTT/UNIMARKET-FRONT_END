@@ -1,0 +1,96 @@
+/* Chỉnh container bảng */
+.user-table-container {
+    margin-left: 190px;
+    width: calc(100vw - 240px);
+    padding: 20px;
+    overflow-x: auto;
+}
+
+/* Bảng */
+.user-table {
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    color: #333;
+    border-radius: 10px;
+    border-collapse: collapse;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.user-table th {
+    background: #f0f2f5;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    font-size: 16px;
+}
+
+/* Dữ liệu */
+.user-table td {
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+/* Cột thao tác */
+.user-table th:last-child,
+.user-table td:last-child {
+    min-width: 140px; /* Điều chỉnh chiều rộng phù hợp */
+    text-align: center;
+}
+
+/* Chỉnh nút để nằm trong cùng một hàng */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 5px; /* Khoảng cách giữa nút */
+}
+
+/* Giới hạn chiều rộng của nút */
+.delete-btn, .lock-btn {
+    width: 60px;  /* Điều chỉnh chiều rộng của nút */
+    padding: 6px 8px;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Màu nền của nút Xóa */
+.delete-btn {
+    background: #FF4D4D;
+    color: white;
+    border: none;
+}
+
+.delete-btn:hover {
+    background: #e43f3f;
+}
+
+/* Màu nền của nút Khóa */
+.lock-btn {
+    background: #FFA500;
+    color: white;
+    border: none;
+}
+
+.lock-btn:hover {
+    background: #e69500;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .user-table-container {
+        width: 100vw;
+        margin-left: 0;
+    }
+    
+    .user-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

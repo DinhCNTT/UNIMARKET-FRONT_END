@@ -1,0 +1,54 @@
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 25px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 500px;
+    max-width: 100%;
+}
+
+/* Phần chọn vị trí */
+.location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #333;
+    font-weight: 500;
+    margin-right: 12px;
+    white-space: nowrap;
+}
+
+.location-icon {
+    color: #ff9900;
+}
+
+/* Ô input tìm kiếm */
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #555;
+    padding: 8px;
+}
+
+/* Nút tìm kiếm */
+.search-btn {
+    background: #ff9900;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #e68400;
+}

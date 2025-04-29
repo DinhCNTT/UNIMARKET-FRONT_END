@@ -1,0 +1,104 @@
+/* Container chính */
+.parent-category-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(90vw - 190px);
+    min-height: 100vh; /* Cho phép cuộn nếu dài */
+    background: white;
+    padding: 20px;
+    margin-left: 250px;
+    overflow-y: auto;
+}
+
+/* Tiêu đề */
+.parent-category-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Wrapper cho form cố định */
+.parent-category-form-wrapper {
+    position: sticky;
+    top: 20px; /* Cách đỉnh trang 20px */
+    z-index: 10;
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Form nhập liệu */
+.parent-category-form {
+    width: 100%;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Input */
+.parent-category-form input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+/* Nút submit */
+.parent-category-submit-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    background: #ff9d0b;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.parent-category-submit-button:hover {
+    background: #e68a00;
+}
+
+/* Thông báo */
+.parent-category-message {
+    margin-top: 10px;
+    font-size: 16px;
+    color: green;
+    text-align: center;
+}
+
+/* Danh sách danh mục cha */
+.parent-category-list {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.parent-category-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.parent-category-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+
+.parent-category-list li:last-child {
+    border-bottom: none;
+}

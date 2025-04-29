@@ -1,0 +1,275 @@
+/* Style cho modal mới */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-modal-content {
+    background-color: white;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    height: 400px;  /* Cố định chiều cao của modal */
+    overflow-y: auto; /* Bật thanh cuộn dọc khi cần */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative; /* Để nút back định vị chính xác */
+}
+
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    transition: all 0.3s ease;
+}
+
+.custom-modal.active {
+    display: flex;
+}
+
+  .custom-modal-content .modal-title {
+    margin-top: 50px !important;  /* Đẩy chữ xuống thấp hơn */
+    font-size: 20px !important;  /* Điều chỉnh kích thước chữ nếu cần */
+    font-weight: normal !important;  /* Làm chữ không in đậm */
+}
+
+  .custom-category-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px; /* Giảm khoảng cách giữa các item */
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 0; /* Đẩy lên trên 10px */
+    padding: 0 20px;
+}
+
+.custom-category-item {
+    padding: 6px 16px; /* Giảm padding dọc */
+    height: 28px; /* Giảm chiều cao từ 32px -> 28px */
+    border: 1px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    position: relative;
+}
+
+
+.custom-category-item:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.1);
+}
+
+.arrow-icon {
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    margin-left: auto; /* Đẩy mũi tên về bên phải */
+    padding-left: 15px; /* Tạo khoảng cách với text */
+}
+
+.custom-category-item:hover .arrow-icon {
+    color: #007bff;
+    transform: translateX(3px); /* Hiệu ứng dịch chuyển sang phải */
+}
+
+/* Thêm hiệu ứng khi click */
+.custom-category-item:active {
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+/* Phiên bản mobile */
+@media (max-width: 480px) {
+    .custom-category-grid {
+        gap: 8px;
+        padding: 0 15px;
+    }
+    
+    .custom-category-item {
+        padding: 6px 15px;
+        height: 28px;
+    }
+}
+  
+  .custom-category-item img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+  
+  .custom-category-item h3 {
+    display: inline-block;
+  }
+  
+  .custom-arrow {
+    margin-left: 10px;
+    color: #007bff;
+    transition: transform 0.3s ease;
+  }
+  
+  .custom-category-item:hover .custom-arrow {
+    transform: translateX(5px);
+  }
+  
+  .custom-selected-category {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+  }
+  /* Các danh mục con trong modal */
+.custom-subcategory-list {
+    list-style-type: none;
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  
+  .custom-subcategory-list li {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  /* Hiển thị danh mục con khi chọn danh mục cha */
+  .custom-selected-category ul {
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  
+  .custom-selected-category li {
+    font-size: 14px;
+    color: #333;
+  }
+  .custom-category-header {  
+    width: 600px;
+    height: 20px; /* Tăng chiều cao để dễ nhìn */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: absolute; /* Đưa header ra khỏi luồng bình thường nhưng vẫn nằm trong .custom-category-section */
+    top: 20px; /* Đẩy lên trên một chút */
+    left: 300px; /* Tăng giá trị để dịch qua bên phải */
+    z-index: 10; /* Đảm bảo nó hiển thị trên phần nội dung */
+}
+
+
+.custom-category-header:hover {
+    background-color: #e0e0e0;
+}
+.close-button {
+    width: 30px;  /* Giảm chiều ngang */
+    height: 30px;  /* Điều chỉnh chiều cao */
+    padding: 4px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: 1px solid #900; /* Viền đỏ đậm */
+    background-color: #600; /* Màu nền đỏ đen */
+    color: white;  /* Màu chữ trắng cho nổi bật */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -80px; /* Đẩy lên trên */
+}
+
+.close-button:hover {
+    background-color: #800; /* Đỏ sậm hơn khi hover */
+    transform: scale(1.1); /* Hiệu ứng phóng to nhẹ khi di chuột */
+}
+.back-button {
+  width: 100px; /* Giảm chiều rộng */
+  height: 35px; /* Giảm chiều cao */
+  position: absolute;
+  top: 5px; /* Đẩy nút lên trên */
+  left: 10px; /* Giữ khoảng cách với lề trái */
+  font-size: 14px; /* Điều chỉnh kích thước chữ */
+  padding: 5px 10px; /* Căn chỉnh padding */
+}
+.custom-subcategory-table {
+  width: 100%;
+  border-collapse: collapse; /* Gộp viền bảng */
+}
+
+.custom-subcategory-table td {
+  border: 1px solid #ddd; /* Đường viền bảng */
+  padding: 10px;
+  text-align: left; /* Căn lề trái */
+}
+
+.custom-subcategory-table tr:nth-child(even) {
+  background-color: #f9f9f9; /* Màu nền xen kẽ */
+}
+
+.subcategory-name {
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: capitalize; /* Viết hoa chữ cái đầu */
+}
+/* Nút chính (ví dụ: nút "Chọn") */
+.button-choose {
+  font-size: 14px;
+  padding: 5px 10px;
+  width: auto;
+  min-width: 60px;
+  max-width: 80px;
+  background-color: #ff9900; /* Màu nền cam */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+}
+
+.button-choose:hover {
+  background-color: #0056b3; /* Màu khi hover */
+}
+.modal-title {
+  font-weight: 800 !important; /* Làm chữ đậm hơn */
+}
+
+.custom-category-section {
+  max-width: 900px; /* Tăng chiều rộng */
+  width: 1000%; /* Giữ chiều rộng linh hoạt */
+  height: 500px; /* Tăng chiều cao */
+  background-color: white; /* Màu nền trắng */
+  padding: 30px; /* Tăng khoảng cách bên trong */
+  border-radius: 12px; /* Bo góc mềm mại */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Hiệu ứng đổ bóng */
+  margin: 20px auto 0 300px; /* Dịch sang phải 300px */
+  position: relative; /* Giữ nguyên relative để header nằm trong section */
+  overflow: hidden; /* Đảm bảo không bị tràn */
+}

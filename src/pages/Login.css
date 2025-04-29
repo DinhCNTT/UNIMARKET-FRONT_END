@@ -1,0 +1,108 @@
+/* Căn giữa toàn bộ trang */
+.login-container {
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 100vh; /* Chiều cao toàn màn hình */
+    width: 100vw; /* Chiều rộng toàn màn hình */
+    position: fixed; /* Giữ form cố định giữa màn hình */
+    top: 0;
+    left: 0;
+}
+
+/* Hộp đăng nhập */
+.login-box {
+    background: white !important; /* Đảm bảo nền trắng */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+/* Tiêu đề "Đăng nhập" */
+.login-box h2 {
+    color: black !important; /* Đổi màu chữ thành đen */
+}
+
+/* Link đăng ký */
+.signup-link {
+    color: black !important; /* Đổi màu "Chưa có tài khoản?" thành đen */
+    margin-top: 10px;
+}
+
+/* Ô nhập liệu */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc; /* Viền nhẹ */
+    border-radius: 5px;
+    background: #f9f9f9; /* Màu nền sáng */
+    color: black;
+    font-size: 16px;
+}
+
+/* Nút đăng nhập */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #e68900;
+}
+
+
+button:hover {
+    background-color: #e68900;
+}
+
+/* Link đăng ký */
+.signup-link {
+    color: white;
+    margin-top: 10px;
+}
+
+.signup-link a {
+    color: orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+.error-message {
+    color: #fff;
+    background: #d32f2f; /* Màu đỏ chính */
+    border: 2px solid #ffa726; /* Viền màu cam */
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    box-shadow: 0px 4px 10px rgba(211, 47, 47, 0.5);
+    animation: fadeInShake 0.6s ease-in-out;
+    transform-origin: center;
+}
+
+/* Hiệu ứng xuất hiện + rung nhẹ */
+@keyframes fadeInShake {
+    0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    50% { opacity: 0.5; transform: translateY(3px) rotate(-1.5deg); }
+    70% { opacity: 1; transform: translateY(-2px) rotate(1.5deg); }
+    100% { opacity: 1; transform: translateY(0) rotate(0); }
+}

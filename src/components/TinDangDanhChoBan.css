@@ -1,0 +1,123 @@
+/* Container chính của trang */
+.tin-dang-danh-cho-ban {
+  padding: 20px;
+  background-color: #FFFAFA;
+  margin-left: 260px; /* Dịch sang phải */
+  margin-top: 60px; /* Dịch xuống dưới */
+  width: 85%; /* Giảm kích thước */
+  max-width: 1000px; /* Giới hạn kích thước tối đa */
+  box-sizing: border-box; /* Đảm bảo không bị tràn khi padding */
+  border-radius: 10px; /* Bo góc nhẹ với giá trị 10px */
+}
+
+.tin-dang-danh-cho-ban h2 {
+  font-size: 20px; /* Giảm kích thước tiêu đề */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  margin-left: -720px; /* Dịch tiêu đề sang trái */
+}
+
+
+/* Lưới tin đăng */
+.post-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 cột mỗi hàng */
+  gap: 15px; /* Giảm khoảng cách giữa các phần tử */
+}
+
+/* Các phần tử trong tin đăng */
+.post-item {
+  background-color: #fff;
+  border-radius: 8px; /* Giảm border-radius để các góc mềm hơn */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Giảm độ đổ bóng */
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  padding: 10px; /* Giảm padding */
+  height: auto; /* Giảm chiều dài tổng thể */
+}
+
+/* Phần hiển thị ảnh tin đăng */
+.post-images {
+  width: 100%;
+  height: 150px; /* Tăng chiều cao ảnh để ảnh hiển thị rõ ràng */
+  margin-bottom: 10px;
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Đảm bảo ảnh phủ hết không bị méo */
+  border-radius: 8px; /* Bo góc ảnh */
+}
+
+/* Phần thông tin tin đăng */
+.post-info {
+  padding: 10px; /* Thêm padding cho thông tin */
+}
+
+.post-info h3 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.post-info p {
+  font-size: 14px;
+  color: #777;
+  margin: 5px 0;
+}
+
+.post-info .price {
+  font-size: 16px; /* Kích thước giá */
+  font-weight: bold;
+  color: #e53935; /* Màu đỏ cho giá */
+  margin-top: 10px;
+}
+
+.post-item:hover {
+  transform: translateY(-5px);
+}
+
+/* Điều chỉnh lưới cho thiết bị di động */
+@media screen and (max-width: 1024px) {
+  .post-list {
+    grid-template-columns: repeat(3, 1fr); /* 3 cột khi màn hình nhỏ */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .post-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 cột khi màn hình nhỏ hơn */
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .post-list {
+    grid-template-columns: 1fr; /* 1 cột khi màn hình cực nhỏ */
+  }
+}
+
+/* Style cho nút Xem thêm */
+.xem-them-btn {
+  display: block;
+  width: 180px; /* Nút nhỏ hơn */
+  text-align: center;
+  margin: 20px auto; /* Đưa nút vào giữa */
+  padding: 10px;
+  background-color: transparent; /* Không có nền */
+  color: #333; /* Màu chữ */
+  border: 2px solid #333; /* Viền xung quanh */
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px; /* Tăng kích thước chữ */
+  font-weight: bold; /* Làm chữ đậm */
+  transition: all 0.3s ease;
+}
+
+.xem-them-btn:hover {
+  background-color: #333; /* Thêm nền khi hover */
+  color: white; /* Màu chữ thay đổi thành trắng khi hover */
+  border-color: #333; /* Đổi màu viền khi hover */
+}

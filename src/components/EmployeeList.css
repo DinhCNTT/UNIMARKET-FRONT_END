@@ -1,0 +1,125 @@
+.employee-list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    transform: translateX(320px); /* Đẩy bảng sang phải một chút */
+    
+}
+/* Đảm bảo thông báo Toastify luôn hiển thị ở góc phải trên cùng */
+.Toastify__toast-container {
+    position: fixed !important;
+    top: 20px;
+    right: 20px;
+    z-index: 9999; /* Đảm bảo thông báo không bị che khuất */
+}
+/* Tiêu đề */
+.employee-title {
+    font-size: 28px; /* Tăng kích thước chữ tiêu đề */
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Chỉnh container để bảng có thể điều chỉnh */
+.employee-table-container {
+    display: flex;
+    justify-content: center; /* Căn bảng vào giữa */
+    padding: 20px;
+    width: 100%;
+}
+
+/* Bảng nhân viên */
+.employee-table {
+    width: 98%; /* Mở rộng bảng gần như toàn bộ màn hình */
+    max-width: 2200px; /* Tăng kích thước tối đa */
+    border-collapse: collapse;
+    background-color: white;
+    border: 2px solid #ccc; /* Đường viền dày hơn */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden; 
+    font-size: 18px; /* Tăng cỡ chữ cho toàn bảng */
+}
+
+/* Header bảng */
+.employee-table thead tr {
+    background: #ff9c0a;
+    color: white;
+    font-size: 20px; /* Tăng cỡ chữ cho tiêu đề */
+}
+
+/* Ô bảng */
+.employee-table th,
+.employee-table td {
+    padding: 16px; /* Tăng khoảng cách giữa nội dung */
+    border: 1px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 18px; /* Tăng cỡ chữ trong bảng */
+}
+
+/* Hàng chẵn có màu nền khác */
+.employee-table tbody tr:nth-child(even) {
+    background-color: #f3f4f6;
+}
+
+/* Hover hiệu ứng */
+.employee-table tbody tr:hover {
+    background-color: #e2e8f0;
+    transition: 0.3s;
+}
+
+/* Trạng thái bị khóa */
+.locked-status {
+    color: red;
+    font-weight: bold;
+    font-size: 18px; /* Cỡ chữ lớn hơn */
+}
+
+/* Trạng thái hoạt động */
+.active-status {
+    color: green;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Nút khóa/mở khóa */
+.toggle-lock-button {
+    padding: 12px 18px; /* Tăng kích thước nút */
+    font-size: 16px; /* Tăng cỡ chữ */
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+/* Màu sắc khi khóa */
+.toggle-lock-button.lock {
+    background: #e74c3c;
+}
+
+.toggle-lock-button.lock:hover {
+    background: #c0392b;
+}
+
+/* Màu sắc khi mở khóa */
+.toggle-lock-button.unlock {
+    background: #27ae60;
+}
+
+.toggle-lock-button.unlock:hover {
+    background: #219150;
+}
+
+/* Thông báo khi không có dữ liệu */
+.no-data-message {
+    text-align: center;
+    font-size: 20px;
+    color: #888;
+    font-weight: bold;
+    padding: 20px;
+}
+  

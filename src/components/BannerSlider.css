@@ -1,0 +1,21 @@
+.banner-container {
+    width: 100%;
+    max-width: 1000px; /* Giảm chiều rộng */
+    height: auto; /* Hoặc đặt chiều cao cố định, ví dụ: height: 300px; */
+    margin: 0 auto;
+    position: absolute;
+    top: 90px; /* Điều chỉnh vị trí xuống dưới */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background-color: #ffffff; /* Đổi thành màu trắng */
+}
+.banner-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px; /* Tùy chỉnh bo góc */
+}
+.banner-container img {
+    width: 100%; /* Giúp ảnh co lại theo khung */
+    height: auto; /* Đảm bảo tỷ lệ ảnh không bị méo */
+}
