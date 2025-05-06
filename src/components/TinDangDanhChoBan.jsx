@@ -61,18 +61,37 @@ const TinDangDanhChoBan = () => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
   };
 
+  // Xử lý thông báo khi không có tin đăng
+  const renderNoPostsMessage = () => {
+    if (filteredPostsBySearch.length === 0) {
+      if (selectedCategory) {
+        // Nếu có danh mục cha đã chọn
+        return selectedCategory && searchTerm
+          ? `Không có tin đăng với từ khóa "${searchTerm}" trong danh mục "${selectedCategory}"`
+          : `Không có tin đăng trong danh mục "${selectedCategory}"`;
+      } else if (searchTerm) {
+        // Nếu không có danh mục và có từ khóa tìm kiếm
+        return `Không có tin đăng với từ khóa "${searchTerm}"`;
+      } else {
+        // Nếu không có cả danh mục và từ khóa tìm kiếm
+        return "Không có tin đăng nào.";
+      }
+    }
+    return null; // Nếu có tin đăng, không cần hiển thị thông báo
+  };
+
   return (
     <div className="tin-dang-danh-cho-ban">
       <h2>Tin Đăng Dành Cho Bạn</h2>
       <div className="post-list">
-        {filteredPostsBySearch.length === 0 ? (
-          <p>Không có tin đăng nào.</p> // Nếu không có tin đăng nào sau khi lọc, hiển thị thông báo
+        {renderNoPostsMessage() ? (
+          <p>{renderNoPostsMessage()}</p> // Hiển thị thông báo nếu không có tin đăng
         ) : (
           filteredPostsBySearch.slice(0, visiblePosts).map((post) => (
             <div key={post.maTinDang} className="post-item">
               <Link to={`/tin-dang/${post.maTinDang}`} className="post-link">
                 {/* Hiển thị ảnh của tin đăng */}
-                <div className="post-images">
+                <div className="post-images-tin-dang-danh-cho-ban">
                   {post.images && post.images.length > 0 ? (
                     post.images.map((image, index) => (
                       <img

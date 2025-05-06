@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import "./PostTinDang.css";
 
 const PostTinDang = () => {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const location = useLocation();
   const [categoryId, setCategoryId] = useState(null);
@@ -24,7 +26,24 @@ const PostTinDang = () => {
   const [quanHuyenList, setQuanHuyenList] = useState([]);
   const [previewData, setPreviewData] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  
+  const [showPreview, setShowPreview] = useState(false);
+  
+  // Character limits
+  const TITLE_MAX_LENGTH = 80;
+  const DESCRIPTION_MAX_LENGTH = 900;
+  
+  const getProvinceName = id =>
+    (tinhThanhList.find(p =>`${p.maTinhThanh}` === id) || {}).tenTinhThanh || id;
+  
+  const getDistrictName = id =>
+    (quanHuyenList.find(d => `${d.maQuanHuyen}` === id) || {}).tenQuanHuyen || id;
 
+  const conditionMap = {
+    Moi: "Mới",
+    DaSuDung: "Đã sử dụng"
+  };
+  
   // Lấy categoryId và categoryName từ URL
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -71,6 +90,22 @@ const PostTinDang = () => {
       .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); // Thêm dấu phân cách hàng nghìn
   };
 
+  // Xử lý khi người dùng nhập tiêu đề
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    if (newTitle.length <= TITLE_MAX_LENGTH) {
+      setTitle(newTitle);
+    }
+  };
+
+  // Xử lý khi người dùng nhập mô tả
+  const handleDescriptionChange = (e) => {
+    const newDescription = e.target.value;
+    if (newDescription.length <= DESCRIPTION_MAX_LENGTH) {
+      setDescription(newDescription);
+    }
+  };
+
   // Xử lý khi người dùng nhập giá
   const handlePriceChange = (e) => {
     const rawValue = e.target.value;
@@ -94,6 +129,10 @@ const PostTinDang = () => {
   // Xử lý nút Xem Trước
   const handlePreview = () => {
     // Kiểm tra tất cả các trường đã điền chưa
+    if (showPreview) {
+      setShowPreview(false);
+      return;
+    }
     if (!title || !description || !price || !contactInfo || !province || !district) {
       alert("Vui lòng điền đầy đủ thông tin trước khi xem trước.");
       return;
@@ -105,13 +144,14 @@ const PostTinDang = () => {
       description,
       price,
       contactInfo,
-      condition,
-      province,
-      district,
+      condition: conditionMap[condition],
+      province: getProvinceName(province), // Ánh xạ ID -> tên tỉnh
+      district: getDistrictName(district), // Ánh xạ ID -> tên huyện
       canNegotiate,
       categoryName,
-      image: image ? image.name : "No image",
+      image: imagePreview || null,
     });
+    setShowPreview(true);
   };
 
   // Xử lý khi người dùng submit form
@@ -149,6 +189,9 @@ const PostTinDang = () => {
       // Thông báo thành công
       setStatusMessage("✅ Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
       alert("Tin bạn đã được gửi đi, vui lòng đợi duyệt!"); // Hiển thị thông báo dạng pop-up
+      setTimeout(() => {
+        navigate("/quan-ly-tin"); // Chuyển hướng sau khi đăng thành công
+      }, 800);
     } catch (error) {
       console.error("Lỗi khi đăng tin:", error);
       setStatusMessage("❌ Đăng tin thất bại!");
@@ -178,12 +221,29 @@ const PostTinDang = () => {
           </div>
         )}
         <div className="post-tindang-group">
-          <label>Tiêu đề</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <label>Tiêu đề (tối đa {TITLE_MAX_LENGTH} ký tự)</label>
+          <input 
+            type="text" 
+            value={title} 
+            onChange={handleTitleChange} 
+            maxLength={TITLE_MAX_LENGTH}
+            required 
+          />
+          <div className="char-counter">
+            {title.length}/{TITLE_MAX_LENGTH}
+          </div>
         </div>
         <div className="post-tindang-group">
-          <label>Mô tả</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+          <label>Mô tả (tối đa {DESCRIPTION_MAX_LENGTH} ký tự)</label>
+          <textarea 
+            value={description} 
+            onChange={handleDescriptionChange} 
+            maxLength={DESCRIPTION_MAX_LENGTH}
+            required 
+          />
+          <div className="char-counter">
+            {description.length}/{DESCRIPTION_MAX_LENGTH}
+          </div>
         </div>
         <div className="post-tindang-group">
           <label>Giá</label>
@@ -196,8 +256,8 @@ const PostTinDang = () => {
         <div className="post-tindang-group">
           <label>Tình trạng sản phẩm</label>
           <select value={condition} onChange={(e) => setCondition(e.target.value)} required>
-            <option value="Moi">Mới</option>
-            <option value="DaSuDung">Đã Sử Dụng</option>
+            <option value="Moi">{conditionMap.Moi}</option>
+            <option value="DaSuDung">{conditionMap.DaSuDung}</option>
           </select>
         </div>
         <div className="post-tindang-group">
@@ -244,12 +304,18 @@ const PostTinDang = () => {
 
         {/* Button group */}
         <div className="post-tindang-button-group">
-          <button type="button" onClick={handlePreview}>Xem Trước</button>
+          <button 
+            type="button" 
+            onClick={handlePreview}
+            className={`preview-btn ${showPreview ? 'active' : ''}`}
+          >
+            {showPreview ? 'Đóng Xem trước' : 'Xem Trước'}
+          </button>
           <button type="submit">Đăng Tin</button>
         </div>
 
         {/* Xem trước bài đăng */}
-        {previewData && (
+        {showPreview && previewData && (
           <div className="post-tindang-preview" style={{ textAlign: 'left' }}>
             <h3>Xem Trước Bài Đăng</h3>
             <table className="post-tindang-preview-table">
@@ -263,7 +329,20 @@ const PostTinDang = () => {
                 <tr><td>Quận/Huyện</td><td>{previewData.district}</td></tr>
                 <tr><td>Danh mục</td><td>{previewData.categoryName}</td></tr>
                 <tr><td>Thương lượng</td><td>{previewData.canNegotiate ? "Có" : "Không"}</td></tr>
-                <tr><td>Ảnh</td><td>{previewData.image}</td></tr>
+                <tr>
+                  <td>Ảnh</td>
+                  <td>
+                    {previewData.image ? (
+                      <img 
+                        src={previewData.image} 
+                        alt="Preview" 
+                        style={{ maxWidth: '200px', maxHeight: '200px' }} 
+                      />
+                    ) : (
+                      <span>Không có ảnh</span>
+                    )}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import BannerSlider from "../components/BannerSlider";
 import CategoryList from "../components/CategoryList"; // Import component hiển thị danh mục
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan"; // Import component TinDangDanhChoBan
 
 const MarketplacePage = () => {
+  const { user } = useContext(AuthContext); // Lấy thông tin user từ context
+
   return (
     <div className="marketplace-page">
       {/* Thanh menu đầu trang */}
@@ -21,6 +24,12 @@ const MarketplacePage = () => {
 
         {/* Tin đăng dành cho bạn */}
         <TinDangDanhChoBan /> {/* Thêm tin đăng dưới danh mục */}
+
+        {!user && ( // Hiển thị thông báo nếu chưa đăng nhập
+          <div className="login-prompt">
+            <p>Hãy <a href="/login">đăng nhập</a> hoặc <a href="/register">đăng ký</a> để đăng tin hoặc quản lý tin của bạn!</p>
+          </div>
+        )}
 
         {/* Các phần khác */}
       </div>

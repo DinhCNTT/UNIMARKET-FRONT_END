@@ -9,6 +9,8 @@ const ManagePosts = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [expandedDescriptions, setExpandedDescriptions] = useState({});
+    const [selectedImage, setSelectedImage] = useState(null); // State cho ảnh được chọn
     const postsPerPage = 4;
 
     useEffect(() => {
@@ -53,6 +55,23 @@ const ManagePosts = () => {
     const formatCurrency = (value) => {
         if (!value && value !== 0) return "";
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+
+    const toggleDescription = (postId) => {
+        setExpandedDescriptions(prev => ({
+            ...prev,
+            [postId]: !prev[postId]
+        }));
+    };
+
+    // Hàm xử lý khi click vào hình ảnh để hiển thị phóng to
+    const handleImageClick = (imgUrl) => {
+        setSelectedImage(imgUrl);
+    };
+
+    // Hàm đóng modal popup
+    const closeImagePopup = () => {
+        setSelectedImage(null);
     };
 
     const handleApprove = async (id) => {
@@ -122,15 +141,15 @@ const ManagePosts = () => {
             <table className="manage-posts-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Tiêu Đề</th>
-                        <th>Người Bán</th>
-                        <th>Ngày Đăng</th>
-                        <th>Giá</th>
+                        <th className="id-column">ID</th>
+                        <th className="title-column">Tiêu Đề</th>
+                        <th className="seller-column">Người Bán</th>
+                        <th className="date-column">Ngày Đăng</th>
+                        <th className="price-column">Giá</th>
                         <th className="post-description">Mô Tả</th>
-                        <th>Hình Ảnh</th>
-                        <th>Trạng Thái</th>
-                        <th>Thao Tác</th>
+                        <th className="image-column">Hình Ảnh</th>
+                        <th className="status-column">Trạng Thái</th>
+                        <th className="action-column">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -142,7 +161,14 @@ const ManagePosts = () => {
                                 <td>{post.nguoiBan}</td>
                                 <td>{formatDate(post.ngayDang)}</td>
                                 <td>{formatCurrency(post.gia)} ₫</td>
-                                <td>{post.moTa}</td>
+                                <td 
+                                    className={`description-cell ${expandedDescriptions[post.maTinDang] ? 'expanded' : ''}`}
+                                    onClick={() => toggleDescription(post.maTinDang)}
+                                >
+                                    <div className="description-content">
+                                        {post.moTa}
+                                    </div>
+                                </td>
                                 <td>
                                     {post.hinhAnh && post.hinhAnh.length > 0 ? (
                                         post.hinhAnh.map((imgUrl, index) => (
@@ -150,7 +176,8 @@ const ManagePosts = () => {
                                                 key={index}
                                                 src={`http://localhost:5133/${imgUrl}`}
                                                 alt={`Image ${index + 1}`}
-                                                className="post-image"
+                                                className="post-image-manage-posts"
+                                                onClick={() => handleImageClick(`http://localhost:5133/${imgUrl}`)}
                                             />
                                         ))
                                     ) : (
@@ -200,6 +227,16 @@ const ManagePosts = () => {
                     Sau
                 </button>
             </div>
+
+            {/* Modal hiển thị hình ảnh phóng to */}
+            {selectedImage && (
+                <div className="image-popup-overlay" onClick={closeImagePopup}>
+                    <div className="image-popup-container">
+                        <span className="close-popup" onClick={closeImagePopup}>X</span>
+                        <img src={selectedImage} alt="Hình ảnh phóng to" className="popup-image" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

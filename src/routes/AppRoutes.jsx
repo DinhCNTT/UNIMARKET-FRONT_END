@@ -44,15 +44,26 @@ const AdminRoute = ({ children }) => {
   );
 };
 
+// Route bảo vệ người dùng đã đăng nhập
+const ProtectedRoute = ({ children }) => {
+  const { user } = useContext(AuthContext);
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
 function AppRoutes() {
   return (
     <Routes>
       {/* Routes công khai */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<MarketPage />} /> {/* Trang chủ là MarketPage */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
-      <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} /> {/* Thêm route cho TinDangDanhChoBan */}
+      <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
 
       {/* Bảo vệ trang Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -65,12 +76,11 @@ function AppRoutes() {
       <Route path="/admin/manage-posts" element={<AdminRoute><ManagePosts /></AdminRoute>} />
 
       {/* Các route khác */}
-      <Route path="/post-tin" element={<PostTinDang />} />
-      <Route path="/dang-tin" element={<PostForm />} />
-      <Route path="/quan-ly-tin" element={<QuanLyTin />} />
+      <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} /> {/* Bảo vệ route đăng tin */}
+      <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} /> {/* Bảo vệ route đăng tin */}
+      <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} /> {/* Bảo vệ route quản lý tin */}
       <Route path="/tin-dang/:id" element={<ChiTietTinDang />} /> {/* Route chi tiết tin đăng */}
-      {/* Route cập nhật tin đăng */}
-      <Route path="/cap-nhat-tin/:id" element={<CapNhatTin />} />
+      <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} /> {/* Bảo vệ route cập nhật tin */}
     </Routes>
   );
 }

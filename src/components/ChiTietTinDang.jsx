@@ -3,6 +3,21 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import "./ChiTietTinDang.css";
 import TopNavbar from "../components/TopNavbar";
+
+// Hàm định dạng ngày thành ngày-tháng-năm
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString; // Trả về chuỗi gốc nếu không phải ngày hợp lệ
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}-${month}-${year}`;
+};
+
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const [post, setPost] = useState(null);
@@ -70,7 +85,7 @@ const ChiTietTinDang = () => {
           <h1>{post.tieuDe}</h1>
           <p><strong>Giá:</strong> <span className="price">{formattedPrice}</span></p>
           <p><strong>Địa chỉ:</strong> {post.diaChi}</p>
-          <p><strong>Ngày đăng:</strong> {post.ngayDang}</p>
+          <p><strong>Ngày đăng:</strong> {formatDate(post.ngayDang)}</p>
 
           {/* Số điện thoại */}
           <div className="sdt-chat">
@@ -81,7 +96,7 @@ const ChiTietTinDang = () => {
 
           {/* Tên người bán nằm dưới số điện thoại */}
           <div className="seller-info">
-            <div className="seller-name">{post.nguoiBan}</div>
+            <div className="seller-name">Người bán tên: {post.nguoiBan}</div>
           </div>
         </div>
       </div>
@@ -116,7 +131,7 @@ const ChiTietTinDang = () => {
                 <h3>{post.tieuDe}</h3>
                 <p className="gia">{post.gia}</p>
                 <p>{post.diaChi}</p>
-                <p className="nho">{post.ngayDang}</p>
+                <p className="nho">{formatDate(post.ngayDang)}</p>
               </div>
             ))}
           </div>

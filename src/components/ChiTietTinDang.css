@@ -1,17 +1,19 @@
 /* Bố cục phần tin đăng */
 .chi-tiet-tin-dang {
-    width: 90%;
-    margin-top: 100px;  /* Đẩy phần tử xuống từ trên */
-    margin-left: 165px; /* Căn phần tử sang phải */
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    min-height: 1000px;
-  }
+  width: 65%;
+  margin-top: 120px;       /* Đẩy phần tử xuống từ trên */
+  margin-left: 245px;      /* Giữ lệch trái như logic cũ */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-height: 1000px;
 
-  
-  /* Thanh tên người bán */
+  max-width: calc(100vw - 260px); /* Ngăn tràn ngang nếu màn hình nhỏ */
+  box-sizing: border-box;         /* Đảm bảo padding không làm tăng width */
+  overflow-x: hidden;             /* Ngăn kéo ngang nếu có */
+}
+
 /* Thanh tên người bán */
 .seller-info {
     background-color: #f5f5f5;
@@ -255,4 +257,7 @@
     line-height: 1.6;
     color: #333;
   }
+  
+
+
   

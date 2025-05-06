@@ -4,12 +4,14 @@ import axios from "axios";
 import "./TopNavbar.css";
 import SearchBar from "./SearchBar";
 import { CategoryContext } from "../context/CategoryContext";
-import { SearchContext } from "../context/SearchContext"; // Import SearchContext
+import { SearchContext } from "../context/SearchContext";
+import { AuthContext } from "../context/AuthContext";
 
 const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
   const { setSelectedCategory, selectedCategory } = useContext(CategoryContext);
-  const { setSearchTerm } = useContext(SearchContext); // Lấy hàm setSearchTerm từ context
+  const { setSearchTerm } = useContext(SearchContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,7 +36,7 @@ const TopNavbar = () => {
 
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory(categoryName);
-    setSearchTerm(""); // Reset search term khi chọn danh mục
+    setSearchTerm("");
     navigate("/market");
   };
 
@@ -43,9 +45,9 @@ const TopNavbar = () => {
   };
 
   const handleLogoClick = () => {
-    setSelectedCategory(""); // Xóa danh mục đã chọn
-    setSearchTerm("");       // Xóa từ khóa tìm kiếm
-    navigate("/market");     // Chuyển về trang market
+    setSelectedCategory("");
+    setSearchTerm("");
+    navigate("/market");
   };
 
   return (
@@ -87,7 +89,6 @@ const TopNavbar = () => {
             </div>
           </div>
 
-          {/* Nút danh mục nổi bật */}
           <button
             className={`category-button-electronics ${isCategorySelected("Đồ Điện Tử")}`}
             onClick={() => handleCategoryClick("Đồ Điện Tử")}
@@ -114,8 +115,18 @@ const TopNavbar = () => {
       </div>
 
       <div className="nav-right">
-        <span className="manage-post" onClick={() => navigate("/quan-ly-tin")}>Quản lý tin</span>
-        <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
+        {user ? (
+          <>
+            <span className="manage-post" onClick={() => navigate("/quan-ly-tin")}>Quản lý tin</span>
+            <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
+            <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
+          </>
+        ) : (
+          <>
+            <button className="login-btn" onClick={() => navigate("/login")}>Đăng Nhập</button>
+            <button className="register-btn" onClick={() => navigate("/register")}>Đăng Ký</button>
+          </>
+        )}
       </div>
     </header>
   );

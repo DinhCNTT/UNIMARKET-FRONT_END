@@ -273,7 +273,7 @@
 .category-button-homegoods.active,
 .parent-link.active,
 .sub-link.active {
-    background-color: #fc8e28;/* Màu nền sáng khi chọn */
+    background-color: #f77f0f;/* Màu nền sáng khi chọn */
     font-weight: 600; /* Chữ đậm hơn */
     border-radius: 5px;
 }

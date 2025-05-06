@@ -11,3 +11,5 @@ export const CategoryProvider = ({ children }) => {
     </CategoryContext.Provider>
   );
 };
+
+

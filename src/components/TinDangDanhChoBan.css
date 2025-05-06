@@ -38,13 +38,13 @@
 }
 
 /* Phần hiển thị ảnh tin đăng */
-.post-images {
+.post-images-tin-dang-danh-cho-ban {
   width: 100%;
   height: 150px; /* Tăng chiều cao ảnh để ảnh hiển thị rõ ràng */
   margin-bottom: 10px;
 }
 
-.post-image {
+.post-images-tin-dang-danh-cho-ban .post-image {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Đảm bảo ảnh phủ hết không bị méo */
@@ -61,7 +61,14 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 8px;
+  height: 3.6em;             /* Chiều cao tương đương 3 dòng (3 * line-height) */
+  line-height: 1.2em;        /* Dòng chữ cách nhau 1.2em */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;     /* Giới hạn 3 dòng */
+  -webkit-box-orient: vertical;
 }
+
 
 .post-info p {
   font-size: 14px;
