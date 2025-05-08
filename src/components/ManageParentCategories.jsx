@@ -84,6 +84,28 @@ const ManageParentCategories = () => {
         if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
 
         try {
+            // Trước khi xóa, kiểm tra xem có danh mục con nào không
+            const childCategoriesResponse = await axios.get("http://localhost:5133/api/admin/get-categories");
+            const childCategories = childCategoriesResponse.data;
+            
+            // Lọc ra các danh mục con thuộc danh mục cha cần xóa
+            const relatedChildCategories = childCategories.filter(
+                (child) => child.maDanhMucCha === id
+            );
+
+            // Nếu có danh mục con, hiển thị thông báo chi tiết
+            if (relatedChildCategories.length > 0) {
+                const childCategoryNames = relatedChildCategories.map(
+                    (child) => child.tenDanhMuc
+                ).join(", ");
+                
+                toast.error(
+                    `Không thể xóa danh mục vì đang tồn tại các danh mục con: ${childCategoryNames}`
+                );
+                return;
+            }
+
+            // Nếu không có danh mục con, tiến hành xóa
             await axios.delete(`http://localhost:5133/api/admin/delete-parent-category/${id}`);
             toast.success("Xóa danh mục cha thành công!");
             fetchCategories();

@@ -20,17 +20,6 @@ form {
     width: 100%;
     max-width: 400px; /* Giới hạn chiều rộng form */
 }
-
-
-
-
-/* Tiêu đề */
-h2 {
-    color: white;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
 /* Ô nhập liệu */
 input {
     width: 100%;
@@ -43,7 +32,7 @@ input {
     font-size: 16px;
 }
 /* Tiêu đề "Đăng ký tài khoản" */
-h2 {
+.register-title {
     color: black !important; /* Chuyển màu chữ thành đen */
     text-align: center;
     margin-bottom: 20px;

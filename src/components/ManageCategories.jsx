@@ -82,6 +82,12 @@ const ManageCategories = () => {
         }
     };
 
+    // Tìm tên danh mục cha dựa vào ID
+    const getParentCategoryName = (parentId) => {
+        const parent = parentCategories.find((p) => p.maDanhMucCha === parentId);
+        return parent ? parent.tenDanhMucCha : "Không xác định";
+    };
+
     return (
         <div className="category-page-container">
             <h2>Quản Lý Danh Mục Con</h2>
@@ -117,7 +123,7 @@ const ManageCategories = () => {
                                     {editingCategory?.maDanhMuc === cat.maDanhMuc ? (
                                         <select
                                             value={parentId}
-                                            onChange={(e) => setParentId(e.target.value)}
+                                            onChange={(e) => setParentId(parseInt(e.target.value))}
                                         >
                                             {parentCategories.length > 0 ? (
                                                 parentCategories.map((parent) => (
@@ -130,7 +136,7 @@ const ManageCategories = () => {
                                             )}
                                         </select>
                                     ) : (
-                                        cat.maDanhMucCha
+                                        cat.tenDanhMucCha || getParentCategoryName(cat.maDanhMucCha)
                                     )}
                                 </td>
                                 <td>

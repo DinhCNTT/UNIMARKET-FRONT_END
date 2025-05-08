@@ -1,10 +1,11 @@
+/* Updated styles for TopNavbar */
 .top-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
-    background: #ff9900; /* Màu kem sang trọng */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 16px 32px;
+    background: linear-gradient(90deg, #ff9900, #fc8e28);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
     left: 0;
@@ -19,48 +20,167 @@
     height: 100%; /* Giúp toàn bộ phần tử trong .nav-left chiếm đủ chiều cao */
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: 700;
-    color: #B85C38; /* Màu nâu đỏ sang trọng */
-    text-decoration: none;
+.nav-left .logo {
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: color 0.3s ease;
 }
+
+.nav-left .logo:hover {
+    color: #ffe0b3;
+}
+
 .main-menu {
     display: flex;
     align-items: center; /* Giữ các chữ thẳng hàng */
     gap: 15px; /* Tạo khoảng cách giữa các chữ */
 }
 
-
 .main-menu a {
-    color: #5A5A5A;
+    color: #ffffff;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+.main-menu a:hover {
+    background-color: #ffe0b3;
+    color: #333333;
+}
+
 .nav-right {
     display: flex;
     align-items: center;
     gap: 20px; /* Giảm khoảng cách giữa các mục bên phải */
 }
-.location span {
-    color: #666;
-    cursor: pointer;
-}
 
-.manage-post {
-    color: #5A5A5A;
-    text-decoration: none;
-}
-
-.post-btn {
-    background: #B85C38; /* Màu nâu đỏ nổi bật */
-    color: white;
-    padding: 10px 24px;
+.nav-right .post-btn {
+    background: #ff5722; /* Màu cam đậm nổi bật hơn */
+    color: #ffffff;
+    padding: 8px 16px; /* Tăng padding để làm nút nổi bật hơn */
     border: none;
     border-radius: 20px;
+    font-size: 14px; /* Làm chữ lớn hơn một chút */
+    font-weight: bold;
     cursor: pointer;
-    font-weight: 600;
+    white-space: nowrap; /* Ngăn xuống dòng */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    align-self: center; /* Đảm bảo nút nằm cùng dòng */
 }
+
+.nav-right .post-btn:hover {
+    background: #e64a19; /* Màu cam đậm hơn khi hover */
+    transform: scale(1.1); /* Tăng kích thước khi hover */
+}
+
+.nav-right .logout-btn {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    align-self: center;
+    margin-top: 20px; /* Thêm khoảng cách phía trên */
+}
+
+.nav-right .logout-btn:hover {
+    background: #ffffff; /* Màu trắng */
+    color: #ff5722; /* Màu cam đậm */
+    transform: scale(1.05);
+}
+
+.nav-right .manage-post {
+    color: #ffffff; /* Màu trắng */
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: underline;
+    white-space: nowrap; /* Ngăn xuống dòng */
+    transition: color 0.3s ease;
+}
+
+.nav-right .manage-post:hover {
+    color: #ff9800; /* Màu cam */
+}
+
+/* Styled "Quản lý tin" similar to "Đăng tin" but with a different color */
+.nav-right .manage-post-btn {
+    background: #4CAF50; /* Màu xanh lá cây */
+    color: #ffffff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap; /* Ngăn xuống dòng */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    align-self: center; /* Đảm bảo nút nằm cùng dòng */
+}
+
+.nav-right .manage-post-btn:hover {
+    background: #45A049; /* Màu xanh lá cây đậm hơn khi hover */
+    transform: scale(1.05);
+}
+
+/* Updated styles for TopNavbar with dropdown for user actions */
+.nav-right .user-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px; /* Làm nhỏ chữ */
+    font-weight: bold;
+    color: #000000; /* Màu đen */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-right .user-dropdown:hover {
+    color: #333333; /* Màu đen nhạt hơn khi hover */
+}
+
+.nav-right .user-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.nav-right .user-dropdown:hover .dropdown-menu {
+    display: flex;
+}
+
+.nav-right .user-dropdown .dropdown-menu a {
+    color: #000000;
+    text-decoration: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.nav-right .user-dropdown .dropdown-menu a:hover {
+    background-color: #f4f4f4;
+}
+
 /* Giữ thanh tìm kiếm gọn trong navbar */
 .nav-search {
     flex: 1; /* Chiếm phần còn lại của navbar */
@@ -68,41 +188,12 @@
     justify-content: center;
     max-width: 500px; /* Giới hạn chiều rộng */
 }
+
 /* Thu nhỏ kích thước chữ trong navbar */
 .top-navbar {
     font-size: 14px; /* Giảm kích thước chữ chung */
 }
 
-/* Logo */
-.logo {
-    font-size: 22px; /* Tăng kích thước logo */
-    font-weight: 800; /* Đậm hơn */
-    color: #FFFFFF; /* Màu trắng */
-    text-decoration: none;
-    text-transform: uppercase; /* Viết hoa toàn bộ nếu muốn nổi bật */
-    letter-spacing: 1px; /* Tạo khoảng cách giữa các chữ */
-}
-
-/* Chỉnh màu chữ đậm hơn */
-.main-menu a {
-    color: #111111; /* Đen đậm hơn */
-    font-weight: 600; /* Chữ đậm hơn */
-}
-
-.location span, .manage-post {
-    color: #111111; /* Đậm hơn */
-    font-weight: 600;
-}
-
-.post-btn {
-    font-weight: 700; /* Chữ trên nút đăng tin đậm hơn */
-}
-
-
-/* Nút đăng tin */
-.post-btn {
-    font-size: 14px;
-}
 /* Phần chứa dropdown */
 /* Dropdown Danh mục */
 .dropdown {
@@ -152,39 +243,49 @@
     color: #555;
     padding: 4px 0;
 }
+
 /* Nội dung danh mục chính */
 .dropdown-content {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    transition: opacity 0.3s ease;
     position: absolute;
     top: 100%;
     left: 0;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: none;
     width: 250px;
     max-height: 500px; /* Tăng chiều cao để chứa nhiều danh mục hơn */
     overflow: visible; /* Hiển thị đầy đủ nội dung thay vì bị ẩn */
-    border-radius: 5px;
     z-index: 1000;
-  }
-  
-  /* Hiển thị danh mục cha khi hover */
-  .dropdown:hover .dropdown-content {
+}
+
+/* Hiển thị danh mục cha khi hover */
+.dropdown:hover .dropdown-content {
     display: block;
-  }
-  
-  /* Danh mục cha */
-  .parent-category {
+}
+
+/* Danh mục cha */
+.dropdown-content .parent-category {
     padding: 10px;
+    font-weight: bold;
+    color: #333333;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #ddd;
     position: relative; /* Quan trọng để danh mục con có thể định vị dựa trên nó */
-    cursor: pointer;
     white-space: nowrap; /* Ngăn chữ bị xuống dòng */
-  }
-  
-  /* Danh mục con (sub-menu) */
-  .sub-menu {
+}
+
+.dropdown-content .parent-category:hover {
+    background-color: #ffe0b3;
+}
+
+/* Danh mục con (sub-menu) */
+.sub-menu {
     position: absolute;
     top: 0;
     left: 100%; /* Hiển thị bên phải danh mục cha */
@@ -195,26 +296,27 @@
     z-index: 1001;
     border-radius: 5px;
     white-space: nowrap; /* Ngăn chữ bị xuống dòng */
-  }
-  
-  /* Hiển thị danh mục con khi hover vào danh mục cha */
-  .parent-category:hover .sub-menu {
+}
+
+/* Hiển thị danh mục con khi hover vào danh mục cha */
+.parent-category:hover .sub-menu {
     display: block;
-  }
-  
-  /* Định dạng danh mục con */
-  .sub-menu .sub-link {
+}
+
+/* Định dạng danh mục con */
+.sub-menu .sub-link {
     padding: 10px 15px;
     text-decoration: none;
     display: block;
     color: #333;
     border-bottom: 1px solid #ddd;
-  }
-  
-  /* Hover vào sub-link */
-  .sub-menu .sub-link:hover {
+}
+
+/* Hover vào sub-link */
+.sub-menu .sub-link:hover {
     background-color: #f4f4f4;
-  }
+}
+
 /* Tiêu đề danh mục */
 .dropdown-title {
     font-size: 18px; /* Làm chữ to hơn */
@@ -227,7 +329,6 @@
     display: inline-block;
     white-space: nowrap; /* Ngăn chữ xuống dòng */
     text-align: center;
-    
 }
 
 /* Icon trong danh mục cha */
@@ -235,52 +336,39 @@
     width: 18px; /* Giảm kích thước icon */
     height: 18px; /* Giảm kích thước icon */
     margin-right: 8px;
-  }
-/* Nút danh mục */
-.category-button-electronics{
-    background: transparent;
-    color: #333;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
 }
-.category-button-furniture {
-    background: transparent;
-    color: #333;
-    padding: 10px 15px;  /* Tăng padding để chiều ngang rộng hơn */
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    white-space: nowrap;  /* Ngăn cách chữ xuống dòng */
-}
+
+/* Adjusted styles to make the three category buttons smaller without breaking into new lines */
+.category-button-electronics,
+.category-button-furniture,
 .category-button-homegoods {
     background: transparent;
     color: #333;
-    padding: 10px 15px;
+    padding: 4px 10px; /* Tăng nhẹ padding ngang */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 500;
-    white-space: nowrap;  /* Ngăn cách chữ xuống dòng */
+    white-space: nowrap;
+    min-width: 110px; /* Tăng nhẹ chiều ngang */
+    text-align: center;
+    display: inline-block;
 }
 
 /* Highlight active button */
 .category-button-electronics.active,
 .category-button-furniture.active,
-.category-button-homegoods.active,
-.parent-link.active,
-.sub-link.active {
-    background-color: #f77f0f;/* Màu nền sáng khi chọn */
+.category-button-homegoods.active {
+    background-color: #f88519; /* Màu nền nổi bật khi được chọn */
     font-weight: 600; /* Chữ đậm hơn */
     border-radius: 5px;
 }
+
 /* Dropdown cho tài khoản */
 .account-dropdown {
     position: relative;
 }
+
 .account-btn {
     background: none;
     color: white;
@@ -301,7 +389,7 @@
     border-radius: 5px;
     display: none;
     flex-direction: column;
-    min-width: 170px;  /* Tăng độ rộng của dropdown */
+    min-width: 170px; /* Tăng độ rộng của dropdown */
     z-index: 1000;
 }
 
@@ -309,27 +397,45 @@
     display: flex;
 }
 
-
 .dropdown-icon {
     font-size: 12px;
 }
 
-
-.manage-user-btn{
-    background: #ff9900;;
+.manage-user-btn {
+    background: #ff9900;
     color: white;
-    padding: 20px 20px;  /* Padding tùy chỉnh */
+    padding: 20px 20px; /* Padding tùy chỉnh */
     border-radius: 10px;
     text-decoration: none;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 28px;  /* Tạo khoảng cách bên dưới nút */
+    margin-bottom: 28px; /* Tạo khoảng cách bên dưới nút */
     transition: background-color 0.3s ease;
 }
+
 .manage-post {
     color: #111111;
     font-weight: 600;
     cursor: pointer; /* THÊM DÒNG NÀY */
-    transition: color 0.3s ease;    
+    transition: color 0.3s ease;
 }
 
+/* Adjusted styles to make the login button smaller */
+.nav-right .login-btn {
+    background: #ffffff; /* Màu trắng */
+    color: #ff5722; /* Màu cam đậm */
+    padding: 6px 12px; /* Giảm padding để làm nhỏ nút */
+    border: 2px solid #ff5722; /* Viền cam đậm */
+    border-radius: 20px;
+    font-size: 12px; /* Giảm kích thước chữ */
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap; /* Ngăn xuống dòng */
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.nav-right .login-btn:hover {
+    background: #ff5722; /* Màu cam đậm */
+    color: #ffffff; /* Màu trắng */
+    transform: scale(1.05);
+}

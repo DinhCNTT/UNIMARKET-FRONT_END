@@ -9,7 +9,12 @@ import { AuthContext } from "../context/AuthContext";
 
 const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
-  const { setSelectedCategory, selectedCategory } = useContext(CategoryContext);
+  const { 
+    setSelectedCategory, 
+    selectedCategory, 
+    selectedSubCategory, 
+    setSelectedSubCategory 
+  } = useContext(CategoryContext);
   const { setSearchTerm } = useContext(SearchContext);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -22,6 +27,7 @@ const TopNavbar = () => {
   useEffect(() => {
     if (location.pathname !== "/market") {
       setSelectedCategory("");
+      setSelectedSubCategory("");
     }
   }, [location.pathname]);
 
@@ -36,6 +42,15 @@ const TopNavbar = () => {
 
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory(categoryName);
+    setSelectedSubCategory(""); // Reset danh mục con khi chọn danh mục cha
+    setSearchTerm("");
+    navigate("/market");
+  };
+
+  // Thêm hàm xử lý khi chọn danh mục con
+  const handleSubCategoryClick = (parentCategory, subCategory) => {
+    setSelectedCategory(parentCategory);
+    setSelectedSubCategory(subCategory);
     setSearchTerm("");
     navigate("/market");
   };
@@ -44,8 +59,13 @@ const TopNavbar = () => {
     return location.pathname === "/market" && selectedCategory === categoryName ? "active" : "";
   };
 
+  const isSubCategorySelected = (subCategoryName) => {
+    return location.pathname === "/market" && selectedSubCategory === subCategoryName ? "active" : "";
+  };
+
   const handleLogoClick = () => {
     setSelectedCategory("");
+    setSelectedSubCategory("");
     setSearchTerm("");
     navigate("/market");
   };
@@ -76,8 +96,8 @@ const TopNavbar = () => {
                       {parent.danhMucCon.map((child) => (
                         <span
                           key={child.id}
-                          className={`sub-link ${isCategorySelected(child.tenDanhMucCon)}`}
-                          onClick={() => handleCategoryClick(child.tenDanhMucCon)}
+                          className={`sub-link ${isSubCategorySelected(child.tenDanhMucCon)}`}
+                          onClick={() => handleSubCategoryClick(parent.tenDanhMucCha, child.tenDanhMucCon)}
                         >
                           {child.tenDanhMucCon}
                         </span>
@@ -117,7 +137,7 @@ const TopNavbar = () => {
       <div className="nav-right">
         {user ? (
           <>
-            <span className="manage-post" onClick={() => navigate("/quan-ly-tin")}>Quản lý tin</span>
+            <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>Quản lý tin</button>
             <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
             <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
           </>

@@ -116,7 +116,7 @@ const AdminDashboard = () => {
             <Sidebar />
             <Sidebar onLogout={handleLogout} />
             <div className="content">
-                <h2>Quản lý Người Dùng</h2>
+                <h2 className="tieu-de">Quản Lý Người Dùng</h2>
                 <div className="user-table-container">
                     <table className="user-table">
                         <thead>

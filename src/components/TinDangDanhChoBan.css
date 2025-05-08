@@ -2,58 +2,62 @@
 .tin-dang-danh-cho-ban {
   padding: 20px;
   background-color: #FFFAFA;
-  margin-left: 260px; /* Dịch sang phải */
-  margin-top: 60px; /* Dịch xuống dưới */
-  width: 85%; /* Giảm kích thước */
-  max-width: 1000px; /* Giới hạn kích thước tối đa */
-  box-sizing: border-box; /* Đảm bảo không bị tràn khi padding */
-  border-radius: 10px; /* Bo góc nhẹ với giá trị 10px */
+  margin-left: 260px;
+  margin-top: 60px;
+  width: 85%;
+  max-width: 1000px;
+  box-sizing: border-box;
+  border-radius: 10px;
 }
 
 .tin-dang-danh-cho-ban h2 {
-  font-size: 20px; /* Giảm kích thước tiêu đề */
+  font-size: 20px;
   font-weight: bold;
   color: #333;
   margin-bottom: 20px;
-  margin-left: -720px; /* Dịch tiêu đề sang trái */
+  margin-left: -720px;
 }
-
 
 /* Lưới tin đăng */
 .post-list {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 cột mỗi hàng */
-  gap: 15px; /* Giảm khoảng cách giữa các phần tử */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
 }
 
 /* Các phần tử trong tin đăng */
 .post-item {
   background-color: #fff;
-  border-radius: 8px; /* Giảm border-radius để các góc mềm hơn */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Giảm độ đổ bóng */
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.3s ease;
-  padding: 10px; /* Giảm padding */
-  height: auto; /* Giảm chiều dài tổng thể */
+  padding: 10px;
+  height: auto;
 }
 
-/* Phần hiển thị ảnh tin đăng */
+/* Phần hiển thị ảnh tin đăng - ĐÃ SỬA */
 .post-images-tin-dang-danh-cho-ban {
   width: 100%;
-  height: 150px; /* Tăng chiều cao ảnh để ảnh hiển thị rõ ràng */
+  padding-top: 100%; /* Tạo tỷ lệ 1:1 cho hình vuông */
+  position: relative;
+  overflow: hidden;
   margin-bottom: 10px;
 }
 
-.post-images-tin-dang-danh-cho-ban .post-image {
+.post-images-tin-dang-danh-cho-ban img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Đảm bảo ảnh phủ hết không bị méo */
-  border-radius: 8px; /* Bo góc ảnh */
+  object-fit: cover; /* Đảm bảo ảnh phủ kín không gian mà không bị méo */
+  border-radius: 8px;
 }
 
 /* Phần thông tin tin đăng */
 .post-info {
-  padding: 10px; /* Thêm padding cho thông tin */
+  padding: 10px;
 }
 
 .post-info h3 {
@@ -61,14 +65,13 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 8px;
-  height: 3.6em;             /* Chiều cao tương đương 3 dòng (3 * line-height) */
-  line-height: 1.2em;        /* Dòng chữ cách nhau 1.2em */
+  height: 3.6em;
+  line-height: 1.2em;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 3;     /* Giới hạn 3 dòng */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
-
 
 .post-info p {
   font-size: 14px;
@@ -77,9 +80,9 @@
 }
 
 .post-info .price {
-  font-size: 16px; /* Kích thước giá */
+  font-size: 16px;
   font-weight: bold;
-  color: #e53935; /* Màu đỏ cho giá */
+  color: #e53935;
   margin-top: 10px;
 }
 
@@ -90,41 +93,60 @@
 /* Điều chỉnh lưới cho thiết bị di động */
 @media screen and (max-width: 1024px) {
   .post-list {
-    grid-template-columns: repeat(3, 1fr); /* 3 cột khi màn hình nhỏ */
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media screen and (max-width: 768px) {
   .post-list {
-    grid-template-columns: repeat(2, 1fr); /* 2 cột khi màn hình nhỏ hơn */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media screen and (max-width: 480px) {
   .post-list {
-    grid-template-columns: 1fr; /* 1 cột khi màn hình cực nhỏ */
+    grid-template-columns: 1fr;
   }
 }
 
 /* Style cho nút Xem thêm */
 .xem-them-btn {
   display: block;
-  width: 180px; /* Nút nhỏ hơn */
+  width: 180px;
   text-align: center;
-  margin: 20px auto; /* Đưa nút vào giữa */
+  margin: 20px auto;
   padding: 10px;
-  background-color: transparent; /* Không có nền */
-  color: #333; /* Màu chữ */
-  border: 2px solid #333; /* Viền xung quanh */
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #333;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px; /* Tăng kích thước chữ */
-  font-weight: bold; /* Làm chữ đậm */
+  font-size: 16px;
+  font-weight: bold;
   transition: all 0.3s ease;
 }
 
 .xem-them-btn:hover {
-  background-color: #333; /* Thêm nền khi hover */
-  color: white; /* Màu chữ thay đổi thành trắng khi hover */
-  border-color: #333; /* Đổi màu viền khi hover */
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+/* Thêm style cho thông báo không có ảnh */
+.post-images-tin-dang-danh-cho-ban p {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #777;
+  margin: 0;
+}
+
+.tin-dang-danh-cho-ban .tieu-de {
+  margin-left: 3px; /* Dịch sang trái 50px */
 }

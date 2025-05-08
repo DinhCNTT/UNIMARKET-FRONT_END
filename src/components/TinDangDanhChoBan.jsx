@@ -1,62 +1,87 @@
 import React, { useState, useEffect, useContext } from "react"; 
 import axios from "axios";
 import "./TinDangDanhChoBan.css";
-import { CategoryContext } from "../context/CategoryContext"; // Import CategoryContext để lấy danh mục
-import { SearchContext } from "../context/SearchContext"; // Import SearchContext để lấy từ khóa tìm kiếm
-import { Link } from "react-router-dom"; // Import Link để tạo liên kết cho từng tin đăng
+import { CategoryContext } from "../context/CategoryContext"; 
+import { SearchContext } from "../context/SearchContext"; 
+import { LocationContext } from "../context/LocationContext";
+import { Link } from "react-router-dom"; 
 
 const TinDangDanhChoBan = () => {
-  const [posts, setPosts] = useState([]); // Trạng thái để lưu danh sách tin đăng
-  const [visiblePosts, setVisiblePosts] = useState(25); // Số lượng tin đăng hiển thị ban đầu
+  const [posts, setPosts] = useState([]); 
+  const [visiblePosts, setVisiblePosts] = useState(25); 
 
-  const { searchTerm } = useContext(SearchContext); // Lấy từ khóa tìm kiếm từ context
-  const { selectedCategory } = useContext(CategoryContext); // Lấy danh mục đã chọn từ context
+  const { searchTerm } = useContext(SearchContext); 
+  const { selectedCategory, selectedSubCategory } = useContext(CategoryContext);
+  const { selectedLocation } = useContext(LocationContext); 
 
-  // Fetch (lấy) danh sách tin đăng từ API khi component được mount
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("http://localhost:5133/api/tindang/get-posts");
-        setPosts(response.data); // Lưu danh sách tin đăng vào state
-        console.log("Fetched posts:", response.data); // In ra dữ liệu tin đăng đã lấy được để kiểm tra
+        setPosts(response.data); 
+        console.log("Fetched posts:", response.data); 
       } catch (error) {
-        console.error("Error fetching posts:", error); // Nếu có lỗi, in ra lỗi
+        console.error("Error fetching posts:", error); 
       }
     };
 
-    fetchPosts(); // Gọi hàm fetchPosts khi component được render
-  }, []); // useEffect chỉ chạy một lần khi component được mount (tương đương componentDidMount)
+    fetchPosts(); 
+  }, []); 
 
-  // Lọc tin đăng theo từ khóa tìm kiếm (không xét đến danh mục)
+  // Lọc tin đăng theo từ khóa tìm kiếm
   const filterBySearchTerm = (posts) => {
+    if (!searchTerm) return posts;
+    
     const filtered = posts.filter((post) =>
-      post.tieuDe && post.tieuDe.toLowerCase().includes(searchTerm.toLowerCase()) // Kiểm tra nếu tiêu đề tin đăng có chứa từ khóa tìm kiếm
+      post.tieuDe && post.tieuDe.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    console.log("Filtered by search term:", filtered); // In ra danh sách tin đăng sau khi lọc theo từ khóa tìm kiếm
+    console.log("Filtered by search term:", filtered); 
     return filtered;
   };
 
-  // Lọc tin đăng theo danh mục đã chọn
+  // Lọc tin đăng theo danh mục (cả danh mục cha và danh mục con)
   const filterByCategory = (posts) => {
+    // Nếu không có danh mục nào được chọn, trả về tất cả tin đăng
+    if (!selectedCategory && !selectedSubCategory) return posts;
+    
+    // Lọc theo danh mục cha và danh mục con (nếu có)
     const filtered = posts.filter((post) => {
-      return selectedCategory
-        ? post.danhMucCha && post.danhMucCha.toLowerCase() === selectedCategory.toLowerCase() // Kiểm tra nếu danh mục cha của tin đăng trùng với danh mục đã chọn
-        : true; // Nếu không có danh mục chọn, không lọc theo danh mục
+      // Nếu đã chọn danh mục con
+      if (selectedSubCategory) {
+        return post.danhMuc && post.danhMuc.toLowerCase() === selectedSubCategory.toLowerCase();
+      }
+      // Nếu chỉ chọn danh mục cha
+      else if (selectedCategory) {
+        return post.danhMucCha && post.danhMucCha.toLowerCase() === selectedCategory.toLowerCase();
+      }
+      
+      return true;
     });
-    console.log("Filtered by category:", filtered); // In ra danh sách tin đăng sau khi lọc theo danh mục
+    
+    console.log("Filtered by category:", filtered); 
     return filtered;
   };
 
-  // Áp dụng các bộ lọc: lọc theo danh mục trước, sau đó là từ khóa tìm kiếm
-  const filteredPosts = filterByCategory(posts);
-  const filteredPostsBySearch = filterBySearchTerm(filteredPosts);
-
-  // Hàm xử lý khi nhấn nút "Xem thêm" để hiển thị thêm 25 tin đăng
-  const handleShowMore = () => {
-    setVisiblePosts((prev) => prev + 25); // Tăng số lượng tin đăng hiển thị lên 25
+  // Lọc tin đăng theo thành phố đã chọn
+  const filterByLocation = (posts) => {
+    if (!selectedLocation) return posts;
+    
+    const filtered = posts.filter((post) =>
+      post.tinhThanh && post.tinhThanh.includes(selectedLocation)
+    );
+    console.log("Filtered by location:", filtered);
+    return filtered;
   };
 
-  // Hàm định dạng giá tiền theo kiểu tiền tệ (VND)
+  // Áp dụng tất cả các bộ lọc: lọc theo thành phố, danh mục, và từ khóa tìm kiếm
+  const filteredByLocation = filterByLocation(posts);
+  const filteredByCategory = filterByCategory(filteredByLocation);
+  const filteredPostsBySearch = filterBySearchTerm(filteredByCategory);
+
+  const handleShowMore = () => {
+    setVisiblePosts((prev) => prev + 25); 
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
   };
@@ -64,25 +89,38 @@ const TinDangDanhChoBan = () => {
   // Xử lý thông báo khi không có tin đăng
   const renderNoPostsMessage = () => {
     if (filteredPostsBySearch.length === 0) {
-      if (selectedCategory) {
-        // Nếu có danh mục cha đã chọn
-        return selectedCategory && searchTerm
-          ? `Không có tin đăng với từ khóa "${searchTerm}" trong danh mục "${selectedCategory}"`
-          : `Không có tin đăng trong danh mục "${selectedCategory}"`;
-      } else if (searchTerm) {
-        // Nếu không có danh mục và có từ khóa tìm kiếm
-        return `Không có tin đăng với từ khóa "${searchTerm}"`;
-      } else {
-        // Nếu không có cả danh mục và từ khóa tìm kiếm
-        return "Không có tin đăng nào.";
+      let message = `Không có tin đăng`;
+      
+      if (selectedLocation) {
+        message += ` tại ${selectedLocation}`;
       }
+      
+      if (selectedSubCategory) {
+        message += ` trong danh mục "${selectedSubCategory}"`;
+      } else if (selectedCategory) {
+        message += ` trong danh mục "${selectedCategory}"`;
+      }
+      
+      if (searchTerm) {
+        message += ` với từ khóa "${searchTerm}"`;
+      }
+      
+      return message;
     }
     return null; // Nếu có tin đăng, không cần hiển thị thông báo
   };
 
   return (
     <div className="tin-dang-danh-cho-ban">
-      <h2>Tin Đăng Dành Cho Bạn</h2>
+      <h2 className="tieu-de">Tin Đăng Dành Cho Bạn</h2>
+      <div className="filter-info">
+        {selectedLocation && (
+          <p>Đang hiển thị tin đăng tại: <strong>{selectedLocation}</strong></p>
+        )}
+        {selectedSubCategory && (
+          <p>Đang hiển thị tin đăng thuộc danh mục: <strong>{selectedSubCategory}</strong></p>
+        )}
+      </div>
       <div className="post-list">
         {renderNoPostsMessage() ? (
           <p>{renderNoPostsMessage()}</p> // Hiển thị thông báo nếu không có tin đăng

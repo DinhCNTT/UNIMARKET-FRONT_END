@@ -6,7 +6,7 @@ import { CategoryContext } from "../context/CategoryContext"; // Import Category
 const CategoryList = () => {
   const [categories, setCategories] = useState([]);
   const placeholderImage = "https://dummyimage.com/150"; // Ảnh mặc định
-  const { setSelectedCategory } = useContext(CategoryContext); // Lấy setSelectedCategory từ context
+  const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext); // Lấy cả setSelectedCategory và setSelectedSubCategory từ context
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -31,7 +31,8 @@ const CategoryList = () => {
   }, []);
 
   const handleCategoryClick = (categoryName) => {
-    setSelectedCategory(categoryName); // Cập nhật danh mục khi nhấn
+    setSelectedCategory(categoryName); // Cập nhật danh mục cha khi nhấn
+    setSelectedSubCategory(""); // Reset danh mục con về rỗng
   };
 
   return (
