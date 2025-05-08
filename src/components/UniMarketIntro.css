@@ -1,0 +1,47 @@
+.unimarket-intro-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: sans-serif;
+    color: #333;
+    max-width: 965px;
+    margin-left: 260px;
+    margin-right: auto;
+  }
+  
+  .unimarket-intro-content {
+    max-height: calc(1.5em * 8); /* 8 dòng, giả sử mỗi dòng 1.5em */
+    overflow: hidden;
+    transition: max-height 0.1s linear; /* Thay đổi tốc độ và easing */
+    line-height: 1.5em;
+  }
+  
+  .unimarket-intro-content.expanded {
+    max-height: 1000em;
+  }
+  
+  .unimarket-intro-container .toggle-button {
+    margin-top: 1rem;
+    background-color: #fe9410; /* Màu cam theo yêu cầu */
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease; /* Thêm hiệu ứng cho nút */
+    box-shadow: 0 2px 5px rgba(254, 148, 16, 0.3); /* Đổ bóng màu cam nhẹ */
+  }
+  
+ .unimarket-intro-container .toggle-button:hover {
+    background-color: #e07e0c; /* Màu cam đậm hơn khi hover */
+    transform: translateY(-1px); /* Hiệu ứng nổi lên */
+    box-shadow: 0 4px 8px rgba(254, 148, 16, 0.3);
+  }
+  
+  .unimarket-intro-container .toggle-button:active {
+    transform: translateY(0); /* Hiệu ứng nhấn xuống */
+    box-shadow: 0 1px 3px rgba(254, 148, 16, 0.3);
+  }

@@ -4,6 +4,7 @@ import TopNavbar from "../components/TopNavbar";
 import BannerSlider from "../components/BannerSlider";
 import CategoryList from "../components/CategoryList"; // Import component hiển thị danh mục
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan"; // Import component TinDangDanhChoBan
+import UniMarketIntro from "../components/UniMarketIntro"; // Import component giới thiệu UniMarket
 
 const MarketplacePage = () => {
   const { user } = useContext(AuthContext); // Lấy thông tin user từ context
@@ -32,6 +33,7 @@ const MarketplacePage = () => {
         )}
 
         {/* Các phần khác */}
+        <UniMarketIntro /> {/* Giới thiệu về UniMarket */}
       </div>
     </div>
   );
