@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./ChiTietTinDang.css";
 import TopNavbar from "../components/TopNavbar";
 
@@ -20,6 +20,7 @@ const formatDate = (dateString) => {
 
 const ChiTietTinDang = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); // Thêm hook useNavigate để điều hướng
   const [post, setPost] = useState(null);
   const [similarPosts, setSimilarPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,13 @@ const ChiTietTinDang = () => {
     }
   };
 
+  // Hàm để xử lý khi người dùng nhấp vào tin đăng tương tự
+  const handleSimilarPostClick = (postId) => {
+    navigate(`/tin-dang/${postId}`); // Chuyển đến trang chi tiết với ID mới
+    // Cuộn lên đầu trang
+    window.scrollTo(0, 0);
+  };
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -55,7 +63,7 @@ const ChiTietTinDang = () => {
     };
 
     fetchPost();
-  }, [id]);
+  }, [id]); // Thêm id vào dependency array để load lại dữ liệu khi id thay đổi
 
   if (loading) {
     return <div>Đang tải thông tin...</div>;
@@ -70,7 +78,7 @@ const ChiTietTinDang = () => {
 
   return (
     <div className="chi-tiet-tin-dang">
-         <TopNavbar />
+      <TopNavbar />
       {/* Chi tiết tin đăng */}
       <div className="tin-dang-header">
         {/* Ảnh nằm bên trái */}
@@ -123,13 +131,17 @@ const ChiTietTinDang = () => {
           {/* Danh sách tin tương tự */}
           <div className="similar-posts-container" ref={scrollRef}>
             {similarPosts.map((post) => (
-              <div key={post.maTinDang} className="similar-post-card">
+              <div 
+                key={post.maTinDang} 
+                className="similar-post-card" 
+                onClick={() => handleSimilarPostClick(post.maTinDang)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="image-wrapper">
                   <img src={`http://localhost:5133${post.images[0]}`} alt={post.tieuDe} />
-                  <span className="image-count">{post.images.length}</span>
                 </div>
                 <h3>{post.tieuDe}</h3>
-                <p className="gia">{post.gia}</p>
+                <p className="gia">{post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}</p>
                 <p>{post.diaChi}</p>
                 <p className="nho">{formatDate(post.ngayDang)}</p>
               </div>

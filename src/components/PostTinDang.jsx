@@ -321,7 +321,12 @@ const PostTinDang = () => {
             <table className="post-tindang-preview-table">
               <tbody>
                 <tr><td>Tiêu đề</td><td>{previewData.title}</td></tr>
-                <tr><td>Mô tả</td><td>{previewData.description}</td></tr>
+                {/* Cập nhật mô tả để hiển thị đúng định dạng */}
+                <tr><td>Mô tả</td><td>
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: previewData.description.replace(/\n/g, "<br>") }} // Thay \n bằng <br>
+                  />
+                </td></tr>
                 <tr><td>Giá</td><td>{previewData.price}</td></tr>
                 <tr><td>Liên hệ</td><td>{previewData.contactInfo}</td></tr>
                 <tr><td>Tình trạng</td><td>{previewData.condition}</td></tr>

@@ -5,6 +5,7 @@ import BannerSlider from "../components/BannerSlider";
 import CategoryList from "../components/CategoryList"; // Import component hiển thị danh mục
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan"; // Import component TinDangDanhChoBan
 import UniMarketIntro from "../components/UniMarketIntro"; // Import component giới thiệu UniMarket
+import "./MarketPage.css"; // Import CSS cho trang MarketPage
 
 const MarketplacePage = () => {
   const { user } = useContext(AuthContext); // Lấy thông tin user từ context
@@ -27,8 +28,8 @@ const MarketplacePage = () => {
         <TinDangDanhChoBan /> {/* Thêm tin đăng dưới danh mục */}
 
         {!user && ( // Hiển thị thông báo nếu chưa đăng nhập
-          <div className="login-prompt">
-            <p>Hãy <a href="/login">đăng nhập</a> hoặc <a href="/register">đăng ký</a> để đăng tin hoặc quản lý tin của bạn!</p>
+          <div>
+            <p className="login-prompt">Hãy <a href="/login">đăng nhập</a> hoặc <a href="/register">đăng ký</a> để đăng tin hoặc quản lý tin của bạn!</p>
           </div>
         )}
 
