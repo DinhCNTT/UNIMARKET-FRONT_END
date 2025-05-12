@@ -99,14 +99,14 @@ const ManageCategories = () => {
                         <th>Mã DM</th>
                         <th>Tên Danh Mục</th>
                         <th>Danh Mục Cha</th>
-                        <th>Thao Tác</th>
+                        <th>Thao Tác</th>  
                     </tr>
                 </thead>
                 <tbody>
                     {categories.length > 0 ? (
-                        categories.map((cat) => (
+                        categories.map((cat, index) => (
                             <tr key={cat.maDanhMuc}>
-                                <td>{cat.maDanhMuc}</td>
+                                <td>{index + 1}</td> {/* Hiển thị thứ tự theo index */}
                                 <td>
                                     {editingCategory?.maDanhMuc === cat.maDanhMuc ? (
                                         <input
