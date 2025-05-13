@@ -276,6 +276,8 @@
   border-radius: 4px;
   cursor: pointer;
   display: inline-block;
+  width: 100px; /* hoặc bất kỳ chiều rộng nào bạn muốn */
+  text-align: left;
 }
 
 .mo-ta-nd-cttd-toggle:hover {

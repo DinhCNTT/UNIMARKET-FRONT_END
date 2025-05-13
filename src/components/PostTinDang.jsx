@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import TopNavbar from "../components/TopNavbar";
 import "./PostTinDang.css";
 
 const PostTinDang = () => {
@@ -201,7 +200,6 @@ const PostTinDang = () => {
   
   return (
     <div className="post-tindang-container">
-      <TopNavbar />
       {statusMessage && (
         <p className={`post-tindang-status ${statusMessage.includes("thất bại") ? "error" : ""}`}>
           {statusMessage}

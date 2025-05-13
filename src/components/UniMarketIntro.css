@@ -22,19 +22,21 @@
     max-height: 1000em;
   }
   
-  .unimarket-intro-container .toggle-button {
-    margin-top: 1rem;
-    background-color: #fe9410; /* Màu cam theo yêu cầu */
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease; /* Thêm hiệu ứng cho nút */
-    box-shadow: 0 2px 5px rgba(254, 148, 16, 0.3); /* Đổ bóng màu cam nhẹ */
-  }
-  
+ .unimarket-intro-container .toggle-button {
+  margin-top: 1rem;
+  background-color: #fe9410;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(254, 148, 16, 0.3);
+  width: 120px; /* hoặc chiều rộng mong muốn */
+  text-align: left;
+}
+
  .unimarket-intro-container .toggle-button:hover {
     background-color: #e07e0c; /* Màu cam đậm hơn khi hover */
     transform: translateY(-1px); /* Hiệu ứng nổi lên */

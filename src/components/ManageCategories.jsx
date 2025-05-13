@@ -96,7 +96,7 @@ const ManageCategories = () => {
             <table className="category-table">
                 <thead>
                     <tr>
-                        <th>Mã DM</th>
+                        <th>STT</th>
                         <th>Tên Danh Mục</th>
                         <th>Danh Mục Cha</th>
                         <th>Thao Tác</th>  

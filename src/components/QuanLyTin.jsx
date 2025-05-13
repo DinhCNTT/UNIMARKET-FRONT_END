@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import TopNavbar from "../components/TopNavbar";
 import "./QuanLyTin.css";
 
 const trangThaiMap = {
@@ -95,8 +94,6 @@ const QuanLyTin = () => {
 
   return (
     <div className="qlt-wrapper">
-      <TopNavbar />
-
       {/* Header chứa user info và thanh tìm kiếm */}
       <div className="qlt-header-bar">
         <div className="qlt-user-info">
@@ -184,5 +181,4 @@ const QuanLyTin = () => {
     </div>
   );
 };
-
 export default QuanLyTin;

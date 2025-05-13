@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { SearchProvider } from "./context/SearchContext"; 
 import { CategoryProvider } from "./context/CategoryContext"; 
 import { LocationProvider } from "./context/LocationContext"; // Import LocationProvider mới
-
+import TopNavbar from "./components/TopNavbar"; // Import TopNavbar
 function App() {
   return (
     <BrowserRouter>
@@ -12,6 +12,7 @@ function App() {
         <SearchProvider>
           <CategoryProvider>
             <LocationProvider> {/* Thêm LocationProvider bọc AppRoutes */}
+               <TopNavbar /> {/* Đây là nơi giữ TopNavbar */}
               <AppRoutes />
             </LocationProvider>
           </CategoryProvider>
