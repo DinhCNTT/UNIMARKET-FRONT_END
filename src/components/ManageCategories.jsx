@@ -171,6 +171,6 @@ const ManageCategories = () => {
             </table>
         </div>
     );
-};
+}; 
 
 export default ManageCategories;

@@ -4,31 +4,28 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./ChiTietTinDang.css";
 import TopNavbar from "../components/TopNavbar";
 
-// Hàm định dạng ngày thành ngày-tháng-năm
 const formatDate = (dateString) => {
   if (!dateString) return "";
-  
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString; // Trả về chuỗi gốc nếu không phải ngày hợp lệ
-  
+  if (isNaN(date.getTime())) return dateString;
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const year = date.getFullYear();
-  
   return `${day}-${month}-${year}`;
 };
 
 const ChiTietTinDang = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // Thêm hook useNavigate để điều hướng
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [similarPosts, setSimilarPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-  const scrollRef = useRef(null); // Ref để cuộn ngang
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const scrollRef = useRef(null);
 
   const handleShowPhoneNumber = () => {
-    setShowPhoneNumber(!showPhoneNumber); // Toggle hiển thị số điện thoại
+    setShowPhoneNumber(!showPhoneNumber);
   };
 
   const handleScroll = (direction) => {
@@ -40,10 +37,8 @@ const ChiTietTinDang = () => {
     }
   };
 
-  // Hàm để xử lý khi người dùng nhấp vào tin đăng tương tự
   const handleSimilarPostClick = (postId) => {
-    navigate(`/tin-dang/${postId}`); // Chuyển đến trang chi tiết với ID mới
-    // Cuộn lên đầu trang
+    navigate(`/tin-dang/${postId}`);
     window.scrollTo(0, 0);
   };
 
@@ -63,7 +58,7 @@ const ChiTietTinDang = () => {
     };
 
     fetchPost();
-  }, [id]); // Thêm id vào dependency array để load lại dữ liệu khi id thay đổi
+  }, [id]);
 
   if (loading) {
     return <div>Đang tải thông tin...</div>;
@@ -73,67 +68,63 @@ const ChiTietTinDang = () => {
     return <div>Không tìm thấy tin đăng.</div>;
   }
 
-  // Định dạng giá thành VND
   const formattedPrice = post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND";
 
   return (
     <div className="chi-tiet-tin-dang">
       <TopNavbar />
-      {/* Chi tiết tin đăng */}
       <div className="tin-dang-header">
-        {/* Ảnh nằm bên trái */}
         <div className="image-container">
           {post.images && post.images.map((image, index) => (
             <img key={index} src={`http://localhost:5133${image}`} alt={`Image ${index + 1}`} />
           ))}
         </div>
 
-        {/* Thông tin bên phải */}
         <div className="chi-tiet-tin-dang-info">
           <h1>{post.tieuDe}</h1>
           <p><strong>Giá:</strong> <span className="price">{formattedPrice}</span></p>
           <p><strong>Địa chỉ:</strong> {post.diaChi}</p>
           <p><strong>Ngày đăng:</strong> {formatDate(post.ngayDang)}</p>
 
-          {/* Số điện thoại */}
           <div className="sdt-chat">
             <button className="sdt" onClick={handleShowPhoneNumber}>
               {showPhoneNumber ? post.phoneNumber : `Hiện số ${post.phoneNumber.substring(0, 6)}****`}
             </button>
           </div>
 
-          {/* Tên người bán nằm dưới số điện thoại */}
           <div className="seller-info">
             <div className="seller-name">Người bán tên: {post.nguoiBan}</div>
           </div>
         </div>
       </div>
 
-      {/* Mô tả chi tiết */}
       <div className="mo-ta-chi-tiet">
         <p>
-          <strong>Số điện thoại:</strong> 
+          <strong>Số điện thoại:</strong>
           <span onClick={handleShowPhoneNumber} style={{ color: 'blue', cursor: 'pointer' }}>
             {showPhoneNumber ? post.phoneNumber : `${post.phoneNumber.substring(0, 6)}****`}
           </span>
         </p>
-        <p>{post.moTa}</p>
+        <div
+          className={`mo-ta-nd-cttd-wrapper ${showFullDescription ? 'mo-ta-nd-cttd-full' : 'mo-ta-nd-cttd-clamp'}`}
+          dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }}
+        />
+        {post.moTa?.split('\n').length > 8 && (
+          <button className="mo-ta-nd-cttd-toggle" onClick={() => setShowFullDescription(!showFullDescription)}>
+            {showFullDescription ? 'Thu gọn' : 'Xem thêm'}
+          </button>
+        )}
       </div>
 
-      {/* Tin đăng tương tự */}
       <div className="tin-dang-tuong-tu">
         <h2>Tin đăng tương tự</h2>
-
         <div className="similar-posts-wrapper">
-          {/* Nút cuộn trái */}
           <button className="scroll-btn left" onClick={() => handleScroll("left")}>&lt;</button>
-
-          {/* Danh sách tin tương tự */}
           <div className="similar-posts-container" ref={scrollRef}>
             {similarPosts.map((post) => (
-              <div 
-                key={post.maTinDang} 
-                className="similar-post-card" 
+              <div
+                key={post.maTinDang}
+                className="similar-post-card"
                 onClick={() => handleSimilarPostClick(post.maTinDang)}
                 style={{ cursor: 'pointer' }}
               >
@@ -147,8 +138,6 @@ const ChiTietTinDang = () => {
               </div>
             ))}
           </div>
-
-          {/* Nút cuộn phải */}
           <button className="scroll-btn right" onClick={() => handleScroll("right")}>&gt;</button>
         </div>
       </div>

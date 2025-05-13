@@ -10,7 +10,7 @@ const ManagePosts = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
     const [expandedDescriptions, setExpandedDescriptions] = useState({});
-    const [selectedImage, setSelectedImage] = useState(null); // State cho ảnh được chọn
+    const [selectedImage, setSelectedImage] = useState(null);
     const postsPerPage = 4;
 
     useEffect(() => {
@@ -64,12 +64,10 @@ const ManagePosts = () => {
         }));
     };
 
-    // Hàm xử lý khi click vào hình ảnh để hiển thị phóng to
     const handleImageClick = (imgUrl) => {
         setSelectedImage(imgUrl);
     };
 
-    // Hàm đóng modal popup
     const closeImagePopup = () => {
         setSelectedImage(null);
     };
@@ -165,9 +163,10 @@ const ManagePosts = () => {
                                     className={`description-cell ${expandedDescriptions[post.maTinDang] ? 'expanded' : ''}`}
                                     onClick={() => toggleDescription(post.maTinDang)}
                                 >
-                                    <div className="description-content">
-                                        {post.moTa}
-                                    </div>
+                                    <div 
+                                        className="description-content"
+                                        dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }}
+                                    />
                                 </td>
                                 <td>
                                     {post.hinhAnh && post.hinhAnh.length > 0 ? (
@@ -217,7 +216,6 @@ const ManagePosts = () => {
                 </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="pagination">
                 <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                     Trước
@@ -228,7 +226,6 @@ const ManagePosts = () => {
                 </button>
             </div>
 
-            {/* Modal hiển thị hình ảnh phóng to */}
             {selectedImage && (
                 <div className="image-popup-overlay" onClick={closeImagePopup}>
                     <div className="image-popup-container">
