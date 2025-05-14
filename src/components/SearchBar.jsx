@@ -45,10 +45,10 @@ const SearchBar = () => {
     setSearchTerm(inputValue);
 
     // Thêm query parameter vào URL và chuyển đến /market
-    if (location.pathname !== "/market") {
-      navigate(`/market?search=${inputValue}`);
+    if (location.pathname !== "/loc-tin-dang") {
+      navigate(`/loc-tin-dang?search=${inputValue}`);
     } else {
-      // Nếu đã ở trang /market, chỉ cập nhật query parameter
+      // Nếu đã ở trang /loc-tin-dang, chỉ cập nhật query parameter
       navigate(`?search=${inputValue}`);
     }
   };
@@ -71,7 +71,6 @@ const SearchBar = () => {
       <div className="location" onClick={handleLocationClick} ref={dropdownRef}>
         <FaMapMarkerAlt className="location-icon" />
         <span>{selectedLocation} ▼</span>
-        
         {showDropdown && (
           <div className="location-dropdown">
             {cities.map((city) => (

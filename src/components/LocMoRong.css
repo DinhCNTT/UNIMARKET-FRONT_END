@@ -1,0 +1,230 @@
+/* LocMoRong.css */
+.loc-mo-rong-wrapper {
+  display: flex;
+  gap: 20px;
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.loc-mo-rong-filter-item {
+  position: relative;
+}
+
+.loc-mo-rong-button {
+  background-color: #fff;
+  border: 1px solid orange;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: orange;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.loc-mo-rong-button:hover {
+  background-color: #fff5e6;
+}
+
+.loc-mo-rong-dropdown-gia{
+  position: absolute;
+  top: 40px;
+  left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  padding: 10px;
+  width: 260px; /* tăng chiều ngang */
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 5px;
+}
+.loc-mo-rong-dropdown-quan-huyen{
+    position: absolute;
+    top: 40px;
+    left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 10px;
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+.loc-mo-rong-dropdown-danh-muc-cha{
+    position: absolute;
+    top: 40px;
+    left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 10px;
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.loc-mo-rong-option {
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.loc-mo-rong-option:hover {
+  background-color: #f5f5f5;
+}
+
+.loc-mo-rong-input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.loc-mo-rong-apply-btn {
+  width: 100%;
+  background-color: orange;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.loc-mo-rong-apply-btn:hover {
+  background-color: darkorange;
+}
+
+/* Slider và input giá trong lọc giá */
+.loc-mo-rong-range-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.loc-mo-rong-range-slider input[type="range"] {
+  width: 90%;
+  accent-color: orange;
+  cursor: pointer;
+}
+
+.loc-mo-rong-price-inputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.loc-mo-rong-price-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.loc-mo-rong-price-box label {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.loc-mo-rong-price-box input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 90%; /* hoặc 90% nếu muốn hẹp hơn nữa */
+}
+
+
+/* Nút xóa và áp dụng */
+.loc-mo-rong-price-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.loc-mo-rong-price-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.loc-mo-rong-price-actions button:first-child {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.loc-mo-rong-price-actions .ap-dung-btn {
+  background-color: orange;
+  color: white;
+}
+
+.loc-mo-rong-price-actions .ap-dung-btn:hover {
+  background-color: darkorange;
+}
+
+
+.loc-mo-rong-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.loc-mo-rong-active-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.loc-mo-rong-tag {
+  background-color: #ffe5b4;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 100%;
+  gap: 6px; /* giữ khoảng giữa nội dung và nút ❌ */
+}
+
+.loc-mo-rong-tag button {
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.loc-mo-rong-tag button:hover {
+  color: red;
+}

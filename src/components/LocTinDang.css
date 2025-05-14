@@ -1,0 +1,199 @@
+.loc-tin-dang-container {
+  padding: 20px;
+  background-color: #FFFAFA;
+  margin-left: 300px;
+  margin-top: 100px;
+  width: 85%;
+  max-width: 1000px;
+  min-height: 700px; /* 👈 chiều cao tối thiểu để giữ khung luôn đầy */
+  box-sizing: border-box;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* hoặc center nếu muốn nội dung ở giữa */
+}
+
+
+.loc-tin-dang-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Thông tin lọc */
+.loc-tin-dang-filter-info {
+  background-color: #f0f5ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #0066cc;
+}
+
+.loc-tin-dang-filter-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.loc-tin-dang-filter-info strong {
+  color: #0066cc;
+}
+
+/* Danh sách tin đăng theo chiều dọc */
+.loc-tin-dang-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mỗi tin đăng */
+.loc-tin-dang-item {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 20px; /* 👈 thêm dòng này để tăng khoảng cách giữa các item */
+}
+
+.loc-tin-dang-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loc-tin-dang-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.loc-tin-dang-content {
+  display: flex;
+  padding: 15px;
+}
+
+/* Container cho ảnh */
+.loc-tin-dang-image-container {
+  flex: 0 0 150px;
+  height: 150px;
+  margin-right: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loc-tin-dang-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.loc-tin-dang-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #777;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Phần thông tin */
+.loc-tin-dang-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.loc-tin-dang-title-item {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.loc-tin-dang-price {
+  font-size: 18px;
+  font-weight: bold;
+  color: #e53935;
+  margin: 0 0 10px;
+}
+
+.loc-tin-dang-location {
+  font-size: 14px;
+  color: #777;
+  margin: 0 0 10px;
+}
+
+.loc-tin-dang-description {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Nút xem thêm */
+.loc-tin-dang-xem-them-btn {
+  display: block;
+  width: 180px;
+  text-align: center;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #333;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.loc-tin-dang-xem-them-btn:hover {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+/* Thông báo không có tin đăng */
+.loc-tin-dang-no-result {
+  font-size: 16px;
+  text-align: center;
+  padding: 40px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .loc-tin-dang-container {
+    margin-left: 0;
+    width: 95%;
+    padding: 15px;
+  }
+  
+  .loc-tin-dang-content {
+    flex-direction: column;
+  }
+  
+  .loc-tin-dang-image-container {
+    flex: 0 0 200px;
+    margin-right: 0;
+    margin-bottom: 15px;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .loc-tin-dang-image-container {
+    height: 180px;
+  }
+  
+  .loc-tin-dang-title-item {
+    font-size: 16px;
+  }
+}

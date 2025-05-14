@@ -15,10 +15,11 @@ import ManageCategories from "../components/ManageCategories";
 import PostForm from "../components/PostForm";
 import PostTinDang from "../components/PostTinDang";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
+import LocTinDang from "../components/LocTinDang"; // Import component mới
 import QuanLyTin from "../components/QuanLyTin";
 import ManagePosts from "../components/ManagePosts";
 import CapNhatTin from "../components/CapNhatTin";
-import ChiTietTinDang from "../components/ChiTietTinDang"; // Đảm bảo đường dẫn chính xác
+import ChiTietTinDang from "../components/ChiTietTinDang";
 
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
@@ -64,6 +65,7 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
+      <Route path="/loc-tin-dang" element={<LocTinDang />} /> {/* Route mới cho trang lọc tin đăng */}
 
       {/* Bảo vệ trang Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -76,11 +78,11 @@ function AppRoutes() {
       <Route path="/admin/manage-posts" element={<AdminRoute><ManagePosts /></AdminRoute>} />
 
       {/* Các route khác */}
-      <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} /> {/* Bảo vệ route đăng tin */}
-      <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} /> {/* Bảo vệ route đăng tin */}
-      <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} /> {/* Bảo vệ route quản lý tin */}
-      <Route path="/tin-dang/:id" element={<ChiTietTinDang />} /> {/* Route chi tiết tin đăng */}
-      <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} /> {/* Bảo vệ route cập nhật tin */}
+      <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
+      <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
+      <Route path="/tin-dang/:id" element={<ChiTietTinDang />} />
+      <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
     </Routes>
   );
 }

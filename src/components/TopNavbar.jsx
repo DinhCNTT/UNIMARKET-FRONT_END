@@ -25,7 +25,8 @@ const TopNavbar = () => {
   }, []);
 
   useEffect(() => {
-    if (location.pathname !== "/market") {
+    // Chỉ reset các lựa chọn khi không ở 2 trang này
+    if (location.pathname !== "/market" && location.pathname !== "/loc-tin-dang") {
       setSelectedCategory("");
       setSelectedSubCategory("");
     }
@@ -44,7 +45,7 @@ const TopNavbar = () => {
     setSelectedCategory(categoryName);
     setSelectedSubCategory(""); // Reset danh mục con khi chọn danh mục cha
     setSearchTerm("");
-    navigate("/market");
+    navigate("/loc-tin-dang"); // Chuyển hướng đến trang lọc tin đăng thay vì market
   };
 
   // Thêm hàm xử lý khi chọn danh mục con
@@ -52,22 +53,24 @@ const TopNavbar = () => {
     setSelectedCategory(parentCategory);
     setSelectedSubCategory(subCategory);
     setSearchTerm("");
-    navigate("/market");
+    navigate("/loc-tin-dang"); // Chuyển hướng đến trang lọc tin đăng
   };
 
   const isCategorySelected = (categoryName) => {
-    return location.pathname === "/market" && selectedCategory === categoryName ? "active" : "";
+    return (location.pathname === "/market" || location.pathname === "/loc-tin-dang") && 
+           selectedCategory === categoryName ? "active" : "";
   };
 
   const isSubCategorySelected = (subCategoryName) => {
-    return location.pathname === "/market" && selectedSubCategory === subCategoryName ? "active" : "";
+    return (location.pathname === "/market" || location.pathname === "/loc-tin-dang") && 
+           selectedSubCategory === subCategoryName ? "active" : "";
   };
 
   const handleLogoClick = () => {
     setSelectedCategory("");
     setSelectedSubCategory("");
     setSearchTerm("");
-    navigate("/market");
+    navigate("/market"); // Giữ nguyên điều hướng về trang chính khi bấm logo
   };
 
   return (

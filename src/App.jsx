@@ -12,7 +12,6 @@ function App() {
         <SearchProvider>
           <CategoryProvider>
             <LocationProvider> {/* Thêm LocationProvider bọc AppRoutes */}
-               <TopNavbar /> {/* Đây là nơi giữ TopNavbar */}
               <AppRoutes />
             </LocationProvider>
           </CategoryProvider>
