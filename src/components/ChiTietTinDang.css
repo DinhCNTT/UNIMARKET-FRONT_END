@@ -1,6 +1,6 @@
 /* Bố cục phần tin đăng */
 .chi-tiet-tin-dang {
-  width: 65%;
+  width: 70%;
   margin-top: 120px;       /* Đẩy phần tử xuống từ trên */
   margin-left: 245px;      /* Giữ lệch trái như logic cũ */
   background-color: #fff;
@@ -35,17 +35,11 @@
     flex-wrap: wrap;
   }
   
-  /* Phần ảnh bên trái */
-  .image-container {
-    width: 30%;
-  }
-  
-  .image-container img {
+ .image-container img {
     width: 100%;
     border-radius: 8px;
     object-fit: cover;
   }
-  
   /* Phần thông tin bên phải */
   .chi-tiet-tin-dang-info {
     flex: 1;
@@ -282,4 +276,275 @@
 
 .mo-ta-nd-cttd-toggle:hover {
   background-color: #fe9511;
+}
+
+/* Carousel in ChiTietTinDang */
+/* Phần image container */
+.image-container {
+  width: 50%;
+  min-width: 320px;
+  max-width: 600px;
+}
+
+/* Carousel chính */
+.carousel-cttd-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Box hiển thị ảnh chính */
+.carousel-cttd-imgbox {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: #f8f8f8;
+  border-radius: 8px;
+  overflow: hidden; /* Quan trọng để cắt ảnh vượt quá kích thước */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Ảnh chính */
+.carousel-cttd-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Đảm bảo ảnh lấp đầy container và chấp nhận cắt xén */
+  border-radius: 8px;
+}
+
+/* Chỉ số ảnh */
+.carousel-cttd-index {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+/* Nút điều hướng trái phải */
+.carousel-cttd-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+  color: #333;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-cttd-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.carousel-cttd-btn-left {
+  left: 10px;
+}
+
+.carousel-cttd-btn-right {
+  right: 10px;
+}
+
+/* Gallery thumbnail */
+.multi-image-gallery {
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  margin-top: 10px;
+  gap: 8px;
+  padding-bottom: 5px;
+  scrollbar-width: none; /* Ẩn scrollbar trên Firefox */
+}
+
+.multi-image-gallery::-webkit-scrollbar {
+  display: none; /* Ẩn scrollbar trên Chrome/Safari */
+}
+
+/* Thumbnail ảnh */
+.carousel-cttd-thumb {
+  width: 60px !important;
+  height: 60px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.carousel-cttd-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 768px) {
+  .image-container {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .carousel-cttd-imgbox {
+    height: 300px;
+  }
+  
+  .carousel-cttd-thumb {
+    width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+
+/* Lightbox Overlay */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+/* Lightbox Image */
+.lightbox-img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease;
+  cursor: default;
+}
+
+/* Lightbox Navigation Buttons */
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.lightbox-nav:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  opacity: 1;
+}
+
+.lightbox-nav.left {
+  left: 30px;
+}
+
+.lightbox-nav.right {
+  right: 30px;
+}
+
+/* Lightbox Close Button */
+.lightbox-close {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.lightbox-close:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  opacity: 1;
+}
+
+/* Lightbox Image Counter (optional) */
+.lightbox-counter {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* Animation for lightbox */
+@keyframes lightboxFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-overlay {
+  animation: lightboxFadeIn 0.3s ease-out;
+}
+
+/* Zoom effect on image hover */
+.lightbox-img:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .lightbox-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .lightbox-nav.left {
+    left: 15px;
+  }
+  
+  .lightbox-nav.right {
+    right: 15px;
+  }
+  
+  .lightbox-close {
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 24px;
+  }
+  
+  .lightbox-counter {
+    bottom: 20px;
+    font-size: 12px;
+  }
 }

@@ -197,3 +197,38 @@
     font-size: 16px;
   }
 }
+.loc-tin-dang-time {
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background-color: white;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination button.active {
+  background-color: orange;
+  color: white;
+  border-color: orange;
+}

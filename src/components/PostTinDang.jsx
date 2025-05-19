@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import TopNavbar from "../components/TopNavbar";
 import "./PostTinDang.css";
 
 const PostTinDang = () => {
@@ -112,17 +113,18 @@ const PostTinDang = () => {
     setPrice(formattedValue); // Cập nhật giá đã được định dạng
   };
 
-  // Xử lý khi người dùng chọn file hình ảnh
+  // Thêm state cho preview nhiều ảnh
+  const [images, setImages] = useState([]); // Nhiều file ảnh
+  const [previewImages, setPreviewImages] = useState([]); // Preview nhiều ảnh
+
+  // Xử lý khi người dùng chọn nhiều file hình ảnh
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result); // Cập nhật hình ảnh đã chọn
-      };
-      reader.readAsDataURL(file);
-      setImage(file); // Cập nhật tệp đã chọn
-    }
+    const files = Array.from(e.target.files).slice(0, 5); // Tối đa 5 ảnh
+    setImages(files); // Lưu tất cả file ảnh (tối đa 5)
+    setImage(files[0] || null); // Ảnh đầu tiên là đại diện (market)
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreviewImages(previews); // Preview tất cả ảnh
+    setImagePreview(previews[0] || null); // Ảnh đầu tiên cho input preview
   };
 
   // Xử lý nút Xem Trước
@@ -144,11 +146,11 @@ const PostTinDang = () => {
       price,
       contactInfo,
       condition: conditionMap[condition],
-      province: getProvinceName(province), // Ánh xạ ID -> tên tỉnh
-      district: getDistrictName(district), // Ánh xạ ID -> tên huyện
+      province: getProvinceName(province),
+      district: getDistrictName(district),
       canNegotiate,
       categoryName,
-      image: imagePreview || null,
+      images: previewImages, // Preview tối đa 5 ảnh
     });
     setShowPreview(true);
   };
@@ -177,7 +179,7 @@ const PostTinDang = () => {
     formData.append("categoryId", categoryId); // Gửi mã danh mục con
     formData.append("categoryName", categoryName); // Gửi tên danh mục con
     formData.append("canNegotiate", canNegotiate); // Gửi giá trị canNegotiate
-    if (image) formData.append("image", image);
+    images.forEach((img, idx) => formData.append("images", img)); // Gửi tối đa 5 ảnh
   
     try {
       const response = await axios.post("http://localhost:5133/api/tindang/add-post", formData, {
@@ -200,6 +202,7 @@ const PostTinDang = () => {
   
   return (
     <div className="post-tindang-container">
+      <TopNavbar />
       {statusMessage && (
         <p className={`post-tindang-status ${statusMessage.includes("thất bại") ? "error" : ""}`}>
           {statusMessage}
@@ -291,11 +294,57 @@ const PostTinDang = () => {
           </select>
         </div>
         <div className="post-tindang-group">
-          <label>Ảnh</label>
-          <input type="file" onChange={handleFileChange} />
-          {imagePreview && (
-            <div className="image-preview-container">
-              <img src={imagePreview} alt="Image Preview" />
+          <label>Ảnh (tối đa 5 ảnh):</label>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            multiple
+            accept="image/*"
+            maxLength={5}
+          />
+          {images.length > 5 && (
+            <div className="error-message" style={{ color: 'red' }}>
+              Chỉ được chọn tối đa 5 ảnh.
+            </div>
+          )}
+          {/* Hiển thị tất cả ảnh đã chọn, cho phép xóa từng ảnh */}
+          {previewImages && previewImages.length > 0 && (
+            <div className="image-preview-list" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+              {previewImages.map((src, idx) => (
+                <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={src} alt={`Preview ${idx + 1}`} style={{ maxWidth: 90, maxHeight: 90, border: '1px solid #ccc', borderRadius: 4 }} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Xóa ảnh khỏi images và previewImages
+                      const newImages = images.filter((_, i) => i !== idx);
+                      const newPreviews = previewImages.filter((_, i) => i !== idx);
+                      setImages(newImages);
+                      setPreviewImages(newPreviews);
+                      setImage(newImages[0] || null);
+                      setImagePreview(newPreviews[0] || null);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      background: 'rgba(255,255,255,0.8)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: 22,
+                      height: 22,
+                      cursor: 'pointer',
+                      color: '#d00',
+                      fontWeight: 'bold',
+                      lineHeight: '20px',
+                      padding: 0
+                    }}
+                    title="Xóa ảnh"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -335,12 +384,10 @@ const PostTinDang = () => {
                 <tr>
                   <td>Ảnh</td>
                   <td>
-                    {previewData.image ? (
-                      <img 
-                        src={previewData.image} 
-                        alt="Preview" 
-                        style={{ maxWidth: '200px', maxHeight: '200px' }} 
-                      />
+                    {previewData.images && previewData.images.length > 0 ? (
+                      previewData.images.map((src, idx) => (
+                        <img key={idx} src={src} alt={`Preview ${idx + 1}`} style={{ maxWidth: '120px', maxHeight: '120px', marginRight: 8 }} />
+                      ))
                     ) : (
                       <span>Không có ảnh</span>
                     )}

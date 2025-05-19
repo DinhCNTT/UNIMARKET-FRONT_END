@@ -60,5 +60,4 @@ const CategoryList = () => {
     </div>
   );
 };
-
 export default CategoryList;

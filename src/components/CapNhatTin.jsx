@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import "./PostTinDang.css";
@@ -19,13 +19,13 @@ const CapNhatTin = () => {
   const [condition, setCondition] = useState("Moi");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
   const [tinhThanhList, setTinhThanhList] = useState([]);
   const [quanHuyenList, setQuanHuyenList] = useState([]);
+  const [oldImageIds, setOldImageIds] = useState([]);
 
-  // Lấy thông tin tin đăng từ API
   useEffect(() => {
     if (id) {
       axios.get(`http://localhost:5133/api/TinDang/get-post/${id}`)
@@ -40,9 +40,9 @@ const CapNhatTin = () => {
           setDistrict(tinDang.maQuanHuyen);
           setCategoryId(tinDang.maDanhMuc);
           setCategoryName(tinDang.danhMuc?.tenDanhMuc);
-          if (tinDang.AnhTinDangs && tinDang.AnhTinDangs.length > 0) {
-            // Cập nhật preview ảnh đầu tiên
-            setImagePreview(`http://localhost:5133/${tinDang.AnhTinDangs[0].DuongDan}`);
+          if (tinDang.anhTinDangs) {
+            setOldImageIds(tinDang.anhTinDangs.map(img => img.maAnh));
+            setImagePreviews(tinDang.anhTinDangs.map(img => img.duongDan));
           }
         })
         .catch((error) => {
@@ -52,98 +52,75 @@ const CapNhatTin = () => {
     }
   }, [id]);
 
-  // Fetch danh sách tỉnh thành và quận huyện
   useEffect(() => {
-    const fetchTinhThanh = async () => {
-      try {
-        const response = await fetch("http://localhost:5133/api/tindang/tinhthanh");
-        const data = await response.json();
-        setTinhThanhList(data);
-      } catch (error) {
-        console.error("Lỗi khi tải danh sách tỉnh thành:", error);
-      }
-    };
-    fetchTinhThanh();
+    fetch("http://localhost:5133/api/tindang/tinhthanh")
+      .then(res => res.json())
+      .then(setTinhThanhList);
   }, []);
 
   useEffect(() => {
     if (province) {
-      const fetchQuanHuyen = async () => {
-        try {
-          const response = await fetch(`http://localhost:5133/api/tindang/tinhthanh/${province}/quanhuynh`);
-          const data = await response.json();
-          setQuanHuyenList(data);
-        } catch (error) {
-          console.error("Lỗi khi tải danh sách quận huyện:", error);
-        }
-      };
-      fetchQuanHuyen();
+      fetch(`http://localhost:5133/api/tindang/tinhthanh/${province}/quanhuynh`)
+        .then(res => res.json())
+        .then(setQuanHuyenList);
     }
   }, [province]);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);  // Hiển thị ảnh đã chọn
-      };
-      reader.readAsDataURL(file);
-      setImage(file);
-    }
+    const selectedFiles = Array.from(e.target.files).slice(0, 5);
+    setImages(selectedFiles);
+    setImagePreviews(selectedFiles.map(file => URL.createObjectURL(file)));
+    setOldImageIds([]); // Xóa hết ảnh cũ khi chọn ảnh mới
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!user || !user.id) {
+    if (!user?.id) {
       alert("Vui lòng đăng nhập!");
       return;
     }
 
     const formData = new FormData();
-    formData.append("TieuDe", title);
-    formData.append("MoTa", description);
-    formData.append("Gia", price);
-    formData.append("DiaChi", contactInfo);
-    formData.append("TinhTrang", condition);
-    formData.append("MaNguoiBan", user.id);
-    formData.append("MaDanhMuc", categoryId);
-    formData.append("MaTinhThanh", province);
-    formData.append("MaQuanHuyen", district);
-    formData.append("CoTheThoaThuan", true);
-    if (image) formData.append("image", image);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("contactInfo", contactInfo);
+    formData.append("condition", condition);
+    formData.append("canNegotiate", true);
+    formData.append("province", province);
+    formData.append("district", district);
+    formData.append("categoryId", categoryId);
+    formData.append("userId", user.id);
+    formData.append("oldImagesToDelete", JSON.stringify(oldImageIds));
+    formData.append("oldImageOrder", JSON.stringify([]));
+
+    images.forEach(image => {
+      formData.append("newImages", image);
+    });
 
     try {
-      // Gửi yêu cầu PUT để cập nhật tin đăng
-      const response = await axios.put(
-        `http://localhost:5133/api/TinDang/${id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await axios.put(`http://localhost:5133/api/TinDang/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
-      // Kiểm tra xem AnhTinDangs có tồn tại và là mảng hay không
-      const updatedImages = Array.isArray(response.data.AnhTinDangs) 
-  ? response.data.AnhTinDangs.map(image => 
-      image.DuongDan.startsWith("http") 
-        ? image.DuongDan 
-        : `http://localhost:5133${image.DuongDan}`
-    )
-  : [];
+      const updatedImages = Array.isArray(response.data.anhTinDangs)
+        ? response.data.anhTinDangs.map(image =>
+            image.duongDan.startsWith("http")
+              ? image.duongDan
+              : `http://localhost:5133${image.duongDan}`
+          )
+        : [];
 
-// Nếu có ảnh thì set ảnh đầu tiên để preview
-if (updatedImages.length > 0) {
-  setImagePreview(updatedImages[0]);
-}
-
+      setImagePreviews(updatedImages);
+      setImages([]);
+      setOldImageIds([]);
       setStatusMessage("✅ Tin bạn đã được cập nhật!");
       alert("Tin bạn đã được cập nhật!");
       navigate("/quan-ly-tin");
 
     } catch (error) {
-      console.error("Lỗi khi cập nhật tin:", error.response ? error.response.data : error.message);
+      console.error("Lỗi khi cập nhật tin:", error);
       setStatusMessage("❌ Cập nhật tin thất bại!");
-      alert("Cập nhật tin thất bại!");
     }
   };
 
@@ -155,41 +132,39 @@ if (updatedImages.length > 0) {
           {statusMessage}
         </p>
       )}
-
       <form className="post-tindang-form" onSubmit={handleSubmit}>
         <div className="post-tindang-group">
           <label>Tiêu đề</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
         </div>
         <div className="post-tindang-group">
           <label>Mô tả</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} required />
         </div>
         <div className="post-tindang-group">
           <label>Giá</label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+          <input type="number" value={price} onChange={e => setPrice(e.target.value)} required />
         </div>
         <div className="post-tindang-group">
           <label>Địa chỉ cụ thể</label>
-          <input type="text" value={contactInfo} onChange={(e) => setContactInfo(e.target.value)} required />
+          <input type="text" value={contactInfo} onChange={e => setContactInfo(e.target.value)} required />
         </div>
         <div className="post-tindang-group">
           <label>Tình trạng sản phẩm</label>
-          <select value={condition} onChange={(e) => setCondition(e.target.value)} required>
+          <select value={condition} onChange={e => setCondition(e.target.value)} required>
             <option value="Moi">Mới</option>
             <option value="DaSuDung">Đã Sử Dụng</option>
           </select>
         </div>
         <div className="post-tindang-group">
-          <label>Ảnh</label>
-          <input type="file" onChange={handleFileChange} />
-          {imagePreview && (
-            <div className="image-preview-container">
-              <img src={imagePreview} alt="Image Preview" />
-            </div>
-          )}
+          <label>Ảnh mới (tối đa 5)</label>
+          <input type="file" multiple accept="image/*" onChange={handleFileChange} />
+          <div className="image-preview-container">
+            {imagePreviews.map((url, index) => (
+              <img key={index} src={url} alt={`Preview ${index}`} style={{ maxWidth: 100, margin: 4 }} />
+            ))}
+          </div>
         </div>
-
         <div className="post-tindang-button-group">
           <button type="submit">Cập nhật Tin</button>
         </div>
