@@ -150,3 +150,9 @@
 .tin-dang-danh-cho-ban .tieu-de {
   margin-left: 3px; /* Dịch sang trái 50px */
 }
+.post-time {
+  font-size: 13px;
+  color: #999;
+}
+
+

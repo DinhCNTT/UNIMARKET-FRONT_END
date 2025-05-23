@@ -86,18 +86,21 @@ const QuanLyTin = () => {
   };
 
   const handleDelete = (postId) => {
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin đăng này?");
-    if (confirmDelete) {
-      axios
-        .delete(`http://localhost:5133/api/TinDang/${postId}`)
-        .then(() => {
-          setPosts(posts.filter((post) => post.maTinDang !== postId));
-        })
-        .catch((error) => {
-          console.error("Lỗi khi xóa tin đăng:", error);
-        });
-    }
-  };
+  const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin đăng này?");
+  if (confirmDelete) {
+    axios
+      .delete(`http://localhost:5133/api/TinDang/${postId}`)
+      .then(() => {
+        // Cập nhật lại danh sách tin đã load, loại bỏ tin đã xóa
+        setPosts(posts.filter((post) => post.maTinDang !== postId));
+      })
+      .catch((error) => {
+        console.error("Lỗi khi xóa tin đăng:", error);
+        alert("Xóa tin thất bại! Vui lòng thử lại.");
+      });
+  }
+};
+
 
   return (
     <div className="qlt-wrapper">

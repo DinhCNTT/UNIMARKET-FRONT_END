@@ -65,45 +65,73 @@ const ChiTietTinDang = () => {
 
   const PostImageCarousel = ({ images }) => {
     const [current, setCurrent] = useState(0);
-    const validImages = images?.filter(img => img)?.slice(0, 5) || [];
-    if (!validImages.length) return <div>Không có ảnh.</div>;
+    // Thay đổi từ slice(0, 5) thành slice(0, 8) để hiển thị tối đa 8 ảnh/video
+    const validMedia = images?.filter(img => img)?.slice(0, 8) || [];
+    if (!validMedia.length) return <div>Không có media.</div>;
 
-    const prevImage = () => setCurrent((prev) => (prev === 0 ? validImages.length - 1 : prev - 1));
-    const nextImage = () => setCurrent((prev) => (prev === validImages.length - 1 ? 0 : prev + 1));
-    const getImageUrl = (img) => img.startsWith("http") ? img : `http://localhost:5133${img}`;
+    const prevMedia = () => setCurrent((prev) => (prev === 0 ? validMedia.length - 1 : prev - 1));
+    const nextMedia = () => setCurrent((prev) => (prev === validMedia.length - 1 ? 0 : prev + 1));
+    const getMediaUrl = (media) => media.startsWith("http") ? media : `http://localhost:5133${media}`;
+
+    const isVideo = (url) => {
+      return url.match(/\.(mp4|mov|avi|webm|ogg)$/i);
+    };
 
     return (
       <div className="carousel-cttd-wrapper">
         <div className="carousel-cttd-imgbox">
-          <img
-            src={getImageUrl(validImages[current])}
-            alt={`Ảnh ${current + 1}`}
-            className="carousel-cttd-img"
-            onClick={() => {
-              setShowLightbox(true);
-              setLightboxIndex(current);
-            }}
-            style={{ cursor: "zoom-in" }}
-          />
-          <div className="carousel-cttd-index">{current + 1} / {validImages.length}</div>
-          {validImages.length > 1 && (
+          {isVideo(validMedia[current]) ? (
+            <video
+              src={getMediaUrl(validMedia[current])}
+              controls
+              className="carousel-cttd-img"
+              style={{ cursor: "zoom-in" }}
+              onClick={() => {
+                setShowLightbox(true);
+                setLightboxIndex(current);
+              }}
+            />
+          ) : (
+            <img
+              src={getMediaUrl(validMedia[current])}
+              alt={`Media ${current + 1}`}
+              className="carousel-cttd-img"
+              onClick={() => {
+                setShowLightbox(true);
+                setLightboxIndex(current);
+              }}
+              style={{ cursor: "zoom-in" }}
+            />
+          )}
+          <div className="carousel-cttd-index">{current + 1} / {validMedia.length}</div>
+          {validMedia.length > 1 && (
             <>
-              <button onClick={prevImage} className="carousel-cttd-btn carousel-cttd-btn-left">←</button>
-              <button onClick={nextImage} className="carousel-cttd-btn carousel-cttd-btn-right">→</button>
+              <button onClick={prevMedia} className="carousel-cttd-btn carousel-cttd-btn-left">←</button>
+              <button onClick={nextMedia} className="carousel-cttd-btn carousel-cttd-btn-right">→</button>
             </>
           )}
         </div>
-        {validImages.length > 1 && (
+        {validMedia.length > 1 && (
           <div className="multi-image-gallery">
-            {validImages.map((img, idx) => (
-              <img
-                key={idx}
-                src={getImageUrl(img)}
-                alt={`Thumb ${idx + 1}`}
-                className="carousel-cttd-thumb"
-                onClick={() => setCurrent(idx)}
-                style={{ border: current === idx ? "2px solid #f80" : "1px solid #ddd" }}
-              />
+            {validMedia.map((media, idx) => (
+              isVideo(media) ? (
+                <video
+                  key={idx}
+                  src={getMediaUrl(media)}
+                  className="carousel-cttd-thumb"
+                  onClick={() => setCurrent(idx)}
+                  style={{ border: current === idx ? "2px solid #f80" : "1px solid #ddd", cursor: "pointer" }}
+                />
+              ) : (
+                <img
+                  key={idx}
+                  src={getMediaUrl(media)}
+                  alt={`Thumb ${idx + 1}`}
+                  className="carousel-cttd-thumb"
+                  onClick={() => setCurrent(idx)}
+                  style={{ border: current === idx ? "2px solid #f80" : "1px solid #ddd", cursor: "pointer" }}
+                />
+              )
             ))}
           </div>
         )}
@@ -181,35 +209,47 @@ const ChiTietTinDang = () => {
       </div>
 
       {showLightbox && (
-  <div className="lightbox-overlay" onClick={() => setShowLightbox(false)}>
-    <img
-      src={post.images[lightboxIndex].startsWith("http")
-        ? post.images[lightboxIndex]
-        : `http://localhost:5133${post.images[lightboxIndex]}`}
-      alt={`Full ${lightboxIndex + 1}`}
-      className="lightbox-img"
-      onClick={(e) => e.stopPropagation()}
-    />
-    <button
-      className="lightbox-nav left"
-      onClick={(e) => {
-        e.stopPropagation();
-        setLightboxIndex((prev) => (prev === 0 ? post.images.length - 1 : prev - 1));
-      }}
-    >←</button>
-    <button
-      className="lightbox-nav right"
-      onClick={(e) => {
-        e.stopPropagation();
-        setLightboxIndex((prev) => (prev === post.images.length - 1 ? 0 : prev + 1));
-      }}
-    >→</button>
-    <span className="lightbox-close" onClick={() => setShowLightbox(false)}>×</span>
-    <div className="lightbox-counter">
-      {lightboxIndex + 1} / {post.images.length}
-    </div>
-  </div>
-)}
+        <div className="lightbox-overlay" onClick={() => setShowLightbox(false)}>
+          {post.images[lightboxIndex].match(/\.(mp4|mov|avi|webm|ogg)$/i) ? (
+            <video
+              src={post.images[lightboxIndex].startsWith("http")
+                ? post.images[lightboxIndex]
+                : `http://localhost:5133${post.images[lightboxIndex]}`}
+              className="lightbox-img"
+              controls
+              autoPlay
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={post.images[lightboxIndex].startsWith("http")
+                ? post.images[lightboxIndex]
+                : `http://localhost:5133${post.images[lightboxIndex]}`}
+              alt={`Full ${lightboxIndex + 1}`}
+              className="lightbox-img"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          <button
+            className="lightbox-nav left"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxIndex((prev) => (prev === 0 ? post.images.length - 1 : prev - 1));
+            }}
+          >←</button>
+          <button
+            className="lightbox-nav right"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxIndex((prev) => (prev === post.images.length - 1 ? 0 : prev + 1));
+            }}
+          >→</button>
+          <span className="lightbox-close" onClick={() => setShowLightbox(false)}>×</span>
+          <div className="lightbox-counter">
+            {lightboxIndex + 1} / {post.images.length}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

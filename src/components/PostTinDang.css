@@ -4,9 +4,9 @@
   align-items: center;
   padding: 20px;
   background-color: #fff;
-  width: 100%;
+  width: 720px;
   margin: 0 auto;
-  max-width: 1200px;
+  max-width: 1000px;
   margin-left: 35%;
   margin-right: auto;
 }
@@ -173,4 +173,174 @@ button:hover {
   padding: 10px;
   border: 1px solid #ddd;
   white-space: pre-wrap; /* Duy trì định dạng dòng mới */
+}
+
+.post-tindang-group-image-video {
+  left: -320px;
+  position: relative;
+  top: -950px;
+  width: 400px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  z-index: 1;
+}
+
+.post-tindang-group-image-video label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.post-tindang-group-image-video input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.post-tindang-group-image-video input[type="file"]:hover {
+  border-color: #f76c0d;
+}
+
+
+.post-tindang-media-box {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  margin: 20px auto;
+  width: 400x;
+  max-width: 600px;
+}
+
+.media-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: block;
+  margin-top: 10px; /* thêm dòng này */
+}
+
+.media-title .note {
+  font-weight: normal;
+  font-size: 13px;
+  color: #888;
+  margin-left: 8px;
+}
+
+.media-upload-box input[type="file"] {
+  width: 333px;
+  padding: 10px;
+  border: 1px dashed #f76c0d; /* đổi màu viền tại đây */
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.error-text {
+  color: #d9534f;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.media-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.media-preview-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.media-preview-item img,
+.media-preview-item video {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.media-preview-item button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 16px;
+  line-height: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.media-upload-box.chotot-box {
+  display: block;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px dashed #f0ad4e;
+  border-radius: 10px;
+  background-color: #fcfcfc;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+}
+
+.media-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #007bff;
+  gap: 5px;
+}
+
+.media-icon-container {
+  margin: 10px 0;
+}
+
+.media-camera-icon,
+.media-video-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.media-camera-icon {
+  background-image: url('https://img.icons8.com/ios-filled/50/ffa500/camera--v1.png');
+}
+
+.media-video-icon {
+  background-image: url('https://img.icons8.com/ios-filled/50/ffa500/video-call.png');
+}
+
+.sub-note {
+  font-size: 12px;
+  color: #777;
+  margin-top: 3px;
+}
+
+.sub-note .highlight,
+.upload-text .highlight {
+  color: #f76c0d;
+  font-weight: 600;
 }
