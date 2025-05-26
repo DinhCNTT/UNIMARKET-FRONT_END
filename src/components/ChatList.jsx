@@ -5,6 +5,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [chatList, setChatList] = useState([]);
 
   useEffect(() => {
+    if (!userId) return;
     const fetchChats = async () => {
       try {
         const res = await axios.get(`http://localhost:5133/api/chat/user/${userId}`);
@@ -21,7 +22,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       {chatList.length === 0 ? (
         <p>Không có cuộc trò chuyện nào</p>
       ) : (
-        chatList.map(chat => (
+        chatList.map((chat) => (
           <div
             key={chat.maCuocTroChuyen}
             onClick={() => onSelectChat(chat.maCuocTroChuyen)}
@@ -29,7 +30,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
               padding: "10px",
               cursor: "pointer",
               backgroundColor: chat.maCuocTroChuyen === selectedChatId ? "#e0e0e0" : "transparent",
-              borderBottom: "1px solid #ccc"
+              borderBottom: "1px solid #ccc",
             }}
           >
             <div style={{ fontWeight: "bold" }}>{chat.tenNguoiConLai || "Người dùng"}</div>

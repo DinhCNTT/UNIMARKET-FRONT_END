@@ -4,7 +4,6 @@ const apiBaseUrl = "http://localhost:5133/api";
 
 let connection = null;
 
-// Hàm gọi API tạo hoặc lấy mã cuộc trò chuyện
 export const startChat = async (maNguoiGui, maNguoiBan) => {
   try {
     const response = await fetch(`${apiBaseUrl}/chat/start`, {
@@ -23,15 +22,12 @@ export const startChat = async (maNguoiGui, maNguoiBan) => {
     }
 
     const data = await response.json();
-    console.log("Response từ API startChat:", data);
-    // Chỉnh lại tên trường cho đúng với response
     return data.maCuocTroChuyen || data.MaCuocTroChuyen || null;
   } catch (error) {
     console.error("startChat error:", error);
     return null;
   }
 };
-
 
 export const connectToChatHub = async (maCuocTroChuyen, onReceiveMessage) => {
   connection = new signalR.HubConnectionBuilder()

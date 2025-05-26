@@ -5,7 +5,7 @@ import "./ChatBox.css";
 
 const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
   const { user } = useContext(AuthContext);
-  
+
   const [tinNhan, setTinNhan] = useState("");
   const [danhSachTin, setDanhSachTin] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -26,10 +26,15 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         const response = await fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}`);
         if (!response.ok) throw new Error("Lấy lịch sử chat lỗi");
         const data = await response.json();
-        setDanhSachTin(data.map(msg => ({
-          ...msg,
-          thoiGian: new Date(msg.thoiGianGui).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-        })));
+        setDanhSachTin(
+          data.map((msg) => ({
+            ...msg,
+            thoiGian: new Date(msg.thoiGianGui).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          }))
+        );
       } catch (error) {
         console.error("Lỗi lấy lịch sử chat:", error);
       }
@@ -44,10 +49,16 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
 
     const connect = async () => {
       const conn = await connectToChatHub(maCuocTroChuyen, (msg) => {
-        setDanhSachTin(prev => [...prev, {
-          ...msg,
-          thoiGian: new Date(msg.thoiGianGui).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-        }]);
+        setDanhSachTin((prev) => [
+          ...prev,
+          {
+            ...msg,
+            thoiGian: new Date(msg.thoiGianGui).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
       });
 
       if (conn && conn.state === "Connected") {
@@ -60,7 +71,7 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
     connect();
 
     return () => {
-      // Có thể disconnect hoặc rời nhóm nếu cần ở đây
+      // Optional: disconnect or leave group
     };
   }, [maCuocTroChuyen]);
 
@@ -77,14 +88,14 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
   const formatTime = (time) => {
-    return time || new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    return time || new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -103,13 +114,11 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         ) : (
           danhSachTin.map((msg, idx) => (
             <div key={idx} className="message-wrapper">
-              <div className={`message ${msg.maNguoiGui === maNguoiGui ? 'sent' : 'received'}`}>
+              <div className={`message ${msg.maNguoiGui === maNguoiGui ? "sent" : "received"}`}>
                 <div className="message-content">
                   <p>{msg.noiDung}</p>
                 </div>
-                <div className="message-time">
-                  {formatTime(msg.thoiGian)}
-                </div>
+                <div className="message-time">{formatTime(msg.thoiGian)}</div>
               </div>
             </div>
           ))
@@ -119,22 +128,20 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
 
       <div className="chatbox-input-container">
         {!isConnected && (
-          <div className="connection-warning">
-            ⚠️ Mất kết nối. Đang thử kết nối lại...
-          </div>
+          <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>
         )}
         <div className="chatbox-input">
           <textarea
             ref={inputRef}
             value={tinNhan}
-            onChange={e => setTinNhan(e.target.value)}
+            onChange={(e) => setTinNhan(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Nhập tin nhắn..."
             disabled={!isConnected}
             rows="1"
           />
           <button
-            className={`send-btn ${tinNhan.trim() && isConnected ? 'active' : ''}`}
+            className={`send-btn ${tinNhan.trim() && isConnected ? "active" : ""}`}
             onClick={handleSend}
             disabled={!tinNhan.trim() || !isConnected}
             title="Gửi tin nhắn"

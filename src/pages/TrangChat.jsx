@@ -1,21 +1,28 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import ChatList from "../components/ChatList";
 import ChatBox from "../components/ChatBox";
+import "./TrangChat.css";
 
 const TrangChat = () => {
+  const { maCuocTroChuyen } = useParams(); // Lấy mã cuộc trò chuyện từ URL
   const { user } = useContext(AuthContext);
 
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(maCuocTroChuyen || null);
   const [selectedChatUserId, setSelectedChatUserId] = useState(null);
 
-  const handleSelectChat = (maCuocTroChuyen) => {
-    setSelectedChatId(maCuocTroChuyen);
-    if (!user) return;
-    const parts = maCuocTroChuyen.split("-");
-    const otherUserId = parts.find(id => id !== user.id);
+  // Lấy id người còn lại trong cuộc trò chuyện để truyền vào ChatBox
+  useEffect(() => {
+    if (!selectedChatId || !user) return;
+    const parts = selectedChatId.split("-");
+    const otherUserId = parts.find((id) => id !== user.id);
     setSelectedChatUserId(otherUserId);
+  }, [selectedChatId, user]);
+
+  const handleSelectChat = (chatId) => {
+    setSelectedChatId(chatId);
   };
 
   return (
