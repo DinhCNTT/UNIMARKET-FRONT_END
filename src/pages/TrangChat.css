@@ -1,0 +1,31 @@
+.trang-chat-container {
+  display: flex;
+  flex: 1;
+  background: #f9f9f9;
+  min-height: 0; /* cần cho flexbox scroll đúng */
+}
+
+.chat-list-container {
+  width: 320px; /* fix rộng bên trái */
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
+  background: white;
+  height: 100%;
+}
+
+.chat-box-container {
+  flex: 1; /* chiếm hết phần còn lại */
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow: hidden;
+  min-height: 0; /* để scroll chat đúng */
+}
+
+.empty-chat-placeholder {
+  margin: auto;
+  color: #999;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+}

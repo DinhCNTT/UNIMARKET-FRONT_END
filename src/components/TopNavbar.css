@@ -439,3 +439,20 @@
     color: #ffffff; /* Màu trắng */
     transform: scale(1.05);
 }
+.chat-icon-topnavbar {
+  margin-right: -12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  color: white;
+  background-color: #fd9219;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.chat-icon-topnavbar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}

@@ -1,9 +1,9 @@
-// === ChiTietTinDang.jsx ===
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./ChiTietTinDang.css";
 import TopNavbar from "../components/TopNavbar";
+import { AuthContext } from "../context/AuthContext"; // ✅ Import context
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -18,6 +18,8 @@ const formatDate = (dateString) => {
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext); // ✅ Lấy user từ context
+
   const [post, setPost] = useState(null);
   const [similarPosts, setSimilarPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,15 +29,8 @@ const ChiTietTinDang = () => {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const scrollRef = useRef(null);
 
-  const handleShowPhoneNumber = () => {
-    setShowPhoneNumber(!showPhoneNumber);
-  };
-
-  const handleScroll = (direction) => {
-    const container = scrollRef.current;
-    container.scrollBy({ left: direction === "left" ? -300 : 300, behavior: "smooth" });
-  };
-
+  const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
+  const handleScroll = (direction) => scrollRef.current.scrollBy({ left: direction === "left" ? -300 : 300, behavior: "smooth" });
   const handleSimilarPostClick = (postId) => {
     navigate(`/tin-dang/${postId}`);
     window.scrollTo(0, 0);
@@ -65,17 +60,13 @@ const ChiTietTinDang = () => {
 
   const PostImageCarousel = ({ images }) => {
     const [current, setCurrent] = useState(0);
-    // Thay đổi từ slice(0, 5) thành slice(0, 8) để hiển thị tối đa 8 ảnh/video
     const validMedia = images?.filter(img => img)?.slice(0, 8) || [];
     if (!validMedia.length) return <div>Không có media.</div>;
 
     const prevMedia = () => setCurrent((prev) => (prev === 0 ? validMedia.length - 1 : prev - 1));
     const nextMedia = () => setCurrent((prev) => (prev === validMedia.length - 1 ? 0 : prev + 1));
     const getMediaUrl = (media) => media.startsWith("http") ? media : `http://localhost:5133${media}`;
-
-    const isVideo = (url) => {
-      return url.match(/\.(mp4|mov|avi|webm|ogg)$/i);
-    };
+    const isVideo = (url) => url.match(/\.(mp4|mov|avi|webm|ogg)$/i);
 
     return (
       <div className="carousel-cttd-wrapper">
@@ -86,21 +77,15 @@ const ChiTietTinDang = () => {
               controls
               className="carousel-cttd-img"
               style={{ cursor: "zoom-in" }}
-              onClick={() => {
-                setShowLightbox(true);
-                setLightboxIndex(current);
-              }}
+              onClick={() => { setShowLightbox(true); setLightboxIndex(current); }}
             />
           ) : (
             <img
               src={getMediaUrl(validMedia[current])}
               alt={`Media ${current + 1}`}
               className="carousel-cttd-img"
-              onClick={() => {
-                setShowLightbox(true);
-                setLightboxIndex(current);
-              }}
               style={{ cursor: "zoom-in" }}
+              onClick={() => { setShowLightbox(true); setLightboxIndex(current); }}
             />
           )}
           <div className="carousel-cttd-index">{current + 1} / {validMedia.length}</div>
@@ -159,6 +144,16 @@ const ChiTietTinDang = () => {
             <button className="sdt" onClick={handleShowPhoneNumber}>
               {showPhoneNumber ? post.phoneNumber : `Hiện số ${post.phoneNumber.substring(0, 6)}****`}
             </button>
+
+            {/* ✅ Ẩn nút nếu là người đăng */}
+            {user?.id !== post.maNguoiBan && (
+              <button
+                className="sdt sdt-chat-btn"
+                onClick={() => navigate(`/chat/${post.maNguoiBan}`)}
+              >
+                💬 Chat với người bán
+              </button>
+            )}
           </div>
 
           <div className="seller-info">

@@ -20,6 +20,7 @@ import QuanLyTin from "../components/QuanLyTin";
 import ManagePosts from "../components/ManagePosts";
 import CapNhatTin from "../components/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
+import TrangChat from "../pages/TrangChat"; // ✅ Trang chat realtime
 
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
@@ -83,6 +84,8 @@ function AppRoutes() {
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang/:id" element={<ChiTietTinDang />} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
+      {/* ✅ Route chat realtime */}
+      <Route path="/chat/:id" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />   
     </Routes>
   );
 }

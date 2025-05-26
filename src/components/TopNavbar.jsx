@@ -6,15 +6,12 @@ import SearchBar from "./SearchBar";
 import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
 import { AuthContext } from "../context/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faComments } from "@fortawesome/free-solid-svg-icons";
 
 const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
-  const { 
-    setSelectedCategory, 
-    selectedCategory, 
-    selectedSubCategory, 
-    setSelectedSubCategory 
-  } = useContext(CategoryContext);
+  const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { setSearchTerm } = useContext(SearchContext);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -25,7 +22,6 @@ const TopNavbar = () => {
   }, []);
 
   useEffect(() => {
-    // Chỉ reset các lựa chọn khi không ở 2 trang này
     if (location.pathname !== "/market" && location.pathname !== "/loc-tin-dang") {
       setSelectedCategory("");
       setSelectedSubCategory("");
@@ -41,36 +37,11 @@ const TopNavbar = () => {
     }
   };
 
-  const handleCategoryClick = (categoryName) => {
-    setSelectedCategory(categoryName);
-    setSelectedSubCategory(""); // Reset danh mục con khi chọn danh mục cha
-    setSearchTerm("");
-    navigate("/loc-tin-dang"); // Chuyển hướng đến trang lọc tin đăng thay vì market
-  };
-
-  // Thêm hàm xử lý khi chọn danh mục con
-  const handleSubCategoryClick = (parentCategory, subCategory) => {
-    setSelectedCategory(parentCategory);
-    setSelectedSubCategory(subCategory);
-    setSearchTerm("");
-    navigate("/loc-tin-dang"); // Chuyển hướng đến trang lọc tin đăng
-  };
-
-  const isCategorySelected = (categoryName) => {
-    return (location.pathname === "/market" || location.pathname === "/loc-tin-dang") && 
-           selectedCategory === categoryName ? "active" : "";
-  };
-
-  const isSubCategorySelected = (subCategoryName) => {
-    return (location.pathname === "/market" || location.pathname === "/loc-tin-dang") && 
-           selectedSubCategory === subCategoryName ? "active" : "";
-  };
-
   const handleLogoClick = () => {
     setSelectedCategory("");
     setSelectedSubCategory("");
     setSearchTerm("");
-    navigate("/market"); // Giữ nguyên điều hướng về trang chính khi bấm logo
+    navigate("/market");
   };
 
   return (
@@ -87,20 +58,29 @@ const TopNavbar = () => {
               {categories.map((parent) => (
                 <div key={parent.id} className="parent-category">
                   <span
-                    className={`parent-link ${isCategorySelected(parent.tenDanhMucCha)}`}
-                    onClick={() => handleCategoryClick(parent.tenDanhMucCha)}
+                    className="parent-link"
+                    onClick={() => {
+                      setSelectedCategory(parent.tenDanhMucCha);
+                      setSelectedSubCategory("");
+                      setSearchTerm("");
+                      navigate("/loc-tin-dang");
+                    }}
                   >
                     {parent.icon && <img src={parent.icon} alt="icon" className="category-icon" />}
                     {parent.tenDanhMucCha}
                   </span>
-
                   {parent.danhMucCon.length > 0 && (
                     <div className="sub-menu">
                       {parent.danhMucCon.map((child) => (
                         <span
                           key={child.id}
-                          className={`sub-link ${isSubCategorySelected(child.tenDanhMucCon)}`}
-                          onClick={() => handleSubCategoryClick(parent.tenDanhMucCha, child.tenDanhMucCon)}
+                          className="sub-link"
+                          onClick={() => {
+                            setSelectedCategory(parent.tenDanhMucCha);
+                            setSelectedSubCategory(child.tenDanhMucCon);
+                            setSearchTerm("");
+                            navigate("/loc-tin-dang");
+                          }}
                         >
                           {child.tenDanhMucCon}
                         </span>
@@ -111,25 +91,6 @@ const TopNavbar = () => {
               ))}
             </div>
           </div>
-
-          <button
-            className={`category-button-electronics ${isCategorySelected("Đồ Điện Tử")}`}
-            onClick={() => handleCategoryClick("Đồ Điện Tử")}
-          >
-            Đồ Điện Tử
-          </button>
-          <button
-            className={`category-button-furniture ${isCategorySelected("Nội Thất Sinh Viên")}`}
-            onClick={() => handleCategoryClick("Nội Thất Sinh Viên")}
-          >
-            Nội Thất Sinh Viên
-          </button>
-          <button
-            className={`category-button-homegoods ${isCategorySelected("Đồ Gia Dụng")}`}
-            onClick={() => handleCategoryClick("Đồ Gia Dụng")}
-          >
-            Đồ Gia Dụng
-          </button>
         </nav>
       </div>
 
@@ -140,9 +101,15 @@ const TopNavbar = () => {
       <div className="nav-right">
         {user ? (
           <>
-            <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>Quản lý tin</button>
-            <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
-            <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
+        <div className="chat-icon-topnavbar" onClick={() => navigate("/chat")} title="Tin nhắn">
+          <FontAwesomeIcon  icon={faComments}/>
+        </div>
+
+        <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>
+          Quản lý tin
+        </button>
+        <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
+        <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
           </>
         ) : (
           <>
