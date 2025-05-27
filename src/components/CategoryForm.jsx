@@ -9,48 +9,67 @@ const CategoryForm = () => {
     const [tenDanhMuc, setTenDanhMuc] = useState("");
     const [maDanhMucCha, setMaDanhMucCha] = useState("");
     const [parentCategories, setParentCategories] = useState([]);
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         axios.get("http://localhost:5133/api/admin/get-parent-categories")
             .then((response) => {
-                console.log("Dữ liệu danh mục cha nhận được:", response.data);
                 setParentCategories(response.data);
             })
-            .catch((error) => console.error("Lỗi khi lấy danh mục cha:", error));
+            .catch((error) => {
+                console.error("Lỗi khi lấy danh mục cha:", error);
+                toast.error("Không thể tải danh mục cha!");
+            });
     }, []);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-    
-        if (!tenDanhMuc) {
-            toast.error("❌ Vui lòng nhập tên danh mục!");
-            return;
-        }
-    
-        if (!maDanhMucCha) {
-            toast.error("❌ Vui lòng chọn danh mục cha!");
-            return;
-        }
-    
-        try {
-            const formData = new FormData();
-            formData.append("tenDanhMuc", tenDanhMuc);
-            formData.append("maDanhMucCha", maDanhMucCha);
-    
-            await axios.post("http://localhost:5133/api/admin/add-category", formData, {
+    e.preventDefault();
+    setErrorMessage("");
+
+    // Client-side validation
+    if (!tenDanhMuc.trim()) {
+        toast.error("❌ Vui lòng nhập tên danh mục!");
+        return;
+    }
+
+    if (!maDanhMucCha) {
+        toast.error("❌ Vui lòng chọn danh mục cha!");
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append("tenDanhMuc", tenDanhMuc.trim());
+        formData.append("maDanhMucCha", Number(maDanhMucCha));
+
+        const response = await axios.post(
+            "http://localhost:5133/api/admin/add-category",
+            formData,
+            {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
-            });
-    
-            toast.success("✅ Thêm danh mục thành công!");
+            }
+        );
+
+        if (response.data.success) {
+            toast.success("✅ " + response.data.message);
             setTenDanhMuc("");
             setMaDanhMucCha("");
-        } catch (error) {
-            console.error("Chi tiết lỗi:", error.response?.data);
-            toast.error(`❌ ${error.response?.data?.message || "Thêm danh mục thất bại!"}`);
+        } else {
+            toast.error("❌ " + response.data.message);
         }
-    };
+    } catch (error) {
+        console.error("Chi tiết lỗi:", error.response?.data);
+        const message = error.response?.data?.message || "❌ Có lỗi xảy ra khi thêm danh mục!";
+        toast.error(message);
+        
+        // Hiển thị thông báo lỗi chi tiết hơn nếu có
+        if (error.response?.status === 409) { // Conflict - trùng tên
+            setErrorMessage(message);
+        }
+    }
+};
 
     return (
         <div className="category-page-container">
@@ -71,20 +90,26 @@ const CategoryForm = () => {
                     <label>Danh mục cha:</label>
                     <select 
                         value={maDanhMucCha} 
-                        onChange={(e) => setMaDanhMucCha(e.target.value)}
+                        onChange={(e) => setMaDanhMucCha(Number(e.target.value))} // ✅ ép kiểu ở đây luôn
                         required
                     >
                         <option value="">Chọn danh mục cha</option>
                         {parentCategories.map((parent) => (
                             <option 
                                 key={parent.maDanhMucCha} 
-                                value={parent.maDanhMucCha}  
+                                value={parent.maDanhMucCha}
                             >
                                 {parent.tenDanhMucCha}
                             </option>
                         ))}
                     </select>
                 </div>
+
+                {errorMessage && (
+                    <div style={{ color: "red", fontWeight: "500" }}>
+                        {errorMessage}
+                    </div>
+                )}
 
                 <button type="submit" className="category-submit-button">
                     Thêm Danh Mục
@@ -94,6 +119,5 @@ const CategoryForm = () => {
         </div>
     );
 };
-
 
 export default CategoryForm;

@@ -6,7 +6,7 @@
     position: absolute;
     top: 90px; /* Điều chỉnh vị trí xuống dưới */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50.4%);
     z-index: 10;
     background-color: #ffffff; /* Đổi thành màu trắng */
 }
