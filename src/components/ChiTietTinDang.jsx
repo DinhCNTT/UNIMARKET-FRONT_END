@@ -60,33 +60,39 @@ const ChiTietTinDang = () => {
     fetchPost();
   }, [id]);
 
-  // Hàm bấm nút chat với người bán, tạo cuộc trò chuyện nếu chưa có
+  // Bấm nút chat với người bán, tạo hoặc lấy mã cuộc trò chuyện rồi chuyển trang
   const handleChatWithSeller = async () => {
-    if (!user) {
-      alert("Bạn cần đăng nhập để chat với người bán.");
-      return;
+  if (!user) {
+    alert("Bạn cần đăng nhập để chat với người bán.");
+    return;
+  }
+  if (user.id === post.maNguoiBan) {
+    alert("Bạn không thể chat với chính mình.");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://localhost:5133/api/chat/start", {
+      MaNguoiDung1: user.id,
+      MaNguoiDung2: post.maNguoiBan,
+      MaTinDang: post.maTinDang,  // Gửi thêm mã tin đăng
+    });
+    const maCuocTroChuyen =
+      response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
+    if (maCuocTroChuyen) {
+      navigate(`/chat/${maCuocTroChuyen}`);
+    } else {
+      alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
     }
-    if (user.id === post.maNguoiBan) {
-      alert("Bạn không thể chat với chính mình.");
-      return;
+  } catch (error) {
+    console.error("Lỗi tạo cuộc trò chuyện:", error);
+    if (error.response) {
+      console.error("Chi tiết lỗi từ server:", error.response.data);
     }
-    try {
-      const response = await axios.post("http://localhost:5133/api/chat/start", {
-        MaNguoiDung1: user.id,
-        MaNguoiDung2: post.maNguoiBan,
-      });
-      const maCuocTroChuyen =
-        response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
-      if (maCuocTroChuyen) {
-        navigate(`/chat/${maCuocTroChuyen}`);
-      } else {
-        alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
-      }
-    } catch (error) {
-      console.error("Lỗi tạo cuộc trò chuyện:", error);
-      alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
-    }
-  };
+    alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
+  }
+};
+
 
   if (loading) return <div>Đang tải thông tin...</div>;
   if (!post) return <div>Không tìm thấy tin đăng.</div>;

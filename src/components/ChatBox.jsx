@@ -9,13 +9,41 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
   const [tinNhan, setTinNhan] = useState("");
   const [danhSachTin, setDanhSachTin] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [infoTinDang, setInfoTinDang] = useState({ tieuDe: "", gia: 0, anh: "" });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Scroll xuống dưới khi có tin nhắn mới
+  // Hàm chuẩn hóa URL ảnh, thêm host nếu cần
+  const getFullImageUrl = (url) => {
+    if (!url) return "/default-image.png";
+    return url.startsWith("http") ? url : `http://localhost:5133${url}`;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Lấy thông tin tin đăng theo maCuocTroChuyen
+  useEffect(() => {
+    if (!maCuocTroChuyen) return;
+
+    const fetchChatInfo = async () => {
+      try {
+        const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
+        if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
+        const data = await res.json();
+        setInfoTinDang({
+          tieuDe: data.tieuDeTinDang,
+          gia: data.giaTinDang,
+          anh: data.anhDaiDienTinDang,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchChatInfo();
+  }, [maCuocTroChuyen]);
 
   // Lấy lịch sử chat khi maCuocTroChuyen thay đổi
   useEffect(() => {
@@ -71,7 +99,7 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
     connect();
 
     return () => {
-      // Optional: disconnect or leave group
+      // Optional: disconnect hoặc leave group nếu cần
     };
   }, [maCuocTroChuyen]);
 
@@ -100,25 +128,55 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
 
   return (
     <div className="chatbox-container">
-      <div className="chatbox-header">
-        <h3>Cuộc trò chuyện</h3>
+      <div
+        className="chatbox-header"
+        style={{ display: "flex", alignItems: "center", padding: "10px" }}
+      >
+        <img
+          src={getFullImageUrl(infoTinDang.anh)}
+          alt="Ảnh tin đăng"
+          style={{ width: 50, height: 50, borderRadius: 5, marginRight: 10, objectFit: "cover" }}
+        />
+        <div>
+          <h3 style={{ margin: 0 }}>{infoTinDang.tieuDe}</h3>
+          <p style={{ margin: 0, color: "#555" }}>
+            {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+          </p>
+        </div>
       </div>
 
-      <div className="chatbox-messages">
+      <div className="chatbox-messages" style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
         {danhSachTin.length === 0 ? (
-          <div className="empty-chat">
-            <div className="empty-icon">💬</div>
+          <div className="empty-chat" style={{ textAlign: "center", marginTop: 20 }}>
+            <div className="empty-icon" style={{ fontSize: 50 }}>
+              💬
+            </div>
             <p>Chưa có tin nhắn nào</p>
             <p>Hãy bắt đầu cuộc trò chuyện!</p>
           </div>
         ) : (
           danhSachTin.map((msg, idx) => (
-            <div key={idx} className="message-wrapper">
-              <div className={`message ${msg.maNguoiGui === maNguoiGui ? "sent" : "received"}`}>
+            <div key={idx} className="message-wrapper" style={{ marginBottom: 10 }}>
+              <div
+                className={`message ${msg.maNguoiGui === maNguoiGui ? "sent" : "received"}`}
+                style={{
+                  maxWidth: "70%",
+                  padding: "8px 12px",
+                  borderRadius: 12,
+                  backgroundColor: msg.maNguoiGui === maNguoiGui ? "#0078fe" : "#eee",
+                  color: msg.maNguoiGui === maNguoiGui ? "white" : "black",
+                  marginLeft: msg.maNguoiGui === maNguoiGui ? "auto" : "0",
+                }}
+              >
                 <div className="message-content">
-                  <p>{msg.noiDung}</p>
+                  <p style={{ margin: 0 }}>{msg.noiDung}</p>
                 </div>
-                <div className="message-time">{formatTime(msg.thoiGian)}</div>
+                <div
+                  className="message-time"
+                  style={{ fontSize: 10, marginTop: 4, textAlign: "right" }}
+                >
+                  {formatTime(msg.thoiGian)}
+                </div>
               </div>
             </div>
           ))
@@ -126,11 +184,16 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chatbox-input-container">
+      <div
+        className="chatbox-input-container"
+        style={{ padding: 10, borderTop: "1px solid #ccc" }}
+      >
         {!isConnected && (
-          <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>
+          <div className="connection-warning" style={{ marginBottom: 5, color: "red" }}>
+            ⚠️ Mất kết nối. Đang thử kết nối lại...
+          </div>
         )}
-        <div className="chatbox-input">
+        <div className="chatbox-input" style={{ display: "flex" }}>
           <textarea
             ref={inputRef}
             value={tinNhan}
@@ -138,13 +201,15 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
             onKeyPress={handleKeyPress}
             placeholder="Nhập tin nhắn..."
             disabled={!isConnected}
-            rows="1"
+            rows={1}
+            style={{ flex: 1, resize: "none", padding: 8, fontSize: 14 }}
           />
           <button
             className={`send-btn ${tinNhan.trim() && isConnected ? "active" : ""}`}
             onClick={handleSend}
             disabled={!tinNhan.trim() || !isConnected}
             title="Gửi tin nhắn"
+            style={{ marginLeft: 5, padding: "8px 12px", cursor: "pointer" }}
           >
             ➤
           </button>
