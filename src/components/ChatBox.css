@@ -190,13 +190,11 @@
 }
 
 .message.sent .message-content {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-bottom-right-radius: 6px;
 }
 
 .message.received .message-content {
-  background: #e2e8f0;
   color: #1e293b;
   border-bottom-left-radius: 6px;
 }
