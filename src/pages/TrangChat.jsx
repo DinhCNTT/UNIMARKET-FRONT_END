@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react"; 
+import React, { useState, useContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
@@ -7,20 +7,18 @@ import ChatBox from "../components/ChatBox";
 import "./TrangChat.css";
 
 const TrangChat = () => {
-  const { maCuocTroChuyen } = useParams(); // lấy từ URL
+  const { maCuocTroChuyen } = useParams();
   const { user } = useContext(AuthContext);
 
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [selectedChatUserId, setSelectedChatUserId] = useState(null);
 
-  // Khi URL thay đổi hoặc user thay đổi, set selectedChatId từ URL
   useEffect(() => {
     if (maCuocTroChuyen) {
       setSelectedChatId(maCuocTroChuyen);
     }
   }, [maCuocTroChuyen]);
 
-  // Cập nhật selectedChatUserId khi selectedChatId hoặc user thay đổi
   useEffect(() => {
     if (!selectedChatId || !user) {
       setSelectedChatUserId(null);
@@ -31,10 +29,8 @@ const TrangChat = () => {
     setSelectedChatUserId(otherUserId);
   }, [selectedChatId, user]);
 
-  // Khi người dùng chọn chat trong danh sách
   const handleSelectChat = (chatId) => {
     setSelectedChatId(chatId);
-    // Lấy người còn lại trong chat
     if (user) {
       const parts = chatId.split("-");
       const otherUserId = parts.find(id => id !== user.id);
@@ -62,7 +58,9 @@ const TrangChat = () => {
             />
           ) : (
             <div className="empty-chat-placeholder">
-              Chọn cuộc trò chuyện để bắt đầu chat
+              <div className="empty-icon">💬</div>
+              <p>Chọn một cuộc trò chuyện để bắt đầu</p>
+              <p>Hoặc quay lại trang chủ để tìm tin đăng và bắt đầu chat!</p>
             </div>
           )}
         </div>

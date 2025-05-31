@@ -10,7 +10,8 @@
   border-right: 1px solid #ccc;
   overflow-y: auto;
   background: white;
-  height: 100%;
+    height: calc(100vh - 100px); /* 👈 Giảm chiều dài, thử từ 100–200px */
+  margin-top: 85px; /* 👈 Dời xuống 16px */
 }
 
 .chat-box-container {

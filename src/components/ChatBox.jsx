@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import "./ChatBox.css";
 import { useNavigate } from "react-router-dom";
 
-const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
+const ChatBox = ({ maCuocTroChuyen }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [tinNhan, setTinNhan] = useState("");
@@ -13,6 +13,7 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
   const [infoTinDang, setInfoTinDang] = useState({ tieuDe: "", gia: 0, anh: "" });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const connectionRef = useRef(null);
 
   const getFullImageUrl = (url) => {
     if (!url) return "/default-image.png";
@@ -26,29 +27,22 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
   // Lấy thông tin tin đăng
   useEffect(() => {
     if (!maCuocTroChuyen) return;
-
     const fetchChatInfo = async () => {
       try {
         const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
         if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
         const data = await res.json();
-        setInfoTinDang({
-          tieuDe: data.tieuDeTinDang,
-          gia: data.giaTinDang,
-          anh: data.anhDaiDienTinDang,
-        });
+        setInfoTinDang({ tieuDe: data.tieuDeTinDang, gia: data.giaTinDang, anh: data.anhDaiDienTinDang });
       } catch (error) {
         console.error(error);
       }
     };
-
     fetchChatInfo();
   }, [maCuocTroChuyen]);
 
-  // Lấy lịch sử chat và fix thời gian UTC đúng múi giờ local
+  // Lấy lịch sử chat
   useEffect(() => {
     if (!maCuocTroChuyen) return;
-
     const fetchHistory = async () => {
       try {
         const response = await fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}`);
@@ -57,13 +51,11 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         setDanhSachTin(
           data.map((msg) => {
             let timeStr = msg.thoiGianGui;
-            if (!timeStr.endsWith("Z")) timeStr += "Z"; // Thêm 'Z' nếu thiếu
+            if (!timeStr.endsWith("Z")) timeStr += "Z";
             return {
               ...msg,
-              thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
+              thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+              daXem: msg.daXem || false,
             };
           })
         );
@@ -71,62 +63,97 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         console.error("Lỗi lấy lịch sử chat:", error);
       }
     };
-
     fetchHistory();
   }, [maCuocTroChuyen]);
 
-  // Kết nối SignalR, nhận tin nhắn realtime, fix thời gian tương tự
+  // Kết nối SignalR và đăng ký sự kiện
   useEffect(() => {
     if (!maCuocTroChuyen) return;
 
     const connect = async () => {
-      const conn = await connectToChatHub(maCuocTroChuyen, (msg) => {
-        let timeStr = msg.thoiGianGui;
-        if (!timeStr.endsWith("Z")) timeStr += "Z";
-        setDanhSachTin((prev) => [
-          ...prev,
-          {
-            ...msg,
-            thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-        ]);
-      });
+      try {
+        const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
+          console.log("Nhận tin nhắn mới qua SignalR:", msg);
+          let timeStr = msg.thoiGianGui;
+          if (!timeStr.endsWith("Z")) timeStr += "Z";
 
-      if (conn && conn.state === "Connected") {
-        setIsConnected(true);
-      } else {
-        setIsConnected(false);
+          const newMsg = {
+            ...msg,
+            thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+            daXem: msg.daXem || false,
+          };
+
+          setDanhSachTin((prev) => [...prev, newMsg]);
+        });
+
+        // Fix lỗi undefined: xử lý chính xác key từ server
+        connection.on("DaXemTinNhan", (data) => {
+          console.log("Nhận event DaXemTinNhan, dữ liệu:", data);
+          const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;
+          console.log("Tin nhắn cuối cùng được xem (MaTinNhanCuoi):", MaTinNhanCuoi);
+          if (MaTinNhanCuoi) {
+            setDanhSachTin((prev) =>
+              prev.map((msg) =>
+                msg.maTinNhan === MaTinNhanCuoi ? { ...msg, daXem: true } : msg
+              )
+            );
+          }
+        });
+
+        connectionRef.current = connection;
+        setIsConnected(connection && connection.state === "Connected");
+        console.log("SignalR kết nối thành công, trạng thái:", connection.state);
+
+        connection.onclose(() => console.log("SignalR connection closed"));
+        connection.onreconnected(() => console.log("SignalR reconnected"));
+      } catch (err) {
+        console.error("Lỗi kết nối SignalR hoặc đăng ký sự kiện:", err);
       }
     };
 
     connect();
 
     return () => {
-      // Có thể disconnect hoặc leave group nếu cần
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
+      }
     };
-  }, [maCuocTroChuyen]);
+  }, [maCuocTroChuyen, user?.id]);
 
+  // Scroll xuống cuối và báo đã xem khi tin nhắn thay đổi, debounce 500ms
   useEffect(() => {
     scrollToBottom();
-  }, [danhSachTin]);
+    const timer = setTimeout(() => {
+      if (connectionRef.current && isConnected && user && maCuocTroChuyen) {
+        console.log("Gửi invoke DanhDauDaXem:", { maCuocTroChuyen, maNguoiXem: user.id });
+        connectionRef.current.invoke("DanhDauDaXem", maCuocTroChuyen, user.id).catch((err) => {
+          console.error("Lỗi invoke DanhDauDaXem:", err);
+        });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [danhSachTin, isConnected, maCuocTroChuyen, user]);
+
+  // Tính tin nhắn cuối cùng được xem thực sự
+  const lastSeenMsgId = React.useMemo(() => {
+    if (!user) return null;
+
+    const myMessages = danhSachTin.filter(m => m.maNguoiGui === user.id);
+    if (myMessages.length === 0) return null;
+
+    myMessages.sort((a, b) => new Date(a.thoiGianGui) - new Date(b.thoiGianGui));
+    for (let i = myMessages.length - 1; i >= 0; i--) {
+      if (myMessages[i].daXem === true) {
+        return myMessages[i].maTinNhan;
+      }
+    }
+    return null;
+  }, [danhSachTin, user]);
 
   const handleSend = () => {
-    if (tinNhan.trim() && isConnected && maCuocTroChuyen && maNguoiGui) {
-      const now = new Date();
-
-      const newMsg = {
-        MaCuocTroChuyen: maCuocTroChuyen,
-        MaNguoiGui: maNguoiGui,
-        NoiDung: tinNhan.trim(),
-        thoiGianGui: now.toISOString(),
-        thoiGian: now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
-      };
-
-      sendMessage(maCuocTroChuyen, maNguoiGui, tinNhan.trim());
-
+    if (tinNhan.trim() && isConnected && maCuocTroChuyen && user) {
+      sendMessage(maCuocTroChuyen, user.id, tinNhan.trim());
       setTinNhan("");
       inputRef.current?.focus();
     }
@@ -145,69 +172,48 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
 
   const handleImageClick = async (e) => {
     e.stopPropagation();
-    if (maCuocTroChuyen) {
-      try {
-        const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
-        if (!res.ok) throw new Error("Không lấy được thông tin tin đăng");
-        const data = await res.json();
-        if (data.maTinDang) {
-          navigate(`/tin-dang/${data.maTinDang}`);
-        } else {
-          alert("Không tìm thấy mã tin đăng!");
-        }
-      } catch (err) {
-        alert("Không lấy được thông tin tin đăng!");
-      }
-    } else {
-      alert("Không tìm thấy mã tin đăng!");
+    try {
+      const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
+      if (!res.ok) throw new Error("Không lấy được thông tin tin đăng");
+      const data = await res.json();
+      data.maTinDang ? navigate(`/tin-dang/${data.maTinDang}`) : alert("Không tìm thấy mã tin đăng!");
+    } catch {
+      alert("Không lấy được thông tin tin đăng!");
     }
   };
 
   return (
     <div className="chatbox-container">
-      <div className="chatbox-header" style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-        <img
-          src={getFullImageUrl(infoTinDang.anh)}
-          alt="Ảnh tin đăng"
-          style={{ width: 50, height: 50, borderRadius: 5, marginRight: 10, objectFit: "cover" }}
-          onClick={handleImageClick}
-        />
-        <div>
-          <h3 style={{ margin: 0 }}>{infoTinDang.tieuDe}</h3>
-          <p style={{ margin: 0, color: "#555" }}>
-            {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-          </p>
+      <div className="chatbox-header">
+        <div className="seller-info" onClick={handleImageClick}>
+          <div className="seller-avatar">
+            <img src={getFullImageUrl(infoTinDang.anh)} alt="Ảnh tin đăng" />
+          </div>
+          <div className="seller-details">
+            <h3>{infoTinDang.tieuDe}</h3>
+            <p className="status">{infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</p>
+          </div>
         </div>
       </div>
 
-      <div className="chatbox-messages" style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
+      <div className="chatbox-messages">
         {danhSachTin.length === 0 ? (
-          <div className="empty-chat" style={{ textAlign: "center", marginTop: 20 }}>
-            <div className="empty-icon" style={{ fontSize: 50 }}>
-              💬
-            </div>
+          <div className="empty-chat">
+            <div className="empty-icon">💬</div>
             <p>Chưa có tin nhắn nào</p>
             <p>Hãy bắt đầu cuộc trò chuyện!</p>
           </div>
         ) : (
           danhSachTin.map((msg, idx) => (
-            <div key={idx} className="message-wrapper" style={{ marginBottom: 10 }}>
-              <div
-                className={`message ${msg.maNguoiGui === maNguoiGui ? "sent" : "received"}`}
-                style={{
-                  maxWidth: "70%",
-                  borderRadius: 12,
-                  backgroundColor: msg.maNguoiGui === maNguoiGui ? "#fd901f" : "#eee",
-                  color: msg.maNguoiGui === maNguoiGui ? "white" : "black",
-                  marginLeft: msg.maNguoiGui === maNguoiGui ? "auto" : "0",
-                }}
-              >
+            <div key={idx} className="message-wrapper">
+              <div className={`message ${msg.maNguoiGui === user?.id ? "sent" : "received"}`}>
                 <div className="message-content">
-                  <p style={{ margin: 0 }}>{msg.noiDung}</p>
+                  <p>{msg.noiDung}</p>
                 </div>
-                <div className="message-time" style={{ fontSize: 10, marginTop: 4, textAlign: "right", marginRight: 8 }}>
-                  {formatTime(msg.thoiGian)}
-                </div>
+                <div className="message-time">{formatTime(msg.thoiGian)}</div>
+                {lastSeenMsgId && msg.maTinNhan === lastSeenMsgId && msg.maNguoiGui === user?.id && (
+                  <div className="message-status">Đã xem</div>
+                )}
               </div>
             </div>
           ))
@@ -215,31 +221,26 @@ const ChatBox = ({ maCuocTroChuyen, maNguoiGui }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chatbox-input-container" style={{ padding: 10, borderTop: "1px solid #ccc" }}>
-        {!isConnected && (
-          <div className="connection-warning" style={{ marginBottom: 5, color: "red" }}>
-            ⚠️ Mất kết nối. Đang thử kết nối lại...
+      <div className="chatbox-input-container">
+        {!isConnected && <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>}
+        <div className="chatbox-input">
+          <div className="input-field">
+            <textarea
+              ref={inputRef}
+              value={tinNhan}
+              onChange={(e) => setTinNhan(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Nhập tin nhắn..."
+              disabled={!isConnected}
+            />
           </div>
-        )}
-        <div className="chatbox-input" style={{ display: "flex" }}>
-          <textarea
-            ref={inputRef}
-            value={tinNhan}
-            onChange={(e) => setTinNhan(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Nhập tin nhắn..."
-            disabled={!isConnected}
-            rows={1}
-            style={{ flex: 1, resize: "none", padding: 8, fontSize: 14 }}
-          />
           <button
             className={`send-btn ${tinNhan.trim() && isConnected ? "active" : ""}`}
             onClick={handleSend}
             disabled={!tinNhan.trim() || !isConnected}
             title="Gửi tin nhắn"
-            style={{ marginLeft: 5, padding: "8px 12px", cursor: "pointer" }}
           >
-            ➤
+            ➔
           </button>
         </div>
       </div>

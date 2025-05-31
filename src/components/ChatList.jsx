@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
+import "./ChatList.css"; // Import CSS
 
 const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [chatList, setChatList] = useState([]);
 
-  // Hàm chuẩn hóa URL ảnh, thêm host nếu cần
   const getFullImageUrl = (url) => {
-    if (!url) return "/default-image.png"; // ảnh mặc định nếu không có ảnh
+    if (!url) return "/default-image.png";
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
@@ -26,34 +26,29 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   }, [userId]);
 
   return (
-    <div style={{ overflowY: "auto", height: "100%" }}>
+    <div className="chatlist-container">
       {chatList.length === 0 ? (
-        <p style={{ padding: 10 }}>Không có cuộc trò chuyện nào</p>
+        <p className="chatlist-empty">Không có cuộc trò chuyện nào</p>
       ) : (
         chatList.map((chat) => (
           <div
             key={chat.maCuocTroChuyen}
             onClick={() => onSelectChat(chat.maCuocTroChuyen)}
-            style={{
-              padding: 10,
-              cursor: "pointer",
-              backgroundColor: chat.maCuocTroChuyen === selectedChatId ? "#e0e0e0" : "transparent",
-              borderBottom: "1px solid #ccc",
-              display: "flex",
-              alignItems: "center",
-            }}
+            className={`chatlist-item ${
+              chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""
+            }`}
           >
             <img
               src={getFullImageUrl(chat.anhDaiDienTinDang)}
               alt="Ảnh tin đăng"
-              style={{ width: 50, height: 50, borderRadius: 5, marginRight: 10, objectFit: "cover" }}
+              className="chatlist-item-image"
             />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: "bold" }}>{chat.tieuDeTinDang || "Tin đăng"}</div>
-              <div style={{ fontSize: 14, color: "#555" }}>
+            <div className="chatlist-item-content">
+              <div className="chatlist-item-title">{chat.tieuDeTinDang || "Tin đăng"}</div>
+              <div className="chatlist-item-price">
                 Giá: {chat.giaTinDang?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || ""}
               </div>
-              <div style={{ fontSize: 12, color: "#777", marginTop: 4 }}>
+              <div className="chatlist-item-info">
                 {chat.tenNguoiConLai || "Người dùng"} - {chat.tinNhanCuoi || (chat.isEmpty ? "Chưa có tin nhắn" : "")}
               </div>
             </div>

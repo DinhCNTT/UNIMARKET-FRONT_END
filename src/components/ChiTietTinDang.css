@@ -1,24 +1,21 @@
 .chi-tiet-tin-dang {
   width: 1000px;
-  /* Bỏ height cố định */
   margin-top: 120px;
   margin-left: 245px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
-
   box-sizing: border-box;
   overflow-x: hidden;
 }
-
 
 /* Thanh tên người bán */
 .seller-info {
   background-color: #f5f5f5;
   padding: 6px;
   border-radius: 5px;
-  margin-top: 20px; /* Cách từ số điện thoại */
+  margin-top: 20px;
 }
 
 .seller-name {
@@ -31,7 +28,7 @@
 .tin-dang-header {
   display: flex;
   align-items: flex-start;
-  gap: 40px; /* Khoảng cách giữa ảnh và info */
+  gap: 40px;
   flex-wrap: wrap;
 }
 
@@ -44,7 +41,7 @@
 /* Phần thông tin bên phải */
 .chi-tiet-tin-dang-info {
   flex: 1;
-  min-height: 450px; /* Cố định chiều cao tối thiểu phần bên phải */
+  min-height: 450px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -70,7 +67,7 @@
 }
 
 .chi-tiet-tin-dang-info p:nth-child(2) {
-  color: #e74c3c; /* Giá */
+  color: #e74c3c;
 }
 
 .chi-tiet-tin-dang-info strong {
@@ -105,10 +102,20 @@
   background-color: #e67e22;
 }
 
-.tin-dang-tuong-tu h2 {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 20px;
+.sdt-chat .sdt-chat-btn {
+  background-color: #0a8dff;
+  color: #fff;
+  padding: 3px 8px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+
+.sdt-chat .sdt-chat-btn:hover {
+  background-color: #0077cc;
 }
 
 /* Container ngang scroll được */
@@ -238,6 +245,17 @@
   right: -18px;
 }
 
+/* Phần tin đăng của người bán */
+.tin-dang-nguoi-ban {
+  margin-top: 40px;
+}
+
+.tin-dang-nguoi-ban h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
 /* Mô tả chi tiết */
 .mo-ta-chi-tiet {
   margin-top: 40px;
@@ -253,7 +271,6 @@
   margin-top: 8px;
 }
 
-/* Khi mô tả ngắn, vẫn hiển thị full */
 .mo-ta-nd-cttd-clamp {
   display: -webkit-box;
   -webkit-line-clamp: 8;
@@ -284,14 +301,12 @@
 }
 
 /* Carousel in ChiTietTinDang */
-/* Phần image container */
 .image-container {
   width: 50%;
   min-width: 320px;
   max-width: 600px;
 }
 
-/* Carousel chính */
 .carousel-cttd-wrapper {
   display: flex;
   flex-direction: column;
@@ -300,7 +315,6 @@
   position: relative;
 }
 
-/* Box hiển thị ảnh chính */
 .carousel-cttd-imgbox {
   width: 100%;
   height: 400px;
@@ -311,7 +325,6 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/* Ảnh chính */
 .carousel-cttd-img {
   width: 100%;
   height: 100%;
@@ -319,7 +332,6 @@
   border-radius: 8px;
 }
 
-/* Chỉ số ảnh */
 .carousel-cttd-index {
   position: absolute;
   bottom: 10px;
@@ -331,7 +343,6 @@
   padding: 3px 10px;
 }
 
-/* Nút điều hướng trái phải */
 .carousel-cttd-btn {
   position: absolute;
   top: 50%;
@@ -364,32 +375,30 @@
   right: 10px;
 }
 
-/* Gallery thumbnail - Cập nhật để hiển thị tốt hơn cho 8 ảnh/video */
 .multi-image-gallery {
   display: flex;
   justify-content: flex-start;
   overflow-x: auto;
   margin-top: 10px;
-  gap: 6px; /* Giảm gap từ 8px xuống 6px để tiết kiệm không gian */
+  gap: 6px;
   padding-bottom: 5px;
-  scrollbar-width: none; /* Ẩn scrollbar trên Firefox */
-  scroll-behavior: smooth; /* Smooth scroll behavior */
+  scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 
 .multi-image-gallery::-webkit-scrollbar {
-  display: none; /* Ẩn scrollbar trên Chrome/Safari */
+  display: none;
 }
 
-/* Thumbnail ảnh - Điều chỉnh kích thước để vừa với 8 ảnh/video */
 .carousel-cttd-thumb {
-  width: 55px !important; /* Giảm từ 60px xuống 55px */
-  height: 55px !important; /* Giảm từ 60px xuống 55px */
+  width: 55px !important;
+  height: 55px !important;
   object-fit: cover !important;
   border-radius: 4px !important;
   cursor: pointer !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: all 0.2s ease;
-  flex-shrink: 0; /* Đảm bảo thumbnail không bị co lại */
+  flex-shrink: 0;
 }
 
 .carousel-cttd-thumb:hover {
@@ -397,20 +406,18 @@
   box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
-/* Thêm gradient fade effect ở cuối gallery để hiển thị có thêm ảnh */
 .multi-image-gallery::after {
   content: '';
   position: absolute;
   right: 0;
   top: 0;
-  bottom: 5px; /* Tương ứng với padding-bottom */
+  bottom: 5px;
   width: 20px;
   background: linear-gradient(to right, transparent, rgba(255,255,255,0.8));
   pointer-events: none;
   z-index: 2;
 }
 
-/* Lightbox Overlay */
 .lightbox-overlay {
   position: fixed;
   top: 0;
@@ -426,7 +433,6 @@
   animation: lightboxFadeIn 0.3s ease-out;
 }
 
-/* Lightbox Image */
 .lightbox-img {
   max-width: 90%;
   max-height: 90%;
@@ -437,12 +443,10 @@
   cursor: default;
 }
 
-/* Zoom effect on image hover */
 .lightbox-img:hover {
   transform: scale(1.02);
 }
 
-/* Lightbox Navigation Buttons */
 .lightbox-nav {
   position: absolute;
   top: 50%;
@@ -475,7 +479,6 @@
   right: 30px;
 }
 
-/* Lightbox Close Button */
 .lightbox-close {
   position: absolute;
   top: 30px;
@@ -499,7 +502,6 @@
   opacity: 1;
 }
 
-/* Lightbox Image Counter */
 .lightbox-counter {
   position: absolute;
   bottom: 30px;
@@ -512,7 +514,6 @@
   font-size: 14px;
 }
 
-/* Animation for lightbox */
 @keyframes lightboxFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -530,16 +531,16 @@
   }
   
   .carousel-cttd-thumb {
-    width: 45px !important; /* Nhỏ hơn trên mobile */
+    width: 45px !important;
     height: 45px !important;
   }
 
   .multi-image-gallery {
-    gap: 4px; /* Gap nhỏ hơn trên mobile */
+    gap: 4px;
   }
 
   .chi-tiet-tin-dang-info {
-    min-height: auto; /* Bỏ min-height trên màn nhỏ */
+    min-height: auto;
   }
 
   .mo-ta-chi-tiet {
@@ -585,20 +586,4 @@
   .multi-image-gallery {
     gap: 3px;
   }
-}
-
-.sdt-chat .sdt-chat-btn {
-  background-color: #0a8dff;
-  color: #fff;
-  padding: 3px 8px;
-  font-size: 14px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.3s ease;
-}
-
-.sdt-chat .sdt-chat-btn:hover {
-  background-color: #0077cc;
 }

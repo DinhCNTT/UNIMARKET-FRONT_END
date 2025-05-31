@@ -21,17 +21,19 @@ const ChiTietTinDang = () => {
   const { user } = useContext(AuthContext);
 
   const [post, setPost] = useState(null);
-  const [similarPosts, setSimilarPosts] = useState([]);
+  const [similarPostsByCategory, setSimilarPostsByCategory] = useState([]);
+  const [similarPostsBySeller, setSimilarPostsBySeller] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const scrollRef = useRef(null);
+  const scrollRefSeller = useRef(null);
+  const scrollRefCategory = useRef(null);
 
   const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
-  const handleScroll = (direction) =>
-    scrollRef.current.scrollBy({
+  const handleScroll = (direction, ref) =>
+    ref.current.scrollBy({
       left: direction === "left" ? -300 : 300,
       behavior: "smooth",
     });
@@ -40,7 +42,7 @@ const ChiTietTinDang = () => {
     window.scrollTo(0, 0);
   };
 
-  // Lấy tin đăng và tin tương tự
+  // Lấy tin đăng, tin tương tự theo danh mục, và tin từ cùng người bán
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -49,7 +51,8 @@ const ChiTietTinDang = () => {
           `http://localhost:5133/api/tindang/get-post-and-similar/${id}`
         );
         setPost(response.data.post);
-        setSimilarPosts(response.data.similarPosts);
+        setSimilarPostsByCategory(response.data.similarPostsByCategory);
+        setSimilarPostsBySeller(response.data.similarPostsBySeller);
         setLoading(false);
       } catch (error) {
         console.error("Lỗi khi lấy tin đăng:", error);
@@ -60,39 +63,38 @@ const ChiTietTinDang = () => {
     fetchPost();
   }, [id]);
 
-  // Bấm nút chat với người bán, tạo hoặc lấy mã cuộc trò chuyện rồi chuyển trang
+  // Bấm nút chat với người bán
   const handleChatWithSeller = async () => {
-  if (!user) {
-    alert("Bạn cần đăng nhập để chat với người bán.");
-    return;
-  }
-  if (user.id === post.maNguoiBan) {
-    alert("Bạn không thể chat với chính mình.");
-    return;
-  }
-
-  try {
-    const response = await axios.post("http://localhost:5133/api/chat/start", {
-      MaNguoiDung1: user.id,
-      MaNguoiDung2: post.maNguoiBan,
-      MaTinDang: post.maTinDang,  // Gửi thêm mã tin đăng
-    });
-    const maCuocTroChuyen =
-      response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
-    if (maCuocTroChuyen) {
-      navigate(`/chat/${maCuocTroChuyen}`);
-    } else {
-      alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+    if (!user) {
+      alert("Bạn cần đăng nhập để chat với người bán.");
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi tạo cuộc trò chuyện:", error);
-    if (error.response) {
-      console.error("Chi tiết lỗi từ server:", error.response.data);
+    if (user.id === post.maNguoiBan) {
+      alert("Bạn không thể chat với chính mình.");
+      return;
     }
-    alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
-  }
-};
 
+    try {
+      const response = await axios.post("http://localhost:5133/api/chat/start", {
+        MaNguoiDung1: user.id,
+        MaNguoiDung2: post.maNguoiBan,
+        MaTinDang: post.maTinDang,
+      });
+      const maCuocTroChuyen =
+        response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
+      if (maCuocTroChuyen) {
+        navigate(`/chat/${maCuocTroChuyen}`);
+      } else {
+        alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+      }
+    } catch (error) {
+      console.error("Lỗi tạo cuộc trò chuyện:", error);
+      if (error.response) {
+        console.error("Chi tiết lỗi từ server:", error.response.data);
+      }
+      alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
+    }
+  };
 
   if (loading) return <div>Đang tải thông tin...</div>;
   if (!post) return <div>Không tìm thấy tin đăng.</div>;
@@ -233,7 +235,7 @@ const ChiTietTinDang = () => {
           </div>
 
           <div className="seller-info">
-            <div className="seller-name">Người bán tên: {post.nguoiBan}</div>
+            <div className="seller-name">Người bán: {post.nguoiBan}</div>
           </div>
         </div>
       </div>
@@ -266,14 +268,54 @@ const ChiTietTinDang = () => {
         )}
       </div>
 
+      {similarPostsBySeller.length > 0 && (
+        <div className="tin-dang-tuong-tu tin-dang-nguoi-ban">
+          <h2>Các tin đăng khác của {post.nguoiBan}</h2>
+          <div className="similar-posts-wrapper">
+            <button className="scroll-btn left" onClick={() => handleScroll("left", scrollRefSeller)}>
+              &lt;
+            </button>
+            <div className="similar-posts-container" ref={scrollRefSeller}>
+              {similarPostsBySeller.map((post) => (
+                <div
+                  key={post.maTinDang}
+                  className="similar-post-card"
+                  onClick={() => handleSimilarPostClick(post.maTinDang)}
+                >
+                  <div className="image-wrapper">
+                    <img
+                      src={
+                        post.images?.[0]?.startsWith("http")
+                          ? post.images[0]
+                          : `http://localhost:5133${post.images[0]}`
+                      }
+                      alt={post.tieuDe}
+                    />
+                  </div>
+                  <h3>{post.tieuDe}</h3>
+                  <p className="gia">
+                    {post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}
+                  </p>
+                  <p>{post.diaChi}</p>
+                  <p className="nho">{formatDate(post.ngayDang)}</p>
+                </div>
+              ))}
+            </div>
+            <button className="scroll-btn right" onClick={() => handleScroll("right", scrollRefSeller)}>
+              &gt;
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="tin-dang-tuong-tu">
         <h2>Tin đăng tương tự</h2>
         <div className="similar-posts-wrapper">
-          <button className="scroll-btn left" onClick={() => handleScroll("left")}>
+          <button className="scroll-btn left" onClick={() => handleScroll("left", scrollRefCategory)}>
             &lt;
           </button>
-          <div className="similar-posts-container" ref={scrollRef}>
-            {similarPosts.map((post) => (
+          <div className="similar-posts-container" ref={scrollRefCategory}>
+            {similarPostsByCategory.map((post) => (
               <div
                 key={post.maTinDang}
                 className="similar-post-card"
@@ -298,7 +340,7 @@ const ChiTietTinDang = () => {
               </div>
             ))}
           </div>
-          <button className="scroll-btn right" onClick={() => handleScroll("right")}>
+          <button className="scroll-btn right" onClick={() => handleScroll("right", scrollRefCategory)}>
             &gt;
           </button>
         </div>
@@ -363,5 +405,4 @@ const ChiTietTinDang = () => {
     </div>
   );
 };
-
 export default ChiTietTinDang;

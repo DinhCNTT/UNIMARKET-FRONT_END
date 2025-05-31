@@ -1,0 +1,50 @@
+
+
+.chatlist-empty {
+  padding: 10px;
+}
+
+.chatlist-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.chatlist-item:hover {
+  background-color: #f5f5f5;
+}
+
+.chatlist-item-selected {
+  background-color: #e0e0e0;
+}
+
+.chatlist-item-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.chatlist-item-content {
+  flex: 1;
+}
+
+.chatlist-item-title {
+  font-weight: bold;
+}
+
+.chatlist-item-price {
+  font-size: 14px;
+  color: #555;
+}
+
+.chatlist-item-info {
+  font-size: 12px;
+  color: #777;
+  margin-top: 4px;
+}

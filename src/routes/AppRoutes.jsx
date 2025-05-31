@@ -15,12 +15,12 @@ import ManageCategories from "../components/ManageCategories";
 import PostForm from "../components/PostForm";
 import PostTinDang from "../components/PostTinDang";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
-import LocTinDang from "../components/LocTinDang"; // Import component mới
+import LocTinDang from "../components/LocTinDang";
 import QuanLyTin from "../components/QuanLyTin";
 import ManagePosts from "../components/ManagePosts";
 import CapNhatTin from "../components/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
-import TrangChat from "../pages/TrangChat"; // ✅ Trang chat realtime
+import TrangChat from "../pages/TrangChat";
 
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
@@ -61,12 +61,12 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Routes công khai */}
-      <Route path="/" element={<MarketPage />} /> {/* Trang chủ là MarketPage */}
+      <Route path="/" element={<MarketPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
-      <Route path="/loc-tin-dang" element={<LocTinDang />} /> {/* Route mới cho trang lọc tin đăng */}
+      <Route path="/loc-tin-dang" element={<LocTinDang />} />
 
       {/* Bảo vệ trang Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -84,8 +84,9 @@ function AppRoutes() {
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang/:id" element={<ChiTietTinDang />} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
-      {/* ✅ Route chat realtime */}
-      <Route path="/chat/:id" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />   
+      {/* Route chat realtime */}
+      <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+      <Route path="/chat/:id" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
     </Routes>
   );
 }

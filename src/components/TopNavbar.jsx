@@ -101,15 +101,14 @@ const TopNavbar = () => {
       <div className="nav-right">
         {user ? (
           <>
-        <div className="chat-icon-topnavbar" onClick={() => navigate("/chat")} title="Tin nhắn">
-          <FontAwesomeIcon  icon={faComments}/>
-        </div>
-
-        <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>
-          Quản lý tin
-        </button>
-        <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
-        <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
+            <div className="chat-icon-topnavbar" onClick={() => navigate("/chat")} title="Tin nhắn">
+              <FontAwesomeIcon icon={faComments} />
+            </div>
+            <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>
+              Quản lý tin
+            </button>
+            <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
+            <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
           </>
         ) : (
           <>
