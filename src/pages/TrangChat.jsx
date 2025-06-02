@@ -20,7 +20,7 @@ const TrangChat = () => {
   }, [maCuocTroChuyen]);
 
   useEffect(() => {
-    if (!selectedChatId || !user) {
+    if (!selectedChatId || !user || !selectedChatId.includes("-")) {
       setSelectedChatUserId(null);
       return;
     }
@@ -31,10 +31,12 @@ const TrangChat = () => {
 
   const handleSelectChat = (chatId) => {
     setSelectedChatId(chatId);
-    if (user) {
+    if (user && chatId && chatId.includes("-")) {
       const parts = chatId.split("-");
       const otherUserId = parts.find(id => id !== user.id);
       setSelectedChatUserId(otherUserId);
+    } else {
+      setSelectedChatUserId(null);
     }
   };
 
