@@ -82,11 +82,17 @@ function AppRoutes() {
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
       <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
-      <Route path="/tin-dang/:id" element={<ChiTietTinDang />} />
+      <Route
+        path="/tin-dang/:id"
+        element={<ChiTietTinDang onOpenChat={(maCuocTroChuyen) => {
+          // Chuyển hướng sang trang chat và truyền thêm state để tự động mở chatbox
+          window.location.href = `/chat/${maCuocTroChuyen}`;
+        }} />}
+      />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
       {/* Route chat realtime */}
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
-      <Route path="/chat/:id" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+      <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
     </Routes>
   );
 }

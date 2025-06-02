@@ -32,6 +32,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         tinNhanCuoi: chat.tinNhanCuoi ?? chat.TinNhanCuoi ?? "",
         anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
         thoiGianTao: new Date().toISOString(),
+        hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
       };
 
       setChatList((prev) => {
@@ -46,6 +47,12 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       });
     });
 
+    connection.on("CapNhatTrangThaiTinNhan", (data) => {
+      setChatList((prev) => prev.map(c =>
+        c.maCuocTroChuyen === data.maCuocTroChuyen ? { ...c, hasUnreadMessages: data.hasUnreadMessages } : c
+      ));
+    });
+
     connection.start().then(async () => {
       console.log("✅ SignalR connected for ChatList");
       await connection.invoke("ThamGiaCuocTroChuyen", `user-${userId}`);
@@ -57,7 +64,10 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       try {
         const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
         const data = await res.json();
-        setChatList(data);
+        setChatList(data.map(chat => ({
+          ...chat,
+          hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
+        })));
       } catch (error) {
         console.error("Lỗi lấy danh sách chat:", error);
       }
@@ -93,7 +103,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
               <div className="chatlist-item-price">
                 Giá: {chat.giaTinDang?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
               </div>
-              <div className="chatlist-item-info">
+              <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? 'bold' : 'normal' }}>
                 {chat.tenNguoiConLai} - {chat.tinNhanCuoi || (chat.isEmpty ? "Chưa có tin nhắn" : "")}
               </div>
             </div>

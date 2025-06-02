@@ -14,9 +14,7 @@
   margin: 86px auto 0;       /* 👈 Căn giữa ngang */
 }
 
-
 .chatbox-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 16px 20px;
   display: flex;
@@ -58,8 +56,8 @@
 
 .status {
   font-size: 12px;
-  opacity: 0.8;
-  color: #000; /* 👈 thêm màu chữ đen */
+  opacity: 1;
+  color: red;
 }
 
 .status.online {

@@ -13,6 +13,7 @@ const TrangChat = () => {
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [selectedChatUserId, setSelectedChatUserId] = useState(null);
 
+  // Khi vào /chat/:maCuocTroChuyen sẽ tự động chọn chatbox đúng sản phẩm
   useEffect(() => {
     if (maCuocTroChuyen) {
       setSelectedChatId(maCuocTroChuyen);
@@ -38,6 +39,16 @@ const TrangChat = () => {
     } else {
       setSelectedChatUserId(null);
     }
+  };
+
+  // Hàm truyền xuống ChiTietTinDang để mở chatbox tự động
+  const handleOpenChat = (maCuocTroChuyen) => {
+    setSelectedChatId(maCuocTroChuyen);
+    // Tự động scroll tới chatbox nếu cần
+    setTimeout(() => {
+      const chatBox = document.querySelector('.chat-box-container');
+      if (chatBox) chatBox.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   return (

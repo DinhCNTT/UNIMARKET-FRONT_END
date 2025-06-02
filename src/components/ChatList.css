@@ -1,5 +1,4 @@
 
-
 .chatlist-empty {
   padding: 10px;
 }
@@ -40,7 +39,7 @@
 
 .chatlist-item-price {
   font-size: 14px;
-  color: #555;
+  color: red;
 }
 
 .chatlist-item-info {

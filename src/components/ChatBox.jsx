@@ -86,7 +86,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           setDanhSachTin((prev) => [...prev, newMsg]);
         });
 
-        // Fix lỗi undefined: xử lý chính xác key từ server
         connection.on("DaXemTinNhan", (data) => {
           console.log("Nhận event DaXemTinNhan, dữ liệu:", data);
           const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;

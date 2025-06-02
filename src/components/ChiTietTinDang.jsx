@@ -15,7 +15,8 @@ const formatDate = (dateString) => {
   return `${day}-${month}-${year}`;
 };
 
-const ChiTietTinDang = () => {
+// Nhận prop onOpenChat để callback mở chatbox nếu có
+const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -83,7 +84,11 @@ const ChiTietTinDang = () => {
       const maCuocTroChuyen =
         response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
       if (maCuocTroChuyen) {
-        navigate(`/chat/${maCuocTroChuyen}`);
+        if (typeof onOpenChat === "function") {
+          onOpenChat(maCuocTroChuyen);
+        } else {
+          navigate(`/chat/${maCuocTroChuyen}`);
+        }
       } else {
         alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
       }
