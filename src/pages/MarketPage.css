@@ -2,12 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center; /* Căn giữa theo chiều ngang */
-  
 }
 .login-prompt {
   padding-left: 500px;
 }
-
-
-
-

@@ -24,7 +24,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Lấy thông tin tin đăng
   useEffect(() => {
     if (!maCuocTroChuyen) return;
     const fetchChatInfo = async () => {
@@ -32,7 +31,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
         if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
         const data = await res.json();
-        setInfoTinDang({ tieuDe: data.tieuDeTinDang, gia: data.giaTinDang, anh: data.anhDaiDienTinDang });
+        setInfoTinDang({ tieuDe: data.tieuDeTinDang, gia: data.giaTinDang, anh: data.anhDaiDienTinDang, maTinDang: data.maTinDang });
       } catch (error) {
         console.error(error);
       }
@@ -40,7 +39,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     fetchChatInfo();
   }, [maCuocTroChuyen]);
 
-  // Lấy lịch sử chat
   useEffect(() => {
     if (!maCuocTroChuyen) return;
     const fetchHistory = async () => {
@@ -66,7 +64,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     fetchHistory();
   }, [maCuocTroChuyen]);
 
-  // Kết nối SignalR và đăng ký sự kiện
   useEffect(() => {
     if (!maCuocTroChuyen) return;
 
@@ -86,15 +83,28 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           setDanhSachTin((prev) => [...prev, newMsg]);
         });
 
+        // Bổ sung event CapNhatTinDang để cập nhật ảnh, tiêu đề, giá realtime
+        connection.on("CapNhatTinDang", (updatedPost) => {
+          console.log("ChatBox nhận cập nhật tin đăng:", updatedPost);
+          // Lấy mã tin đăng trong maCuocTroChuyen (cuối chuỗi, format: user1-user2-MaTinDang)
+          const maTinDangHT = maCuocTroChuyen.split("-").pop();
+          if (updatedPost.MaTinDang.toString() === maTinDangHT.toString()) {
+            setInfoTinDang((prev) => ({
+              ...prev,
+              tieuDe: updatedPost.TieuDe || updatedPost.tieuDe || prev.tieuDe,
+              gia: updatedPost.Gia || updatedPost.gia || prev.gia,
+              anh: updatedPost.AnhDaiDien || updatedPost.anhDaiDien || prev.anh,
+              maTinDang: updatedPost.MaTinDang || prev.maTinDang,
+            }));
+          }
+        });
+
         connection.on("DaXemTinNhan", (data) => {
           console.log("Nhận event DaXemTinNhan, dữ liệu:", data);
           const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;
-          console.log("Tin nhắn cuối cùng được xem (MaTinNhanCuoi):", MaTinNhanCuoi);
           if (MaTinNhanCuoi) {
             setDanhSachTin((prev) =>
-              prev.map((msg) =>
-                msg.maTinNhan === MaTinNhanCuoi ? { ...msg, daXem: true } : msg
-              )
+              prev.map((msg) => (msg.maTinNhan === MaTinNhanCuoi ? { ...msg, daXem: true } : msg))
             );
           }
         });
@@ -120,7 +130,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     };
   }, [maCuocTroChuyen, user?.id]);
 
-  // Scroll xuống cuối và báo đã xem khi tin nhắn thay đổi, debounce 500ms
   useEffect(() => {
     scrollToBottom();
     const timer = setTimeout(() => {
@@ -134,13 +143,10 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     return () => clearTimeout(timer);
   }, [danhSachTin, isConnected, maCuocTroChuyen, user]);
 
-  // Tính tin nhắn cuối cùng được xem thực sự
   const lastSeenMsgId = React.useMemo(() => {
     if (!user) return null;
-
-    const myMessages = danhSachTin.filter(m => m.maNguoiGui === user.id);
+    const myMessages = danhSachTin.filter((m) => m.maNguoiGui === user.id);
     if (myMessages.length === 0) return null;
-
     myMessages.sort((a, b) => new Date(a.thoiGianGui) - new Date(b.thoiGianGui));
     for (let i = myMessages.length - 1; i >= 0; i--) {
       if (myMessages[i].daXem === true) {
@@ -190,7 +196,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           </div>
           <div className="seller-details">
             <h3>{infoTinDang.tieuDe}</h3>
-            <p className="status">{infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</p>
+            <p className="status">
+              {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+            </p>
           </div>
         </div>
       </div>

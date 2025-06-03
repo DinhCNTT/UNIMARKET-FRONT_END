@@ -31,7 +31,10 @@ export const startChat = async (maNguoiGui, maNguoiBan) => {
 
 export const connectToChatHub = async (maCuocTroChuyen, onReceiveMessage) => {
   connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5133/hub/chat")
+    .withUrl("http://localhost:5133/hub/chat", {
+      skipNegotiation: true,
+      transport: signalR.HttpTransportType.WebSockets
+    })
     .withAutomaticReconnect()
     .build();
 

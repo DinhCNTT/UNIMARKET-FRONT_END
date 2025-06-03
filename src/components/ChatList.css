@@ -1,8 +1,23 @@
-
-.chatlist-empty {
-  padding: 10px;
+.chatlist-container {
+  flex-direction: column;
+  height: 100vh; /* hoặc chiều cao cụ thể tùy layout */
+  background-color: white;
 }
 
+/* Phần tìm kiếm + filter */
+.chatlist-search,
+.chatlist-filter-dropdown {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Phần danh sách chat scrollable */
+.chatlist-scrollable {
+  flex: 1 1 auto; /* chiếm hết phần còn lại */
+  overflow-y: auto;
+}
+
+/* Style từng item chat */
 .chatlist-item {
   padding: 10px;
   cursor: pointer;
@@ -46,4 +61,95 @@
   font-size: 12px;
   color: #777;
   margin-top: 4px;
+}
+
+.chatlist-search input {
+  width: 90%;
+  max-width: 320px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.chatlist-search input:focus {
+  border-color: #f7941d;
+  box-shadow: 0 0 6px rgba(247, 148, 29, 0.5);
+}
+
+/* Dropdown lọc */
+.chatlist-filter-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.chatlist-filter-select:focus {
+  border-color: #f7941d;
+  box-shadow: 0 0 6px rgba(247, 148, 29, 0.5);
+}
+
+.chatlist-hide-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  cursor: pointer;
+  transform: none;
+}
+
+/* Nút ẩn chat cố định phía dưới */
+.chatlist-hide-button-container {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+}
+
+/* Nút ẩn chat */
+.btn-hide-chat {
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  background-color: #f7941d;
+}
+
+.btn-hide-chat:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-hide-chat:hover:not(:disabled) {
+  background-color: #e67300;
+}
+
+.btn-confirm {
+  background-color: #28a745; /* xanh xác nhận */
+}
+
+.btn-cancel {
+  background-color: #dc3545; /* đỏ hủy */
+}
+
+.chatlist-empty {
+  padding: 10px;
+  text-align: center;
+  color: #555;
+  font-style: italic;
 }

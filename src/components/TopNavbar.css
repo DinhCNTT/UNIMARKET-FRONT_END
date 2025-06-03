@@ -440,19 +440,43 @@
     transform: scale(1.05);
 }
 .chat-icon-topnavbar {
-  margin-right: -12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  font-size: 18px;
+  font-size: 20px;
   color: white;
   background-color: #fd9219;
   padding: 8px;
   border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  margin-right: -12px;
 }
 
 .chat-icon-topnavbar:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.unread-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 0 4px;
+  border-radius: 999px;
+  min-width: 16px;
+  height: 16px;
+  text-align: center;
+  line-height: 16px;
+  user-select: none;
+  z-index: 2;
+  box-shadow: 0 0 0 2px #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

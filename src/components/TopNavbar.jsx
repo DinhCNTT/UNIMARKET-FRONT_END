@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import * as signalR from "@microsoft/signalr";
 import "./TopNavbar.css";
 import SearchBar from "./SearchBar";
 import { CategoryContext } from "../context/CategoryContext";
@@ -16,6 +17,8 @@ const TopNavbar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const connectionRef = useRef(null);
 
   useEffect(() => {
     fetchCategories();
@@ -27,6 +30,65 @@ const TopNavbar = () => {
       setSelectedSubCategory("");
     }
   }, [location.pathname]);
+
+  // Lấy số tin nhắn chưa đọc ban đầu và thiết lập SignalR realtime
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
+      }
+      return;
+    }
+
+    // Hàm lấy số chưa đọc qua API
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5133/api/chat/unread-count/${user.id}`);
+        setUnreadCount(res.data.unreadCount || 0);
+      } catch (error) {
+        console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // Khởi tạo kết nối SignalR
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:5133/hub/chat")
+      .withAutomaticReconnect()
+      .build();
+
+    connectionRef.current = connection;
+
+    connection.start()
+      .then(() => {
+        // Join group user để nhận notification riêng
+        connection.invoke("ThamGiaCuocTroChuyen", `user-${user.id}`);
+        // Lắng nghe event cập nhật trạng thái tin nhắn
+        connection.on("CapNhatTrangThaiTinNhan", (data) => {
+          // Khi có sự kiện, luôn gọi lại API để lấy tổng số chưa đọc mới nhất
+          fetchUnreadCount();
+        });
+
+        // Event khi có tin nhắn mới cập nhật cuộc trò chuyện
+        connection.on("CapNhatCuocTroChuyen", (chat) => {
+          fetchUnreadCount();
+        });
+      })
+      .catch((err) => {
+        console.error("❌ SignalR connect error:", err);
+      });
+
+    // Cleanup khi component unmount
+    return () => {
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
+      }
+    };
+  }, [user]);
 
   const fetchCategories = async () => {
     try {
@@ -101,19 +163,37 @@ const TopNavbar = () => {
       <div className="nav-right">
         {user ? (
           <>
-            <div className="chat-icon-topnavbar" onClick={() => navigate("/chat")} title="Tin nhắn">
+            <div
+              className="chat-icon-topnavbar"
+              onClick={() => navigate("/chat")}
+              title="Tin nhắn"
+              style={{ position: "relative" }}
+            >
               <FontAwesomeIcon icon={faComments} />
+              {unreadCount > 0 && (
+                <span className="unread-count-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </div>
-            <button className="manage-post-btn" onClick={() => navigate('/quan-ly-tin')}>
+            <button className="manage-post-btn" onClick={() => navigate("/quan-ly-tin")}>
               Quản lý tin
             </button>
-            <span className="post-btn" onClick={() => navigate("/dang-tin")}>ĐĂNG TIN</span>
-            <button className="logout-btn" onClick={logout}>Đăng Xuất</button>
+            <span className="post-btn" onClick={() => navigate("/dang-tin")}>
+              ĐĂNG TIN
+            </span>
+            <button className="logout-btn" onClick={logout}>
+              Đăng Xuất
+            </button>
           </>
         ) : (
           <>
-            <button className="login-btn" onClick={() => navigate("/login")}>Đăng Nhập</button>
-            <button className="register-btn" onClick={() => navigate("/register")}>Đăng Ký</button>
+            <button className="login-btn" onClick={() => navigate("/login")}>
+              Đăng Nhập
+            </button>
+            <button className="register-btn" onClick={() => navigate("/register")}>
+              Đăng Ký
+            </button>
           </>
         )}
       </div>
