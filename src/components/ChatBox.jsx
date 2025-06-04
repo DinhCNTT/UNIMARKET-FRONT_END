@@ -1,4 +1,4 @@
-// ChatBox.jsx - Phiên bản cải tiến (Hiệu ứng Swal nhanh hơn)
+// ChatBox.jsx - Phiên bản hoàn chỉnh với "Đã xem" realtime + SweetAlert + Auto scroll cải tiến
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { connectToChatHub, sendMessage } from "../services/chatService";
 import { AuthContext } from "../context/AuthContext";
@@ -14,106 +14,186 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [danhSachTin, setDanhSachTin] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [infoTinDang, setInfoTinDang] = useState({ tieuDe: "", gia: 0, anh: "", maTinDang: null });
+  const [isFirstLoad, setIsFirstLoad] = useState(true); // Thêm state để track lần load đầu
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const connectionRef = useRef(null);
 
-  const getFullImageUrl = (url) => !url ? "/default-image.png" : (url.startsWith("http") ? url : `http://localhost:5133${url}`);
+  const getFullImageUrl = (url) => {
+    if (!url) return "/default-image.png";
+    return url.startsWith("http") ? url : `http://localhost:5133${url}`;
+  };
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Sửa đổi hàm scrollToBottom để có thể chọn instant hoặc smooth
+  const scrollToBottom = (instant = false) => {
+    if (instant) {
+      // Cuộn ngay lập tức không có animation
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    } else {
+      // Cuộn mượt mà
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const formatTime = (time) => {
+    return time || new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  };
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
-    fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`)
-      .then(res => res.json())
-      .then(data => setInfoTinDang({ tieuDe: data.tieuDeTinDang, gia: data.giaTinDang, anh: data.anhDaiDienTinDang, maTinDang: data.maTinDang }))
-      .catch(console.error);
+    const fetchChatInfo = async () => {
+      try {
+        const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
+        if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
+        const data = await res.json();
+        setInfoTinDang({ 
+          tieuDe: data.tieuDeTinDang, 
+          gia: data.giaTinDang, 
+          anh: data.anhDaiDienTinDang, 
+          maTinDang: data.maTinDang 
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchChatInfo();
   }, [maCuocTroChuyen]);
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
-    fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}`)
-      .then(res => res.json())
-      .then(data => setDanhSachTin(
-        data.map((msg) => {
-          let timeStr = msg.thoiGianGui;
-          if (!timeStr.endsWith("Z")) timeStr += "Z";
-          return {
-            ...msg,
-            thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
-            daXem: msg.daXem || false,
-          };
-        })
-      ))
-      .catch(console.error);
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}`);
+        if (!response.ok) throw new Error("Lấy lịch sử chat lỗi");
+        const data = await response.json();
+        setDanhSachTin(
+          data.map((msg) => {
+            let timeStr = msg.thoiGianGui;
+            if (!timeStr.endsWith("Z")) timeStr += "Z";
+            return {
+              ...msg,
+              thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+              daXem: msg.daXem || false,
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Lỗi lấy lịch sử chat:", error);
+      }
+    };
+    fetchHistory();
   }, [maCuocTroChuyen]);
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
+
     const connect = async () => {
       try {
         const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
           let timeStr = msg.thoiGianGui;
           if (!timeStr.endsWith("Z")) timeStr += "Z";
+
           const newMsg = {
             ...msg,
             thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
             daXem: msg.daXem || false,
           };
+
           setDanhSachTin((prev) => [...prev, newMsg]);
         });
 
+        // Cập nhật tin đăng realtime
         connection.on("CapNhatTinDang", (updatedPost) => {
           const maTinDangHT = maCuocTroChuyen.split("-").pop();
           if (updatedPost.MaTinDang?.toString() === maTinDangHT?.toString()) {
-            setInfoTinDang({
-              tieuDe: updatedPost.TieuDe,
-              gia: updatedPost.Gia,
-              anh: updatedPost.AnhDaiDien,
-              maTinDang: updatedPost.MaTinDang
-            });
+            setInfoTinDang((prev) => ({
+              ...prev,
+              tieuDe: updatedPost.TieuDe || updatedPost.tieuDe || prev.tieuDe,
+              gia: updatedPost.Gia || updatedPost.gia || prev.gia,
+              anh: updatedPost.AnhDaiDien || updatedPost.anhDaiDien || prev.anh,
+              maTinDang: updatedPost.MaTinDang || prev.maTinDang,
+            }));
           }
         });
 
+        // Xử lý "Đã xem" realtime
         connection.on("DaXemTinNhan", (data) => {
-          const MaTinNhanCuoi = data?.MaTinNhanCuoi;
+          const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;
+          
           if (MaTinNhanCuoi) {
-            setDanhSachTin((prev) => prev.map((msg) => (msg.maTinNhan === MaTinNhanCuoi ? { ...msg, daXem: true } : msg)));
+            setDanhSachTin((prev) => {
+              const updated = prev.map((msg) => {
+                const isMatch = msg.maTinNhan == MaTinNhanCuoi || 
+                               msg.maTinNhan === MaTinNhanCuoi ||
+                               msg.maTinNhan.toString() === MaTinNhanCuoi.toString();
+                
+                return isMatch ? { ...msg, daXem: true } : msg;
+              });
+              return updated;
+            });
           }
         });
 
         connectionRef.current = connection;
         setIsConnected(connection && connection.state === "Connected");
+
         connection.onclose(() => console.log("SignalR connection closed"));
         connection.onreconnected(() => console.log("SignalR reconnected"));
       } catch (err) {
-        console.error("Lỗi kết nối SignalR:", err);
+        console.error("Lỗi kết nối SignalR hoặc đăng ký sự kiện:", err);
       }
     };
+
     connect();
 
     return () => {
-      connectionRef.current?.stop();
-      connectionRef.current = null;
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
+      }
     };
   }, [maCuocTroChuyen, user?.id]);
 
+  // Sửa đổi useEffect để xử lý scroll khác nhau cho lần đầu load và tin nhắn mới
   useEffect(() => {
-    scrollToBottom();
+    if (danhSachTin.length > 0) {
+      if (isFirstLoad) {
+        // Lần đầu load: cuộn ngay lập tức đến cuối mà không có animation
+        setTimeout(() => {
+          scrollToBottom(true); // instant = true
+          setIsFirstLoad(false);
+        }, 100); // Delay ngắn để đảm bảo DOM đã render
+      } else {
+        // Tin nhắn mới: cuộn mượt mà
+        scrollToBottom(false); // instant = false
+      }
+    }
+
+    // Đánh dấu đã xem
     const timer = setTimeout(() => {
       if (connectionRef.current && isConnected && user && maCuocTroChuyen) {
         connectionRef.current.invoke("DanhDauDaXem", maCuocTroChuyen, user.id).catch(console.error);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [danhSachTin, isConnected, maCuocTroChuyen, user]);
+  }, [danhSachTin, isConnected, maCuocTroChuyen, user, isFirstLoad]);
+
+  // Reset isFirstLoad khi chuyển cuộc trò chuyện
+  useEffect(() => {
+    setIsFirstLoad(true);
+  }, [maCuocTroChuyen]);
 
   const lastSeenMsgId = React.useMemo(() => {
     if (!user) return null;
     const myMessages = danhSachTin.filter((m) => m.maNguoiGui === user.id);
-    if (!myMessages.length) return null;
+    if (myMessages.length === 0) return null;
     myMessages.sort((a, b) => new Date(a.thoiGianGui) - new Date(b.thoiGianGui));
-    return [...myMessages].reverse().find((m) => m.daXem)?.maTinNhan || null;
+    for (let i = myMessages.length - 1; i >= 0; i--) {
+      if (myMessages[i].daXem === true) {
+        return myMessages[i].maTinNhan;
+      }
+    }
+    return null;
   }, [danhSachTin, user]);
 
   const handleSend = () => {
@@ -168,7 +248,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           </div>
           <div className="seller-details">
             <h3>{infoTinDang.tieuDe}</h3>
-            <p className="status">{infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</p>
+            <p className="status">
+              {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+            </p>
           </div>
         </div>
       </div>
@@ -184,9 +266,13 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           danhSachTin.map((msg, idx) => (
             <div key={idx} className="message-wrapper">
               <div className={`message ${msg.maNguoiGui === user?.id ? "sent" : "received"}`}>
-                <div className="message-content"><p>{msg.noiDung}</p></div>
-                <div className="message-time">{msg.thoiGian}</div>
-                {lastSeenMsgId === msg.maTinNhan && msg.maNguoiGui === user?.id && <div className="message-status">Đã xem</div>}
+                <div className="message-content">
+                  <p>{msg.noiDung}</p>
+                </div>
+                <div className="message-time">{formatTime(msg.thoiGian)}</div>
+                {lastSeenMsgId && msg.maTinNhan === lastSeenMsgId && msg.maNguoiGui === user?.id && (
+                  <div className="message-status">Đã xem</div>
+                )}
               </div>
             </div>
           ))
@@ -212,7 +298,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             onClick={handleSend}
             disabled={!tinNhan.trim() || !isConnected}
             title="Gửi tin nhắn"
-          >➔</button>
+          >
+            ➔
+          </button>
         </div>
       </div>
     </div>
