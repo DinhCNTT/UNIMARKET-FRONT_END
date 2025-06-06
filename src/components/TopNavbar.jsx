@@ -45,14 +45,16 @@ const TopNavbar = () => {
     // Hàm lấy số chưa đọc qua API
     const fetchUnreadCount = async () => {
       try {
-        const res = await axios.get(`http://localhost:5133/api/chat/unread-count/${user.id}`);
+        const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
+        const params = new URLSearchParams();
+        hiddenChats.forEach(id => params.append("hiddenChatIds", id));
+
+        const res = await axios.get(`http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`);
         setUnreadCount(res.data.unreadCount || 0);
       } catch (error) {
         console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
       }
     };
-
-    fetchUnreadCount();
 
     // Khởi tạo kết nối SignalR
     const connection = new signalR.HubConnectionBuilder()
