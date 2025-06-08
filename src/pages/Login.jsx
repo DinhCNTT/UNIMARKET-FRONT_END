@@ -3,80 +3,101 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import authService from "../services/authService";
 import "./Login.css";
+import GoogleLoginButton from "./GoogleLoginButton";
+import FacebookLoginButton from "./FacebookLoginButton";
 
 const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
 
-    const { setUser, setRole, setFullName, setToken } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const { setUser, setRole, setFullName, setToken } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setErrorMessage("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setWarningMessage("");
 
-        try {
-            const userData = await authService.login(email, password);
+    try {
+      const userData = await authService.login(email, password);
 
-            if (!userData || !userData.token || !userData.role) {
-                setErrorMessage("Không thể xác thực tài khoản!");
-                return;
-            }
+      if (!userData || !userData.token || !userData.role) {
+        setErrorMessage("Không thể xác thực tài khoản!");
+        return;
+      }
 
-            // Lưu vào context (không lưu vào localStorage nữa)
-            setUser(userData);
-            setRole(userData.role);
-            setFullName(userData.fullName);
-            setToken(userData.token);
+      setUser(userData);
+      setRole(userData.role);
+      setFullName(userData.fullName);
+      setToken(userData.token);
 
-            // Điều hướng theo vai trò
-            navigate(userData.role === "Admin" ? "/admin" : "/market");
-        } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setErrorMessage(error.response.data.message);
-            } else {
-                setErrorMessage("Đăng nhập thất bại!");
-            }
-        }
-    };
+      // Lưu token vào localStorage để dùng cho các component khác
+      localStorage.setItem("token", userData.token);
 
-    return (
-        <div className="login-container">
-            <div className="login-box">
-                <h2>Đăng nhập</h2>
+      if (
+        userData.loginProvider === "Facebook" &&
+        userData.emailConfirmed === false
+      ) {
+        setWarningMessage(
+          "⚠️ Vui lòng xác minh email trong cài đặt tài khoản trước khi đăng tin."
+        );
+      }
 
-                {errorMessage && <div className="error-message">{errorMessage}</div>}
+      navigate(userData.role === "Admin" ? "/admin" : "/market");
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage("Đăng nhập thất bại!");
+      }
+    }
+  };
 
-                <form onSubmit={handleLogin} autoComplete="on">
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        autoComplete="email" // Chrome sẽ gợi ý và lưu email nếu người dùng chọn
-                        required
-                    />
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Mật khẩu"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete="current-password" // Chrome sẽ gợi ý và lưu mật khẩu nếu người dùng chọn
-                        required
-                    />
+  return (
+    <div className="login-container">
+      <div className="login-box">
+        <h2>Đăng nhập</h2>
 
-                    <button type="submit">Đăng nhập</button>
-                </form>
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
+        {warningMessage && <div className="warning-message">{warningMessage}</div>}
 
-                <p className="signup-link">
-                    Chưa có tài khoản? <a href="/register">Đăng ký</a>
-                </p>
-            </div>
+        <form onSubmit={handleLogin} autoComplete="on">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+
+          <button type="submit">Đăng nhập</button>
+        </form>
+
+        <div style={{ margin: "16px 0", textAlign: "center" }}>
+          <span>Hoặc đăng nhập với</span>
+          <GoogleLoginButton />
+          <FacebookLoginButton />
         </div>
-    );
+
+        <p className="signup-link">
+          Chưa có tài khoản? <a href="/register">Đăng ký</a>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export default Login;
