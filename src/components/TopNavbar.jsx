@@ -32,66 +32,88 @@ const TopNavbar = () => {
   }, [location.pathname]);
 
   // Lấy số tin nhắn chưa đọc ban đầu và thiết lập SignalR realtime
-  useEffect(() => {
-    if (!user) {
-      setUnreadCount(0);
-      if (connectionRef.current) {
-        connectionRef.current.stop();
-        connectionRef.current = null;
-      }
-      return;
+  // Thêm vào useEffect chính (phần xử lý SignalR và unread count)
+useEffect(() => {
+  if (!user) {
+    setUnreadCount(0);
+    if (connectionRef.current) {
+      connectionRef.current.stop();
+      connectionRef.current = null;
     }
+    return;
+  }
 
-    // Hàm lấy số chưa đọc qua API
-    const fetchUnreadCount = async () => {
-      try {
-        const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
-        const params = new URLSearchParams();
-        hiddenChats.forEach(id => params.append("hiddenChatIds", id));
+  // Hàm lấy số chưa đọc qua API
+  const fetchUnreadCount = async () => {
+    try {
+      // Đọc danh sách chat ẩn từ localStorage mỗi lần gọi
+      const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
+      const params = new URLSearchParams();
+      hiddenChats.forEach(id => params.append("hiddenChatIds", id));
 
-        const res = await axios.get(`http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`);
-        setUnreadCount(res.data.unreadCount || 0);
-      } catch (error) {
-        console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
-      }
-    };
+      const res = await axios.get(`http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`);
+      setUnreadCount(res.data.unreadCount || 0);
+    } catch (error) {
+      console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
+    }
+  };
 
-    // Khởi tạo kết nối SignalR
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5133/hub/chat")
-      .withAutomaticReconnect()
-      .build();
+  // Gọi ngay lần đầu
+  fetchUnreadCount();
 
-    connectionRef.current = connection;
+  // Lắng nghe thay đổi localStorage
+  const handleStorageChange = (e) => {
+    if (e.key === "hiddenChats") {
+      fetchUnreadCount();
+    }
+  };
 
-    connection.start()
-      .then(() => {
-        // Join group user để nhận notification riêng
-        connection.invoke("ThamGiaCuocTroChuyen", `user-${user.id}`);
-        // Lắng nghe event cập nhật trạng thái tin nhắn
-        connection.on("CapNhatTrangThaiTinNhan", (data) => {
-          // Khi có sự kiện, luôn gọi lại API để lấy tổng số chưa đọc mới nhất
-          fetchUnreadCount();
-        });
+  // Lắng nghe custom event cho cùng tab
+  const handleHiddenChatsChange = () => {
+    fetchUnreadCount();
+  };
 
-        // Event khi có tin nhắn mới cập nhật cuộc trò chuyện
-        connection.on("CapNhatCuocTroChuyen", (chat) => {
-          fetchUnreadCount();
-        });
-      })
-      .catch((err) => {
-        console.error("❌ SignalR connect error:", err);
+  window.addEventListener("storage", handleStorageChange);
+  window.addEventListener("hiddenChatsChanged", handleHiddenChatsChange);
+
+  // Khởi tạo kết nối SignalR
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5133/hub/chat")
+    .withAutomaticReconnect()
+    .build();
+
+  connectionRef.current = connection;
+
+  connection.start()
+    .then(() => {
+      // Join group user để nhận notification riêng
+      connection.invoke("ThamGiaCuocTroChuyen", `user-${user.id}`);
+      
+      // Lắng nghe event cập nhật trạng thái tin nhắn
+      connection.on("CapNhatTrangThaiTinNhan", (data) => {
+        fetchUnreadCount();
       });
 
-    // Cleanup khi component unmount
-    return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop();
-        connectionRef.current = null;
-      }
-    };
-  }, [user]);
+      // Event khi có tin nhắn mới cập nhật cuộc trò chuyện
+      connection.on("CapNhatCuocTroChuyen", (chat) => {
+        fetchUnreadCount();
+      });
+    })
+    .catch((err) => {
+      console.error("❌ SignalR connect error:", err);
+    });
 
+  // Cleanup khi component unmount
+  return () => {
+    window.removeEventListener("storage", handleStorageChange);
+    window.removeEventListener("hiddenChatsChanged", handleHiddenChatsChange);
+    
+    if (connectionRef.current) {
+      connectionRef.current.stop();
+      connectionRef.current = null;
+    }
+  };
+}, [user]);
   const fetchCategories = async () => {
     try {
       const res = await axios.get("http://localhost:5133/api/category/get-categories-with-icon");

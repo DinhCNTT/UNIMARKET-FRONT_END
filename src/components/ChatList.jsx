@@ -29,7 +29,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
 
     connectionRef.current = connection;
 
-    // Cập nhật cuộc trò chuyện mới / sửa cuộc trò chuyện
     connection.on("CapNhatCuocTroChuyen", (chat) => {
       const newChat = {
         maCuocTroChuyen: chat.maCuocTroChuyen || chat.MaCuocTroChuyen,
@@ -39,6 +38,8 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         giaTinDang: chat.giaTinDang ?? chat.GiaTinDang ?? 0,
         tenNguoiConLai: chat.tenNguoiConLai ?? chat.TenNguoiConLai ?? "Người dùng",
         tinNhanCuoi: chat.tinNhanCuoi ?? chat.TinNhanCuoi ?? "",
+        maNguoiGuiCuoi: chat.maNguoiGui || null,
+        loaiTinNhanCuoi: chat.loaiTinNhan || null,
         anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
         thoiGianTao: new Date().toISOString(),
         hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
@@ -56,7 +57,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       });
     });
 
-    // Cập nhật trạng thái tin nhắn đã xem
     connection.on("CapNhatTrangThaiTinNhan", (data) => {
       setChatList((prev) =>
         prev.map((c) =>
@@ -67,9 +67,8 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       );
     });
 
-    // Bổ sung: Lắng nghe sự kiện cập nhật tin đăng để cập nhật ảnh - tiêu đề - giá realtime
     connection.on("CapNhatTinDang", (updatedPost) => {
-      console.log("Nhận CapNhatTinDang:", updatedPost); // Debug confirm event nhận được
+      console.log("Nhận CapNhatTinDang:", updatedPost);
       setChatList((prev) =>
         prev.map((chat) => {
           if (Number(chat.maTinDang) === Number(updatedPost.MaTinDang)) {
@@ -102,6 +101,9 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         setChatList(
           data.map((chat) => ({
             ...chat,
+            tinNhanCuoi: chat.tinNhanCuoi?.noiDung || "",
+            maNguoiGuiCuoi: chat.tinNhanCuoi?.maNguoiGui || null,
+            loaiTinNhanCuoi: chat.tinNhanCuoi?.loaiTinNhan || null,
             hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
           }))
         );
@@ -117,7 +119,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     };
   }, [userId]);
 
-  // Lọc chat theo filterMode và searchTerm
   const filteredChats = chatList
     .filter((chat) => {
       if (filterMode === "all") {
@@ -131,7 +132,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       chat.tieuDeTinDang.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-  // Bật tắt chế độ ẩn/gỡ ẩn nhiều chat
   const toggleHideMode = () => {
     if (isHideMode) {
       setSelectedToHide([]);
@@ -139,7 +139,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     setIsHideMode(!isHideMode);
   };
 
-  // Xác nhận ẩn các chat đã chọn
   const confirmHideChats = () => {
     if (selectedToHide.length === 0) return;
     setHiddenChats((prev) => {
@@ -152,7 +151,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     setFilterMode("all");
   };
 
-  // Xác nhận gỡ ẩn các chat đã chọn
   const confirmUnhideChats = () => {
     if (selectedToHide.length === 0) return;
     setHiddenChats((prev) => {
@@ -165,13 +163,11 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     setFilterMode("all");
   };
 
-  // Hủy bỏ ẩn, thoát chế độ chọn
   const cancelHideChats = () => {
     setSelectedToHide([]);
     setIsHideMode(false);
   };
 
-  // Xử lý chọn/bỏ chọn checkbox chat để ẩn hoặc gỡ ẩn
   const onCheckboxChange = (maCuocTroChuyen, checked) => {
     setSelectedToHide((prev) => {
       if (checked) {
@@ -242,11 +238,13 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
                 <div className="chatlist-item-price">
                   Giá: {chat.giaTinDang?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                 </div>
-                <div
-                  className="chatlist-item-info"
-                  style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}
-                >
-                  {chat.tenNguoiConLai} - {chat.tinNhanCuoi || (chat.isEmpty ? "Chưa có tin nhắn" : "")}
+                <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}>
+                  {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai} - {
+                    chat.isEmpty ? "Chưa có tin nhắn" :
+                    chat.loaiTinNhanCuoi === "image" ? "Gửi 1 ảnh" :
+                    chat.loaiTinNhanCuoi === "video" ? "Gửi 1 video" :
+                    chat.tinNhanCuoi
+                  }
                 </div>
               </div>
             </div>

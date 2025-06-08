@@ -1,4 +1,3 @@
-// ChatBox.jsx - Phiên bản hoàn chỉnh với "Đã xem" realtime + SweetAlert + Auto scroll cải tiến
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { connectToChatHub, sendMessage } from "../services/chatService";
 import { AuthContext } from "../context/AuthContext";
@@ -6,6 +5,12 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "animate.css";
 import "./ChatBox.css";
+import axios from "axios";
+import { FaImage, FaVideo } from "react-icons/fa";
+
+const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
+const CLOUDINARY_CLOUD_NAME = "dskwbav6r";
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
 
 const ChatBox = ({ maCuocTroChuyen }) => {
   const { user } = useContext(AuthContext);
@@ -14,7 +19,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [danhSachTin, setDanhSachTin] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [infoTinDang, setInfoTinDang] = useState({ tieuDe: "", gia: 0, anh: "", maTinDang: null });
-  const [isFirstLoad, setIsFirstLoad] = useState(true); // Thêm state để track lần load đầu
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [imagePreviewList, setImagePreviewList] = useState([]);
+  const [videoPreviewList, setVideoPreviewList] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const connectionRef = useRef(null);
@@ -24,14 +31,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
-  // Sửa đổi hàm scrollToBottom để có thể chọn instant hoặc smooth
   const scrollToBottom = (instant = false) => {
-    if (instant) {
-      // Cuộn ngay lập tức không có animation
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    } else {
-      // Cuộn mượt mà
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: instant ? "auto" : "smooth" });
     }
   };
 
@@ -89,7 +91,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
 
     const connect = async () => {
       try {
-        const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
+          const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
           let timeStr = msg.thoiGianGui;
           if (!timeStr.endsWith("Z")) timeStr += "Z";
 
@@ -99,10 +101,15 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             daXem: msg.daXem || false,
           };
 
-          setDanhSachTin((prev) => [...prev, newMsg]);
+          const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
+          const isHidden = hiddenChats.includes(maCuocTroChuyen);
+          const isOwnMessage = msg.maNguoiGui === user?.id;
+
+          if (!isHidden || isOwnMessage) {
+            setDanhSachTin((prev) => [...prev, newMsg]);
+          }
         });
 
-        // Cập nhật tin đăng realtime
         connection.on("CapNhatTinDang", (updatedPost) => {
           const maTinDangHT = maCuocTroChuyen.split("-").pop();
           if (updatedPost.MaTinDang?.toString() === maTinDangHT?.toString()) {
@@ -116,7 +123,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           }
         });
 
-        // Xử lý "Đã xem" realtime
         connection.on("DaXemTinNhan", (data) => {
           const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;
           
@@ -154,65 +160,102 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     };
   }, [maCuocTroChuyen, user?.id]);
 
-  // Sửa đổi useEffect để xử lý scroll khác nhau cho lần đầu load và tin nhắn mới
+  // Đặt lại isFirstLoad khi chuyển sang chat mới
+  useEffect(() => {
+    setIsFirstLoad(true);
+  }, [maCuocTroChuyen]);
+
   useEffect(() => {
     if (danhSachTin.length > 0) {
       if (isFirstLoad) {
-        // Lần đầu load: cuộn ngay lập tức đến cuối mà không có animation
-        setTimeout(() => {
-          scrollToBottom(true); // instant = true
-          setIsFirstLoad(false);
-        }, 100); // Delay ngắn để đảm bảo DOM đã render
+        scrollToBottom(true); // Cuộn tức thì xuống đáy khi là lần tải đầu tiên
+        setIsFirstLoad(false);
       } else {
-        // Tin nhắn mới: cuộn mượt mà
-        scrollToBottom(false); // instant = false
+        scrollToBottom(false); // Cuộn mượt mà khi có tin nhắn mới
       }
     }
 
-    // Đánh dấu đã xem
     const timer = setTimeout(() => {
       if (connectionRef.current && isConnected && user && maCuocTroChuyen) {
         connectionRef.current.invoke("DanhDauDaXem", maCuocTroChuyen, user.id).catch(console.error);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [danhSachTin, isConnected, maCuocTroChuyen, user, isFirstLoad]);
-
-  // Reset isFirstLoad khi chuyển cuộc trò chuyện
-  useEffect(() => {
-    setIsFirstLoad(true);
-  }, [maCuocTroChuyen]);
+  }, [danhSachTin, isConnected, maCuocTroChuyen, user]);
 
   const lastSeenMsgId = React.useMemo(() => {
     if (!user) return null;
     const myMessages = danhSachTin.filter((m) => m.maNguoiGui === user.id);
     if (myMessages.length === 0) return null;
-    myMessages.sort((a, b) => new Date(a.thoiGianGui) - new Date(b.thoiGianGui));
-    for (let i = myMessages.length - 1; i >= 0; i--) {
-      if (myMessages[i].daXem === true) {
-        return myMessages[i].maTinNhan;
-      }
-    }
-    return null;
+    const lastMessage = myMessages
+      .sort((a, b) => new Date(b.thoiGianGui) - new Date(a.thoiGianGui))[0];
+    return lastMessage.daXem ? lastMessage.maTinNhan : null;
   }, [danhSachTin, user]);
 
-  const handleSend = () => {
-    if (tinNhan.trim() && isConnected && maCuocTroChuyen && user) {
-      sendMessage(maCuocTroChuyen, user.id, tinNhan.trim());
+  const handleFileInputChange = (e, type) => {
+    const files = Array.from(e.target.files);
+    if (type === "image") {
+      setImagePreviewList((prev) => [...prev, ...files.filter(f => f.type.startsWith("image"))]);
+    } else {
+      setVideoPreviewList((prev) => [...prev, ...files.filter(f => f.type.startsWith("video"))]);
+    }
+    e.target.value = null;
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    try {
+      const { data } = await axios.post(CLOUDINARY_URL, formData);
+      return data.secure_url;
+    } catch (err) {
+      Swal.fire("Lỗi", "Không thể upload file lên Cloudinary!", "error");
+      return null;
+    }
+  };
+
+  const handleSend = async () => {
+    if (!tinNhan.trim() && imagePreviewList.length === 0 && videoPreviewList.length === 0) {
+      Swal.fire("Lỗi", "Vui lòng nhập tin nhắn hoặc gửi ảnh/video", "error");
+      return;
+    }
+
+    if (!connectionRef.current || connectionRef.current.state !== "Connected") {
+      Swal.fire("Lỗi", "Kết nối SignalR không sẵn sàng!", "error");
+      return;
+    }
+
+    try {
+      if (tinNhan.trim()) {
+        await sendMessage(maCuocTroChuyen, user.id, tinNhan.trim());
+      }
+
+      for (const file of imagePreviewList) {
+        const url = await uploadToCloudinary(file);
+        if (url) {
+          await sendMessage(maCuocTroChuyen, user.id, url, "image");
+        }
+      }
+
+      for (const file of videoPreviewList) {
+        const url = await uploadToCloudinary(file);
+        if (url) {
+          await sendMessage(maCuocTroChuyen, user.id, url, "video");
+        }
+      }
+
       setTinNhan("");
+      setImagePreviewList([]);
+      setVideoPreviewList([]);
       inputRef.current?.focus();
+    } catch (err) {
+      Swal.fire("Lỗi", "Không thể gửi tin nhắn!", "error");
+      console.error("Send error:", err);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleImageClick = async (e) => {
-    e.stopPropagation();
+  const handleImageClick = async () => {
     try {
       const res = await fetch(`http://localhost:5133/api/TinDang/get-post/${infoTinDang.maTinDang}`);
       if (!res.ok) {
@@ -242,13 +285,13 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   return (
     <div className="chatbox-container">
       <div className="chatbox-header">
-        <div className="seller-info" onClick={handleImageClick}>
-          <div className="seller-avatar">
+        <div className="chatbox-seller-info" onClick={handleImageClick}>
+          <div className="chatbox-seller-avatar">
             <img src={getFullImageUrl(infoTinDang.anh)} alt="Ảnh tin đăng" />
           </div>
-          <div className="seller-details">
+          <div className="chatbox-seller-details">
             <h3>{infoTinDang.tieuDe}</h3>
-            <p className="status">
+            <p className="chatbox-status">
               {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
             </p>
           </div>
@@ -257,8 +300,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
 
       <div className="chatbox-messages">
         {danhSachTin.length === 0 ? (
-          <div className="empty-chat">
-            <div className="empty-icon">💬</div>
+          <div className="chatbox-empty-chat">
+            <div className="chatbox-empty-icon">💬</div>
             <p>Chưa có tin nhắn nào</p>
             <p>Hãy bắt đầu cuộc trò chuyện!</p>
           </div>
@@ -267,10 +310,16 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             <div key={idx} className="message-wrapper">
               <div className={`message ${msg.maNguoiGui === user?.id ? "sent" : "received"}`}>
                 <div className="message-content">
-                  <p>{msg.noiDung}</p>
+                  {msg.loaiTinNhan === "image" ? (
+                    <img src={msg.noiDung} alt="img-chat" className="message-image" />
+                  ) : msg.loaiTinNhan === "video" ? (
+                    <video src={msg.noiDung} controls className="message-video" />
+                  ) : (
+                    <p>{msg.noiDung}</p>
+                  )}
                 </div>
                 <div className="message-time">{formatTime(msg.thoiGian)}</div>
-                {lastSeenMsgId && msg.maTinNhan === lastSeenMsgId && msg.maNguoiGui === user?.id && (
+                {msg.maNguoiGui === user?.id && msg.maTinNhan === lastSeenMsgId && (
                   <div className="message-status">Đã xem</div>
                 )}
               </div>
@@ -283,24 +332,57 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       <div className="chatbox-input-container">
         {!isConnected && <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>}
         <div className="chatbox-input">
+          <div className="chatbox-media-upload-group">
+            <label className="chatbox-media-upload-label">
+              <FaImage size={28} />
+              <input
+                type="file"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFileInputChange(e, "image")}
+                accept="image/*"
+                multiple
+              />
+            </label>
+            <label className="chatbox-media-upload-label">
+              <FaVideo size={28} />
+              <input
+                type="file"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFileInputChange(e, "video")}
+                accept="video/*"
+                multiple
+              />
+            </label>
+          </div>
           <div className="input-field">
             <textarea
               ref={inputRef}
               value={tinNhan}
               onChange={(e) => setTinNhan(e.target.value)}
-              onKeyPress={handleKeyPress}
               placeholder="Nhập tin nhắn..."
-              disabled={!isConnected}
             />
           </div>
           <button
-            className={`send-btn ${tinNhan.trim() && isConnected ? "active" : ""}`}
+            className="send-btn"
             onClick={handleSend}
-            disabled={!tinNhan.trim() || !isConnected}
-            title="Gửi tin nhắn"
+            disabled={!(tinNhan.trim() || imagePreviewList.length || videoPreviewList.length)}
           >
             ➔
           </button>
+        </div>
+        <div className="chatbox-media-preview-list">
+          {imagePreviewList.map((file, idx) => (
+            <div key={idx} className="chatbox-media-thumb">
+              <button className="chatbox-media-thumb-remove" onClick={() => setImagePreviewList(imagePreviewList.filter((_, i) => i !== idx))}>×</button>
+              <img src={URL.createObjectURL(file)} alt={`preview-img-${idx}`} />
+            </div>
+          ))}
+          {videoPreviewList.map((file, idx) => (
+            <div key={idx} className="chatbox-media-thumb">
+              <button className="chatbox-media-thumb-remove" onClick={() => setVideoPreviewList(videoPreviewList.filter((_, i) => i !== idx))}>×</button>
+              <video src={URL.createObjectURL(file)} controls />
+            </div>
+          ))}
         </div>
       </div>
     </div>

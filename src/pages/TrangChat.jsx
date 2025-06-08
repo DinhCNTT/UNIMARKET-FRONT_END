@@ -68,7 +68,7 @@ const TrangChat = () => {
             />
           ) : (
             <div className="empty-chat-placeholder">
-              <div className="empty-icon">💬</div>
+              <p className="IconChat-TrangChat">💬</p>
               <p>Chọn một cuộc trò chuyện để bắt đầu</p>
               <p>Hoặc quay lại trang chủ để tìm tin đăng và bắt đầu chat!</p>
             </div>

@@ -70,15 +70,15 @@ const waitUntilConnected = () => {
   });
 };
 
-export const sendMessage = async (maCuocTroChuyen, maNguoiGui, noiDung) => {
+export const sendMessage = async (maCuocTroChuyen, maNguoiGui, noiDung, loaiTinNhan = "text") => {
   if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
     console.warn("⚠️ Không thể gửi tin nhắn vì chưa kết nối SignalR.");
     return;
   }
 
   try {
-    console.log(`Đang gửi tin nhắn: [${maCuocTroChuyen}] từ ${maNguoiGui}:`, noiDung);
-    await connection.invoke("GuiTinNhan", maCuocTroChuyen, maNguoiGui, noiDung);
+    console.log(`Đang gửi tin nhắn: [${maCuocTroChuyen}] từ ${maNguoiGui}:`, noiDung, loaiTinNhan);
+    await connection.invoke("GuiTinNhan", maCuocTroChuyen, maNguoiGui, noiDung, loaiTinNhan);
     console.log("Gửi tin nhắn thành công");
   } catch (err) {
     console.error("❌ Gửi tin nhắn lỗi: ", err);
