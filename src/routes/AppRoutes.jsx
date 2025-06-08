@@ -21,6 +21,7 @@ import ManagePosts from "../components/ManagePosts";
 import CapNhatTin from "../components/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
 import TrangChat from "../pages/TrangChat";
+import AccountSettings from "../components/AccountSettings/AccountSettings";
 
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
@@ -93,6 +94,9 @@ function AppRoutes() {
       {/* Route chat realtime */}
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
       <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+
+      {/* ✅ Route mới: Cài đặt tài khoản */}
+      <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
     </Routes>
   );
 }

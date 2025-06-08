@@ -1,0 +1,63 @@
+.acc-settings {
+  display: flex;
+  padding: 20px;
+  gap: 24px;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+.acc-sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: fit-content;
+
+  /* 👉 Dịch sang phải và kéo xuống */
+  margin-top: 100px;    /* Kéo xuống */
+  margin-left: 20px;   /* Dịch sang phải */
+}
+
+
+.acc-sidebar h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.acc-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.acc-sidebar li {
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #555;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.acc-sidebar li:hover {
+  background-color: #f0f0f0;
+}
+
+.acc-sidebar li.acc-active {
+  background-color: #e6f0ff;
+  color: #0070f3;
+  font-weight: bold;
+}
+
+.acc-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;  /* ✅ Căn giữa ngang */
+  align-items: flex-start;  /* ✅ Bắt đầu từ trên */
+  padding: 40px;
+}
