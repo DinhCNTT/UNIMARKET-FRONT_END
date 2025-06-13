@@ -1,6 +1,6 @@
 .chatlist-container {
   flex-direction: column;
-  height: 100vh; /* hoặc chiều cao cụ thể tùy layout */
+  height: 100vh;
   background-color: white;
 }
 
@@ -13,7 +13,7 @@
 
 /* Phần danh sách chat scrollable */
 .chatlist-scrollable {
-  flex: 1 1 auto; /* chiếm hết phần còn lại */
+  flex: 1 1 auto;
   overflow-y: auto;
 }
 
@@ -26,6 +26,7 @@
   align-items: center;
   background-color: transparent;
   transition: background-color 0.2s ease;
+  position: relative;
 }
 
 .chatlist-item:hover {
@@ -61,6 +62,177 @@
   font-size: 12px;
   color: #777;
   margin-top: 4px;
+}
+
+/* Nút menu ba chấm */
+.chatlist-menu-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  margin-right: 5px;
+  opacity: 0.6;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatlist-menu-btn:hover {
+  background-color: #f0f0f0;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.chatlist-menu-btn:active {
+  transform: scale(0.95);
+}
+
+/* Nút xóa mở rộng - to bằng chatbox */
+.chatlist-delete-expanded {
+  width: 100%;
+  padding: 0;
+  border-bottom: 1px solid #ccc;
+  background-color: #fff5f5;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 60px;
+    padding: 10px 0;
+  }
+}
+
+.chatlist-delete-btn-expanded {
+  width: 100%;
+  padding: 12px 20px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chatlist-delete-btn-expanded:hover {
+  background-color: #e63939;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
+}
+
+.chatlist-delete-btn-expanded:active {
+  transform: translateY(0);
+}
+
+/* Modal xác nhận xóa */
+.chatlist-delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.chatlist-delete-confirm-modal {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chatlist-delete-confirm-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+  text-align: center;
+}
+
+.chatlist-delete-confirm-content p {
+  margin: 10px 0;
+  color: #666;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.chatlist-delete-note {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+}
+
+.chatlist-delete-confirm-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.chatlist-btn-delete-confirm,
+.chatlist-btn-delete-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.chatlist-btn-delete-confirm {
+  background-color: #ff4444;
+  color: white;
+}
+
+.chatlist-btn-delete-confirm:hover {
+  background-color: #e63939;
+  transform: translateY(-1px);
+}
+
+.chatlist-btn-delete-cancel {
+  background-color: #ccc;
+  color: #333;
+}
+
+.chatlist-btn-delete-cancel:hover {
+  background-color: #bbb;
+  transform: translateY(-1px);
 }
 
 .chatlist-search input {
@@ -101,6 +273,7 @@
   margin-right: 6px;
   cursor: pointer;
   transform: none;
+  pointer-events: auto;
 }
 
 /* Nút ẩn chat cố định phía dưới */
@@ -111,7 +284,6 @@
   display: flex;
   justify-content: center;
   gap: 10px;
-
   position: sticky;
   bottom: 0;
   z-index: 10;
@@ -119,7 +291,7 @@
 }
 
 /* Nút ẩn chat */
-.btn-hide-chat {
+.chatlist-btn-hide-chat {
   color: white;
   border: none;
   padding: 8px 16px;
@@ -130,21 +302,29 @@
   background-color: #f7941d;
 }
 
-.btn-hide-chat:disabled {
+.chatlist-btn-hide-chat:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.btn-hide-chat:hover:not(:disabled) {
+.chatlist-btn-hide-chat:hover:not(:disabled) {
   background-color: #e67300;
 }
 
-.btn-confirm {
-  background-color: #28a745; /* xanh xác nhận */
+.chatlist-btn-hide-chat.chatlist-btn-confirm {
+  background-color: #28a745;
 }
 
-.btn-cancel {
-  background-color: #dc3545; /* đỏ hủy */
+.chatlist-btn-hide-chat.chatlist-btn-confirm:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.chatlist-btn-hide-chat.chatlist-btn-cancel {
+  background-color: #dc3545;
+}
+
+.chatlist-btn-hide-chat.chatlist-btn-cancel:hover:not(:disabled) {
+  background-color: #c82333;
 }
 
 .chatlist-empty {
@@ -152,4 +332,35 @@
   text-align: center;
   color: #555;
   font-style: italic;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .chatlist-item {
+    touch-action: pan-y; /* Chỉ cho phép cuộn dọc */
+  }
+  
+  .chatlist-menu-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+  }
+  
+  .chatlist-delete-btn-expanded {
+    padding: 15px 20px;
+    font-size: 18px;
+  }
+}
+
+/* Smooth scrolling cho container */
+.chatlist-scrollable {
+  scroll-behavior: smooth;
+}
+
+/* Ngăn highlight text khi drag */
+.chatlist-item * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

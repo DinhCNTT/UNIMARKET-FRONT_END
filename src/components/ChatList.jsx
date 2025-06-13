@@ -11,13 +11,59 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   });
   const [isHideMode, setIsHideMode] = useState(false);
   const [selectedToHide, setSelectedToHide] = useState([]);
-  const [filterMode, setFilterMode] = useState("all"); // "all" hoặc "hidden"
+  const [filterMode, setFilterMode] = useState("all");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [expandedChatId, setExpandedChatId] = useState(null);
   const connectionRef = useRef(null);
 
   const getFullImageUrl = (url) => {
     if (!url) return "/default-image.png";
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
+
+  const handleShowDeleteConfirm = (chatId) => {
+    setShowDeleteConfirm(chatId);
+  };
+
+  const handleMenuClick = (e, chatId) => {
+    e.stopPropagation();
+    if (expandedChatId === chatId) {
+      setExpandedChatId(null);
+    } else {
+      setExpandedChatId(chatId);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!showDeleteConfirm) return;
+    setChatList((prev) => prev.filter((chat) => chat.maCuocTroChuyen !== showDeleteConfirm));
+    setHiddenChats((prev) => {
+      const updatedHiddenChats = [...prev, showDeleteConfirm];
+      localStorage.setItem("hiddenChats", JSON.stringify(updatedHiddenChats));
+      return updatedHiddenChats;
+    });
+    console.log(`Chat ${showDeleteConfirm} đã bị xóa từ phía người dùng`);
+    setShowDeleteConfirm(null);
+    setExpandedChatId(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showDeleteConfirm && !e.target.closest('.chatlist-delete-confirm-modal')) {
+        setShowDeleteConfirm(null);
+      }
+      if (expandedChatId && !e.target.closest('.chatlist-item')) {
+        setExpandedChatId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showDeleteConfirm, expandedChatId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -68,7 +114,6 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     });
 
     connection.on("CapNhatTinDang", (updatedPost) => {
-      console.log("Nhận CapNhatTinDang:", updatedPost);
       setChatList((prev) =>
         prev.map((chat) => {
           if (Number(chat.maTinDang) === Number(updatedPost.MaTinDang)) {
@@ -137,6 +182,8 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       setSelectedToHide([]);
     }
     setIsHideMode(!isHideMode);
+    setShowDeleteConfirm(null);
+    setExpandedChatId(null);
   };
 
   const confirmHideChats = () => {
@@ -208,54 +255,106 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
           <p className="chatlist-empty">Không có cuộc trò chuyện nào</p>
         ) : (
           filteredChats.map((chat, idx) => (
-            <div
-              key={chat.maCuocTroChuyen || idx}
-              className={`chatlist-item ${
-                chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""
-              }`}
-              onClick={() => {
-                if (!isHideMode) onSelectChat(chat.maCuocTroChuyen);
-              }}
-            >
-              {(isHideMode && (filterMode === "all" || filterMode === "hidden")) && (
-                <input
-                  type="checkbox"
-                  checked={selectedToHide.includes(chat.maCuocTroChuyen)}
-                  onChange={(e) => onCheckboxChange(chat.maCuocTroChuyen, e.target.checked)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="chatlist-hide-checkbox"
-                  title={filterMode === "all" ? "Chọn để ẩn" : "Chọn để gỡ ẩn"}
-                  style={{ pointerEvents: "auto" }}
+            <div key={chat.maCuocTroChuyen || idx}>
+              <div
+                className={`chatlist-item ${
+                  chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""
+                }`}
+                onClick={() => {
+                  if (!isHideMode) onSelectChat(chat.maCuocTroChuyen);
+                }}
+              >
+                {(isHideMode && (filterMode === "all" || filterMode === "hidden")) && (
+                  <input
+                    type="checkbox"
+                    checked={selectedToHide.includes(chat.maCuocTroChuyen)}
+                    onChange={(e) => onCheckboxChange(chat.maCuocTroChuyen, e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="chatlist-hide-checkbox"
+                    title={filterMode === "all" ? "Chọn để ẩn" : "Chọn để gỡ ẩn"}
+                    style={{ pointerEvents: "auto" }}
+                  />
+                )}
+
+                <img
+                  src={getFullImageUrl(chat.anhDaiDienTinDang)}
+                  alt="Ảnh tin đăng"
+                  className="chatlist-item-image"
                 />
-              )}
-              <img
-                src={getFullImageUrl(chat.anhDaiDienTinDang)}
-                alt="Ảnh tin đăng"
-                className="chatlist-item-image"
-              />
-              <div className="chatlist-item-content">
-                <div className="chatlist-item-title">{chat.tieuDeTinDang}</div>
-                <div className="chatlist-item-price">
-                  Giá: {chat.giaTinDang?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                <div className="chatlist-item-content">
+                  <div className="chatlist-item-title">{chat.tieuDeTinDang}</div>
+                  <div className="chatlist-item-price">
+                    Giá: {chat.giaTinDang?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                  </div>
+                  <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}>
+                    {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai} - {
+                      chat.isEmpty ? "Chưa có tin nhắn" :
+                      chat.loaiTinNhanCuoi === "image" ? "Gửi 1 ảnh" :
+                      chat.loaiTinNhanCuoi === "video" ? "Gửi 1 video" :
+                      chat.tinNhanCuoi
+                    }
+                  </div>
                 </div>
-                <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}>
-                  {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai} - {
-                    chat.isEmpty ? "Chưa có tin nhắn" :
-                    chat.loaiTinNhanCuoi === "image" ? "Gửi 1 ảnh" :
-                    chat.loaiTinNhanCuoi === "video" ? "Gửi 1 video" :
-                    chat.tinNhanCuoi
-                  }
-                </div>
+                
+                {!isHideMode && (
+                  <button
+                    className="chatlist-menu-btn"
+                    onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)}
+                    title="Tùy chọn"
+                  >
+                    ⋮
+                  </button>
+                )}
               </div>
+
+              {expandedChatId === chat.maCuocTroChuyen && (
+                <div className="chatlist-delete-expanded">
+                  <button
+                    className="chatlist-delete-btn-expanded"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShowDeleteConfirm(chat.maCuocTroChuyen);
+                    }}
+                  >
+                    🗑️ Xóa cuộc trò chuyện
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
 
+      {showDeleteConfirm && (
+        <div className="chatlist-delete-confirm-overlay">
+          <div className="chatlist-delete-confirm-modal">
+            <div className="chatlist-delete-confirm-content">
+              <h3>Xác nhận xóa</h3>
+              <p>Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?</p>
+              <p className="chatlist-delete-note">Lưu ý: Cuộc trò chuyện chỉ bị xóa ở phía bạn.</p>
+            </div>
+            <div className="chatlist-delete-confirm-buttons">
+              <button
+                className="chatlist-btn-delete-confirm"
+                onClick={handleConfirmDelete}
+              >
+                Xóa
+              </button>
+              <button
+                className="chatlist-btn-delete-cancel"
+                onClick={handleCancelDelete}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="chatlist-hide-button-container">
         {filterMode === "all" ? (
           !isHideMode ? (
-            <button onClick={toggleHideMode} className="btn-hide-chat">
+            <button onClick={toggleHideMode} className="chatlist-btn-hide-chat">
               Ẩn hội thoại
             </button>
           ) : (
@@ -263,17 +362,17 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
               <button
                 onClick={confirmHideChats}
                 disabled={selectedToHide.length === 0}
-                className="btn-hide-chat btn-confirm"
+                className="chatlist-btn-hide-chat chatlist-btn-confirm"
               >
                 Xác nhận ẩn ({selectedToHide.length})
               </button>
-              <button onClick={cancelHideChats} className="btn-hide-chat btn-cancel">
+              <button onClick={cancelHideChats} className="chatlist-btn-hide-chat chatlist-btn-cancel">
                 Hủy
               </button>
             </>
           )
         ) : !isHideMode ? (
-          <button onClick={toggleHideMode} className="btn-hide-chat">
+          <button onClick={toggleHideMode} className="chatlist-btn-hide-chat">
             Gỡ ẩn hội thoại
           </button>
         ) : (
@@ -281,11 +380,11 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
             <button
               onClick={confirmUnhideChats}
               disabled={selectedToHide.length === 0}
-              className="btn-hide-chat btn-confirm"
+              className="chatlist-btn-hide-chat chatlist-btn-confirm"
             >
               Xác nhận gỡ ẩn ({selectedToHide.length})
             </button>
-            <button onClick={cancelHideChats} className="btn-hide-chat btn-cancel">
+            <button onClick={cancelHideChats} className="chatlist-btn-hide-chat chatlist-btn-cancel">
               Hủy
             </button>
           </>

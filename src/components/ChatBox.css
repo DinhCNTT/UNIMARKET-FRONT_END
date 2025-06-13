@@ -122,19 +122,27 @@
 .message-wrapper {
   display: flex;
   margin-bottom: 8px;
+  position: relative;
 }
 
 .message {
   max-width: 70%;
   animation: fadeInUp 0.3s ease;
+  position: relative;
 }
 
 .message.sent {
   margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .message.received {
   margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .message-status {
@@ -191,6 +199,164 @@
 
 .message.received .message-time {
   text-align: left;
+}
+
+.message-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.message.sent .message-info {
+  justify-content: flex-end;
+}
+
+.message.received .message-info {
+  justify-content: flex-start;
+}
+
+/* CSS cho Message Menu (Thu hồi tin nhắn) */
+.message-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.message-menu-trigger {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.message.sent:hover .message-menu-trigger {
+  opacity: 1;
+}
+
+.message-menu-trigger:hover {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+.message-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 180px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: #475569;
+  position: relative;
+}
+
+.message-menu-item:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.message-menu-item.recall-available {
+  color: #dc2626;
+}
+
+.message-menu-item.recall-available:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.message-menu-item.recall-disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.message-menu-item.recall-disabled:hover {
+  background: none;
+}
+
+.message-menu-item span {
+  flex: 1;
+}
+
+.recall-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #f59e0b;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 45px;
+  justify-content: center;
+}
+
+.recall-timer svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Animation cho việc thu hồi tin nhắn */
+.message.recalling {
+  animation: fadeOutScale 0.3s ease forwards;
+}
+
+@keyframes fadeOutScale {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* Tin nhắn đã bị thu hồi */
+.message.recalled {
+  opacity: 0.5;
+}
+
+.message.recalled .message-content {
+  background: #f1f5f9;
+  color: #64748b;
+  font-style: italic;
+  border: 1px dashed #cbd5e1;
 }
 
 /* Input của người dùng */
@@ -432,6 +598,23 @@
   .chatbox-media-upload-group {
     gap: 6px;
   }
+
+  /* Message menu responsive */
+  .message-menu {
+    min-width: 160px;
+    right: -10px;
+  }
+
+  .message-menu-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .recall-timer {
+    font-size: 10px;
+    padding: 1px 4px;
+    min-width: 40px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -462,6 +645,27 @@
     height: 44px;
     border-radius: 6px;
   }
+
+  /* Message menu cho mobile */
+  .message-menu {
+    min-width: 140px;
+    right: -5px;
+  }
+
+  .message-menu-item {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .message-menu-trigger {
+    padding: 2px 4px;
+  }
+
+  .recall-timer {
+    font-size: 9px;
+    padding: 1px 3px;
+    min-width: 35px;
+  }
 }
 
 /* Ảnh/video trong đoạn chat (tin nhắn đã gửi) */
@@ -480,4 +684,258 @@
     max-width: 120px;
     max-height: 90px;
   }
+}
+
+/* CSS cho modal phóng to ảnh/video */
+/* Overlay che toàn màn hình */
+.media-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Nội dung modal */
+.media-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: zoomIn 0.3s ease forwards;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Nút đóng modal */
+.media-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.media-modal-close:hover {
+  background: rgba(255, 59, 48, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
+}
+
+.media-modal-close:active {
+  transform: scale(0.95);
+}
+
+/* Ảnh trong modal */
+.media-modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Video trong modal */
+.media-modal-video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  outline: none;
+}
+
+/* Hiệu ứng cho ảnh/video có thể click */
+.clickable-media {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.clickable-media:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clickable-media:hover::after {
+  content: "🔍";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: 0.9;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes zoomOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* Animation khi đóng modal */
+.media-modal-overlay.closing {
+  animation: fadeOut 0.25s ease forwards;
+}
+
+.media-modal-overlay.closing .media-modal-content {
+  animation: zoomOut 0.25s ease forwards;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .media-modal-content {
+    max-width: 95vw;
+    max-height: 85vh;
+    margin: 20px;
+  }
+  
+  .media-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .media-modal-close svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .media-modal-content {
+    max-width: 98vw;
+    max-height: 80vh;
+    margin: 10px;
+  }
+  
+  .media-modal-close {
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .clickable-media:hover::after {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+}
+
+/* Tối ưu cho màn hình cảm ứng */
+@media (hover: none) and (pointer: coarse) {
+  .clickable-media:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .clickable-media:hover::after {
+    display: none;
+  }
+  
+  /* Thêm hiệu ứng tap cho mobile */
+  .clickable-media:active {
+    transform: scale(0.98);
+  }
+
+  /* Hiển thị menu trigger luôn trên mobile */
+  .message.sent .message-menu-trigger {
+    opacity: 0.7;
+  }
+}
+
+/* Đảm bảo modal luôn ở trên cùng */
+.media-modal-overlay {
+  z-index: 999999;
+}
+
+/* Ngăn scroll của body khi modal mở */
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
+/* CSS cho phần hiển thị cảnh báo khi cuộc trò chuyện bị chặn */
+.chatbox-blocked-warning {
+  background-color: #f44336; /* Màu đỏ cho cảnh báo */
+  color: white;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.chatbox-blocked-warning p {
+  margin: 0;
 }
