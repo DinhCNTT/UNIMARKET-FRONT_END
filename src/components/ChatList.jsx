@@ -16,15 +16,18 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [expandedChatId, setExpandedChatId] = useState(null);
   const connectionRef = useRef(null);
 
+  // Hàm lấy URL hình ảnh đầy đủ
   const getFullImageUrl = (url) => {
     if (!url) return "/default-image.png";
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
+  // Hiển thị xác nhận xóa cuộc trò chuyện
   const handleShowDeleteConfirm = (chatId) => {
     setShowDeleteConfirm(chatId);
   };
 
+  // Hiển thị menu các tùy chọn cho cuộc trò chuyện
   const handleMenuClick = (e, chatId) => {
     e.stopPropagation();
     if (expandedChatId === chatId) {
@@ -34,6 +37,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     }
   };
 
+  // Xác nhận xóa cuộc trò chuyện
   const handleConfirmDelete = () => {
     if (!showDeleteConfirm) return;
     setChatList((prev) => prev.filter((chat) => chat.maCuocTroChuyen !== showDeleteConfirm));
@@ -47,10 +51,12 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     setExpandedChatId(null);
   };
 
+  // Hủy bỏ xác nhận xóa
   const handleCancelDelete = () => {
     setShowDeleteConfirm(null);
   };
 
+  // Lắng nghe click ngoài để đóng menu
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (showDeleteConfirm && !e.target.closest('.chatlist-delete-confirm-modal')) {
@@ -65,6 +71,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showDeleteConfirm, expandedChatId]);
 
+  // Kết nối SignalR và nhận dữ liệu chat
   useEffect(() => {
     if (!userId) return;
 
@@ -89,6 +96,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
         thoiGianTao: new Date().toISOString(),
         hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
+        isBlocked: chat.isBlocked ?? false,  // Thêm isBlocked
       };
 
       setChatList((prev) => {
@@ -139,6 +147,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         console.error("❌ SignalR connection error:", err);
       });
 
+    // Lấy danh sách cuộc trò chuyện khi load
     const fetchChats = async () => {
       try {
         const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
@@ -150,6 +159,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
             maNguoiGuiCuoi: chat.tinNhanCuoi?.maNguoiGui || null,
             loaiTinNhanCuoi: chat.tinNhanCuoi?.loaiTinNhan || null,
             hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
+            isBlocked: chat.isBlocked ?? false, // Thêm thuộc tính isBlocked vào cuộc trò chuyện
           }))
         );
       } catch (error) {
@@ -164,10 +174,11 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     };
   }, [userId]);
 
+  // Lọc danh sách chat theo tiêu chí
   const filteredChats = chatList
     .filter((chat) => {
       if (filterMode === "all") {
-        return !hiddenChats.includes(chat.maCuocTroChuyen);
+        return !hiddenChats.includes(chat.maCuocTroChuyen) && !chat.isBlocked;
       } else if (filterMode === "hidden") {
         return hiddenChats.includes(chat.maCuocTroChuyen);
       }
@@ -177,6 +188,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       chat.tieuDeTinDang.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+  // Hiển thị chế độ ẩn/hiện cuộc trò chuyện
   const toggleHideMode = () => {
     if (isHideMode) {
       setSelectedToHide([]);
@@ -257,9 +269,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
           filteredChats.map((chat, idx) => (
             <div key={chat.maCuocTroChuyen || idx}>
               <div
-                className={`chatlist-item ${
-                  chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""
-                }`}
+                className={`chatlist-item ${chat.isBlocked ? "blocked" : ""} ${chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""}`}
                 onClick={() => {
                   if (!isHideMode) onSelectChat(chat.maCuocTroChuyen);
                 }}
@@ -295,8 +305,8 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
                     }
                   </div>
                 </div>
-                
-                {!isHideMode && (
+
+                {!chat.isBlocked && !isHideMode && (
                   <button
                     className="chatlist-menu-btn"
                     onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)}

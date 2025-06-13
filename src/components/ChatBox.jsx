@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import "animate.css";
 import "./ChatBox.css";
 import axios from "axios";
-import { FaImage, FaVideo, FaTimes, FaEllipsisV, FaTrash, FaClock } from "react-icons/fa";
+import { FaImage, FaVideo, FaTimes, FaEllipsisV, FaTrash, FaClock, FaBan, FaUnlock } from "react-icons/fa";
 
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
 const CLOUDINARY_CLOUD_NAME = "dskwbav6r";
@@ -24,6 +24,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [videoPreviewList, setVideoPreviewList] = useState([]);
   const [modalImage, setModalImage] = useState(null);
   const [messageMenus, setMessageMenus] = useState({});
+  const [isChatBlocked, setIsChatBlocked] = useState(false);
+  const [maNguoiChan, setMaNguoiChan] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const connectionRef = useRef(null);
@@ -68,6 +70,95 @@ const ChatBox = ({ maCuocTroChuyen }) => {
 
   const closeAllMessageMenus = () => {
     setMessageMenus({});
+  };
+
+  const handleBlockChat = async () => {
+    const result = await Swal.fire({
+      title: "Chặn cuộc trò chuyện?",
+      text: "Bạn sẽ không thể gửi hoặc nhận tin nhắn từ cuộc trò chuyện này.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Chặn",
+      cancelButtonText: "Hủy",
+      showClass: { popup: "animate__animated animate__fadeInDown animate__faster" },
+      hideClass: { popup: "animate__animated animate__fadeOutUp animate__faster" },
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.post("http://localhost:5133/api/chat/block", {
+          MaCuocTroChuyen: maCuocTroChuyen,
+          MaNguoiDung: user.id,
+        });
+        if (response.status === 200) {
+          setIsChatBlocked(true);
+          setMaNguoiChan(user.id);
+          localStorage.setItem(
+            `chatBlocked_${maCuocTroChuyen}`,
+            JSON.stringify({ blocked: true, maNguoiChan: user.id, timestamp: Date.now() })
+          );
+          Swal.fire({
+            icon: "success",
+            title: "Đã chặn",
+            text: "Cuộc trò chuyện đã được chặn thành công.",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: "Không thể chặn cuộc trò chuyện. Vui lòng thử lại.",
+          confirmButtonColor: "#d33",
+        });
+      }
+    }
+  };
+
+  const handleUnblockChat = async () => {
+    const result = await Swal.fire({
+      title: "Gỡ chặn cuộc trò chuyện?",
+      text: "Bạn sẽ có thể gửi và nhận tin nhắn từ cuộc trò chuyện này.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Gỡ chặn",
+      cancelButtonText: "Hủy",
+      showClass: { popup: "animate__animated animate__fadeInDown animate__faster" },
+      hideClass: { popup: "animate__animated animate__fadeOutUp animate__faster" },
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.post("http://localhost:5133/api/chat/unblock", {
+          MaCuocTroChuyen: maCuocTroChuyen,
+          MaNguoiDung: user.id,
+        });
+        if (response.status === 200) {
+          setIsChatBlocked(false);
+          setMaNguoiChan(null);
+          localStorage.removeItem(`chatBlocked_${maCuocTroChuyen}`);
+          Swal.fire({
+            icon: "success",
+            title: "Đã gỡ chặn",
+            text: "Cuộc trò chuyện đã được gỡ chặn thành công.",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: error.response?.data || "Không thể gỡ chặn cuộc trò chuyện. Vui lòng thử lại.",
+          confirmButtonColor: "#d33",
+        });
+      }
+    }
   };
 
   const handleRecallTextMessage = async (maTinNhan, thoiGianGui) => {
@@ -174,7 +265,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     if (result.isConfirmed) {
       try {
         if (connectionRef.current && connectionRef.current.state === "Connected") {
-          console.log(`Invoking ThuHoiAnhVideo for message ${maTinNhan} by user ${user.id}`);
           await connectionRef.current.invoke("ThuHoiAnhVideo", maTinNhan, user.id);
           Swal.fire({
             icon: "success",
@@ -223,7 +313,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     };
 
     const handleClickOutside = (event) => {
-      if (!event.target.closest(".message-menu-container")) {
+      if (!event.target.closest(".message-menu-container") && !event.target.closest(".chatbox-header-menu")) {
         closeAllMessageMenus();
       }
     };
@@ -239,8 +329,18 @@ const ChatBox = ({ maCuocTroChuyen }) => {
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
+
     const fetchChatInfo = async () => {
       try {
+        // Khôi phục trạng thái chặn từ localStorage
+        const storedBlocked = localStorage.getItem(`chatBlocked_${maCuocTroChuyen}`);
+        if (storedBlocked) {
+          const { blocked, maNguoiChan } = JSON.parse(storedBlocked);
+          setIsChatBlocked(blocked);
+          setMaNguoiChan(maNguoiChan);
+        }
+
+        // Lấy thông tin từ API để đồng bộ
         const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
         if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
         const data = await res.json();
@@ -250,10 +350,22 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           anh: data.anhDaiDienTinDang,
           maTinDang: data.maTinDang,
         });
+        // Cập nhật trạng thái chặn từ API
+        setIsChatBlocked(data.isBlocked || false);
+        setMaNguoiChan(data.maNguoiChan || null);
+        if (data.isBlocked && data.maNguoiChan) {
+          localStorage.setItem(
+            `chatBlocked_${maCuocTroChuyen}`,
+            JSON.stringify({ blocked: true, maNguoiChan: data.maNguoiChan, timestamp: Date.now() })
+          );
+        } else {
+          localStorage.removeItem(`chatBlocked_${maCuocTroChuyen}`);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Lỗi lấy thông tin cuộc trò chuyện:", error);
       }
     };
+
     fetchChatInfo();
   }, [maCuocTroChuyen]);
 
@@ -345,6 +457,39 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           }
         });
 
+        connection.on("ChatBlocked", (data) => {
+          if (data.maCuocTroChuyen === maCuocTroChuyen) {
+            setIsChatBlocked(true);
+            setMaNguoiChan(data.maNguoiChan);
+            localStorage.setItem(
+              `chatBlocked_${maCuocTroChuyen}`,
+              JSON.stringify({ blocked: true, maNguoiChan: data.maNguoiChan, timestamp: Date.now() })
+            );
+            Swal.fire({
+              icon: "info",
+              title: "Cuộc trò chuyện bị chặn",
+              text: data.maNguoiChan === user.id
+                ? "Bạn đã chặn cuộc trò chuyện này."
+                : "Cuộc trò chuyện này đã bị chặn bởi đối phương.",
+              confirmButtonColor: "#d33",
+            });
+          }
+        });
+
+        connection.on("ChatUnblocked", (data) => {
+          if (data.maCuocTroChuyen === maCuocTroChuyen) {
+            setIsChatBlocked(false);
+            setMaNguoiChan(null);
+            localStorage.removeItem(`chatBlocked_${maCuocTroChuyen}`);
+            Swal.fire({
+              icon: "success",
+              title: "Cuộc trò chuyện đã được gỡ chặn",
+              text: "Bạn có thể tiếp tục gửi và nhận tin nhắn.",
+              confirmButtonColor: "#3085d6",
+            });
+          }
+        });
+
         connectionRef.current = connection;
         setIsConnected(connection && connection.state === "Connected");
 
@@ -427,6 +572,11 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       return;
     }
 
+    if (isChatBlocked) {
+      Swal.fire("Lỗi", "Cuộc trò chuyện đã bị chặn. Bạn không thể gửi tin nhắn.", "error");
+      return;
+    }
+
     if (!connectionRef.current || connectionRef.current.state !== "Connected") {
       Swal.fire("Lỗi", "Kết nối SignalR không sẵn sàng!", "error");
       return;
@@ -501,6 +651,19 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
             </p>
           </div>
+        </div>
+        <div className="chatbox-header-menu">
+          {!isChatBlocked ? (
+            <button className="chatbox-header-menu-button" onClick={handleBlockChat}>
+              <FaBan size={20} />
+              <span>Chặn</span>
+            </button>
+          ) : user.id === maNguoiChan ? (
+            <button className="chatbox-header-menu-button" onClick={handleUnblockChat}>
+              <FaUnlock size={20} />
+              <span>Gỡ chặn</span>
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -585,12 +748,22 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             </div>
           ))
         )}
+        {isChatBlocked && (
+          <div className="chatbox-blocked-notice">
+            <FaBan size={24} />
+            <p>
+              {user.id === maNguoiChan
+                ? "Bạn đã chặn cuộc trò chuyện này."
+                : "Cuộc trò chuyện này đã bị chặn bởi đối phương."}
+            </p>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="chatbox-input-container">
         {!isConnected && <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>}
-        <div className="chatbox-input">
+        <div className="chatbox-input" style={{ opacity: isChatBlocked ? 0.5 : 1, pointerEvents: isChatBlocked ? "none" : "auto" }}>
           <div className="chatbox-media-upload-group">
             <label className="chatbox-media-upload-label">
               <FaImage size={28} />
@@ -618,13 +791,14 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               ref={inputRef}
               value={tinNhan}
               onChange={(e) => setTinNhan(e.target.value)}
-              placeholder="Nhập tin nhắn..."
+              placeholder={isChatBlocked ? "Cuộc trò chuyện đã bị chặn" : "Nhập tin nhắn..."}
+              disabled={isChatBlocked}
             />
           </div>
           <button
             className="send-btn"
             onClick={handleSend}
-            disabled={!(tinNhan.trim() || imagePreviewList.length || videoPreviewList.length)}
+            disabled={isChatBlocked || !(tinNhan.trim() || imagePreviewList.length || videoPreviewList.length)}
           >
             ➔
           </button>
