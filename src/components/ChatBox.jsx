@@ -258,10 +258,10 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   }, [maCuocTroChuyen]);
 
   useEffect(() => {
-    if (!maCuocTroChuyen) return;
+    if (!maCuocTroChuyen || !user?.id) return;
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}`);
+        const response = await fetch(`http://localhost:5133/api/chat/history/${maCuocTroChuyen}?userId=${user.id}`);
         if (!response.ok) throw new Error("Lấy lịch sử chat lỗi");
         const data = await response.json();
         setDanhSachTin(
@@ -281,7 +281,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       }
     };
     fetchHistory();
-  }, [maCuocTroChuyen]);
+  }, [maCuocTroChuyen, user?.id]);
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
@@ -488,6 +488,32 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     }
   };
 
+  // Thêm hàm xóa phía tôi
+  const handleDeleteForMe = async (maTinNhan) => {
+    const result = await Swal.fire({
+      title: "Xóa tin nhắn phía bạn?",
+      text: "Bạn có chắc chắn muốn xóa tin nhắn này khỏi phía bạn? Tin nhắn sẽ vẫn hiển thị với người còn lại.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      showClass: { popup: "animate__animated animate__fadeInDown animate__faster" },
+      hideClass: { popup: "animate__animated animate__fadeOutUp animate__faster" },
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await axios.delete(
+        `http://localhost:5133/api/chat/delete-for-me/${maTinNhan}?userId=${user.id}`
+      );
+      setDanhSachTin((prev) => prev.filter((msg) => msg.maTinNhan !== maTinNhan));
+      closeAllMessageMenus();
+    } catch (err) {
+      Swal.fire("Lỗi", "Không thể xóa tin nhắn phía bạn!", "error");
+    }
+  };
+
   return (
     <div className="chatbox-container">
       <div className="chatbox-header">
@@ -536,8 +562,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
                   )}
                 </div>
 
+                {/* Nếu là tin nhắn của mình (sent) thì menu ở bên phải */}
                 {msg.maNguoiGui === user?.id && (
-                  <div className="message-menu-container">
+                  <div className="message-menu-container right">
                     <button
                       className="message-menu-trigger"
                       onClick={(e) => {
@@ -547,10 +574,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
                     >
                       <FaEllipsisV size={12} />
                     </button>
-
                     {messageMenus[msg.maTinNhan] && (
                       <div className="message-menu">
-                        {canRecallMessage(msg.thoiGianGui) ? (
+                        {canRecallMessage(msg.thoiGianGui) && (
                           <button
                             className="message-menu-item recall-available"
                             onClick={() => {
@@ -571,12 +597,45 @@ const ChatBox = ({ maCuocTroChuyen }) => {
                                 .padStart(2, "0")}
                             </div>
                           </button>
-                        ) : (
+                        )}
+                        {!canRecallMessage(msg.thoiGianGui) && (
                           <button className="message-menu-item recall-disabled" disabled>
                             <FaTrash size={12} />
                             <span>Hết hạn thu hồi</span>
                           </button>
                         )}
+                        <button
+                          className="message-menu-item"
+                          onClick={() => handleDeleteForMe(msg.maTinNhan)}
+                        >
+                          <FaTrash size={12} />
+                          <span>Xóa phía tôi</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Nếu là tin nhắn nhận (received) thì menu ở bên trái, chỉ có nút xóa phía tôi */}
+                {msg.maNguoiGui !== user?.id && (
+                  <div className="message-menu-container left">
+                    <button
+                      className="message-menu-trigger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMessageMenu(msg.maTinNhan);
+                      }}
+                    >
+                      <FaEllipsisV size={12} />
+                    </button>
+                    {messageMenus[msg.maTinNhan] && (
+                      <div className="message-menu">
+                        <button
+                          className="message-menu-item"
+                          onClick={() => handleDeleteForMe(msg.maTinNhan)}
+                        >
+                          <FaTrash size={12} />
+                          <span>Xóa phía tôi</span>
+                        </button>
                       </div>
                     )}
                   </div>

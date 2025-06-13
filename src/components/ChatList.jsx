@@ -34,15 +34,23 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!showDeleteConfirm) return;
+    try {
+      // Gọi API xóa toàn bộ tin nhắn phía tôi cho cuộc trò chuyện này
+      await fetch(
+        `http://localhost:5133/api/chat/delete-conversation-for-me/${showDeleteConfirm}?userId=${userId}`,
+        { method: "DELETE" }
+      );
+    } catch (err) {
+      console.error("Lỗi xóa toàn bộ tin nhắn phía tôi:", err);
+    }
     setChatList((prev) => prev.filter((chat) => chat.maCuocTroChuyen !== showDeleteConfirm));
     setHiddenChats((prev) => {
       const updatedHiddenChats = [...prev, showDeleteConfirm];
       localStorage.setItem("hiddenChats", JSON.stringify(updatedHiddenChats));
       return updatedHiddenChats;
     });
-    console.log(`Chat ${showDeleteConfirm} đã bị xóa từ phía người dùng`);
     setShowDeleteConfirm(null);
     setExpandedChatId(null);
   };
@@ -91,6 +99,16 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
       };
 
+      setHiddenChats((prevHidden) => {
+        // Nếu chat đã bị ẩn nhưng có tin nhắn mới (không rỗng), tự động gỡ ẩn
+        if (prevHidden.includes(newChat.maCuocTroChuyen) && !newChat.isEmpty) {
+          const updated = prevHidden.filter((id) => id !== newChat.maCuocTroChuyen);
+          localStorage.setItem("hiddenChats", JSON.stringify(updated));
+          return updated;
+        }
+        return prevHidden;
+      });
+
       setChatList((prev) => {
         const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
         if (exists) {
@@ -98,6 +116,11 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
             c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
           );
         } else {
+          // Nếu chat đã bị ẩn nhưng có tin nhắn mới, sẽ hiển thị lại
+          const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
+          if (hiddenChats.includes(newChat.maCuocTroChuyen) && newChat.isEmpty) {
+            return prev;
+          }
           return [...prev, newChat];
         }
       });
@@ -143,14 +166,18 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       try {
         const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
         const data = await res.json();
+        // Lọc bỏ các chat đã ẩn phía tôi
+        const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
         setChatList(
-          data.map((chat) => ({
-            ...chat,
-            tinNhanCuoi: chat.tinNhanCuoi?.noiDung || "",
-            maNguoiGuiCuoi: chat.tinNhanCuoi?.maNguoiGui || null,
-            loaiTinNhanCuoi: chat.tinNhanCuoi?.loaiTinNhan || null,
-            hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
-          }))
+          data
+            .filter((chat) => !hiddenChats.includes(chat.maCuocTroChuyen))
+            .map((chat) => ({
+              ...chat,
+              tinNhanCuoi: chat.tinNhanCuoi?.noiDung || "",
+              maNguoiGuiCuoi: chat.tinNhanCuoi?.maNguoiGui || null,
+              loaiTinNhanCuoi: chat.tinNhanCuoi?.loaiTinNhan || null,
+              hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
+            }))
         );
       } catch (error) {
         console.error("Lỗi lấy danh sách chat:", error);
