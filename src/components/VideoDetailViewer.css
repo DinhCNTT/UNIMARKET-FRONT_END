@@ -1,0 +1,107 @@
+.video-detail-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+
+  /* Dịch toàn bộ cụm video + avatar xuống dưới và qua phải */
+  margin-top: 85px;
+  margin-left: 560px;
+}
+
+/* Video + overlay */
+.video-container {
+  position: relative;
+}
+.video-detail-player {
+  width: 330px;       /* Giảm từ 360px → 300px */
+  height: 580px;      /* Tỷ lệ 9:16 tương ứng */
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Overlay nằm bên trong video */
+.video-detail-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 16px;
+  color: white;
+  text-shadow: 0 0 5px black;
+  max-width: 320px;
+}
+
+.video-user-name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.video-title {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.video-description {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.toggle-description {
+  color: #00f;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.video-price-address {
+  font-size: 14px;
+}
+
+.video-price {
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+/* Phần nằm ngoài video: avatar + tym + cmt */
+.video-side-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 40px;
+  margin-top: 150px;
+}
+
+.video-user-avatar {
+  width: 48px;         /* Giảm từ 64px xuống 48px */
+  height: 48px;        /* Giảm tương ứng */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.icon-item {
+  font-size: 18px;
+  color: #444;
+  text-align: center;
+}
+.heart-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: fadeOut 0.7s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+

@@ -3,13 +3,12 @@
   padding: 20px;
   background-color: #FFFAFA;
   margin-left: 260px;
-  margin-top: 60px;
+  margin-top: 20px;
   width: 85%;
   max-width: 1000px;
   box-sizing: border-box;
   border-radius: 10px;
 }
-
 .tin-dang-danh-cho-ban h2 {
   font-size: 20px;
   font-weight: bold;
@@ -17,14 +16,12 @@
   margin-bottom: 20px;
   margin-left: -720px;
 }
-
 /* Lưới tin đăng */
 .post-list {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 15px;
 }
-
 /* Các phần tử trong tin đăng */
 .post-item {
   background-color: #fff;
@@ -34,8 +31,8 @@
   transition: transform 0.3s ease;
   padding: 10px;
   height: auto;
+  position: relative; /* Cần thiết cho nút lưu */
 }
-
 /* Phần hiển thị ảnh tin đăng - ĐÃ SỬA */
 .post-images-tin-dang-danh-cho-ban {
   width: 100%;
@@ -44,7 +41,6 @@
   overflow: hidden;
   margin-bottom: 10px;
 }
-
 .post-images-tin-dang-danh-cho-ban img {
   position: absolute;
   top: 0;
@@ -54,12 +50,10 @@
   object-fit: cover; /* Đảm bảo ảnh phủ kín không gian mà không bị méo */
   border-radius: 8px;
 }
-
 /* Phần thông tin tin đăng */
 .post-info {
   padding: 10px;
 }
-
 .post-info h3 {
   font-size: 16px;
   font-weight: bold;
@@ -72,22 +66,83 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
-
 .post-info p {
   font-size: 14px;
   color: #777;
   margin: 5px 0;
 }
-
 .post-info .price {
   font-size: 16px;
   font-weight: bold;
   color: #e53935;
   margin-top: 10px;
 }
-
 .post-item:hover {
   transform: translateY(-5px);
+}
+
+/* CSS cho nút lưu tin đăng */
+.save-heart-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.save-heart-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.save-heart-btn .heart-icon {
+  font-size: 18px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.save-heart-btn.saved .heart-icon {
+  color: #e74c3c;
+  animation: heartBeat 0.3s ease;
+}
+
+.save-heart-btn.not-saved .heart-icon {
+  color: #ccc;
+}
+
+.save-heart-btn.not-saved:hover .heart-icon {
+  color: #e74c3c;
+  transform: scale(1.2);
+}
+
+/* Animation cho trái tim khi lưu */
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Hiệu ứng ripple khi click nút lưu */
+.save-heart-btn:active {
+  transform: scale(0.95);
 }
 
 /* Điều chỉnh lưới cho thiết bị di động */
@@ -96,19 +151,16 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
 @media screen and (max-width: 768px) {
   .post-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
 @media screen and (max-width: 480px) {
   .post-list {
     grid-template-columns: 1fr;
   }
 }
-
 /* Style cho nút Xem thêm */
 .xem-them-btn {
   display: block;
@@ -125,13 +177,11 @@
   font-weight: bold;
   transition: all 0.3s ease;
 }
-
 .xem-them-btn:hover {
   background-color: #333;
   color: white;
   border-color: #333;
 }
-
 /* Thêm style cho thông báo không có ảnh */
 .post-images-tin-dang-danh-cho-ban p {
   position: absolute;
@@ -146,7 +196,6 @@
   color: #777;
   margin: 0;
 }
-
 .tin-dang-danh-cho-ban .tieu-de {
   margin-left: 3px; /* Dịch sang trái 50px */
 }
@@ -154,5 +203,3 @@
   font-size: 13px;
   color: #999;
 }
-
-

@@ -140,31 +140,36 @@ const PostTinDang = () => {
     setPreviewImages(previews);
   };
 
-  // Xử lý chọn video (tối đa 1)
-  const handleVideoChange = (e) => {
-    const file = e.target.files[0]; // Chỉ chọn 1 video
+ // Xử lý chọn video (tối đa 1)
+const handleVideoChange = (e) => {
+  const file = e.target.files[0]; // Chỉ chọn 1 video
+  if (!file) return;
 
-    if (!file) return;
+  const sizeMB = file.size / 1024 / 1024;
+  if (sizeMB > 60) {
+    alert(`❌ File quá nặng (${Math.round(sizeMB)}MB)! Vui lòng chọn video dưới 60MB.`);
+    return;
+  }
 
-    const videoUrl = URL.createObjectURL(file);
-    const video = document.createElement("video");
+  const videoUrl = URL.createObjectURL(file);
+  const video = document.createElement("video");
 
-    video.preload = "metadata";
-    video.src = videoUrl;
+  video.preload = "metadata";
+  video.src = videoUrl;
 
-    video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src);
+  video.onloadedmetadata = () => {
+    if (video.duration > 60) {
+      URL.revokeObjectURL(videoUrl); // Chỉ huỷ nếu không dùng
+      alert("❌ Video không được dài quá 60 giây!");
+      return;
+    }
 
-      if (video.duration > 60) {
-        alert("❌ Video không được dài quá 60 giây!");
-        return;
-      }
-
-      // Hợp lệ → lưu lại video
-      setVideoFiles([file]);
-      setPreviewVideos([{ url: videoUrl, type: file.type }]);
-    };
+    // Nếu hợp lệ → set
+    setVideoFiles([file]);
+    setPreviewVideos([{ url: videoUrl, type: file.type }]);
   };
+};
+
 
   // Xóa ảnh khỏi danh sách - CẢI TIẾN
   const removeImage = (index) => {
@@ -177,12 +182,16 @@ const PostTinDang = () => {
 
   // Xóa video khỏi danh sách - CẢI TIẾN
   const removeVideo = (index) => {
-    const newVideoFiles = videoFiles.filter((_, i) => i !== index);
-    const newPreviews = previewVideos.filter((_, i) => i !== index);
-    
-    setVideoFiles(newVideoFiles);
-    setPreviewVideos(newPreviews);
-  };
+  const urlToRevoke = previewVideos[index]?.url;
+  if (urlToRevoke) URL.revokeObjectURL(urlToRevoke); // ✅ huỷ blob đúng lúc
+
+  const newVideoFiles = videoFiles.filter((_, i) => i !== index);
+  const newPreviews = previewVideos.filter((_, i) => i !== index);
+
+  setVideoFiles(newVideoFiles);
+  setPreviewVideos(newPreviews);
+};
+
 
   // Xử lý xem trước
   const handlePreview = () => {
@@ -216,47 +225,52 @@ const PostTinDang = () => {
 
   // Gửi form lên backend
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!user || !user.id) {
-      alert("Vui lòng đăng nhập!");
-      return;
-    }
+  if (!user || !user.id) {
+    alert("Vui lòng đăng nhập!");
+    return;
+  }
 
-    const rawPrice = price.replace(/[^\d]/g, "");
+  if (imageFiles.length === 0) {
+    alert("Vui lòng chọn ít nhất 1 hình ảnh!");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", rawPrice);
-    formData.append("contactInfo", contactInfo);
-    formData.append("condition", condition);
-    formData.append("province", province);
-    formData.append("district", district);
-    formData.append("userId", user.id);
-    formData.append("categoryId", categoryId);
-    formData.append("categoryName", categoryName);
-    formData.append("canNegotiate", canNegotiate);
-    
-    // Thêm tất cả ảnh và video vào FormData
-    [...imageFiles, ...videoFiles].forEach((file) => formData.append("images", file));
+  const rawPrice = price.replace(/[^\d]/g, "");
 
-    try {
-      await axios.post("http://localhost:5133/api/tindang/add-post", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("price", rawPrice);
+  formData.append("contactInfo", contactInfo);
+  formData.append("condition", condition);
+  formData.append("province", province);
+  formData.append("district", district);
+  formData.append("userId", user.id);
+  formData.append("categoryId", categoryId);
+  formData.append("categoryName", categoryName);
+  formData.append("canNegotiate", canNegotiate);
 
-      setStatusMessage("✅ Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
-      alert("Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
-      setTimeout(() => {
-        navigate("/quan-ly-tin");
-      }, 800);
-    } catch (error) {
-      console.error("Lỗi khi đăng tin:", error);
-      setStatusMessage("❌ Đăng tin thất bại!");
-      alert("Đăng tin thất bại!");
-    }
-  };
+  [...imageFiles, ...videoFiles].forEach((file) => formData.append("images", file));
+
+  try {
+    await axios.post("http://localhost:5133/api/tindang/add-post", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    setStatusMessage("✅ Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
+    alert("Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
+    setTimeout(() => {
+      navigate("/quan-ly-tin");
+    }, 800);
+  } catch (error) {
+    console.error("Lỗi khi đăng tin:", error);
+    setStatusMessage("❌ Đăng tin thất bại!");
+    alert("Đăng tin thất bại!");
+  }
+};
+
 
   return (
     <div className="post-tindang-container">

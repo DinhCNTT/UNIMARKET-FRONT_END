@@ -12,7 +12,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [warningMessage, setWarningMessage] = useState("");
 
-  const { setUser, setRole, setFullName, setToken } = useContext(AuthContext);
+  const { setUser, setToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -28,14 +28,31 @@ const Login = () => {
         return;
       }
 
-      setUser(userData);
-      setRole(userData.role);
-      setFullName(userData.fullName);
+      // ✅ Tạo user object hoàn chỉnh
+      const userObject = {
+        id: userData.id,
+        email: userData.email,
+        fullName: userData.fullName || "",
+        role: userData.role,
+        phoneNumber: userData.phoneNumber || "",
+        avatarUrl: userData.avatarUrl || "",
+        emailConfirmed: userData.emailConfirmed || false,
+        loginProvider: userData.loginProvider || "Email",
+        token: userData.token // ✅ Quan trọng: token phải có trong user object
+      };
+
+      // ✅ Set user trước (bao gồm token)
+      setUser(userObject);
+      
+      // ✅ Set token riêng biệt (đảm bảo consistency)
       setToken(userData.token);
 
-      // Lưu token vào localStorage để dùng cho các component khác
-      localStorage.setItem("token", userData.token);
+      console.log("Login successful:", {
+        user: userObject,
+        token: userData.token
+      });
 
+      // ✅ Hiển thị warning nếu Facebook chưa xác minh email
       if (
         userData.loginProvider === "Facebook" &&
         userData.emailConfirmed === false
@@ -47,6 +64,7 @@ const Login = () => {
 
       navigate(userData.role === "Admin" ? "/admin" : "/market");
     } catch (error) {
+      console.error("Login error:", error);
       if (error.response && error.response.data && error.response.data.message) {
         setErrorMessage(error.response.data.message);
       } else {

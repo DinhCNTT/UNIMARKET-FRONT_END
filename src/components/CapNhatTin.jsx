@@ -3,7 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
-import "./PostTinDang.css";
+import "./CapNhatTin.css";
 
 const CapNhatTin = () => {
   const { user } = useContext(AuthContext);
@@ -15,7 +15,7 @@ const CapNhatTin = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [displayPrice, setDisplayPrice] = useState(""); // Giá hiển thị có format
+  const [displayPrice, setDisplayPrice] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [condition, setCondition] = useState("Moi");
   const [province, setProvince] = useState("");
@@ -24,9 +24,9 @@ const CapNhatTin = () => {
   const [tinhThanhList, setTinhThanhList] = useState([]);
   const [quanHuyenList, setQuanHuyenList] = useState([]);
 
-  // State cho preview ảnh và video (tách riêng)
-  const [imagePreviewList, setImagePreviewList] = useState([]); // Tối đa 7 ảnh
-  const [videoPreviewList, setVideoPreviewList] = useState([]); // Tối đa 1 video
+  // State cho preview ảnh và video
+  const [imagePreviewList, setImagePreviewList] = useState([]);
+  const [videoPreviewList, setVideoPreviewList] = useState([]);
   const [oldImagesToDelete, setOldImagesToDelete] = useState([]);
   const [oldVideosToDelete, setOldVideosToDelete] = useState([]);
 
@@ -39,64 +39,72 @@ const CapNhatTin = () => {
 
   // Hàm xử lý thay đổi giá
   const handlePriceChange = (e) => {
-    const rawValue = e.target.value.replace(/[^\d]/g, ''); // Chỉ lấy số
-    setPrice(rawValue); // Lưu giá trị thô
-    setDisplayPrice(formatPrice(rawValue)); // Hiển thị có format
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    setPrice(rawValue);
+    setDisplayPrice(formatPrice(rawValue));
   };
 
   // Lấy thông tin tin đăng từ API
-  useEffect(() => {
-    if (id) {
-      axios.get(`http://localhost:5133/api/TinDang/get-post/${id}`)
-        .then((response) => {
-          const tinDang = response.data;
-          setTitle(tinDang.tieuDe);
-          setDescription(tinDang.moTa);
-          setPrice(tinDang.gia);
-          setDisplayPrice(formatPrice(tinDang.gia));
-          setContactInfo(tinDang.diaChi);
-          setCondition(tinDang.tinhTrang);
-          setProvince(tinDang.maTinhThanh);
-          setDistrict(tinDang.maQuanHuyen);
-          setCategoryId(tinDang.maDanhMuc);
-          setCategoryName(tinDang.danhMuc?.tenDanhMuc);
+  // Thay thế useEffect trong frontend (dòng 45-91)
+useEffect(() => {
+  if (id) {
+    axios.get(`http://localhost:5133/api/TinDang/get-post/${id}`)
+      .then((response) => {
+        const tinDang = response.data;
+        setTitle(tinDang.tieuDe);
+        setDescription(tinDang.moTa);
+        setPrice(tinDang.gia);
+        setDisplayPrice(formatPrice(tinDang.gia));
+        setContactInfo(tinDang.diaChi);
+        setCondition(tinDang.tinhTrang);
+        setProvince(tinDang.maTinhThanh);
+        setDistrict(tinDang.maQuanHuyen);
+        setCategoryId(tinDang.maDanhMuc);
+        setCategoryName(tinDang.danhMuc?.tenDanhMuc);
+        
+        // Tách ảnh và video với thông tin đầy đủ
+        if (tinDang.anhTinDangs && tinDang.anhTinDangs.length > 0) {
+          const images = [];
+          const videos = [];
           
-          // Tách ảnh và video
-          if (tinDang.anhTinDangs && tinDang.anhTinDangs.length > 0) {
-            const images = [];
-            const videos = [];
+          // Sắp xếp theo thứ tự Order (không phải thuTu)
+          const sortedMedia = tinDang.anhTinDangs.sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+          sortedMedia.forEach(media => {
+            const url = media.duongDan.startsWith('http') ? media.duongDan : `http://localhost:5133${media.duongDan}`;
+            const mediaItem = {
+              type: 'old',
+              url: url,
+              id: media.maAnh,
+              originalOrder: media.order || 0, // Sử dụng Order thay vì thuTu
+              fileName: media.duongDan.split('/').pop()
+            };
             
-            tinDang.anhTinDangs.forEach(media => {
-              const url = media.duongDan.startsWith('http') ? media.duongDan : `http://localhost:5133${media.duongDan}`;
-              const mediaItem = {
-                type: 'old',
-                url: url,
-                id: media.maAnh
-              };
-              
-              // Kiểm tra có phải video không (dựa vào extension)
-              const isVideo = /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(media.duongDan);
-              if (isVideo) {
-                videos.push(mediaItem);
-              } else {
-                images.push(mediaItem);
-              }
-            });
-            
-            setImagePreviewList(images);
-            setVideoPreviewList(videos);
-          } else {
-            setImagePreviewList([]);
-            setVideoPreviewList([]);
-          }
-        })
-        .catch((error) => {
-          console.error("Lỗi khi lấy thông tin tin đăng:", error);
-          alert("Không thể lấy thông tin tin đăng.");
-        });
-    }
-  }, [id]);
-
+            // Kiểm tra loại media dựa trên LoaiMedia hoặc đuôi file
+            const isVideo = media.loaiMedia === 1 || /\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i.test(media.duongDan);
+            if (isVideo) {
+              videos.push(mediaItem);
+            } else {
+              images.push(mediaItem);
+            }
+          });
+          
+          setImagePreviewList(images);
+          setVideoPreviewList(videos);
+          
+          console.log('📸 Loaded images:', images.length);
+          console.log('🎥 Loaded videos:', videos.length);
+        } else {
+          setImagePreviewList([]);
+          setVideoPreviewList([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy thông tin tin đăng:", error);
+        alert("Không thể lấy thông tin tin đăng.");
+      });
+  }
+}, [id]);
   // Fetch danh sách tỉnh thành và quận huyện
   useEffect(() => {
     fetch("http://localhost:5133/api/tindang/tinhthanh")
@@ -118,7 +126,8 @@ const CapNhatTin = () => {
     const newItems = files.map(file => ({
       type: 'new',
       file,
-      url: URL.createObjectURL(file)
+      url: URL.createObjectURL(file),
+      fileName: file.name
     }));
     setImagePreviewList(prev => [...prev, ...newItems]);
   };
@@ -129,7 +138,8 @@ const CapNhatTin = () => {
     const newItems = files.map(file => ({
       type: 'new',
       file,
-      url: URL.createObjectURL(file)
+      url: URL.createObjectURL(file),
+      fileName: file.name
     }));
     setVideoPreviewList(prev => [...prev, ...newItems]);
   };
@@ -168,99 +178,135 @@ const CapNhatTin = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!user?.id) {
-      alert("Vui lòng đăng nhập!");
-      return;
-    }
-    
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price); // Gửi giá trị thô không có format
-    formData.append("contactInfo", contactInfo);
-    formData.append("condition", condition);
-    formData.append("canNegotiate", true);
-    formData.append("province", province);
-    formData.append("district", district);
-    formData.append("categoryId", categoryId);
-    formData.append("userId", user.id);
-    
-    // Gửi thứ tự id ảnh cũ còn lại
-    const oldImageOrder = imagePreviewList.filter(i => i.type === 'old').map(i => i.id);
-    formData.append('oldImageOrder', JSON.stringify(oldImageOrder));
-    
-    // Gửi thứ tự id video cũ còn lại
-    const oldVideoOrder = videoPreviewList.filter(i => i.type === 'old').map(i => i.id);
-    formData.append('oldVideoOrder', JSON.stringify(oldVideoOrder));
-    
-    // Gửi file ảnh mới
-    imagePreviewList.filter(i => i.type === 'new').forEach(i => {
-      formData.append('newImages', i.file);
-    });
-    
-    // Gửi file video mới
-    videoPreviewList.filter(i => i.type === 'new').forEach(i => {
-      formData.append('newVideos', i.file);
-    });
-    
-    // Gửi id ảnh và video cũ bị xóa
-    if (oldImagesToDelete.length > 0) {
-      formData.append('oldImagesToDelete', JSON.stringify(oldImagesToDelete));
-    }
-    if (oldVideosToDelete.length > 0) {
-      formData.append('oldVideosToDelete', JSON.stringify(oldVideosToDelete));
-    }
-    
-    try {
-      const response = await axios.put(
-        `http://localhost:5133/api/TinDang/${id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      setStatusMessage("✅ Tin bạn đã được cập nhật!");
-      alert("Tin bạn đã được cập nhật!");
-      navigate("/quan-ly-tin");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật tin:", error);
-      setStatusMessage("❌ Cập nhật tin thất bại!");
-    }
-  };
+  e.preventDefault();
+  if (!user?.id) {
+    alert("Vui lòng đăng nhập!");
+    return;
+  }
 
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("price", price);
+  formData.append("contactInfo", contactInfo);
+  formData.append("condition", condition);
+  formData.append("canNegotiate", true);
+  formData.append("province", province);
+  formData.append("district", district);
+  formData.append("categoryId", categoryId);
+  formData.append("userId", user.id);
+
+  // **QUAN TRỌNG: Gửi thứ tự hiện tại của tất cả ảnh cũ (theo thứ tự hiển thị)**
+  const oldImageOrder = imagePreviewList
+    .filter(i => i.type === 'old')
+    .map(i => i.id);
+  console.log("📋 Thứ tự ảnh cũ gửi lên:", oldImageOrder);
+  formData.append('oldImageOrder', JSON.stringify(oldImageOrder));
+
+  // **QUAN TRỌNG: Gửi thứ tự hiện tại của tất cả video cũ (theo thứ tự hiển thị)**
+  const oldVideoOrder = videoPreviewList
+    .filter(i => i.type === 'old')
+    .map(i => i.id);
+  console.log("🎥 Thứ tự video cũ gửi lên:", oldVideoOrder);
+  formData.append('oldVideoOrder', JSON.stringify(oldVideoOrder));
+
+  // Thêm file ảnh mới
+  imagePreviewList.filter(i => i.type === 'new').forEach(i => {
+    formData.append('newImages', i.file);
+  });
+
+  // Thêm file video mới
+  videoPreviewList.filter(i => i.type === 'new').forEach(i => {
+    formData.append('newVideos', i.file);
+  });
+
+  // Danh sách ID cần xóa
+  if (oldImagesToDelete.length > 0) {
+    console.log("🗑️ Ảnh cần xóa:", oldImagesToDelete);
+    formData.append('oldImagesToDelete', JSON.stringify(oldImagesToDelete));
+  }
+  if (oldVideosToDelete.length > 0) {
+    console.log("🗑️ Video cần xóa:", oldVideosToDelete);
+    formData.append('oldVideosToDelete', JSON.stringify(oldVideosToDelete));
+  }
+
+  try {
+    const response = await axios.put(
+      `http://localhost:5133/api/TinDang/${id}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    console.log("Response:", response.data);
+    setStatusMessage("✅ Tin bạn đã được cập nhật!");
+    alert("Tin bạn đã được cập nhật!");
+    navigate("/quan-ly-tin");
+  } catch (error) {
+    console.error("Lỗi khi cập nhật tin:", error);
+    setStatusMessage("❌ Cập nhật tin thất bại!");
+    alert(`Lỗi: ${error.response?.data?.message || error.message}`);
+  }
+};
   return (
-    <div className="post-tindang-container">
+    <div className="capnhat-container">
       <TopNavbar />
       {statusMessage && (
-        <p className={`post-tindang-status ${statusMessage.includes("thất bại") ? "error" : ""}`}>
+        <p className={`capnhat-status ${statusMessage.includes("thất bại") ? "error" : ""}`}>
           {statusMessage}
         </p>
       )}
-      <form className="post-tindang-form" onSubmit={handleSubmit}>
-        <div className="post-tindang-group">
-          <label>Tiêu đề</label>
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
-        </div>
-        <div className="post-tindang-group">
-          <label>Mô tả</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} required />
-        </div>
-        <div className="post-tindang-group">
-          <label>Giá (VNĐ)</label>
+      <form className="capnhat-form" onSubmit={handleSubmit}>
+        <div className="capnhat-group">
+          <label className="capnhat-label">Tiêu đề</label>
           <input 
             type="text" 
+            className="capnhat-input"
+            value={title} 
+            onChange={e => setTitle(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div className="capnhat-group">
+          <label className="capnhat-label">Mô tả</label>
+          <textarea 
+            className="capnhat-textarea"
+            value={description} 
+            onChange={e => setDescription(e.target.value)} 
+            required 
+          />
+        </div>
+        
+        <div className="capnhat-group">
+          <label className="capnhat-label">Giá (VNĐ)</label>
+          <input 
+            type="text" 
+            className="capnhat-input"
             value={displayPrice} 
             onChange={handlePriceChange} 
             placeholder="Ví dụ: 200.000"
             required 
           />
         </div>
-        <div className="post-tindang-group">
-          <label>Địa chỉ cụ thể</label>
-          <input type="text" value={contactInfo} onChange={e => setContactInfo(e.target.value)} required />
+        
+        <div className="capnhat-group">
+          <label className="capnhat-label">Địa chỉ cụ thể</label>
+          <input 
+            type="text" 
+            className="capnhat-input"
+            value={contactInfo} 
+            onChange={e => setContactInfo(e.target.value)} 
+            required 
+          />
         </div>
-        <div className="post-tindang-group">
-          <label>Tình trạng sản phẩm</label>
-          <select value={condition} onChange={e => setCondition(e.target.value)} required>
+        
+        <div className="capnhat-group">
+          <label className="capnhat-label">Tình trạng sản phẩm</label>
+          <select 
+            className="capnhat-select"
+            value={condition} 
+            onChange={e => setCondition(e.target.value)} 
+            required
+          >
             <option value="Moi">Mới</option>
             <option value="DaSuDung">Đã Sử Dụng</option>
             <option value="CanThanh">Cần Thanh Lý</option>
@@ -268,87 +314,133 @@ const CapNhatTin = () => {
         </div>
         
         {/* Phần upload ảnh */}
-        <div className="post-tindang-group">
-          <label>Ảnh sản phẩm (tối đa 7 ảnh):</label>
-          <input
-            type="file"
-            onChange={handleImageChange}
-            multiple
-            accept="image/*"
-            disabled={imagePreviewList.length >= 7}
-          />
+        <div className="capnhat-media-box">
+          <div className="capnhat-media-header">
+            <div className="capnhat-camera-icon"></div>
+            <span className="capnhat-media-title">
+              Hình ảnh sản phẩm
+              <span className="capnhat-note">(tối đa 7 ảnh)</span>
+            </span>
+          </div>
+          
+          <div className="capnhat-upload-area">
+            <input
+              type="file"
+              className="capnhat-file-input"
+              onChange={handleImageChange}
+              multiple
+              accept="image/*"
+              disabled={imagePreviewList.length >= 7}
+            />
+            <div className="capnhat-upload-text">
+              <span className="capnhat-highlight">Chọn ảnh</span> để tải lên
+            </div>
+            <div className="capnhat-sub-note">
+              Ảnh đầu tiên sẽ là <span className="capnhat-highlight">ảnh bìa</span>
+            </div>
+          </div>
+          
           {imagePreviewList.length > 0 && (
-            <div className="image-preview-list" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0' }}>
+            <div className="capnhat-preview-list">
               {imagePreviewList.map((img, idx) => (
-                <div key={img.id || img.url || idx} style={{ position: 'relative', display: 'inline-block' }}>
-                  <img src={img.url} alt={`Ảnh ${idx + 1}`} style={{ maxWidth: 90, maxHeight: 90, border: '1px solid #ccc', borderRadius: 4 }} />
+                <div key={`${img.type}-${img.id || img.fileName || idx}`} className="capnhat-preview-item">
+                  <img src={img.url} alt={`Ảnh ${idx + 1}`} />
+                  {idx === 0 && <div className="capnhat-cover-badge">Ảnh bìa</div>}
+                  {img.type === 'old' && <div className="capnhat-cover-badge" style={{top: '25px', backgroundColor: '#28a745'}}>CŨ</div>}
+                  {img.type === 'new' && <div className="capnhat-cover-badge" style={{top: '25px', backgroundColor: '#007bff'}}>MỚI</div>}
                   <button
                     type="button"
+                    className="capnhat-remove-btn"
                     onClick={() => handleRemoveImage(idx)}
-                    style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', color: '#d00', fontWeight: 'bold', lineHeight: '20px', padding: 0 }}
                     title="Xóa ảnh"
                   >×</button>
-                  <button
-                    type="button"
-                    onClick={() => moveImage(idx, idx - 1)}
-                    style={{ position: 'absolute', bottom: 0, left: 0, background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', color: '#333', fontWeight: 'bold', lineHeight: '20px', padding: 0 }}
-                    title="Di chuyển sang trái"
-                    disabled={idx === 0}
-                  >&lt;</button>
-                  <button
-                    type="button"
-                    onClick={() => moveImage(idx, idx + 1)}
-                    style={{ position: 'absolute', bottom: 0, right: 0, background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', color: '#333', fontWeight: 'bold', lineHeight: '20px', padding: 0 }}
-                    title="Di chuyển sang phải"
-                    disabled={idx === imagePreviewList.length - 1}
-                  >&gt;</button>
+                  <div className="capnhat-move-controls">
+                    <button
+                      type="button"
+                      className="capnhat-move-btn capnhat-move-left"
+                      onClick={() => moveImage(idx, idx - 1)}
+                      title="Di chuyển sang trái"
+                      disabled={idx === 0}
+                    >‹</button>
+                    <button
+                      type="button"
+                      className="capnhat-move-btn capnhat-move-right"
+                      onClick={() => moveImage(idx, idx + 1)}
+                      title="Di chuyển sang phải"
+                      disabled={idx === imagePreviewList.length - 1}
+                    >›</button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-          <small style={{ color: '#666' }}>
-            Đã chọn {imagePreviewList.length}/7 ảnh
-          </small>
+          
+          <div className="capnhat-counter">
+            Đã chọn {imagePreviewList.length}/7 ảnh 
+            ({imagePreviewList.filter(i => i.type === 'old').length} cũ, {imagePreviewList.filter(i => i.type === 'new').length} mới)
+          </div>
         </div>
 
         {/* Phần upload video */}
-        <div className="post-tindang-group">
-          <label>Video sản phẩm (tối đa 1 video):</label>
-          <input
-            type="file"
-            onChange={handleVideoChange}
-            accept="video/*"
-            disabled={videoPreviewList.length >= 1}
-          />
+        <div className="capnhat-media-box">
+          <div className="capnhat-media-header">
+            <div className="capnhat-video-icon"></div>
+            <span className="capnhat-media-title">
+              Video sản phẩm
+              <span className="capnhat-note">(tối đa 1 video)</span>
+            </span>
+          </div>
+          
+          <div className="capnhat-upload-area">
+            <input
+              type="file"
+              className="capnhat-file-input"
+              onChange={handleVideoChange}
+              accept="video/*"
+              disabled={videoPreviewList.length >= 1}
+            />
+            <div className="capnhat-upload-text">
+              <span className="capnhat-highlight">Chọn video</span> để tải lên
+            </div>
+          </div>
+          
           {videoPreviewList.length > 0 && (
-            <div className="video-preview-list" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0' }}>
+            <div className="capnhat-preview-list">
               {videoPreviewList.map((video, idx) => (
-                <div key={video.id || video.url || idx} style={{ position: 'relative', display: 'inline-block' }}>
+                <div key={`${video.type}-${video.id || video.fileName || idx}`} className="capnhat-preview-item">
                   <video 
                     src={video.url} 
-                    style={{ maxWidth: 150, maxHeight: 90, border: '1px solid #ccc', borderRadius: 4 }}
                     controls
                     muted
                   />
+                  {video.type === 'old' && <div className="capnhat-cover-badge" style={{backgroundColor: '#28a745'}}>CŨ</div>}
+                  {video.type === 'new' && <div className="capnhat-cover-badge" style={{backgroundColor: '#007bff'}}>MỚI</div>}
                   <button
                     type="button"
+                    className="capnhat-remove-btn"
                     onClick={() => handleRemoveVideo(idx)}
-                    style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', color: '#d00', fontWeight: 'bold', lineHeight: '20px', padding: 0 }}
                     title="Xóa video"
                   >×</button>
                 </div>
               ))}
             </div>
           )}
-          <small style={{ color: '#666' }}>
+          
+          <div className="capnhat-counter">
             Đã chọn {videoPreviewList.length}/1 video
-          </small>
+            ({videoPreviewList.filter(i => i.type === 'old').length} cũ, {videoPreviewList.filter(i => i.type === 'new').length} mới)
+          </div>
         </div>
 
         {/* Phần tỉnh thành */}
-        <div className="post-tindang-group">
-          <label>Tỉnh/Thành phố</label>
-          <select value={province} onChange={e => setProvince(e.target.value)} required>
+        <div className="capnhat-group">
+          <label className="capnhat-label">Tỉnh/Thành phố</label>
+          <select 
+            className="capnhat-select"
+            value={province} 
+            onChange={e => setProvince(e.target.value)} 
+            required
+          >
             <option value="">Chọn tỉnh/thành phố</option>
             {tinhThanhList.map(tinh => (
               <option key={tinh.maTinhThanh} value={tinh.maTinhThanh}>
@@ -358,9 +450,14 @@ const CapNhatTin = () => {
           </select>
         </div>
 
-        <div className="post-tindang-group">
-          <label>Quận/Huyện</label>
-          <select value={district} onChange={e => setDistrict(e.target.value)} required>
+        <div className="capnhat-group">
+          <label className="capnhat-label">Quận/Huyện</label>
+          <select 
+            className="capnhat-select"
+            value={district} 
+            onChange={e => setDistrict(e.target.value)} 
+            required
+          >
             <option value="">Chọn quận/huyện</option>
             {quanHuyenList.map(quan => (
               <option key={quan.maQuanHuyen} value={quan.maQuanHuyen}>
@@ -370,8 +467,10 @@ const CapNhatTin = () => {
           </select>
         </div>
 
-        <div className="post-tindang-button-group">
-          <button type="submit">Cập nhật Tin</button>
+        <div className="capnhat-button-group">
+          <button type="submit" className="capnhat-submit-btn">
+            Cập nhật Tin
+          </button>
         </div>
       </form>
     </div>

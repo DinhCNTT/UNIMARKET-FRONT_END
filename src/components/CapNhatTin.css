@@ -1,0 +1,392 @@
+/* Container chính */
+.capnhat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  width: 720px;
+  margin: 0 auto;
+  max-width: 1000px;
+  margin-left: 35%;
+  margin-right: auto;
+}
+
+/* Form chính */
+.capnhat-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white !important;
+  padding: 90px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 150%;
+  max-width: 130%;
+  margin-left: -10%;
+  margin-right: auto;
+  min-height: 1300px;
+}
+
+/* Thông báo trạng thái */
+.capnhat-status {
+  padding: 12px 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  text-align: center;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.capnhat-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Nhóm form cơ bản */
+.capnhat-group {
+  width: 60%;
+  margin-bottom: 20px;
+  margin-left: 45%;
+  margin-right: 0;
+}
+
+.capnhat-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.capnhat-input,
+.capnhat-select,
+.capnhat-textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.capnhat-input:focus,
+.capnhat-select:focus,
+.capnhat-textarea:focus {
+  outline: none;
+  border-color: #f76c0d;
+  box-shadow: 0 0 5px rgba(247, 108, 13, 0.3);
+}
+
+.capnhat-textarea {
+  width: 80%;
+  height: 100px;
+  padding: 20px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Media box - ảnh và video */
+.capnhat-media-box {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  margin: 20px auto;
+  width: 400px;
+  max-width: 600px;
+  position: relative;
+  left: -320px;
+  top: -670px;
+  z-index: 1;
+}
+
+.capnhat-media-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.capnhat-camera-icon,
+.capnhat-video-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.capnhat-camera-icon {
+  background-image: url('https://img.icons8.com/ios-filled/50/ffa500/camera--v1.png');
+}
+
+.capnhat-video-icon {
+  background-image: url('https://img.icons8.com/ios-filled/50/ffa500/video-call.png');
+}
+
+.capnhat-media-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
+.capnhat-note {
+  font-weight: normal;
+  font-size: 13px;
+  color: #888;
+  margin-left: 8px;
+}
+
+/* Upload area */
+.capnhat-upload-area {
+  position: relative;
+  border: 2px dashed #f76c0d;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  background-color: #fcfcfc;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.capnhat-upload-area:hover {
+  border-color: #e68900;
+  background-color: #fff8f0;
+}
+
+.capnhat-file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.capnhat-upload-text {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.capnhat-highlight {
+  color: #f76c0d;
+  font-weight: 600;
+}
+
+.capnhat-sub-note {
+  font-size: 12px;
+  color: #777;
+  margin-top: 3px;
+}
+
+/* Preview list */
+.capnhat-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.capnhat-preview-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.capnhat-preview-item:hover {
+  transform: scale(1.05);
+}
+
+.capnhat-preview-item img,
+.capnhat-preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cover badge */
+.capnhat-cover-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background-color: #f76c0d;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Remove button */
+.capnhat-remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.capnhat-remove-btn:hover {
+  background-color: #ff1f23;
+  transform: scale(1.1);
+}
+
+/* Move controls */
+.capnhat-move-controls {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+}
+
+.capnhat-move-btn {
+  background-color: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.capnhat-move-btn:hover:not(:disabled) {
+  background-color: #f76c0d;
+}
+
+.capnhat-move-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.capnhat-move-left::before {
+  content: '‹';
+}
+
+.capnhat-move-right::before {
+  content: '›';
+}
+
+/* Counter */
+.capnhat-counter {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 10px;
+  padding: 5px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* Button group */
+.capnhat-button-group {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  padding: 10px 20px;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.capnhat-submit-btn {
+  background-color: #f76c0d;
+  color: white;
+  padding: 12px 40px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 300px;
+  margin-left: 480px;
+}
+
+.capnhat-submit-btn:hover {
+  background-color: #e68900;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.capnhat-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .capnhat-container {
+    width: 100%;
+    margin-left: 0;
+    padding: 10px;
+  }
+  
+  .capnhat-form {
+    width: 100%;
+    margin-left: 0;
+    padding: 20px;
+  }
+  
+  .capnhat-group {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .capnhat-media-box {
+    width: 100%;
+    left: 0;
+    top: 0;
+    position: static;
+  }
+  
+  .capnhat-button-group {
+    padding: 15px;
+  }
+  
+  .capnhat-submit-btn {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .capnhat-preview-item {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .capnhat-preview-list {
+    gap: 10px;
+  }
+}

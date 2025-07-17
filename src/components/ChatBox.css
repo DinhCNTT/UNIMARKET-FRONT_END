@@ -29,7 +29,7 @@
   gap: 12px;
   cursor: pointer;
   margin-top: -2px;
-  background-color:#f5f5f5;
+  background-color: #f5f5f5;
   width: 100%; /* Chiều ngang full container cha */
   padding-left: 8px; /* Dịch nội dung sang trái 8px */
 }
@@ -618,11 +618,11 @@
 }
 
 @media (max-width: 480px) {
-  .seller-details h3 {
+  .chatbox-seller-details h3 {
     font-size: 13px;
   }
 
-  .status {
+  .chatbox-status {
     font-size: 11px;
   }
 
@@ -673,7 +673,7 @@
 .message-content video {
   max-width: 220px;
   max-height: 180px;
-  border-radius: 10px;
+  border-radius:10px;
   margin: 4px 0;
   display: block;
 }
@@ -857,14 +857,14 @@
     max-height: 85vh;
     margin: 20px;
   }
-  
+
   .media-modal-close {
     top: 10px;
     right: 10px;
     width: 40px;
     height: 40px;
   }
-  
+
   .media-modal-close svg {
     width: 18px;
     height: 18px;
@@ -877,14 +877,14 @@
     max-height: 80vh;
     margin: 10px;
   }
-  
+
   .media-modal-close {
     top: 8px;
     right: 8px;
     width: 36px;
     height: 36px;
   }
-  
+
   .clickable-media:hover::after {
     width: 35px;
     height: 35px;
@@ -898,11 +898,11 @@
     transform: none;
     box-shadow: none;
   }
-  
+
   .clickable-media:hover::after {
     display: none;
   }
-  
+
   /* Thêm hiệu ứng tap cho mobile */
   .clickable-media:active {
     transform: scale(0.98);
@@ -924,18 +924,178 @@ body.modal-open {
   overflow: hidden;
   height: 100vh;
 }
-/* CSS cho phần hiển thị cảnh báo khi cuộc trò chuyện bị chặn */
-.chatbox-blocked-warning {
-  background-color: #f44336; /* Màu đỏ cho cảnh báo */
-  color: white;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: bold;
-  text-align: center;
-  border-radius: 5px;
-  margin-bottom: 15px;
+
+/* Header Menu (Chặn/Gỡ Chặn) */
+.chatbox-header-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
 }
 
-.chatbox-blocked-warning p {
+.chatbox-header-menu-button {
+  display: flex;
+  align-items: center;
+ 
+  background: linear-gradient(135deg, #ff4d4f, #e63946); /* Gradient đỏ cho nút chặn */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.chatbox-header-menu-button:hover {
+  background: linear-gradient(135deg, #ff6b6b, #ff4d4f);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 77, 79, 0.4);
+}
+
+.chatbox-header-menu-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
+}
+
+/* Nút Gỡ Chặn */
+.chatbox-header-menu-button.unblock {
+  background: linear-gradient(135deg, #2ecc71, #27ae60); /* Gradient xanh cho nút gỡ chặn */
+}
+
+.chatbox-header-menu-button.unblock:hover {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+}
+
+.chatbox-header-menu-button.unblock:active {
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
+}
+
+/* Icon trong nút */
+.chatbox-header-menu-button svg {
+  transition: transform 0.3s ease;
+}
+
+.chatbox-header-menu-button:hover svg {
+  transform: scale(1.15);
+}
+
+/* Tooltip khi hover */
+.chatbox-header-menu-button {
+  position: relative;
+}
+
+.chatbox-header-menu-button::after {
+  content: attr(data-tooltip); /* Sử dụng thuộc tính data-tooltip để hiển thị nội dung */
+  position: absolute;
+  top: -40px;
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.chatbox-header-menu-button:hover::after {
+  opacity: 1;
+  visibility: visible;
+  top: -32px;
+}
+
+/* Thông báo chặn trong khu vực tin nhắn */
+.chatbox-blocked-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #ff4d4f, #e63946);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+.chatbox-blocked-notice svg {
+  color: #ffebee;
+  transform: scale(1.1);
+}
+
+.chatbox-blocked-notice p {
   margin: 0;
+}
+
+/* Animation cho thông báo chặn */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive cho header menu */
+@media (max-width: 768px) {
+  .chatbox-header-menu-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .chatbox-header-menu-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .chatbox-header-menu-button::after {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .chatbox-blocked-notice {
+    margin: 8px 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatbox-header-menu-button {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .chatbox-header-menu-button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .chatbox-blocked-notice {
+    margin: 6px 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .chatbox-header-menu-button::after {
+    font-size: 10px;
+    padding: 4px 8px;
+    top: -30px;
+  }
 }

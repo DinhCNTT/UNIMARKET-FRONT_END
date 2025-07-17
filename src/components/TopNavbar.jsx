@@ -35,7 +35,7 @@ const TopNavbar = () => {
     setSelectedSubCategory,
   } = useContext(CategoryContext);
   const { setSearchTerm } = useContext(SearchContext);
-  const { user, logout } = useContext(AuthContext);
+  const { user, avatarUrl, logout } = useContext(AuthContext); // Thêm avatarUrl từ context
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -243,9 +243,9 @@ const TopNavbar = () => {
             style={{ position: "relative" }}
           >
             <div className="account-info">
-              {user.avatarUrl ? (
+              {avatarUrl ? (
                 <img
-                  src={user.avatarUrl}
+                  src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5133${avatarUrl}`}
                   alt="Avatar"
                   className="account-avatar-img"
                   style={{ width: "26px", height: "26px", borderRadius: "50%", objectFit: "cover" }}
@@ -259,7 +259,7 @@ const TopNavbar = () => {
             {showAccountDropdown && (
               <div className="account-dropdown" style={{ position: "absolute", right: 0, top: "100%", backgroundColor: "#fff", border: "1px solid #ccc", borderRadius: "6px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", zIndex: 1000, minWidth: "230px", padding: "10px 0" }}>
                 <div style={{ padding: "0 16px", fontWeight: "bold", color: "#666", fontSize: "13px" }}>Tiện ích</div>
-                <span onClick={() => navigate("/tin-da-luu")} className="dropdown-item">
+                <span onClick={() => navigate("/tin-dang-da-luu")} className="dropdown-item">
                   <FaHeart className="dropdown-icon" /> Tin đăng đã lưu
                 </span>
                 <span onClick={() => navigate("/video-da-tym")} className="dropdown-item">

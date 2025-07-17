@@ -1,0 +1,269 @@
+.comment-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);  /* Màu nền mờ */
+  z-index: 999;
+  display: flex;
+  justify-content: flex-end;  /* Căn phần drawer vào bên phải */
+  align-items: flex-end;  /* Căn phần drawer vào dưới cùng */
+  padding: 0 16px 32px 16px;
+}
+
+.comment-drawer {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;  /* Giới hạn chiều rộng */
+  max-height: 82vh;  /* Giới hạn chiều cao */
+  height: 82vh;
+  margin-right: 12px;
+  border-radius: 16px 16px 12px 12px;  /* Bo góc mềm mại */
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  animation: slideUp 0.3s ease;  /* Hiệu ứng slide-up */
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);  /* Bắt đầu từ dưới */
+  }
+  to {
+    transform: translateY(0);  /* Vị trí cuối cùng */
+  }
+}
+
+.comment-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+   position: relative;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-avatar.small {
+  width: 28px;
+  height: 28px;
+}
+.comment-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.comment-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.comment-name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.comment-text {
+  font-size: 14px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 2px;
+}
+.comment-row {
+  display: flex;
+  align-items: center; /* Căn avatar và tên người dùng thẳng hàng ngang */
+}
+.comment-replies {
+  margin-top: 8px;
+  padding-left: 20px;  /* Thụt vào cho bình luận con */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comment-reply-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.reply-to-line {
+  font-size: 12px; /* Điều chỉnh kích thước chữ nhỏ lại cho phần "đã phản hồi" */
+  color: #888; /* Màu sắc chữ, có thể thay đổi nếu muốn */
+  margin-top: 5px;
+}
+
+.comment-input-area {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid #ddd;
+  background-color: #fff;
+  gap: 8px;
+}
+
+.comment-input-area input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.comment-input-area button {
+  padding: 8px 6px;
+  width: 35px;
+  background-color: #ff5c5c;  /* Màu đỏ cho nút gửi */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-align: center;
+  line-height: 1;
+}
+
+.no-comment {
+  text-align: center;
+  color: #777;
+  margin-top: 16px;
+}
+
+/* ✅ Mobile responsive */
+@keyframes slideUp {
+  from {
+    transform: translate(20%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+.comment-header button {
+  width: 24px;
+  height: 24px;
+  background-color: #ff9800;  /* Màu cam nổi bật */
+  color: #fff;
+  border: none;
+  border-radius: 50%;         /* Tạo hình tròn */
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: background-color 0.2s ease;
+}
+
+.comment-header button:hover {
+  background-color: #e07600;  /* Hover đậm hơn */
+}
+.comment-thread {
+  margin-bottom: 20px; /* Tạo khoảng cách giữa các nhóm bình luận */
+}
+/* Cập nhật phần thụt vào cho bình luận con */
+.comment-item-vertical {
+  margin-left: 20px; /* Thụt vào 20px cho bình luận con */
+}
+.reply-button {
+  background: none; /* Bỏ background màu */
+  border: none; /* Bỏ viền xung quanh */
+  color: #007bff; /* Màu chữ giống TikTok */
+  cursor: pointer; /* Con trỏ tay khi hover */
+  font-size: 12px; /* Chữ nhỏ */
+  padding: 2px 6px; /* Giảm padding cho nút ngắn lại */
+  border-radius: 12px; /* Bo tròn các góc */
+  align-self: flex-start; /* Đẩy nút lên đầu trục dọc nếu trong flex container */
+  margin-left: -150px; /* Đẩy sát sang trái, nếu có margin trái mặc định thì ghi đè */
+}
+
+.reply-button:hover {
+  color: #0056b3; /* Thay đổi màu khi hover giống TikTok */
+  background-color: #f0f0f0; /* Thêm màu nền khi hover */
+}
+.reply-button:focus {
+  outline: none; /* Bỏ viền focus khi nhấn vào */
+}
+
+.reply-input textarea {
+  width: 80%; /* Chiều rộng đầy đủ */
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+  font-size: 14px;
+  resize: none; /* Ngăn không cho người dùng thay đổi kích thước */
+  min-height: 40px; /* Chiều cao ban đầu */
+  word-wrap: break-word; /* Tự động xuống dòng khi nội dung dài */
+  overflow-y: hidden; /* Ẩn thanh cuộn dọc */
+  transition: height 0.3s ease; /* Thêm hiệu ứng mượt mà khi thay đổi chiều cao */
+}
+.reply-input {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.reply-send,
+.reply-cancel {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reply-send {
+  background-color: #007bff;
+  color: white;
+}
+
+.reply-send:hover {
+  background-color: #0056b3;
+}
+
+.reply-cancel {
+  background-color: transparent;
+  color: #888;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.reply-cancel:hover {
+  color: #333;
+}

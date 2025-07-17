@@ -40,7 +40,7 @@ const LocTinDang = () => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 15;
+  const postsPerPage = 10;
 
   // Sort order state: "newest" hoặc "oldest"
   const [sortOrder, setSortOrder] = useState("newest");

@@ -17,9 +17,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-
-
-
 /* Tiêu đề */
 .pi-title {
   font-size: 24px;
@@ -172,5 +169,30 @@
   background-color: #f9f9f9;
   color: #777;
   cursor: not-allowed;
+}
+
+/* Avatar upload section */
+.pi-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.pi-avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #eee;
+}
+.pi-avatar-upload-btn {
+  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(46,204,64,0.08);
+  /* Đảm bảo icon nổi trên ảnh */
+  z-index: 2;
+}
+.pi-avatar-upload-btn:hover {
+  box-shadow: 0 4px 16px rgba(46,204,64,0.18);
+  border-color: #27ae60;
 }
 

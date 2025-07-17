@@ -6,6 +6,7 @@ import CategoryList from "../components/CategoryList"; // Import component hiể
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan"; // Import component TinDangDanhChoBan
 import UniMarketIntro from "../components/UniMarketIntro"; // Import component giới thiệu UniMarket
 import "./MarketPage.css"; // Import CSS cho trang MarketPage
+import VideoListCarousel from "../components/VideoCarousel";
 import Footer from "../components/Footer";
 
 const MarketplacePage = () => {
@@ -24,6 +25,8 @@ const MarketplacePage = () => {
 
         {/* Danh sách danh mục */}
         <CategoryList />
+
+        <VideoListCarousel /> {/* Hiển thị danh sách video ngay dưới danh mục */}
 
         {/* Tin đăng dành cho bạn */}
         <TinDangDanhChoBan /> {/* Thêm tin đăng dưới danh mục */}

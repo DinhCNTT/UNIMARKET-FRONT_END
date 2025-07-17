@@ -12,12 +12,15 @@ const trangThaiMap = {
 
 const QuanLyTin = () => {
   const [posts, setPosts] = useState([]);
-  const [userName, setUserName] = useState(localStorage.getItem("userFullName") || "Người dùng");
+  // Thay đổi từ localStorage sang sessionStorage
+  const [userName, setUserName] = useState(sessionStorage.getItem("userFullName") || "Người dùng");
   const [activeTab, setActiveTab] = useState("DaDuyet");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 5;
-  const userId = localStorage.getItem("userId");
+  
+  // Lấy userId từ sessionStorage thay vì localStorage
+  const userId = sessionStorage.getItem("userId");
   const navigate = useNavigate();
 
   // Lấy tên người dùng
@@ -25,14 +28,16 @@ const QuanLyTin = () => {
     const fetchUserName = async () => {
       try {
         const res = await axios.get(`http://localhost:5133/api/TinDang/user-info/${userId}`);
-        localStorage.setItem("userFullName", res.data.fullName);
+        // Lưu vào sessionStorage thay vì localStorage
+        sessionStorage.setItem("userFullName", res.data.fullName);
         setUserName(res.data.fullName);
       } catch (err) {
         console.error("Không thể lấy tên người dùng:", err);
       }
     };
 
-    if (userId && !localStorage.getItem("userFullName")) {
+    // Kiểm tra sessionStorage thay vì localStorage
+    if (userId && !sessionStorage.getItem("userFullName")) {
       fetchUserName();
     }
   }, [userId]);
@@ -86,21 +91,20 @@ const QuanLyTin = () => {
   };
 
   const handleDelete = (postId) => {
-  const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin đăng này?");
-  if (confirmDelete) {
-    axios
-      .delete(`http://localhost:5133/api/TinDang/${postId}`)
-      .then(() => {
-        // Cập nhật lại danh sách tin đã load, loại bỏ tin đã xóa
-        setPosts(posts.filter((post) => post.maTinDang !== postId));
-      })
-      .catch((error) => {
-        console.error("Lỗi khi xóa tin đăng:", error);
-        alert("Xóa tin thất bại! Vui lòng thử lại.");
-      });
-  }
-};
-
+    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa tin đăng này?");
+    if (confirmDelete) {
+      axios
+        .delete(`http://localhost:5133/api/TinDang/${postId}`)
+        .then(() => {
+          // Cập nhật lại danh sách tin đã load, loại bỏ tin đã xóa
+          setPosts(posts.filter((post) => post.maTinDang !== postId));
+        })
+        .catch((error) => {
+          console.error("Lỗi khi xóa tin đăng:", error);
+          alert("Xóa tin thất bại! Vui lòng thử lại.");
+        });
+    }
+  };
 
   return (
     <div className="qlt-wrapper">

@@ -1,0 +1,413 @@
+.vsdv-main-content {
+  display: flex;
+  width: 1100px;
+  height: 100%; /* 👈 phải 100% để ăn theo 100vh của container */
+  background: #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-left: 200px;
+  margin-top: 40px;
+}
+.vsdv-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;         /* 👈 đổi từ left → right */
+  width: 36px;
+  height: 36px;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  color: #000;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+
+.vsdv-main-content {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  width: 1200px; /* ✅ Tăng chiều ngang từ 600px lên 800px */
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  margin-left: 160px;
+  margin-right: 40px;
+  margin-top: 60px;
+}
+
+
+.vsdv-video-section {
+  flex: 6;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  margin-top: 20px; /* ✅ Thêm dòng này */
+}
+
+
+.vsdv-video {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  border-radius: 8px;
+}
+
+.vsdv-info-section {
+  flex: 4;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  margin-top: 20px; /* ✅ Thêm dòng này */
+}
+
+
+.vsdv-user-info {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.vsdv-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.vsdv-username {
+  font-weight: bold;
+  font-size: 16px;
+  color: #111;
+}
+
+.vsdv-caption {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.vsdv-meta {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  font-size: 18px;
+  align-items: center;
+}
+
+.vsdv-meta svg {
+  font-size: 20px;
+}
+
+.vsdv-comments-section {
+  margin-top: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.vsdv-comment-list {
+  margin-top: 10px;
+}
+
+.vsdv-comment-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #222;
+}
+
+.vsdv-comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.vsdv-comment-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  margin-bottom: 30px;
+  padding: 0 10px;
+}
+.vsdv-comment-input__textarea {
+  flex: 1;
+  min-height: 40px;
+  max-height: 100px;
+  resize: vertical;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.vsdv-input-field {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+
+/* Vùng chứa bình luận */
+.vsdv-comments-section {
+  margin-top: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 300px;
+  padding-right: 6px;
+}
+
+/* Danh sách tất cả các thread */
+.vsdv-comment-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Một thread gồm comment chính và các reply */
+.vsdv-comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Comment chính hoặc phản hồi */
+.vsdv-comment-item {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  color: #161823;
+}
+
+/* Phản hồi được thụt vào */
+.vsdv-comment-item--reply {
+  margin-left: 40px;
+}
+
+/* Avatar */
+.vsdv-comment-item__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Nội dung bình luận */
+.vsdv-comment-item__body {
+  flex: 1;
+}
+
+/* Tên người dùng */
+.vsdv-comment-item__name {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+/* Text "↳ @username" khi reply */
+.vsdv-comment-item__replying {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+/* Nội dung comment */
+.vsdv-comment-item__text {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+/* Nút trả lời hoặc xoá */
+.vsdv-comment-item__reply-btn,
+.vsdv-comment-item__delete {
+  background: none;
+  border: none;
+  color: #3b3b3b;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 10px;
+}
+
+.vsdv-comment-item__reply-btn:hover,
+.vsdv-comment-item__delete:hover {
+  color: #ff2c55;
+}
+
+/* Box nhập phản hồi */
+.vsdv-reply-box {
+  margin-top: 6px;
+  margin-left: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vsdv-reply-box__input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.vsdv-reply-box__send,
+.vsdv-reply-box__cancel {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.vsdv-reply-box__send {
+  background-color: #ff2c55;
+  color: white;
+}
+
+.vsdv-reply-box__cancel {
+  background-color: #ddd;
+  color: #333;
+}
+
+/* Nút xem thêm phản hồi */
+.vsdv-comment-thread__toggle {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #3b3b3b;
+  margin-left: 40px;
+  cursor: pointer;
+}
+
+.vsdv-comment-thread__toggle:hover {
+  color: #ff2c55;
+}
+
+/* Input bình luận chính bên dưới */
+.vsdv-comment-input {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+
+.vsdv-comment-input__submit {
+  padding: 6px 14px;
+  font-size: 13px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ff2c55;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  height: 36px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Xóa các thuộc tính gây dãn */
+  min-width: unset;
+  width: auto;
+  flex-shrink: 0; /* Giữ kích thước không bị ép */
+}
+
+.vsdv-comment-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.vsdv-comment-item__menu-wrapper {
+  position: relative;
+}
+
+.vsdv-comment-item__menu-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+  padding: 4px;
+}
+
+.vsdv-comment-item__menu-dropdown {
+  position: absolute;
+  top: 22px;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+  width: 150px;
+}
+
+.vsdv-comment-item__menu-option {
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  color: red;
+}
+
+.vsdv-comment-item__menu-option:hover {
+  background-color: #ffeaea;
+}
+.vsdv-comment-section__scroll-wrapper {
+  max-height: 300px;
+  overflow-y: auto;   /* Cuộn dọc */
+  overflow-x: hidden; /* Không cho cuộn ngang */
+  padding-right: 8px;
+}
+
+.vsdv-comment-section__scroll-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vsdv-comment-section__scroll-wrapper::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+/* Auto-resize textarea chung */
+.vsdv-auto-resize-textarea {
+  max-width: 420px;
+  width: 100%;
+  min-height: 40px;
+  font-size: 1rem;
+  line-height: 1.4;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: inherit;
+  word-wrap: break-word;
+}

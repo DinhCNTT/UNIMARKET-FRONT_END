@@ -1,0 +1,367 @@
+/* Container bao cả thanh và popup - dùng flex hàng ngang */
+.video-search-container {
+  position: fixed;
+  top: 60px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 10000;
+  gap: 8px;
+  transition: width 0.35s ease;
+}
+
+/* Thanh tìm kiếm - nút */
+.video-search-btn {
+  display: flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: width 0.35s ease, border-radius 0.35s ease, padding 0.35s ease;
+  color: #333;
+  font-weight: 600;
+  outline-offset: 2px;
+  outline-color: transparent;
+  outline-style: solid;
+  outline-width: 2px;
+}
+
+.video-search-btn:focus {
+  outline-color: #3b82f6;
+}
+
+/* Thanh lớn (ban đầu) */
+.video-search-btn.large {
+  width: 140px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 20px;
+  font-size: 16px;
+  gap: 6px;
+}
+
+/* Thanh nhỏ (khi popup mở) - hình tròn */
+.video-search-btn.small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Text "Search" chỉ hiện khi thanh lớn */
+.search-btn-text {
+  user-select: none;
+}
+/* Phần bao bọc bên trong popup để tạo khối liền mạch */
+
+
+/* Popup trượt ngang bên phải nút 🔍 */
+.video-search-popup {
+  margin-top: 30px; /* ← dịch xuống thêm */
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 8px 16px;
+  display: flex;
+  min-width: 435px;
+  max-width: 320px;
+  flex-direction: column;
+  transform: translateX(-20px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s ease;
+  user-select: none;
+}
+
+.video-search-popup-body {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* Ẩn các phần vượt ra ngoài border-radius */
+  display: flex;
+  flex-direction: column;
+  min-width: 435px;
+  max-width: 320px;
+}
+
+/* Khi mở popup */
+.video-search-popup.visible {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* Form input với icon và nút đóng */
+.video-search-popup-form {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: white;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Icon tìm kiếm bên trái input */
+.popup-input-icon {
+  position: absolute;
+  left: 12px;
+  color: #999;
+  pointer-events: none;
+}
+
+/* Input tìm kiếm lớn */
+.video-search-popup-input {
+  flex: 1;
+  padding: 10px 40px 10px 42px; /* trái đủ chỗ icon, phải chừa nút */
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+  color: #222;
+}
+
+.video-search-popup-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 6px #3b82f6aa;
+}
+
+/* Nút đóng popup */
+.popup-close-btn {
+  position: absolute;
+  right: 16px;
+  background: #f0f0f0;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.popup-close-btn:hover {
+  background-color: #e0e0e0;
+  color: #000;
+}
+
+
+/* Danh sách lịch sử tìm kiếm */
+.video-search-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  user-select: text;
+}
+
+/* Mỗi dòng lịch sử */
+.video-search-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Nút chọn lại từ khóa lịch sử */
+.history-keyword-btn {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #222;
+  padding: 0;
+  font-size: 15px;
+}
+
+.history-keyword-btn:hover {
+  text-decoration: underline;
+}
+
+.history-remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #999;
+
+  /* Kích thước vuông và nhỏ */
+  width: 24px;
+  height: 24px;
+
+  /* Làm tròn thành hình tròn */
+  border-radius: 50%;
+
+  /* Căn nội dung ở giữa */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  transition: color 0.3s ease;
+  font-size: 16px; /* Có thể chỉnh nhỏ hơn hoặc lớn hơn tùy icon hoặc chữ */
+}
+
+.history-remove-btn:hover {
+  color: #e11d48;
+}
+
+.video-search-popup {
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* nhẹ nhàng hơn */
+  border-radius: 12px;
+  padding: 0; /* Để input + list chiếm hết popup */
+  display: flex;
+  flex-direction: column;
+  min-width: 450px;
+  max-width: 450px;
+  transform: translateX(-20px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s ease;
+  user-select: none;
+  z-index: 10;
+  overflow: hidden; /* để bo tròn clip nội dung */
+}
+
+/* Khi mở popup */
+.video-search-popup.visible {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* Form input bao quanh không có margin để dính sát popup */
+.video-search-popup-form {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e0e0e0; /* border nhẹ phân chia input và list */
+  background: white;
+}
+
+/* Icon tìm kiếm bên trái input */
+.popup-input-icon {
+  position: absolute;
+  left: 16px;
+  color: #999;
+  pointer-events: none;
+}
+
+/* Input tìm kiếm không viền, dùng border-bottom của form */
+.video-search-popup-input {
+  flex-grow: 1;
+  padding: 10px 40px 10px 40px;
+  border: none;
+  font-size: 16px;
+  outline: none;
+  background: transparent;
+  color: #222;
+  transition: box-shadow 0.25s ease;
+}
+
+.video-search-popup-input::placeholder {
+  color: #aaa;
+}
+
+.video-search-popup-input:focus {
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25); /* nhẹ nhàng hơn, màu xanh dương */
+}
+
+/* Nút đóng popup */
+/* Nút đóng popup - nhỏ lại và bo tròn */
+.popup-close-btn {
+  position: absolute;
+  right: 12px;
+  background: #f0f0f0;      /* nền nhẹ cho rõ hình tròn */
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  padding: 4px;             /* nhỏ hơn padding cũ */
+  width: 28px;              /* tạo kích thước vuông */
+  height: 28px;
+  border-radius: 50%;       /* bo tròn hoàn toàn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.popup-close-btn:hover {
+  color: #111;
+  background-color: #e0e0e0;  /* đổi nền khi hover */
+}
+
+/* Danh sách lịch sử tìm kiếm */
+.video-search-history-list {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  background: white;
+  user-select: text;
+}
+
+/* Mỗi dòng lịch sử */
+.video-search-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  font-size: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.video-search-history-item:hover {
+  background-color: #f9faff;
+}
+
+/* Nút chọn lại từ khóa lịch sử */
+.history-keyword-btn {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #222;
+  padding: 0;
+  font-size: 15px;
+}
+
+.history-keyword-btn:hover {
+  text-decoration: underline;
+}
+
+/* Nút xóa lịch sử */
+.history-remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #bbb;
+  padding: 0 6px;
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.history-remove-btn:hover {
+  color: #e11d48;
+}

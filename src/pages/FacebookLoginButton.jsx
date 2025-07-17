@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { FaFacebookF } from 'react-icons/fa';
+import './FacebookLoginButton.css';
 
 const FacebookLoginButton = () => {
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Load Facebook SDK
   useEffect(() => {
     if (window.FB) {
       setSdkReady(true);
@@ -12,7 +13,7 @@ const FacebookLoginButton = () => {
 
     window.fbAsyncInit = function () {
       window.FB.init({
-        appId: '1838308526739877', // 👉 Thay bằng App ID của bạn
+        appId: '1838308526739877',
         cookie: true,
         xfbml: true,
         version: 'v19.0',
@@ -29,7 +30,6 @@ const FacebookLoginButton = () => {
     }
   }, []);
 
-  // Gửi accessToken đến backend
   const sendAccessTokenToBackend = async (accessToken) => {
     try {
       const res = await fetch('http://localhost:5133/api/emailverification/facebook-login', {
@@ -42,14 +42,8 @@ const FacebookLoginButton = () => {
 
       if (res.ok) {
         alert('🎉 Đăng nhập thành công');
-        console.log('Thông tin người dùng:', data);
-
-        // Lưu token vào localStorage (tuỳ bạn)
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
-
-        // Ví dụ điều hướng sang trang chính (nếu dùng React Router)
-        // navigate('/market');
       } else {
         alert(data.message || '❌ Đăng nhập thất bại');
       }
@@ -79,7 +73,12 @@ const FacebookLoginButton = () => {
   };
 
   return (
-    <button onClick={handleFacebookLogin} disabled={!sdkReady}>
+    <button
+      onClick={handleFacebookLogin}
+      disabled={!sdkReady}
+      className="facebook-button"
+    >
+      <FaFacebookF className="facebook-icon" />
       {sdkReady ? 'Đăng nhập bằng Facebook' : 'Đang tải Facebook...'}
     </button>
   );

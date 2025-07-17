@@ -22,6 +22,11 @@ import CapNhatTin from "../components/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
 import TrangChat from "../pages/TrangChat";
 import AccountSettings from "../components/AccountSettings/AccountSettings";
+import VideoDetailViewer from "../components/VideoDetailViewer";
+import VideoSearchPage from "../components/VideoSearchPage";
+import VideoSearchDetailViewer from "../components/VideoSearchDetailViewer";
+import UserProfilePage from "../pages/UserProfilePage";
+import TinDangDaLuu from "../components/TinDangDaLuu";
 
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
@@ -83,6 +88,9 @@ function AppRoutes() {
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
       <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
+      <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
+
+       {/* Chi tiết tin đăng, có thêm onOpenChat callback để chuyển sang chat */}
       <Route
         path="/tin-dang/:id"
         element={<ChiTietTinDang onOpenChat={(maCuocTroChuyen) => {
@@ -97,6 +105,15 @@ function AppRoutes() {
 
       {/* ✅ Route mới: Cài đặt tài khoản */}
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
+
+       {/* Route video */}
+       <Route path="/video/:maTinDang" element={<VideoDetailViewer />} />
+       <Route path="/search/:keyword" element={<VideoSearchPage />} />
+       <Route path="/video/:maTinDang" element={<VideoSearchDetailViewer />} />
+       <Route path="/video-search-detail/:maTinDang" element={<VideoSearchDetailViewer />} />
+       
+        {/* Route trang hồ sơ người dùng */}
+      <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
     </Routes>
   );
 }
