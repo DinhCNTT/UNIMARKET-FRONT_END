@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaCommentDots } from "react-icons/fa";
 import axios from "axios";
 import TopNavbar from "./TopNavbar";
 import defaultAvatar from "../assets/default-avatar.png";
+import { AuthContext } from '../context/AuthContext'; // ✅ Import AuthContext
 import "./VideoSearchDetailViewer.css";
 
 export default function VideoSearchDetailViewer() {
@@ -18,7 +19,11 @@ export default function VideoSearchDetailViewer() {
   const [replyContent, setReplyContent] = useState("");
   const [activeReplyId, setActiveReplyId] = useState(null);
   const [expandedThreads, setExpandedThreads] = useState({});
-  const currentUserId = localStorage.getItem("userId");
+  
+  // Sử dụng AuthContext thay vì localStorage
+  const { user, token } = useContext(AuthContext);
+  const currentUserId = user?.id;
+  
   const location = useLocation();
   const { videoList: passedVideoList, initialIndex } = location.state || {};
   const [videoList, setVideoList] = useState(passedVideoList || []);
@@ -42,7 +47,6 @@ export default function VideoSearchDetailViewer() {
 
   const fetchVideoDetail = async () => {
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`http://localhost:5133/api/Video/${maTinDang}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -68,7 +72,6 @@ export default function VideoSearchDetailViewer() {
   };
 
   const handleLike = async () => {
-    const token = localStorage.getItem("token");
     if (!token) return alert("Bạn cần đăng nhập để tym video.");
     try {
       const res = await fetch(`http://localhost:5133/api/Video/${maTinDang}/like`, {
@@ -85,7 +88,6 @@ export default function VideoSearchDetailViewer() {
   };
 
   const handleSubmitComment = async () => {
-    const token = localStorage.getItem("token");
     if (!token || !newComment.trim()) return;
     try {
       await axios.post(
@@ -101,7 +103,6 @@ export default function VideoSearchDetailViewer() {
   };
 
   const handleReplySubmit = async (parentId) => {
-    const token = localStorage.getItem("token");
     if (!token || !replyContent.trim()) return;
     try {
       await axios.post(
@@ -121,7 +122,6 @@ export default function VideoSearchDetailViewer() {
   };
 
   const handleDeleteComment = async (commentId) => {
-    const token = localStorage.getItem("token");
     if (!token) return;
     if (!window.confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
     try {

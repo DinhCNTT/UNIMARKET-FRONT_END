@@ -35,7 +35,7 @@ const TopNavbar = () => {
     setSelectedSubCategory,
   } = useContext(CategoryContext);
   const { setSearchTerm } = useContext(SearchContext);
-  const { user, avatarUrl, logout } = useContext(AuthContext); // Thêm avatarUrl từ context
+  const { user, avatarUrl, logout } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -159,17 +159,68 @@ const TopNavbar = () => {
     navigate("/market");
   };
 
-  const handlePostClick = () => {
+  // ✅ Hàm kiểm tra thông tin user từ server để đảm bảo dữ liệu mới nhất
+  const checkUserInfo = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token || !user?.id) return false;
+
+      const response = await axios.get(`http://localhost:5133/api/user/profile/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const serverUser = response.data;
+      console.log("Server user data:", serverUser);
+      console.log("Current user data:", user);
+      
+      // Kiểm tra email đã xác minh
+      if (!serverUser.emailConfirmed) {
+        return { valid: false, message: "Bạn cần xác minh email để đăng tin." };
+      }
+      
+      // Kiểm tra số điện thoại (kiểm tra cả server và client)
+      const serverPhone = serverUser.phoneNumber?.trim();
+      const clientPhone = user.phoneNumber?.trim();
+      
+      console.log("Phone check:", {
+        serverPhone,
+        clientPhone,
+        hasServerPhone: !!serverPhone,
+        hasClientPhone: !!clientPhone
+      });
+      
+      if (!serverPhone || serverPhone === "") {
+        return { valid: false, message: "Bạn cần cập nhật số điện thoại để đăng tin." };
+      }
+      
+      return { valid: true };
+      
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra thông tin user:", error);
+      // Fallback về dữ liệu local nếu API lỗi
+      return { valid: false, message: "Không thể xác thực thông tin. Vui lòng thử lại." };
+    }
+  };
+
+  const handlePostClick = async () => {
     if (!user) {
       alert("Vui lòng đăng nhập để đăng tin.");
       navigate("/login");
       return;
     }
-    if (!user.emailConfirmed) {
-      alert("Bạn cần xác minh email để đăng tin.");
+    
+    // ✅ Kiểm tra thông tin user từ server
+    const validation = await checkUserInfo();
+    
+    if (!validation.valid) {
+      alert(validation.message);
       navigate("/cai-dat-tai-khoan");
       return;
     }
+    
+    // ✅ Nếu tất cả điều kiện đều đạt, cho phép đăng tin
     navigate("/dang-tin");
   };
 
