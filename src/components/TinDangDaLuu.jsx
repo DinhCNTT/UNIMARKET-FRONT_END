@@ -116,53 +116,49 @@ const TinDangDaLuu = () => {
           {posts.length === 0 ? (
             <p style={{ color: "#888", marginTop: 32 }}>Bạn chưa lưu tin đăng nào.</p>
           ) : (
-            <div style={{ position: 'relative' }}>
-              {posts.length > 4 && (
-                <>
-                  <button
-                    style={{ position: 'absolute', left: -40, top: '40%', zIndex: 3, background: '#fff', border: '1px solid #eee', borderRadius: '50%', width: 36, height: 36, fontSize: 20, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-                    onClick={() => setStartIdx(idx => Math.max(0, idx - 1))}
-                  >
-                    &#60;
-                  </button>
-                  <button
-                    style={{ position: 'absolute', right: -40, top: '40%', zIndex: 3, background: '#fff', border: '1px solid #eee', borderRadius: '50%', width: 36, height: 36, fontSize: 20, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-                    onClick={() => setStartIdx(idx => Math.min(posts.length - 4, idx + 1))}
-                  >
-                    &#62;
-                  </button>
-                </>
-              )}
-              <div className="post-list" style={{ display: 'flex', gap: 18, overflow: 'hidden', minHeight: 220 }}>
-                {posts.slice(startIdx, startIdx + 4).map(post => (
-                  <div key={post.maTinDang} className="post-item" style={{ minWidth: 240, maxWidth: 260, flex: '0 0 25%', position: 'relative' }}>
-                    <div style={{ position: "absolute", top: 10, right: 10, zIndex: 2, cursor: "pointer" }}
-                      onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemove(post.maTinDang); }}
-                      title="Bỏ lưu tin này"
-                    >
-                      <FaHeart style={{ color: "#e74c3c", fontSize: 20 }} />
-                    </div>
-                    <div className="post-link" style={{ cursor: "pointer" }} onClick={() => handleImageClick(post.maTinDang)}>
-                      <div className="post-images-tin-dang-danh-cho-ban">
-                        {post.images && post.images.length > 0 ? (
-                          <img
-                            src={post.images[0].startsWith("http") ? post.images[0] : `http://localhost:5133${post.images[0]}`}
-                            alt="Ảnh đại diện"
-                            className="post-image"
-                          />
-                        ) : (
-                          <p>Không có ảnh.</p>
-                        )}
+            <div style={{ width: '100%' }}>
+              {/* Chia posts thành các nhóm 5 */}
+              {(() => {
+                const rows = [];
+                let i = 0;
+                while (i < posts.length) {
+                  rows.push(posts.slice(i, i + 5));
+                  i += 5;
+                }
+                return rows.map((row, idx) => (
+                  <div key={idx} className="post-list" style={{ display: 'flex', gap: 10, overflow: 'hidden', minHeight: 160, marginBottom: 16 }}>
+                    {row.map(post => (
+                      <div key={post.maTinDang} className="post-item" style={{ minWidth: 150, maxWidth: 170, flex: '0 0 20%', position: 'relative' }}>
+                        <div style={{ position: "absolute", top: 8, right: 8, zIndex: 2, cursor: "pointer" }}
+                          onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemove(post.maTinDang); }}
+                          title="Bỏ lưu tin này"
+                        >
+                          <FaHeart style={{ color: "#e74c3c", fontSize: 18 }} />
+                        </div>
+                        <div className="post-link" style={{ cursor: "pointer" }} onClick={() => handleImageClick(post.maTinDang)}>
+                          <div className="post-images-tin-dang-danh-cho-ban" style={{ width: '100%', height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 7, background: '#f7f7f7' }}>
+                            {post.images && post.images.length > 0 ? (
+                              <img
+                                src={post.images[0].startsWith("http") ? post.images[0] : `http://localhost:5133${post.images[0]}`}
+                                alt="Ảnh đại diện"
+                                className="post-image"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 7 }}
+                              />
+                            ) : (
+                              <p>Không có ảnh.</p>
+                            )}
+                          </div>
+                          <div className="post-info">
+                            <h3 style={{ fontSize: 13, margin: '7px 0 3px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.tieuDe}</h3>
+                            <p className="price" style={{ fontSize: 12, color: '#e67e22', margin: 0 }}>{post.gia?.toLocaleString()} VND</p>
+                            <p className="post-description" style={{ fontSize: 11, color: '#888', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.diaChi}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="post-info">
-                        <h3>{post.tieuDe}</h3>
-                        <p className="price">{post.gia?.toLocaleString()} VND</p>
-                        <p className="post-description">{post.diaChi}</p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                ));
+              })()}
             </div>
           )}
         </div>
