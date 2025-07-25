@@ -23,6 +23,20 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
+  // Hàm sắp xếp chat theo thời gian tin nhắn mới nhất
+  const sortChatsByLatestMessage = (chats) => {
+    return [...chats].sort((a, b) => {
+      // Ưu tiên cuộc trò chuyện có tin nhắn chưa đọc
+      if (a.hasUnreadMessages && !b.hasUnreadMessages) return -1;
+      if (!a.hasUnreadMessages && b.hasUnreadMessages) return 1;
+      
+      // Sau đó sắp xếp theo thời gian cập nhật (mới nhất lên trên)
+      const timeA = new Date(a.thoiGianCapNhat || a.thoiGianTao).getTime();
+      const timeB = new Date(b.thoiGianCapNhat || b.thoiGianTao).getTime();
+      return timeB - timeA;
+    });
+  };
+
   // Hiển thị xác nhận xóa cuộc trò chuyện
   const handleShowDeleteConfirm = (chatId) => {
     setShowDeleteConfirm(chatId);
@@ -109,7 +123,8 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         maNguoiGuiCuoi: chat.maNguoiGui || null,
         loaiTinNhanCuoi: chat.loaiTinNhan || null,
         anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
-        thoiGianTao: new Date().toISOString(),
+        thoiGianTao: chat.thoiGianTao ?? new Date().toISOString(),
+        thoiGianCapNhat: new Date().toISOString(), // Thêm thời gian cập nhật
         hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
         isBlocked: chat.isBlocked ?? false,
       };
@@ -122,15 +137,17 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         // Cập nhật danh sách chat ẩn
         setHiddenChatList((prev) => {
           const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+          let updatedList;
           if (exists) {
-            return prev.map((c) =>
+            updatedList = prev.map((c) =>
               c.maCuocTroChuyen === newChat.maCuocTroChuyen 
                 ? { ...newChat, hasUnreadMessages: false } // Không hiển thị thông báo
                 : c
             );
           } else {
-            return [...prev, { ...newChat, hasUnreadMessages: false }];
+            updatedList = [...prev, { ...newChat, hasUnreadMessages: false }];
           }
+          return sortChatsByLatestMessage(updatedList);
         });
         
         // Không cập nhật danh sách chat chính
@@ -140,13 +157,16 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       // Cập nhật danh sách chat chính (không bị ẩn)
       setChatList((prev) => {
         const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+        let updatedList;
         if (exists) {
-          return prev.map((c) =>
+          updatedList = prev.map((c) =>
             c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
           );
         } else {
-          return [...prev, newChat];
+          updatedList = [...prev, newChat];
         }
+        // Sắp xếp lại danh sách sau khi cập nhật
+        return sortChatsByLatestMessage(updatedList);
       });
     });
 
@@ -159,13 +179,19 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
         return;
       }
 
-      setChatList((prev) =>
-        prev.map((c) =>
+      setChatList((prev) => {
+        const updatedList = prev.map((c) =>
           c.maCuocTroChuyen === data.maCuocTroChuyen
-            ? { ...c, hasUnreadMessages: data.hasUnreadMessages }
+            ? { 
+                ...c, 
+                hasUnreadMessages: data.hasUnreadMessages,
+                thoiGianCapNhat: new Date().toISOString() // Cập nhật thời gian
+              }
             : c
-        )
-      );
+        );
+        // Sắp xếp lại nếu có thay đổi trạng thái tin nhắn
+        return sortChatsByLatestMessage(updatedList);
+      });
     });
 
     connection.on("CapNhatTinDang", (updatedPost) => {
@@ -229,6 +255,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
             loaiTinNhanCuoi: chat.tinNhanCuoi?.loaiTinNhan || null,
             hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
             isBlocked: chat.isBlocked ?? false,
+            thoiGianCapNhat: chat.thoiGianCapNhat || chat.thoiGianTao || new Date().toISOString(),
           };
           
           if (currentHiddenChats.includes(chat.maCuocTroChuyen)) {
@@ -238,8 +265,9 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
           }
         });
         
-        setChatList(visibleChats);
-        setHiddenChatList(hiddenChats);
+        // Sắp xếp cả 2 danh sách
+        setChatList(sortChatsByLatestMessage(visibleChats));
+        setHiddenChatList(sortChatsByLatestMessage(hiddenChats));
       } catch (error) {
         console.error("Lỗi lấy danh sách chat:", error);
       }
@@ -264,6 +292,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
       chatsToFilter = hiddenChatList;
     }
     
+    // Lọc theo từ khóa tìm kiếm và giữ nguyên thứ tự đã sắp xếp
     return chatsToFilter.filter((chat) =>
       chat.tieuDeTinDang.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -294,10 +323,13 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     
     // Di chuyển từ danh sách chính sang danh sách ẩn
     setChatList((prev) => prev.filter(chat => !selectedToHide.includes(chat.maCuocTroChuyen)));
-    setHiddenChatList((prev) => [
-      ...prev,
-      ...chatsToHide.map(chat => ({ ...chat, hasUnreadMessages: false }))
-    ]);
+    setHiddenChatList((prev) => {
+      const updatedList = [
+        ...prev,
+        ...chatsToHide.map(chat => ({ ...chat, hasUnreadMessages: false }))
+      ];
+      return sortChatsByLatestMessage(updatedList);
+    });
     
     setSelectedToHide([]);
     setIsHideMode(false);
@@ -319,7 +351,10 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
     
     // Di chuyển từ danh sách ẩn sang danh sách chính
     setHiddenChatList((prev) => prev.filter(chat => !selectedToHide.includes(chat.maCuocTroChuyen)));
-    setChatList((prev) => [...prev, ...chatsToUnhide]);
+    setChatList((prev) => {
+      const updatedList = [...prev, ...chatsToUnhide];
+      return sortChatsByLatestMessage(updatedList);
+    });
     
     setSelectedToHide([]);
     setIsHideMode(false);
