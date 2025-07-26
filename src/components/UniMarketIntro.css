@@ -1,16 +1,14 @@
 .unimarket-intro-container {
-    margin-top: 2rem;
-    padding: 1rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    font-family: sans-serif;
-    color: #333;
-    max-width: 965px;
-    margin-left: 260px;
-    margin-right: auto;
-  }
-  
+  max-width: 965px;
+  margin: 2rem auto; /* ✅ căn giữa ngang */
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  font-family: sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
   .unimarket-intro-content {
     max-height: calc(1.5em * 8); /* 8 dòng, giả sử mỗi dòng 1.5em */
     overflow: hidden;

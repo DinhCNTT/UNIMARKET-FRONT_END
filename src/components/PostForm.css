@@ -262,14 +262,14 @@
 }
 
 .custom-category-section {
-  max-width: 900px; /* Tăng chiều rộng */
-  width: 1000%; /* Giữ chiều rộng linh hoạt */
-  height: 500px; /* Tăng chiều cao */
-  background-color: white; /* Màu nền trắng */
-  padding: 30px; /* Tăng khoảng cách bên trong */
-  border-radius: 12px; /* Bo góc mềm mại */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Hiệu ứng đổ bóng */
-  margin: 20px auto 0 300px; /* Dịch sang phải 300px */
-  position: relative; /* Giữ nguyên relative để header nằm trong section */
-  overflow: hidden; /* Đảm bảo không bị tràn */
+  max-width: 900px;                 /* Giới hạn chiều ngang */
+  width: 100%;                      /* Chiếm toàn bộ chiều ngang khung cha */
+  height: 500px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin: 100px auto 0 auto;        /* ⬅️ Căn giữa ngang, đẩy xuống 100px */
+  position: relative;
+  overflow: hidden;
 }
