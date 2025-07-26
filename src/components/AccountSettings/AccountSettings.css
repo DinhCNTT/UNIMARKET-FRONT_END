@@ -8,6 +8,8 @@
 }
 
 .acc-sidebar {
+  position: relative;
+  z-index: 2; /* ✅ Nằm trên acc-content */
   width: 260px;
   background-color: #ffffff;
   border-radius: 12px;
@@ -57,7 +59,8 @@
 .acc-content {
   flex: 1;
   display: flex;
-  justify-content: center;  /* ✅ Căn giữa ngang */
-  align-items: flex-start;  /* ✅ Bắt đầu từ trên */
+  justify-content: center;   /* Căn giữa ngang */
+  align-items: flex-start;   /* Căn từ trên */
   padding: 40px;
+  transform: translateX(-240px); /* ✅ Đẩy sang trái 40px */
 }

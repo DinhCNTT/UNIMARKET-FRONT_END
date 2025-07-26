@@ -1,13 +1,13 @@
 .video-detail-wrapper {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: center;  /* ✅ Căn giữa ngang */
   align-items: flex-start;
   gap: 20px;
 
-  /* Dịch toàn bộ cụm video + avatar xuống dưới và qua phải */
-  margin-top: 85px;
-  margin-left: 560px;
+  margin-top: 110px;   /* ✅ Đẩy xuống thêm */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Video + overlay */

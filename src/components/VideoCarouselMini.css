@@ -9,15 +9,15 @@
   background: white;
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-top: 4rem;
+  margin-top: 1rem; /* ⬅️ Đẩy lên cao hơn */
   margin-left: auto;
   margin-right: auto;
   width: 100%;
   max-width: 960px;
   position: relative;
   z-index: 5;
-  transform: translateX(125px);
 }
+
 
 .video-carousel-mini-title {
   font-size: 1.5rem;

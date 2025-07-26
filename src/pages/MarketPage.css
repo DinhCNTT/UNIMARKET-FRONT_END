@@ -6,3 +6,9 @@
 .login-prompt {
   padding-left: 500px;
 }
+/* Đảm bảo các section được căn giữa độc lập */
+.section-wrapper {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}

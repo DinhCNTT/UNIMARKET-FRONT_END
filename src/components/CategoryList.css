@@ -1,21 +1,16 @@
 .category-container {
-    width: 100%;
-    max-width: 960px; /* Giữ nguyên chiều rộng */
-    height: 350px; /* Giữ nguyên chiều dài */
-    margin: 0 auto;
-    text-align: center;
-    position: relative;
-    margin-top: 215px; /* Thay vì top, dùng margin-top để di chuyển container xuống dưới */
-    top: 50px;
-    overflow: hidden;
-    padding: 20px;
-    margin-left: 173px; /* Tăng giá trị để dịch phải */
-    transform: translateX(84px); /* Dịch phải thêm */
-    background-color: #FFFAFA; /* Đổi thành màu trắng */
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 960px;
+  height: 350px;
+  margin: 275px auto 0 auto;
+  text-align: center;
+  position: relative;
+  padding: 20px;
+  background-color: #FFFAFA;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateX(-3px); /* 👈 đẩy qua trái 20px */
 }
-
 
 .category-title {  
     font-size: 20px;

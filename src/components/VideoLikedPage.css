@@ -1,0 +1,88 @@
+.profile-container {
+  max-width: 900px;
+  margin: 0 auto; /* 👈 Căn giữa theo chiều ngang */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff2e63;
+}
+
+.profile-info {
+  margin-left: 15px;
+}
+
+.edit-button {
+  padding: 5px 12px;
+  background-color: #ff2e63;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tab-header {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.tab.active {
+  font-weight: bold;
+  color: #ff2e63;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  justify-content: center; /* 👈 Căn giữa lưới video */
+  width: 100%;
+}
+.video-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.video-thumb {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.video-stats {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif;
+  background-color: #fff;
+}

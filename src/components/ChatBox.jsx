@@ -9,7 +9,7 @@ import axios from "axios";
 import { FaImage, FaVideo, FaTimes, FaEllipsisV, FaTrash, FaClock, FaBan, FaUnlock } from "react-icons/fa";
 
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
-const CLOUDINARY_CLOUD_NAME = "dskwbav6r";
+const CLOUDINARY_CLOUD_NAME = "dcwe8drcu";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
 
 const ChatBox = ({ maCuocTroChuyen }) => {
