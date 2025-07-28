@@ -23,6 +23,7 @@
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 0.25rem;
+  text-align: left; /* ✅ Dịch sang trái */
 }
 
 .video-carousel-mini-title span {

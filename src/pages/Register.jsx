@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RegisterForm.css";
 import GoogleLoginButton from "./GoogleLoginButton"; // import nút Google
+import { toast } from "react-toastify";
 
 const RegisterForm = () => {
   const [fullName, setFullName] = useState("");
@@ -18,27 +19,50 @@ const RegisterForm = () => {
     // Kiểm tra số điện thoại
     const phoneRegex = /^[0-9]{10,11}$/;
     if (!phoneRegex.test(phoneNumber)) {
-      alert("❌ Số điện thoại không hợp lệ! Vui lòng nhập 10-11 số.");
+      toast.error("❌ Số điện thoại không hợp lệ!", {
+  position: "top-right",
+  autoClose: 3500,
+  closeButton: false,
+  icon: "📱",
+  style: {
+    background: "#fff1f2",
+    color: "#b91c1c",
+    fontWeight: "600",
+    borderRadius: "12px",
+    padding: "14px 16px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+  },
+});
       return;
     }
 
     // Kiểm tra email là Gmail
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!gmailRegex.test(email)) {
-      alert("❌ Email phải là địa chỉ Gmail (ví dụ: example@gmail.com).");
+      toast.error("Email phải là địa chỉ Gmail", {
+  icon: "📧",
+  ...sameStyle
+});
       return;
     }
 
     // Kiểm tra mật khẩu mạnh
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
     if (!passwordRegex.test(password)) {
-      alert("❌ Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+      toast.error(" Mật khẩu phải đủ mạnh", {
+  icon: "🔒",
+  ...sameStyle
+});
+
       return;
     }
 
     // Kiểm tra xác nhận mật khẩu
     if (password !== confirmPassword) {
-      alert("❌ Mật khẩu xác nhận không khớp.");
+      toast.error("❌ Mật khẩu xác nhận không khớp", {
+  icon: "🔁",
+  ...sameStyle
+});
       return;
     }
 
@@ -74,10 +98,40 @@ const RegisterForm = () => {
         }
       }
 
-      alert("✅ Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản trước khi đăng nhập.");
+      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác minh tài khoản.", {
+  position: "top-right",
+  autoClose: 4000,
+  closeButton: false,
+  icon: "📬",
+  style: {
+    background: "#f0fff4",
+    color: "#065f46",
+    fontWeight: "600",
+    borderRadius: "12px",
+    padding: "14px 16px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+  },
+});
       navigate("/login");
     } catch (error) {
-      alert("❌ Lỗi: " + error.message);
+      toast.error(`Lỗi: ${error.message}`, {
+  position: "top-right",
+  autoClose: 4000,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  hideProgressBar: false,
+  icon: "⚠️", // hoặc dùng icon như ❌ nếu muốn
+  style: {
+    background: "#fff",
+    color: "#d32f2f",
+    fontWeight: "500",
+    fontSize: "15px",
+    borderLeft: "5px solid #d32f2f",
+    boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
+    borderRadius: "8px",
+  },
+});
     }
   };
 

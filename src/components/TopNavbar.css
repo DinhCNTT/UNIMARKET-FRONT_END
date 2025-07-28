@@ -437,35 +437,106 @@
   font-weight: 500;
 }
 
+/* Icon mở dropdown - to hơn, rõ hơn, có chuyển động */
 .dropdown-icon {
-  font-size: 12px;
+  font-size: 18px;
+  color: #333;
+  transition: transform 0.3s ease;
 }
 
+.account-section:hover .dropdown-icon {
+  transform: rotate(180deg); /* Hiệu ứng xoay khi hover */
+}
+
+/* Vùng chứa dropdown */
+.account-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Giao diện dropdown */
 .account-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
-  background: white;
+  background: #fff;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  z-index: 10;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  min-width: 230px;
+  padding: 8px 0;
+  font-family: "Inter", sans-serif;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
-.account-dropdown span {
-  padding: 5px 10px;
+.account-dropdown-title {
+  padding: 4px 16px;
+  font-weight: 500;
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dropdown-item {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
   cursor: pointer;
 }
 
-.account-dropdown span:hover {
-  background-color: #f0f0f0;
+.dropdown-icon {
+  font-size: 16px;
 }
-.account-section {
-  position: relative; /* Quan trọng để định vị dropdown */
+
+/* Icon màu riêng (tuỳ chọn) */
+.dropdown-item .fa-heart {
+  color: #ef4444;
 }
+.dropdown-item .fa-video {
+  color: #3b82f6;
+}
+.dropdown-item .fa-comment-dots,
+.dropdown-item .fa-comment-alt {
+  color: #10b981;
+}
+.dropdown-item .fa-cog {
+  color: #6366f1;
+}
+.dropdown-item .fa-sign-out-alt {
+  color: #f59e0b;
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 8px 0;
+  background-color: #eee;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 
 .post-btn-highlight {
   background-color: orange;
