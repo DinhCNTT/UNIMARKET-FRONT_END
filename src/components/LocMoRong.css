@@ -1,128 +1,176 @@
-/* LocMoRong.css */
-.loc-mo-rong-wrapper {
+/* LocMoRong.css - Elegant Yellow Theme */
+.loc-mo-rong-wrapper {  
   display: flex;
-  gap: 20px;
-  padding: 15px 0;
-  border-bottom: 1px solid #ddd;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb; /* Xám nhạt */
   margin-bottom: 20px;
   flex-wrap: wrap;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .loc-mo-rong-filter-item {
   position: relative;
 }
 
+/* Filter button - yellow style */
 .loc-mo-rong-button {
   background-color: #fff;
-  border: 1px solid orange;
-  padding: 6px 12px;
+  border: 1px solid #facc15; /* Vàng nhạt */
+  padding: 6px 14px;
   border-radius: 20px;
   cursor: pointer;
-  color: orange;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  color: #ca8a04; /* Vàng đậm hơn */
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .loc-mo-rong-button:hover {
-  background-color: #fff5e6;
+  background-color: #fffde7; /* Nền vàng nhạt khi hover */
+  border-color: #eab308; /* Vàng đậm hơn */
+  color: #b45309;
 }
 
-.loc-mo-rong-dropdown-gia{
+/* Dropdown common */
+.loc-mo-rong-dropdown-gia,
+.loc-mo-rong-dropdown-quan-huyen,
+.loc-mo-rong-dropdown-danh-muc-cha {
   position: absolute;
   top: 40px;
-  left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
+  left: -10px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  padding: 10px;
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.loc-mo-rong-dropdown-gia {
+  position: absolute;
+  top: 40px;
+  left: -10px;
   background-color: #fff;
   border: 1px solid #ccc;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 1000;
-  padding: 10px;
-  width: 260px; /* tăng chiều ngang */
-  max-height: 300px;
+  padding: 14px 16px;
+  width: 360px; /* Mở rộng đủ để không bị cuộn */
+  max-height: 320px;
   overflow-y: auto;
-  border-radius: 5px;
+  overflow-x: hidden; /* Ẩn cuộn ngang */
+  border-radius: 6px;
+  box-sizing: border-box;
 }
-.loc-mo-rong-dropdown-quan-huyen{
-    position: absolute;
-    top: 40px;
-    left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 1000;
-    padding: 10px;
-    width: 200px;
-    max-height: 300px;
-    overflow-y: auto;
-    border-radius: 5px;
-}
-.loc-mo-rong-dropdown-danh-muc-cha{
-    position: absolute;
-    top: 40px;
-    left: -10px; /* dịch sang trái nếu muốn lệch về bên phải phần gốc */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 1000;
-    padding: 10px;
-    width: 200px;
-    max-height: 300px;
-    overflow-y: auto;
-    border-radius: 5px;
-}
+.loc-mo-rong-dropdown-quan-huyen,
+.loc-mo-rong-dropdown-danh-muc-cha { width: 200px; }
 
+/* Option items */
 .loc-mo-rong-option {
-  padding: 8px;
+  padding: 8px 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  font-size: 14px;
+  color: #374151;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 .loc-mo-rong-option:hover {
-  background-color: #f5f5f5;
+  background-color: #fef9c3; /* Vàng nhạt highlight */
 }
 
+/* Input filter */
 .loc-mo-rong-input {
   width: 100%;
   margin-bottom: 8px;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.loc-mo-rong-input:focus {
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+  outline: none;
+}
+
+/* Apply button */
 .loc-mo-rong-apply-btn {
   width: 100%;
-  background-color: orange;
-  color: white;
+  background-color: #facc15;
+  color: #fff;
   border: none;
-  padding: 6px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  font-weight: bold;
+  transition: all 0.2s ease;
 }
 
 .loc-mo-rong-apply-btn:hover {
-  background-color: darkorange;
+  background-color: #eab308; /* Vàng đậm khi hover */
 }
 
 /* Slider và input giá trong lọc giá */
+/* Range slider - clean & modern */
 .loc-mo-rong-range-slider {
   display: flex;
   flex-direction: column;
+  align-items: center; /* Căn giữa slider */
   gap: 10px;
   margin-bottom: 12px;
+  width: 100%;
 }
 
+/* Input range - custom style */
 .loc-mo-rong-range-slider input[type="range"] {
-  width: 90%;
-  accent-color: orange;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, #fbbf24, #facc15); /* Vàng nhạt gradient */
+  border-radius: 4px;
+  appearance: none;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
+/* Track & thumb custom */
+.loc-mo-rong-range-slider input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #f59e0b;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+.loc-mo-rong-range-slider input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+.loc-mo-rong-range-slider input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #f59e0b;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+/* Price inputs - compact layout */
 .loc-mo-rong-price-inputs {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .loc-mo-rong-price-box {
@@ -132,83 +180,117 @@
 }
 
 .loc-mo-rong-price-box label {
-  font-size: 13px;
-  color: #555;
+  font-size: 12px;
+  color: #374151;
   margin-bottom: 4px;
   font-weight: 500;
 }
 
 .loc-mo-rong-price-box input {
-  padding: 6px;
-  border: 1px solid #ccc;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
-  width: 90%; /* hoặc 90% nếu muốn hẹp hơn nữa */
+  color: #111827;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.loc-mo-rong-price-box input:focus {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+  outline: none;
+}
 
-/* Nút xóa và áp dụng */
+/* Price action buttons */
 .loc-mo-rong-price-actions {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
 }
 
 .loc-mo-rong-price-actions button {
   flex: 1;
   padding: 8px;
   border-radius: 6px;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
+/* Reset button */
 .loc-mo-rong-price-actions button:first-child {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: #ffffff; /* Nền trắng tinh tế */
+  color: #374151; /* Màu chữ xám đậm */
+  border: 1px solid #d1d5db; /* Viền xám nhẹ */
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.loc-mo-rong-price-actions button:first-child:hover {
+  background-color: #f3f4f6;
 }
 
+/* Apply button */
 .loc-mo-rong-price-actions .ap-dung-btn {
-  background-color: orange;
+  background: linear-gradient(to right, #f59e0b, #fbbf24);
   color: white;
 }
-
 .loc-mo-rong-price-actions .ap-dung-btn:hover {
-  background-color: darkorange;
+  background: linear-gradient(to right, #f59e0b, #f59e0b);
 }
 
-
+/* Buttons group */
 .loc-mo-rong-buttons {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
 .loc-mo-rong-active-filters {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 15px;
 }
 
 .loc-mo-rong-tag {
-  background-color: #ffe5b4;
-  color: #333;
-  padding: 6px 10px;
-  border-radius: 20px;
   display: inline-flex;
   align-items: center;
+  background: #f3f4f6;
+  color: #374151;
   font-size: 14px;
   font-weight: 500;
-  white-space: nowrap;
-  max-width: 100%;
-  gap: 6px; /* giữ khoảng giữa nội dung và nút ❌ */
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 4px;
+  gap: 6px;
+}
+.tag-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: color 0.2s ease;
+  color: #6b7280;
+}
+.tag-close-btn:hover {
+  color: #ef4444; /* Đỏ khi hover */
 }
 
+.icon-close {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
 .loc-mo-rong-tag button {
   background: transparent;
   border: none;

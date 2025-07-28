@@ -1,14 +1,13 @@
-/* Container chính của trang */
 .tin-dang-danh-cho-ban {
   padding: 20px;
   background-color: #FFFAFA;
-  margin-left: 260px;
-  margin-top: 20px;
-  width: 85%;
-  max-width: 1000px;
+  margin: 5px auto; /* ⬅️ Giảm margin-top từ 20px còn 10px */
+  width: 101%;
+  max-width: 1600px;
   box-sizing: border-box;
   border-radius: 10px;
 }
+
 .tin-dang-danh-cho-ban h2 {
   font-size: 20px;
   font-weight: bold;

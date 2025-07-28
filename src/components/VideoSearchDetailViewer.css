@@ -26,25 +26,33 @@
   justify-content: center;
 }
 
+.vsdv-container {
+  height: 100vh;
+  overflow-y: hidden; /* ✅ Chỉ ẩn cuộn trong trang này */
+}
 
+html, body {
+  height: auto;
+  overflow-y: auto; /* ✅ Giữ cuộn bình thường ở các trang khác */
+}
 
+.vsdv-main-wrapper {
+  height: 100%;
+  padding-top: 80px; /* ✅ Khoảng cách đẩy xuống từ navbar */
+  box-sizing: border-box;
+}
 
 .vsdv-main-content {
   display: flex;
-  position: relative;
   flex-direction: row;
-  width: 1200px; /* ✅ Tăng chiều ngang từ 600px lên 800px */
+  width: 1200px;
   background-color: #f9f9f9;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
-  margin-left: 160px;
-  margin-right: 40px;
-  margin-top: 60px;
+  margin: 0 auto; /* ✅ Căn giữa ngang */
 }
-
-
 .vsdv-video-section {
   flex: 6;
   background-color: #fff;

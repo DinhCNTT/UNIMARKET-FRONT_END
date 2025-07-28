@@ -3,6 +3,8 @@ import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import "./PersonalInfo.css";
 import defaultAvatar from "../../assets/default-avatar.png";
+import toast from 'react-hot-toast';
+import { FaCheckCircle } from "react-icons/fa";
 
 const PersonalInfo = () => {
   const [info, setInfo] = useState({
@@ -44,7 +46,22 @@ const PersonalInfo = () => {
         setLoading(false);
       })
       .catch(() => {
-        setError("❌ Không thể lấy thông tin cá nhân");
+        toast.error("🚫 Không thể lấy thông tin cá nhân!", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fef2f2",           // Hồng nhạt tinh tế
+    color: "#991b1b",                // Chữ đỏ đậm
+    fontSize: "16px",
+    fontWeight: "600",
+    padding: "16px 22px",
+    borderRadius: "14px",
+    border: "1px solid #fca5a5",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    backdropFilter: "blur(2px)",
+  },
+  icon: "❗",
+});
         setLoading(false);
       });
   }, [token]);
@@ -66,12 +83,42 @@ const PersonalInfo = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then(() => {
-        setMessage("✅ Cập nhật thông tin thành công");
+      toast.success("🎉 Cập nhật thông tin thành công!", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fff9db",             // Vàng kem nhẹ kiểu mạng xã hội
+    color: "#3f3f3f",                  // Màu chữ xám than, dễ đọc
+    fontSize: "16px",                  // Cỡ chữ vừa mắt
+    fontWeight: "600",                 // Chữ đậm nhưng không thô
+    padding: "16px 22px",              // Dày dặn
+    borderRadius: "14px",              // Bo tròn nhiều cho mềm mại
+    border: "1px solid #fcd34d",       // Viền vàng pastel
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)", // Đổ bóng nhẹ sang trọng
+    backdropFilter: "blur(2px)",       // Làm nền mờ nhẹ (giống iOS)
+  },
+  icon: "🌟",
+});
         setError("");
       })
-      .catch(() => setError("❌ Cập nhật thất bại"));
-  };
-
+      .catch(() => toast.error(" Cập nhật thất bại. Vui lòng thử lại!", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fef2f2",             // Hồng nhạt hiện đại (error nhẹ nhàng)
+    color: "#991b1b",                  // Đỏ đậm (chữ dễ đọc)
+    fontSize: "16px",                  // Dễ nhìn
+    fontWeight: "600",                 // Chữ đậm nhẹ
+    padding: "16px 22px",              // Thoáng
+    borderRadius: "14px",              // Bo góc nhiều giống success
+    border: "1px solid #fca5a5",       // Viền đỏ nhạt mềm
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)", // Bóng nhẹ chuyên nghiệp
+    backdropFilter: "blur(2px)",       // Mờ nhẹ đẹp như mobile native
+      },
+  icon: "🚫",
+      
+}));
+}
   const handleUpdateEmail = () => {
     if (newEmail === info.email) {
       setError("⚠️ Vui lòng nhập email khác với email hiện tại.");
@@ -91,12 +138,42 @@ const PersonalInfo = () => {
           emailConfirmed: false,
           canChangeEmail: true,
         }));
-        setMessage("✅ Đã cập nhật email mới, hãy xác minh.");
+        toast.success("Đã cập nhật email mới, hãy xác minh.", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fff9db",             // Vàng kem nhẹ kiểu mạng xã hội
+    color: "#3f3f3f",                  // Màu chữ xám than, dễ đọc
+    fontSize: "16px",                  // Cỡ chữ vừa mắt
+    fontWeight: "600",                 // Chữ đậm nhưng không thô
+    padding: "16px 22px",              // Dày dặn
+    borderRadius: "14px",              // Bo tròn nhiều cho mềm mại
+    border: "1px solid #fcd34d",       // Viền vàng pastel
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)", // Đổ bóng nhẹ sang trọng
+    backdropFilter: "blur(2px)",       // Làm nền mờ nhẹ (giống iOS)
+  },
+  icon: "🌟",
+});
         setError("");
       })
       .catch((err) => {
         const errMsg = err.response?.data?.message || "Lỗi cập nhật email";
-        setError(`❌ ${errMsg}`);
+        toast.error(`❌ ${errMsg}`, {
+  position: "top-right",
+  autoClose: 3000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  style: {
+    background: "#fff1f2",
+    color: "#991b1b",
+    fontWeight: "bold",
+    fontSize: "15px",
+    borderLeft: "6px solid #ef4444",
+    padding: "12px 16px",
+  },
+});
       });
   };
 
@@ -113,7 +190,22 @@ const PersonalInfo = () => {
       })
       .catch((err) => {
         const msg = err.response?.data?.message || "Không thể gửi mã xác minh";
-        setError(`❌ ${msg}`);
+        toast.error(`❌ ${errMsg}`, {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fef2f2",            // hồng nhạt
+    color: "#991b1b",                 // đỏ đậm
+    fontSize: "16px",
+    fontWeight: "600",
+    padding: "16px 24px",
+    borderRadius: "14px",
+    border: "1px solid #fca5a5",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    backdropFilter: "blur(2px)",
+  },
+  icon: "📧", 
+});
       });
   };
 
@@ -130,14 +222,45 @@ const PersonalInfo = () => {
           emailConfirmed: true,
           canChangeEmail: false,
         }));
-        setMessage("✅ Email đã được xác minh");
+        toast.success("Email đã được xác minh", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fff9db",             // Vàng kem nhẹ kiểu mạng xã hội
+    color: "#3f3f3f",                  // Màu chữ xám than, dễ đọc
+    fontSize: "16px",                  // Cỡ chữ vừa mắt
+    fontWeight: "600",                 // Chữ đậm nhưng không thô
+    padding: "16px 22px",              // Dày dặn
+    borderRadius: "14px",              // Bo tròn nhiều cho mềm mại
+    border: "1px solid #fcd34d",       // Viền vàng pastel
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)", // Đổ bóng nhẹ sang trọng
+    backdropFilter: "blur(2px)",       // Làm nền mờ nhẹ (giống iOS)
+  },
+  icon: "🌟",
+});
+
         setCodeSent(false);
         setShowPopup(false);
         setVerificationCode("");
         updateUser({ emailConfirmed: true });
       })
       .catch(() => {
-        setError("❌ Mã xác minh không đúng hoặc đã hết hạn");
+        toast.error(" Mã xác minh không đúng hoặc đã hết hạn!", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fef2f2",           // Hồng nhạt
+    color: "#991b1b",                // Đỏ đậm
+    fontSize: "16px",
+    fontWeight: "600",
+    padding: "16px 24px",
+    borderRadius: "14px",
+    border: "1px solid #fca5a5",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    backdropFilter: "blur(2px)",
+  },
+  icon: "❌",
+});
       });
   };
 
@@ -163,11 +286,36 @@ const PersonalInfo = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const { avatarUrl } = res.data;
-      setMessage("✅ Đã cập nhật ảnh đại diện!");
+      toast.success("Đã cập nhật ảnh đại diện!", {
+  position: "top-right",
+  autoClose: 3000,
+  style: {
+    background: "#ecfdf5",
+    color: "#065f46",
+    fontWeight: "600",
+    fontSize: "15px",
+    borderLeft: "6px solid #34d399",
+    padding: "12px 16px",
+  },
+});
       setAvatarFile(null);
       updateUser({ avatarUrl });
     } catch (err) {
-      setError("❌ Lỗi khi cập nhật ảnh đại diện");
+      toast.error("Lỗi khi cập nhật ảnh đại diện!", {
+  duration: 4000,
+  position: "top-center",
+  style: {
+    background: "#fef2f2",           // Hồng nhạt nền lỗi
+    color: "#991b1b",                // Đỏ đậm
+    fontSize: "16px",
+    fontWeight: "600",
+    padding: "16px 24px",
+    borderRadius: "14px",
+    border: "1px solid #fca5a5",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+    backdropFilter: "blur(2px)",
+  },
+});
     }
   };
 
@@ -279,7 +427,7 @@ const PersonalInfo = () => {
                 className={`pi-input ${info.emailConfirmed ? "pi-email-confirmed" : ""}`}
               />
               {info.emailConfirmed ? (
-                <span className="pi-verified-icon">✅</span>
+                <FaCheckCircle className="pi-verified-icon" />
               ) : (
                 <button onClick={sendVerificationCode} className="pi-send-code-btn">
                   Gửi mã

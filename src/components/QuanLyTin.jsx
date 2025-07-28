@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { 
+  FaUser, 
+  FaSearch, 
+  FaRegClock, 
+  FaCheck, 
+  FaTimes, 
+  FaEdit, 
+  FaTrash,
+  FaRegHandshake,
+  FaRegThumbsDown
+} from 'react-icons/fa';
+import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import "./QuanLyTin.css";
 import TopNavbar from "../components/TopNavbar";
 
@@ -12,23 +24,19 @@ const trangThaiMap = {
 
 const QuanLyTin = () => {
   const [posts, setPosts] = useState([]);
-  // Thay đổi từ localStorage sang sessionStorage
   const [userName, setUserName] = useState(sessionStorage.getItem("userFullName") || "Người dùng");
   const [activeTab, setActiveTab] = useState("DaDuyet");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 5;
   
-  // Lấy userId từ sessionStorage thay vì localStorage
   const userId = sessionStorage.getItem("userId");
   const navigate = useNavigate();
 
-  // Lấy tên người dùng
   useEffect(() => {
     const fetchUserName = async () => {
       try {
         const res = await axios.get(`http://localhost:5133/api/TinDang/user-info/${userId}`);
-        // Lưu vào sessionStorage thay vì localStorage
         sessionStorage.setItem("userFullName", res.data.fullName);
         setUserName(res.data.fullName);
       } catch (err) {
@@ -36,13 +44,11 @@ const QuanLyTin = () => {
       }
     };
 
-    // Kiểm tra sessionStorage thay vì localStorage
     if (userId && !sessionStorage.getItem("userFullName")) {
       fetchUserName();
     }
   }, [userId]);
 
-  // Lấy danh sách tin đăng và xử lý ảnh đúng đường dẫn
   useEffect(() => {
     if (!userId) return;
 
@@ -54,13 +60,10 @@ const QuanLyTin = () => {
           trangThaiText: trangThaiMap[post.trangThai],
           images: Array.isArray(post.images)
             ? post.images.map(img =>
-                // Nếu ảnh bắt đầu bằng http/https thì giữ nguyên, không nối thêm gì
                 img.startsWith("http")
                   ? img
-                  // Nếu ảnh bắt đầu với dấu / thì nối với domain localhost
                   : img.startsWith("/")
                     ? `http://localhost:5133${img}`
-                    // Nếu ảnh chỉ là tên file, nối cả folder images/Posts
                     : `http://localhost:5133/images/Posts/${img}`
               )
             : [],
@@ -72,15 +75,13 @@ const QuanLyTin = () => {
       });
   }, [userId]);
 
-  // Lọc bài đăng theo tab trạng thái và từ khóa tìm kiếm
   const filteredPosts = posts.filter(
     (p) =>
       p.trangThaiText === activeTab &&
       (p.tieuDe?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        p.moTa?.toLowerCase().includes(searchKeyword.toLowerCase()))
-  );
+      p.moTa?.toLowerCase().includes(searchKeyword.toLowerCase())
+   ) );
 
-  // Phân trang
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -96,7 +97,6 @@ const QuanLyTin = () => {
       axios
         .delete(`http://localhost:5133/api/TinDang/${postId}`)
         .then(() => {
-          // Cập nhật lại danh sách tin đã load, loại bỏ tin đã xóa
           setPosts(posts.filter((post) => post.maTinDang !== postId));
         })
         .catch((error) => {
@@ -111,20 +111,24 @@ const QuanLyTin = () => {
       <TopNavbar />
       <div className="qlt-header-bar">
         <div className="qlt-user-info">
-          <span className="qlt-user-avatar">👤</span>
+          <span className="qlt-user-avatar">
+            <FaUser size={18} />
+          </span>
           <h2>
-            Xin chào, <strong>{userName}</strong> 👋
+            Xin chào, <strong>{userName}</strong> <HiOutlineEmojiHappy className="wave-icon" />
           </h2>
         </div>
-        <div className="qlt-search-wrapper">
-          <input
-            type="text"
-            placeholder="Tìm tin đăng của bạn..."
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            className="qlt-search"
-          />
-        </div>
+          <div className="qlt-search-wrapper">
+  <FaSearch className="search-icon" />
+  <input
+    type="text"
+    placeholder="Tìm tin đăng của bạn..."
+    value={searchKeyword}
+    onChange={(e) => setSearchKeyword(e.target.value)}
+    className="qlt-search"
+  />
+</div>
+
       </div>
 
       <div className="qlt-tabs">
@@ -135,7 +139,7 @@ const QuanLyTin = () => {
             setCurrentPage(1);
           }}
         >
-          Đang hiển thị
+          <FaCheck className="tab-icon" /> Đang hiển thị
         </button>
         <button
           className={`qlt-tab-btn ${activeTab === "ChoDuyet" ? "active" : ""}`}
@@ -144,7 +148,7 @@ const QuanLyTin = () => {
             setCurrentPage(1);
           }}
         >
-          Chờ duyệt
+          <FaRegClock className="tab-icon" /> Chờ duyệt
         </button>
         <button
           className={`qlt-tab-btn ${activeTab === "TuChoi" ? "active" : ""}`}
@@ -153,13 +157,16 @@ const QuanLyTin = () => {
             setCurrentPage(1);
           }}
         >
-          Bị từ chối
+          <FaTimes className="tab-icon" /> Bị từ chối
         </button>
       </div>
 
       <div className="qlt-post-list">
         {currentPosts.length === 0 ? (
-          <p>Không có tin đăng cho trạng thái này.</p>
+          <div className="qlt-empty-state">
+            <FaRegHandshake size={48} className="empty-icon" />
+            <p>Không có tin đăng cho trạng thái này.</p>
+          </div>
         ) : (
           currentPosts.map((post) => (
             <div key={post.maTinDang} className="qlt-post-item">
@@ -185,7 +192,7 @@ const QuanLyTin = () => {
 
                 <div className="qlt-actions">
                   <button onClick={() => handleUpdate(post.maTinDang)} className="qlt-edit-btn">
-                    ✏️ Cập nhật
+                    <FaEdit className="action-icon" /> Cập nhật
                   </button>
                   <button
                     className="qlt-delete-btn"
@@ -194,15 +201,15 @@ const QuanLyTin = () => {
                       handleDelete(post.maTinDang);
                     }}
                   >
-                    ❌ Xóa
+                    <FaTrash className="action-icon" /> Xóa
                   </button>
                 </div>
               </div>
 
               <div className="qlt-post-status">
-                {post.trangThaiText === "ChoDuyet" && <span title="Chờ duyệt">⏳</span>}
-                {post.trangThaiText === "DaDuyet" && <span title="Đã duyệt">✅</span>}
-                {post.trangThaiText === "TuChoi" && <span title="Bị từ chối">❌</span>}
+                {post.trangThaiText === "ChoDuyet" && <FaRegClock className="status-icon" title="Chờ duyệt" />}
+                {post.trangThaiText === "DaDuyet" && <FaCheck className="status-icon" title="Đã duyệt" />}
+                {post.trangThaiText === "TuChoi" && <FaRegThumbsDown className="status-icon" title="Bị từ chối" />}
               </div>
             </div>
           ))

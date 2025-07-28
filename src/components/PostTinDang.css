@@ -5,11 +5,11 @@
   padding: 20px;
   background-color: #fff;
   width: 720px;
-  margin: 0 auto;
   max-width: 1000px;
-  margin-left: 35%;
+  margin-left: calc((100% - 720px) / 2 - 150px); /* ✅ Đẩy sang trái 60px */
   margin-right: auto;
 }
+
 
 .post-tindang-form {
   display: flex;

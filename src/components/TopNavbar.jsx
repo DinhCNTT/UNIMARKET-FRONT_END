@@ -307,33 +307,41 @@ const TopNavbar = () => {
               <span className="account-name">{user.fullName || user.tenNguoiDung || "Tài khoản"}</span>
               <FaChevronDown className="dropdown-icon" />
             </div>
-            {showAccountDropdown && (
-              <div className="account-dropdown" style={{ position: "absolute", right: 0, top: "100%", backgroundColor: "#fff", border: "1px solid #ccc", borderRadius: "6px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", zIndex: 1000, minWidth: "230px", padding: "10px 0" }}>
-                <div style={{ padding: "0 16px", fontWeight: "bold", color: "#666", fontSize: "13px" }}>Tiện ích</div>
-                <span onClick={() => navigate("/tin-dang-da-luu")} className="dropdown-item">
-                  <FaHeart className="dropdown-icon" /> Tin đăng đã lưu
-                </span>
-                <span onClick={() => navigate("/video-da-tym")} className="dropdown-item">
-                  <FaVideo className="dropdown-icon" /> Video đã tym
-                </span>
-                <span onClick={() => navigate("/binh-luan-cua-toi")} className="dropdown-item">
-                  <FaCommentDots className="dropdown-icon" /> Bình luận của tôi
-                </span>
+              {showAccountDropdown && (
+  <div className="account-dropdown">
+    <div className="account-dropdown-title">Tiện ích</div>
 
-                <div className="dropdown-divider"></div>
+    <span onClick={() => navigate("/tin-dang-da-luu")} className="dropdown-item">
+      <FaHeart className="dropdown-icon" style={{ color: "#ef4444" }} /> Tin đăng đã lưu
+    </span>
 
-                <div style={{ padding: "0 16px", fontWeight: "bold", color: "#666", fontSize: "13px" }}>Khác</div>
-                <span onClick={() => navigate("/cai-dat-tai-khoan")} className="dropdown-item">
-                  <FaCog className="dropdown-icon" /> Cài đặt tài khoản
-                </span>
-                <span onClick={() => navigate("/gop-y")} className="dropdown-item">
-                  <FaCommentAlt className="dropdown-icon" /> Đóng góp ý kiến
-                </span>
-                <span onClick={logout} className="dropdown-item">
-                  <FaSignOutAlt className="dropdown-icon" /> Đăng xuất
-                </span>
-              </div>
-            )}
+    <span onClick={() => navigate("/video-da-tym")} className="dropdown-item">
+      <FaVideo className="dropdown-icon" style={{ color: "#3b82f6" }} /> Video đã tym
+    </span>
+
+    <span onClick={() => navigate("/binh-luan-cua-toi")} className="dropdown-item">
+      <FaCommentDots className="dropdown-icon" style={{ color: "#10b981" }} /> Bình luận của tôi
+    </span>
+
+    <div className="dropdown-divider"></div>
+
+    <div className="account-dropdown-title">Khác</div>
+
+    <span onClick={() => navigate("/cai-dat-tai-khoan")} className="dropdown-item">
+      <FaCog className="dropdown-icon" style={{ color: "#6366f1" }} /> Cài đặt tài khoản
+    </span>
+
+    <span onClick={() => navigate("/gop-y")} className="dropdown-item">
+      <FaCommentAlt className="dropdown-icon" style={{ color: "#f59e0b" }} /> Đóng góp ý kiến
+    </span>
+
+    <span onClick={logout} className="dropdown-item">
+      <FaSignOutAlt className="dropdown-icon" style={{ color: "#6b7280" }} /> Đăng xuất
+    </span>
+  </div>
+)}
+
+
           </div>
         ) : (
           <>

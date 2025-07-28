@@ -27,7 +27,7 @@ import VideoSearchPage from "../components/VideoSearchPage";
 import VideoSearchDetailViewer from "../components/VideoSearchDetailViewer";
 import UserProfilePage from "../pages/UserProfilePage";
 import TinDangDaLuu from "../components/TinDangDaLuu";
-
+import VideoLikedPage from "../components/VideoLikedPage";
 // Route bảo vệ admin
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
@@ -114,6 +114,8 @@ function AppRoutes() {
        
         {/* Route trang hồ sơ người dùng */}
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
+      <Route path="/video-da-tym" element={<VideoLikedPage />} />
+
     </Routes>
   );
 }

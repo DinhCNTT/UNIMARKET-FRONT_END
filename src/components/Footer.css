@@ -1,12 +1,12 @@
 .footer {
-  width: 1512px;
+  width: 100%;
+  max-width: 1512px;
   background-color: #f8f9fa;
   padding: 40px 0;
   border-top: 1px solid #e9ecef;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin-top: 30px;
+  margin: 5px auto 0 auto; /* ⬅️ Giảm top margin từ 30px xuống 10px */
   box-sizing: border-box;
-  margin-right: -260px;
 }
 
 .footer-container {
