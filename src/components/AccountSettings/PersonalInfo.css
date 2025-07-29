@@ -1,79 +1,135 @@
 .pi-card-wrapper {
   width: 100%;
-  max-width: 1100px;         /* ✅ Tăng chiều ngang form */
-  padding: 40px 60px;
+  max-width: 1200px; /* ✅ Tăng max-width cho màn hình lớn */
+  padding: 48px 80px; /* ✅ Tăng padding cho không gian thoáng */
   background-color: #fff;
-  border-radius: 12px;
-  margin: 60px auto 0;       /* ✅ Kéo xuống bằng margin-top */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 20px; /* ✅ Bo góc lớn hơn */
+  margin: 60px auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.pi-card-wrapper {
-  width: 100%;
-  max-width: 900px;
-  padding: 40px 50px;     /* ✅ Giảm padding để ô nhập liệu dài hơn */
-  background-color: #fff;
-  border-radius: 12px;
-  margin-left: 90px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
 /* Tiêu đề */
 .pi-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  color: #222;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #1a1a1a;
   text-align: left;
+  position: relative;
+  padding-bottom: 12px;
 }
-
+.pi-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #ff9900, #ff6600);
+  border-radius: 2px;
+}
+.pi-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
 /* Nhóm input */
 .pi-form-group {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px; /* Giới hạn chiều ngang gọn gàng */
 }
 
 /* Label */
 .pi-label {
-  display: block;
-  margin-bottom: 6px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #2c2c2c;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
-/* Input thường */
+/* Input chung */
 .pi-input {
   width: 100%;
-  padding: 14px;
+  padding: 11px 14px;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
+  border: 1px solid #d0d0d0;
+  background-color: #fdfdfd;
+  font-size: 15px;
+  color: #333;
+  transition: all 0.25s ease-in-out;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.pi-input:focus {
+  border-color: #ff9800;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.18);
+  outline: none;
 }
 
 /* Nút cập nhật */
 .pi-update-btn {
-  background-color: orange;
-  color: white;
-  padding: 12px 20px;
-  font-weight: bold;
-  font-size: 15px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #fff;
+  padding: 6px 14px;
+  font-weight: 500;
+  font-size: 13px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
-  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  text-transform: none;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+
+  /** QUAN TRỌNG: Không kéo dài ngang **/
+  width: auto !important;
+  min-width: unset !important;
+  max-width: unset !important;
 }
 
+
+
 .pi-update-btn:hover {
-  background-color: #ff9900;
+  background: linear-gradient(135deg, #fb8c00, #ef6c00);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pi-update-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* Gạch ngang chia */
 .pi-divider {
-  margin: 30px 0;
+  margin: 40px 0;
   border: none;
   height: 1px;
-  background-color: #ddd;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  position: relative;
+}
+.pi-divider::after {
+  content: '○';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  color: #e0e0e0;
+  padding: 0 12px;
+  font-size: 12px;
 }
 
 /* Email input có xác minh */
@@ -82,65 +138,84 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  max-width: 500px; /* hoặc để auto nếu không muốn giới hạn */
 }
 
+/* Input chỉnh đẹp và dài ra */
 .pi-email-input-wrapper input {
   flex: 1;
-  padding: 12px;
+  padding: 12px 16px;
   font-size: 15px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
 }
 
+
+.pi-email-input-wrapper input:focus {
+  border-color: #ff9900;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.15);
+  outline: none;
+}
+
+/* Nút gọn hơn và đồng bộ style */
 .pi-send-code-btn {
-  padding: 10px 14px;
-  background-color: orange;
+  width: 100px; /* ✅ cố định chiều rộng */
+  padding: 10px 0;
+  background: linear-gradient(135deg, #ff9900, #ff7700);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   color: white;
   cursor: pointer;
-  white-space: nowrap;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
-  min-width: 80px;
-  max-width: 100px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(255, 119, 0, 0.15);
 }
-
 .pi-send-code-btn:hover {
-  background-color: #ff9900;
+  background: linear-gradient(135deg, #ff8800, #ff6600);
+  transform: translateY(-1px);
 }
 
+/* Nút khi đã xác nhận */
 .pi-email-confirmed {
-  background-color: #f0f0f0;
-  color: #555;
+  background-color: #f5f5f5;
+  color: #888;
   cursor: not-allowed;
 }
 
+/* Icon xác minh */
 .pi-verified-icon {
   position: absolute;
-  right: 10px;
-  color: green;
+  right: 12px;
+  color: #27ae60;
   font-size: 18px;
 }
 
+
 /* Thông báo */
 .pi-message {
-  margin-top: 10px;
-  font-weight: bold;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 15px;
+  margin-top: 12px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pi-success {
-  color: green;
+  color: #27ae60;
   background-color: #e6ffed;
+  border: 1px solid #a5d6a7;
 }
 
 .pi-error {
-  color: red;
+  color: #e74c3c;
   background-color: #ffe6e6;
+  border: 1px solid #ef9a9a;
 }
 
 /* Popup OTP */
@@ -150,49 +225,129 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px); /* làm mờ nền */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 1000;
 }
 
 .pi-popup-content {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  width: 320px;
+  background: #ffffff;
+  padding: 28px 24px;
+  border-radius: 12px;
+  width: 360px;
+  max-width: 90%;
   text-align: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.25s ease-out;
+  font-family: "Inter", Arial, sans-serif;
 }
-.pi-email-input-wrapper input:disabled {
-  background-color: #f9f9f9;
-  color: #777;
-  cursor: not-allowed;
+/* Hiệu ứng xuất hiện nhẹ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Avatar upload section */
+/* Avatar section */
 .pi-avatar-section {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 24px;
-}
-.pi-avatar-img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #eee;
-}
-.pi-avatar-upload-btn {
-  transition: box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(46,204,64,0.08);
-  /* Đảm bảo icon nổi trên ảnh */
-  z-index: 2;
-}
-.pi-avatar-upload-btn:hover {
-  box-shadow: 0 4px 16px rgba(46,204,64,0.18);
-  border-color: #27ae60;
+  gap: 32px;
+  margin-bottom: 32px;
 }
 
+.pi-avatar-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s ease;
+}
+
+.pi-avatar-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+.pi-avatar-upload-btn {
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #fff, #fffaf5);
+  border: 1px solid #ff9800;
+  border-radius: 50px; /* Bo tròn mềm mại */
+  color: #ff9800;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(255, 152, 0, 0.15);
+}
+
+.pi-avatar-upload-btn:hover {
+  background: linear-gradient(135deg, #fff7e6, #fffaf2);
+  color: #e68a00;
+  border-color: #e68a00;
+  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.pi-avatar-upload-btn:active {
+  transform: scale(0.97);
+}
+
+
+/* Responsive */
+@media (min-width: 1600px) {
+  .pi-card-wrapper {
+    max-width: 1400px;
+    padding: 60px 100px;
+  }
+  
+  .pi-form-grid {
+    gap: 48px;
+  }
+  .pi-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+}
+
+.pi-verified-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff3e0;  /* nền cam nhạt */
+  color: #fb8c00;             /* cam đậm */
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+.pi-verified-icon:hover {
+  background-color: #ffe0b2;
+  transform: scale(1.07);
+}

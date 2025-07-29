@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import './VideoDetailViewer.css';
 import TopNavbar from "../components/TopNavbar";
@@ -17,6 +17,13 @@ const VideoDetailViewer = () => {
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const navigate = useNavigate();
+  const videoRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
+  const [videoAspectRatio, setVideoAspectRatio] = useState(null);
 
   useEffect(() => {
     const fetchAllVideos = async () => {
@@ -34,14 +41,48 @@ const VideoDetailViewer = () => {
   }, []);
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      const handleLoadedMetadata = () => {
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        setVideoAspectRatio(aspectRatio);
+        
+        if (aspectRatio < 1) {
+          video.style.width = 'auto';
+          video.style.height = '600px';
+          video.style.maxWidth = '400px';
+        } else if (aspectRatio > 1.5) {
+          video.style.width = '700px';
+          video.style.height = 'auto';
+          video.style.maxHeight = '500px';
+        } else {
+          video.style.width = '500px';
+          video.style.height = '500px';
+        }
+      };
+
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      if (video.readyState >= 1) {
+        handleLoadedMetadata();
+      }
+
+      return () => {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
+    }
+  }, [currentIndex, videoList]);
+
+  useEffect(() => {
     let isScrolling = false;
     let scrollTimeout = null;
 
     const handleWheel = (e) => {
-      if (isScrolling) return;
+      if (isScrolling) return; // Bỏ qua các sự kiện cuộn khi đang xử lý
       isScrolling = true;
+
       clearTimeout(scrollTimeout);
 
+      // Tăng thời gian chờ lên 1000ms để tạo hiệu ứng "khựng"
       scrollTimeout = setTimeout(() => {
         if (e.deltaY > 0 && currentIndex < videoList.length - 1) {
           setCurrentIndex((prev) => prev + 1);
@@ -51,7 +92,7 @@ const VideoDetailViewer = () => {
           setShowMore(false);
         }
         isScrolling = false;
-      }, 300);
+      }, 1000); // Độ trễ 1000ms (1 giây) để tạo cảm giác khựng
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
@@ -60,6 +101,13 @@ const VideoDetailViewer = () => {
       clearTimeout(scrollTimeout);
     };
   }, [currentIndex, videoList.length]);
+
+  useEffect(() => {
+    if (descriptionRef.current) {
+      const element = descriptionRef.current;
+      setIsOverflowing(element.scrollHeight > element.clientHeight);
+    }
+  }, [videoList, currentIndex]);
 
   const handleLike = async () => {
     const video = videoList[currentIndex];
@@ -93,12 +141,36 @@ const VideoDetailViewer = () => {
     }
   };
 
+  const handleVideoClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    clickCountRef.current += 1;
+
+    if (clickCountRef.current === 1) {
+      clickTimeoutRef.current = setTimeout(() => {
+        if (videoRef.current) {
+          if (isPlaying) {
+            videoRef.current.pause();
+          } else {
+            videoRef.current.play();
+          }
+          setIsPlaying(!isPlaying);
+        }
+        clickCountRef.current = 0;
+      }, 300);
+    } else if (clickCountRef.current === 2) {
+      clearTimeout(clickTimeoutRef.current);
+      handleLike();
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 700);
+      clickCountRef.current = 0;
+    }
+  };
+
   const handleDoubleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    handleLike();
-    setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 700);
   };
 
   const formatCount = (num) => {
@@ -115,52 +187,62 @@ const VideoDetailViewer = () => {
   const token = localStorage.getItem("token");
 
   return (
-    <div className="video-detail-wrapper full-screen-scroll">
+    <div className="vdv-wrapper vdv-full-screen-scroll">
       <TopNavbar />
       <VideoSearchOverlay />
-      <div className="video-container">
+      <div className={`vdv-container ${videoAspectRatio < 1 ? 'vdv-portrait' : videoAspectRatio > 1.5 ? 'vdv-landscape' : 'vdv-square'}`}>
         <video
+          ref={videoRef}
           key={videoData.videoUrl}
           src={videoData.videoUrl}
-          className="video-detail-player"
+          className="vdv-player"
           controls
+          controlsList="nodownload"
+          onContextMenu="return false;"
           autoPlay
           loop
+          onClick={handleVideoClick}
           onDoubleClick={handleDoubleClick}
         />
 
         {showHeart && (
-          <div className="heart-animation">
+          <div className="vdv-heart-animation">
             <FaHeart size={80} color="red" />
           </div>
         )}
 
-        <div className="video-detail-overlay">
-          <div className="video-info-left">
-            <div className="video-user-name">
+        <div className="vdv-overlay">
+          <div className="vdv-info-left">
+            <div className="vdv-user-name">
               @{videoData.nguoiDang?.fullName}
             </div>
-            <div className="video-title">{videoData.tieuDe}</div>
+            <div className="vdv-title">{videoData.tieuDe}</div>
 
-            <div className="video-description">
-              {showMore
-                ? videoData.moTa
-                : `${videoData.moTa?.substring(0, 100)}... `}
-              {videoData.moTa?.length > 100 && (
-                <span
-                  className="toggle-description"
-                  onClick={() => setShowMore(!showMore)}
-                >
-                  {showMore ? "Thu gọn" : "Xem thêm"}
-                </span>
-              )}
+            <div className={`vdv-description ${showMore ? 'vdv-description-expanded' : ''}`} ref={descriptionRef}>
+              {videoData.moTa}
             </div>
+            {isOverflowing && !showMore && (
+              <span
+                className="vdv-toggle-description"
+                onClick={() => setShowMore(true)}
+              >
+                Xem thêm
+              </span>
+            )}
+            {showMore && (
+              <span
+                className="vdv-toggle-description"
+                onClick={() => setShowMore(false)}
+              >
+                Thu gọn
+              </span>
+            )}
 
-            <div className="video-price-address">
-              <div className="video-price">
+            <div className="vdv-price-address">
+              <div className="vdv-price">
                 {videoData.gia?.toLocaleString()} đ
               </div>
-              <div className="video-address">
+              <div className="vdv-address">
                 {videoData.diaChi}, {videoData.quanHuyen},{" "}
                 {videoData.tinhThanh}
               </div>
@@ -169,11 +251,11 @@ const VideoDetailViewer = () => {
         </div>
       </div>
 
-      <div className="video-side-info">
+      <div className="vdv-side-info">
         <img
           src={videoData.nguoiDang?.avatarUrl || defaultAvatar}
           alt="avatar"
-          className="video-user-avatar"
+          className="vdv-user-avatar"
           onClick={() => navigate(`/nguoi-dung/${videoData.nguoiDang?.id}`)}
           style={{ cursor: 'pointer' }}
           onError={(e) => {
@@ -183,7 +265,7 @@ const VideoDetailViewer = () => {
         />
 
         <div
-          className="icon-button"
+          className="vdv-icon-button"
           onClick={handleLike}
           title={
             !token
@@ -198,15 +280,15 @@ const VideoDetailViewer = () => {
             color={token && videoData.isLiked ? "red" : "#ccc"}
           />
         </div>
-        <div className="icon-label">{formatCount(videoData.soTym || 0)}</div>
+        <div className="vdv-icon-label">{formatCount(videoData.soTym || 0)}</div>
 
         <div
-          className="icon-button"
+          className="vdv-icon-button"
           onClick={() => setShowComments(true)}
         >
           <FaRegCommentDots size={24} color="#ccc" />
         </div>
-        <div className="icon-label">{videoData.soBinhLuan || 0}</div>
+        <div className="vdv-icon-label">{videoData.soBinhLuan || 0}</div>
       </div>
 
       {showComments && (

@@ -5,10 +5,11 @@
   left: 20px;
   display: flex;
   align-items: center;
+  height: 140px; /* 👈 Cố định chiều cao bằng với nút */
   z-index: 10000;
   gap: 8px;
-  transition: width 0.35s ease;
 }
+
 
 /* Thanh tìm kiếm - nút */
 .video-search-btn {
@@ -49,6 +50,7 @@
   border-radius: 50%;
   justify-content: center;
   padding: 0;
+   align-self: center; /* 👈 giữ nút căn giữa trục dọc */
 }
 
 /* Text "Search" chỉ hiện khi thanh lớn */
@@ -60,23 +62,37 @@
 
 /* Popup trượt ngang bên phải nút 🔍 */
 .video-search-popup {
-  margin-top: 30px; /* ← dịch xuống thêm */
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  padding: 8px 16px;
-  display: flex;
-  min-width: 435px;
-  max-width: 320px;
-  flex-direction: column;
-  transform: translateX(-20px);
+  position: fixed;               /* Giữ vị trí cố định */
+  top: 100px;                     /* Khoảng cách từ top */
+  right: 1000px;                   /* Khoảng cách từ phải */
+  z-index: 9999;                 /* Luôn nổi trên */
+  transform: translateX(100%);   /* Ẩn ban đầu */
   opacity: 0;
   pointer-events: none;
-  transition:
-    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.35s ease;
   user-select: none;
+  transition: all 0.3s ease;
 }
+
+.video-search-popup.visible {
+  transform: translateX(0);      /* Hiện ra */
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* Phần thân hiển thị nội dung */
+.video-search-popup-body {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  max-width: 435px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 
 .video-search-popup-body {
   background: white;
@@ -95,40 +111,40 @@
   opacity: 1;
   pointer-events: auto;
   user-select: auto;
+  box-shadow: none !important;
+  border: none !important;
 }
+
 
 /* Form input với icon và nút đóng */
 .video-search-popup-form {
   display: flex;
   align-items: center;
-  position: relative;
   background: white;
   padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
 }
 
-/* Icon tìm kiếm bên trái input */
-.popup-input-icon {
-  position: absolute;
-  left: 12px;
-  color: #999;
-  pointer-events: none;
-}
-
-/* Input tìm kiếm lớn */
 .video-search-popup-input {
-  flex: 1;
-  padding: 10px 40px 10px 42px; /* trái đủ chỗ icon, phải chừa nút */
-  border: none;
-  outline: none;
+  flex-grow: 1;
+  padding: 10px 40px 10px 40px;
   font-size: 16px;
-  background: transparent;
   color: #222;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent;
+  border-radius: 0 !important;
 }
 
-.video-search-popup-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 6px #3b82f6aa;
+.video-search-popup-input:focus,
+.video-search-popup-input:hover {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Nút đóng popup */
@@ -336,18 +352,21 @@
 }
 
 /* Nút chọn lại từ khóa lịch sử */
-.history-keyword-btn {
+.video-search-history-keyword-btn {
   flex-grow: 1;
+  display: flex; /* 👉 để icon + chữ nằm ngang */
+  align-items: center; /* 👉 căn giữa icon theo chiều dọc */
   background: transparent;
   border: none;
   text-align: left;
   cursor: pointer;
   color: #222;
-  padding: 0;
+  padding: 4px 0;
   font-size: 15px;
+  gap: 20px; /* 👉 khoảng cách giữa icon và chữ */
 }
 
-.history-keyword-btn:hover {
+.video-search-history-keyword-btn:hover {
   text-decoration: underline;
 }
 
@@ -364,4 +383,20 @@
 
 .history-remove-btn:hover {
   color: #e11d48;
+}
+.video-search-history-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  flex-shrink: 0;         /* Không cho icon co lại */
+  margin-right: 8px;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-search-history-keyword-btn:hover .video-search-history-icon {
+  transform: rotate(12deg);
+  color: #2563eb;
 }

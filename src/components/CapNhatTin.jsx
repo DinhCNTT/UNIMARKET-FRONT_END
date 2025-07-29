@@ -196,28 +196,67 @@ useEffect(() => {
   formData.append("categoryId", categoryId);
   formData.append("userId", user.id);
 
-  // **QUAN TRỌNG: Gửi thứ tự hiện tại của tất cả ảnh cũ (theo thứ tự hiển thị)**
-  const oldImageOrder = imagePreviewList
-    .filter(i => i.type === 'old')
-    .map(i => i.id);
-  console.log("📋 Thứ tự ảnh cũ gửi lên:", oldImageOrder);
-  formData.append('oldImageOrder', JSON.stringify(oldImageOrder));
+  // **QUAN TRỌNG: Tạo danh sách thứ tự tổng thể cho tất cả media**
+  const imageOrderMap = []; // [{type: 'old'|'new', id: number, fileIndex?: number}]
+  const videoOrderMap = [];
 
-  // **QUAN TRỌNG: Gửi thứ tự hiện tại của tất cả video cũ (theo thứ tự hiển thị)**
-  const oldVideoOrder = videoPreviewList
-    .filter(i => i.type === 'old')
-    .map(i => i.id);
-  console.log("🎥 Thứ tự video cũ gửi lên:", oldVideoOrder);
-  formData.append('oldVideoOrder', JSON.stringify(oldVideoOrder));
-
-  // Thêm file ảnh mới
-  imagePreviewList.filter(i => i.type === 'new').forEach(i => {
-    formData.append('newImages', i.file);
+  // Xử lý images - lưu thứ tự tổng thể
+  imagePreviewList.forEach((img, index) => {
+    if (img.type === 'old') {
+      imageOrderMap.push({
+        type: 'old',
+        id: img.id,
+        position: index
+      });
+    } else {
+      imageOrderMap.push({
+        type: 'new',
+        id: -1, // Tạm thời -1, sẽ dùng fileIndex
+        fileIndex: imagePreviewList.filter((i, idx) => i.type === 'new' && idx <= index).length - 1,
+        position: index
+      });
+    }
   });
 
-  // Thêm file video mới
-  videoPreviewList.filter(i => i.type === 'new').forEach(i => {
-    formData.append('newVideos', i.file);
+  // Xử lý videos - lưu thứ tự tổng thể  
+  videoPreviewList.forEach((vid, index) => {
+    if (vid.type === 'old') {
+      videoOrderMap.push({
+        type: 'old',
+        id: vid.id,
+        position: index
+      });
+    } else {
+      videoOrderMap.push({
+        type: 'new',
+        id: -1,
+        fileIndex: videoPreviewList.filter((v, idx) => v.type === 'new' && idx <= index).length - 1,
+        position: index
+      });
+    }
+  });
+
+  console.log("📋 Image Order Map:", imageOrderMap);
+  console.log("🎥 Video Order Map:", videoOrderMap);
+  
+  // Gửi thông tin thứ tự tổng thể
+  formData.append('imageOrderMap', JSON.stringify(imageOrderMap));
+  formData.append('videoOrderMap', JSON.stringify(videoOrderMap));
+
+  // **Gửi file ảnh mới theo đúng thứ tự trong imagePreviewList**
+  const newImageFiles = imagePreviewList.filter(i => i.type === 'new');
+  console.log("📸 Gửi ảnh mới theo thứ tự:", newImageFiles.map((img, idx) => `${idx}: ${img.fileName}`));
+  
+  newImageFiles.forEach((img, index) => {
+    formData.append('newImages', img.file);
+  });
+
+  // **Gửi file video mới theo đúng thứ tự trong videoPreviewList**
+  const newVideoFiles = videoPreviewList.filter(i => i.type === 'new');
+  console.log("🎥 Gửi video mới theo thứ tự:", newVideoFiles.map((vid, idx) => `${idx}: ${vid.fileName}`));
+  
+  newVideoFiles.forEach((vid, index) => {
+    formData.append('newVideos', vid.file);
   });
 
   // Danh sách ID cần xóa

@@ -1,21 +1,96 @@
 .banner-container {
-    width: 100%;
-    max-width: 1000px; /* Giảm chiều rộng */
-    height: auto; /* Hoặc đặt chiều cao cố định, ví dụ: height: 300px; */
-    margin: 0 auto;
-    position: absolute;
-    top: 90px; /* Điều chỉnh vị trí xuống dưới */
-    left: 50%;
-    transform: translateX(-50.4%);
-    z-index: 10;
-    background-color: #ffffff; /* Đổi thành màu trắng */
+  width: 100%;
+  max-width: 1002px;
+  margin: 0 auto;
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50.4%); /* ✅ Dịch trái nhẹ */
+  z-index: 10;
+
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
+
+/* Ảnh banner */
 .banner-image {
-    width: 100%;
-    height: auto;
-    border-radius: 10px; /* Tùy chỉnh bo góc */
+  width: 100%;
+  height: 240px; /* Cố định chiều cao */
+  object-fit: cover; /* Cắt ảnh đẹp như mạng xã hội */
+  display: block;
 }
+
+/* Đảm bảo ảnh luôn fit */
 .banner-container img {
-    width: 100%; /* Giúp ảnh co lại theo khung */
-    height: auto; /* Đảm bảo tỷ lệ ảnh không bị méo */
+  width: 100%;
+  height: auto;
+  display: block;
+}
+/* Tùy chỉnh nút next/prev */
+/* Ẩn nút mặc định */
+.swiper-button-next,
+.swiper-button-prev {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Khi hover vào vùng .banner-container thì mới hiện nút */
+.banner-container:hover .swiper-button-next,
+.banner-container:hover .swiper-button-prev {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Nút Prev */
+.swiper-button-prev {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  left: 12px;
+}
+
+/* Nút Next */
+.swiper-button-next {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  right: 12px;
+}
+
+/* Hover đậm hơn */
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Icon mũi tên to, đẹp hơn */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Ẩn trên mobile nếu cần */
+@media (max-width: 600px) {
+  .swiper-button-next,
+  .swiper-button-prev {
+    display: none !important;
+  }
 }

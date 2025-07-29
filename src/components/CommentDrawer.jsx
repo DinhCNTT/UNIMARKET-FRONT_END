@@ -15,14 +15,12 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
   const [menuOpenId, setMenuOpenId] = useState(null);
   const navigate = useNavigate();
   
-  // Thêm ref để tracking interval
   const pollIntervalRef = useRef(null);
   const lastFetchTimeRef = useRef(Date.now());
 
   const { token, user } = useContext(AuthContext);
   const currentUserId = user?.id;
 
-  // Hàm fetch comments được optimize
   const fetchComments = useCallback(async () => {
     try {
       const res = await axios.get(`http://localhost:5133/api/video/${maTinDang}/comments`);
@@ -34,17 +32,13 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     }
   }, [maTinDang]);
 
-  // GIẢI PHÁP 1: POLLING - Tự động fetch mới mỗi 3 giây
   useEffect(() => {
-    // Fetch lần đầu
     fetchComments();
     
-    // Setup polling
     pollIntervalRef.current = setInterval(() => {
       fetchComments();
-    }, 3000); // 3 giây fetch 1 lần
+    }, 3000);
 
-    // Cleanup
     return () => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
@@ -52,10 +46,9 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     };
   }, [fetchComments]);
 
-  // Hàm thêm comment mới vào state ngay lập tức (Optimistic Update)
   const addOptimisticComment = useCallback((commentData) => {
     const optimisticComment = {
-      id: `temp-${Date.now()}`, // ID tạm
+      id: `temp-${Date.now()}`,
       content: commentData.content,
       userName: user?.fullName || user?.userName || 'Bạn',
       userId: currentUserId,
@@ -64,11 +57,10 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       isAuthor: false,
       parentCommentId: commentData.parentCommentId || null,
       replies: [],
-      isOptimistic: true // Flag để biết đây là comment tạm
+      isOptimistic: true
     };
 
     if (commentData.parentCommentId) {
-      // Thêm reply
       setComments(prev => {
         const updateReplies = (commentsList) => {
           return commentsList.map(comment => {
@@ -89,14 +81,12 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         return updateReplies(prev);
       });
     } else {
-      // Thêm comment mới
       setComments(prev => [optimisticComment, ...prev]);
     }
 
     return optimisticComment.id;
   }, [user, currentUserId]);
 
-  // Hàm xóa comment optimistic và thay thế bằng real data
   const replaceOptimisticComment = useCallback((tempId, realComment) => {
     setComments(prev => {
       const replaceInList = (commentsList) => {
@@ -131,7 +121,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      // Xóa comment khỏi state ngay lập tức
       setComments(prev => {
         const removeFromList = (commentsList) => {
           return commentsList
@@ -147,7 +136,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       setMenuOpenId(null);
     } catch (err) {
       console.error("Lỗi khi xóa bình luận:", err);
-      // Rollback - fetch lại comments nếu xóa thất bại
       fetchComments();
     }
   };
@@ -159,8 +147,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     }
 
     const commentData = { content: newComment.trim() };
-    
-    // Optimistic Update - hiển thị comment ngay lập tức
     const tempId = addOptimisticComment(commentData);
 
     try {
@@ -170,7 +156,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Thay thế comment tạm bằng real data
       if (response.data) {
         replaceOptimisticComment(tempId, response.data);
       }
@@ -178,7 +163,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       setNewComment('');
     } catch (err) {
       console.error("Lỗi khi gửi bình luận:", err);
-      // Xóa comment tạm nếu gửi thất bại
       setComments(prev => prev.filter(comment => comment.id !== tempId));
     }
   };
@@ -194,7 +178,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       parentCommentId: parentId
     };
 
-    // Optimistic Update cho reply
     const tempId = addOptimisticComment(replyData);
 
     try {
@@ -204,7 +187,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Thay thế reply tạm bằng real data
       if (response.data) {
         replaceOptimisticComment(tempId, response.data);
       }
@@ -212,7 +194,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       setReplyContent('');
       setActiveReplyId(null);
       
-      // Auto expand thread để hiện reply mới
       setExpandedThreads(prev => ({
         ...prev,
         [parentId]: true
@@ -220,7 +201,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       
     } catch (err) {
       console.error("Lỗi khi gửi phản hồi:", err);
-      // Xóa reply tạm nếu gửi thất bại
       setComments(prev => {
         const removeFromList = (commentsList) => {
           return commentsList.map(comment => ({
@@ -235,7 +215,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     }
   };
 
-  // GIẢI PHÁP 2: Focus/Blur Polling - Chỉ poll khi tab active
   useEffect(() => {
     const handleFocus = () => {
       console.log("Tab active - refreshing comments");
@@ -244,12 +223,10 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // Tab không active - dừng polling
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
         }
       } else {
-        // Tab active - bắt đầu polling lại
         fetchComments();
         pollIntervalRef.current = setInterval(fetchComments, 3000);
       }
@@ -264,7 +241,6 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     };
   }, [fetchComments]);
 
-  // Các hàm render giữ nguyên...
   const handleTextareaChange = (e) => {
     const textarea = e.target;
     textarea.style.height = 'auto';
@@ -304,7 +280,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
           const prev = i > 0 ? thread[i - 1] : null;
           const isAuthor = cmt.isAuthor;
           const isMyComment = cmt.userId === currentUserId;
-          const isOptimistic = cmt.isOptimistic; // Comment đang chờ xác nhận
+          const isOptimistic = cmt.isOptimistic;
 
           return (
             <div
@@ -314,7 +290,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                 marginLeft: isReply ? 40 : 0,
                 position: 'relative',
                 zIndex: menuOpenId === cmt.id ? 100 : 1,
-                opacity: isOptimistic ? 0.7 : 1, // Làm mờ comment tạm
+                opacity: isOptimistic ? 0.7 : 1,
               }}
               onMouseEnter={() => setHoveredCommentId(cmt.id)}
               onMouseLeave={() => setHoveredCommentId(null)}
@@ -512,9 +488,18 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     );
   };
 
+  // Thêm hàm xử lý sự kiện wheel
+  const handleWheel = (e) => {
+    e.stopPropagation(); // Ngăn sự kiện wheel lan truyền ra ngoài
+  };
+
   return (
     <div className="comment-drawer-overlay" onClick={onClose}>
-      <div className="comment-drawer" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="comment-drawer"
+        onClick={(e) => e.stopPropagation()}
+        onWheel={handleWheel} // Thêm sự kiện wheel
+      >
         <div className="comment-header">
           <span>Bình luận</span>
           <button onClick={onClose}>&times;</button>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import "./PasswordChange.css";
+import toast from 'react-hot-toast';
 
 const PasswordChange = () => {
   const [hasPassword, setHasPassword] = useState(null); // null = chưa load xong
@@ -102,7 +103,22 @@ const PasswordChange = () => {
 
       console.log("Password change response:", response.data); // Debug log
 
-      setMessage("✅ Cập nhật mật khẩu thành công!");
+      toast.success("Cập Nhật Mật Khẩu Thành Công !.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: "#fff9db",             // Vàng kem nhẹ kiểu mạng xã hội
+          color: "#3f3f3f",                  // Màu chữ xám than, dễ đọc
+          fontSize: "16px",                  // Cỡ chữ vừa mắt
+          fontWeight: "600",                 // Chữ đậm nhưng không thô
+          padding: "16px 22px",              // Dày dặn
+          borderRadius: "14px",              // Bo tròn nhiều cho mềm mại
+          border: "1px solid #fcd34d",       // Viền vàng pastel
+          boxShadow: "0 8px 20px rgba(0,0,0,0.1)", // Đổ bóng nhẹ sang trọng
+          backdropFilter: "blur(2px)",       // Làm nền mờ nhẹ (giống iOS)
+        },
+        icon: "🌟",
+      });
       setError("");
       
       // Reset form
@@ -163,82 +179,103 @@ const PasswordChange = () => {
   }
 
   return (
-    <div className="pc-wrapper">
-      <div className="pc-container">
-        <h3 className="pc-title">
-          {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu mới"}
-        </h3>
+  <div className="pc-wrapper">
+    <div className="pc-container">
+      <h3 className="pc-title">
+        {hasPassword ? "Đổi mật khẩu" : "Tạo mật khẩu mới"}
+      </h3>
 
-        {/* Debug info (remove in production) */}
-        {/* <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-          Debug: hasPassword = {hasPassword ? 'true' : 'false'}
-        </div> */}
-
-        {/* Chỉ hiển thị ô mật khẩu hiện tại nếu user đã có mật khẩu */}
-        {hasPassword && (
-          <input
-            type="password"
-            name="currentPassword"
-            placeholder="Mật khẩu hiện tại"
-            value={form.currentPassword}
-            onChange={handleChange}
-            disabled={isLoading}
-          />
-        )}
-
+      {hasPassword && (
         <input
           type="password"
-          name="newPassword"
-          placeholder="Mật khẩu mới"
-          value={form.newPassword}
+          name="currentPassword"
+          placeholder="Mật khẩu hiện tại"
+          value={form.currentPassword}
           onChange={handleChange}
           disabled={isLoading}
         />
+      )}
 
-        <input
-          type="password"
-          name="confirmNewPassword"
-          placeholder="Nhập lại mật khẩu mới"
-          value={form.confirmNewPassword}
-          onChange={handleChange}
-          disabled={isLoading}
-        />
+      <input
+        type="password"
+        name="newPassword"
+        placeholder="Mật khẩu mới"
+        value={form.newPassword}
+        onChange={handleChange}
+        disabled={isLoading}
+      />
 
-        <button 
-          onClick={handleSubmit}
-          disabled={isLoading}
-        >
+      <input
+        type="password"
+        name="confirmNewPassword"
+        placeholder="Nhập lại mật khẩu mới"
+        value={form.confirmNewPassword}
+        onChange={handleChange}
+        disabled={isLoading}
+      />
+
+      <div className="pc-actions">
+        <button onClick={handleSubmit} disabled={isLoading}>
           {isLoading ? "Đang xử lý..." : "Xác nhận"}
         </button>
-
-        <hr />
 
         <button
           className="delete-btn"
           onClick={() => setShowDeleteConfirm(true)}
           disabled={isLoading}
         >
-          🗑️ Yêu cầu xóa tài khoản
+          Yêu cầu xóa tài khoản
         </button>
-
-        {message && <div className="pc-message pc-success">{message}</div>}
-        {error && <div className="pc-message pc-error">{error}</div>}
       </div>
 
-      {showDeleteConfirm && (
-        <div className="delete-modal">
-          <div className="delete-modal-content">
-            <h4>Bạn có chắc muốn xóa tài khoản?</h4>
-            <p>Hành động này không thể hoàn tác.</p>
-            <div className="delete-modal-actions">
-              <button onClick={handleDeleteAccount}>✅ Đồng ý</button>
-              <button onClick={() => setShowDeleteConfirm(false)}>❌ Hủy</button>
-            </div>
+      {message && <div className="pc-message pc-success">{message}</div>}
+      {error && <div className="pc-message pc-error">{error}</div>}
+    </div>
+
+    {showDeleteConfirm && (
+      <div className="delete-modal">
+        <div className="delete-modal-content">
+          <h4>Bạn có chắc muốn xóa tài khoản?</h4>
+          <p>Hành động này không thể hoàn tác.</p>
+          <div className="delete-modal-actions">
+            <button onClick={handleDeleteAccount} className="btn-confirm">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="white"
+                viewBox="0 0 24 24"
+                style={{ marginRight: 6 }}
+              >
+                <path d="M20.285 2.857l-11.428 11.428-5.714-5.714-3.143 3.143 8.857 8.857 14.571-14.571z" />
+              </svg>
+              Đồng ý
+            </button>
+
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="btn-cancel"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="#333"
+                viewBox="0 0 24 24"
+                style={{ marginRight: 6 }}
+              >
+                <path d="M18.364 5.636l-1.414-1.414L12 9.172 7.05 4.222 5.636 5.636 10.586 10.586 5.636 15.536l1.414 1.414L12 12.828l4.95 4.95 1.414-1.414-4.95-4.95z" />
+              </svg>
+              Hủy
+            </button>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
+
+
 };
 
 export default PasswordChange;

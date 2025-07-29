@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
-import { useNavigate } from "react-router-dom"; // 👈 THÊM
+import { CgSearchLoading } from "react-icons/cg";
+import { useNavigate } from "react-router-dom";
 import "./VideoSearchOverlay.css";
 
 export default function VideoSearchOverlay() {
@@ -10,7 +11,7 @@ export default function VideoSearchOverlay() {
   const [suggestions, setSuggestions] = useState([]);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
-  const navigate = useNavigate(); // 👈 THÊM
+  const navigate = useNavigate();
 
   // Load lịch sử
   useEffect(() => {
@@ -71,12 +72,12 @@ export default function VideoSearchOverlay() {
     setSuggestions([]);
   };
 
-  // 🔁 Tìm kiếm và chuyển trang
+  // Tìm kiếm và chuyển trang
   const doSearchAndRedirect = (kw) => {
     if (!kw.trim()) return;
     saveHistory(kw);
     handleClose();
-    navigate(`/search/${encodeURIComponent(kw)}`); // 👉 Chuyển sang trang kết quả
+    navigate(`/search/${encodeURIComponent(kw)}`);
   };
 
   const handleSearch = (e) => {
@@ -128,7 +129,6 @@ export default function VideoSearchOverlay() {
       <div className={`video-search-popup ${isOpen ? "visible" : ""}`}>
         <div className="video-search-popup-body">
           <form onSubmit={handleSearch} className="video-search-popup-form">
-            <FiSearch size={20} className="popup-input-icon" />
             <input
               ref={inputRef}
               type="text"
@@ -138,6 +138,7 @@ export default function VideoSearchOverlay() {
               className="video-search-popup-input"
               autoComplete="off"
               autoFocus={isOpen}
+              maxLength={80} // Giới hạn 80 ký tự
             />
             <button
               type="button"
@@ -161,10 +162,10 @@ export default function VideoSearchOverlay() {
                   <li key={idx} className="video-search-history-item">
                     <button
                       type="button"
-                      className="history-keyword-btn"
+                      className="video-search-history-keyword-btn"
                       onClick={() => onSelectKeyword(kw)}
                     >
-                      🔍 {kw}
+                      <CgSearchLoading size={20} className="video-search-history-icon"/> {kw}
                     </button>
                     <button
                       type="button"

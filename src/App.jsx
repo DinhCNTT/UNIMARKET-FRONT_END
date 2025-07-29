@@ -5,7 +5,9 @@ import { BrowserRouter } from "react-router-dom";
 import { SearchProvider } from "./context/SearchContext"; 
 import { CategoryProvider } from "./context/CategoryContext"; 
 import { LocationProvider } from "./context/LocationContext"; // Import LocationProvider mới
-import TopNavbar from "./components/TopNavbar"; // Import TopNavbar
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "react-hot-toast";
 
 const clientId = "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com"; // Thay bằng Client ID Google thật
 
@@ -18,6 +20,8 @@ function App() {
             <CategoryProvider>
               <LocationProvider>
                 <AppRoutes />
+                <Toaster position="top-center" reverseOrder={false} />
+                <ToastContainer/>
               </LocationProvider>
             </CategoryProvider>
           </SearchProvider>

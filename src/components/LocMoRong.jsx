@@ -182,25 +182,38 @@ const LocMoRong = ({
       </div>
 
       <div className="loc-mo-rong-active-filters">
-        {selectedDistrict && (
-          <span className="loc-mo-rong-tag">
-            {selectedDistrict}
-            <button onClick={handleClearDistrict}>❌</button>
-          </span>
-        )}
-        {(appliedMinPrice > 0 || appliedMaxPrice < 100000000) && (
-          <span className="loc-mo-rong-tag">
-            {appliedMinPrice.toLocaleString("vi-VN")}đ - {appliedMaxPrice.toLocaleString("vi-VN")}đ
-            <button onClick={handleClearPrice}>❌</button>
-          </span>
-        )}
-        {selectedCategory && (
-          <span className="loc-mo-rong-tag">
-            {selectedCategory}
-            <button onClick={handleClearCategory}>❌</button>
-          </span>
-        )}
-      </div>
+  {selectedDistrict && (
+    <span className="loc-mo-rong-tag">
+      {selectedDistrict}
+      <button className="tag-close-btn" onClick={handleClearDistrict}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </span>
+  )}
+  {(appliedMinPrice > 0 || appliedMaxPrice < 100000000) && (
+    <span className="loc-mo-rong-tag">
+      {appliedMinPrice.toLocaleString("vi-VN")}đ - {appliedMaxPrice.toLocaleString("vi-VN")}đ
+      <button className="tag-close-btn" onClick={handleClearPrice}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </span>
+  )}
+  {selectedCategory && (
+    <span className="loc-mo-rong-tag">
+      {selectedCategory}
+      <button className="tag-close-btn" onClick={handleClearCategory}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </span>
+  )}
+</div>
+
     </div>
   );
 };

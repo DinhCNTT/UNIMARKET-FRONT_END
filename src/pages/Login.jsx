@@ -5,30 +5,34 @@ import authService from "../services/authService";
 import "./Login.css";
 import GoogleLoginButton from "./GoogleLoginButton";
 import FacebookLoginButton from "./FacebookLoginButton";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [warningMessage, setWarningMessage] = useState("");
-
   const { setUser, setToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setWarningMessage("");
 
     try {
       const userData = await authService.login(email, password);
 
       if (!userData || !userData.token || !userData.role) {
-        setErrorMessage("Không thể xác thực tài khoản!");
+        toast.error("❌ Không thể xác thực tài khoản!", {
+          style: {
+            background: "#fef2f2",
+            color: "#991b1b",
+            fontWeight: "600",
+            padding: "14px 20px",
+            border: "1px solid #fca5a5",
+            borderRadius: "10px",
+          },
+        });
         return;
       }
 
-      // ✅ Tạo user object hoàn chỉnh
       const userObject = {
         id: userData.id,
         email: userData.email,
@@ -38,38 +42,57 @@ const Login = () => {
         avatarUrl: userData.avatarUrl || "",
         emailConfirmed: userData.emailConfirmed || false,
         loginProvider: userData.loginProvider || "Email",
-        token: userData.token // ✅ Quan trọng: token phải có trong user object
+        token: userData.token,
       };
 
-      // ✅ Set user trước (bao gồm token)
       setUser(userObject);
-      
-      // ✅ Set token riêng biệt (đảm bảo consistency)
       setToken(userData.token);
 
-      console.log("Login successful:", {
-        user: userObject,
-        token: userData.token
-      });
-
-      // ✅ Hiển thị warning nếu Facebook chưa xác minh email
       if (
         userData.loginProvider === "Facebook" &&
         userData.emailConfirmed === false
       ) {
-        setWarningMessage(
-          "⚠️ Vui lòng xác minh email trong cài đặt tài khoản trước khi đăng tin."
-        );
+        toast("📧 Vui lòng xác minh email trong cài đặt tài khoản trước khi đăng tin.", {
+          icon: "⚠️",
+          style: {
+            background: "#fefce8",
+            color: "#92400e",
+            border: "1px solid #fde68a",
+            padding: "14px 20px",
+            fontWeight: "600",
+            borderRadius: "12px",
+          },
+        });
+      } else {
+        toast.success("🎉 Đăng nhập thành công!", {
+          style: {
+            background: "#ecfdf5",
+            color: "#065f46",
+            fontSize: "15px",
+            fontWeight: "600",
+            padding: "14px 20px",
+            border: "1px solid #34d399",
+            borderRadius: "10px",
+          },
+        });
       }
 
       navigate(userData.role === "Admin" ? "/admin" : "/market");
     } catch (error) {
       console.error("Login error:", error);
-      if (error.response && error.response.data && error.response.data.message) {
-        setErrorMessage(error.response.data.message);
-      } else {
-        setErrorMessage("Đăng nhập thất bại!");
-      }
+      const errMsg =
+        error.response?.data?.message || "Đăng nhập thất bại!";
+      toast.error(`❌ ${errMsg}`, {
+        style: {
+          background: "#fef2f2",
+          color: "#991b1b",
+          fontSize: "15px",
+          fontWeight: "600",
+          padding: "14px 20px",
+          border: "1px solid #fca5a5",
+          borderRadius: "10px",
+        },
+      });
     }
   };
 
@@ -77,9 +100,6 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <h2>Đăng nhập</h2>
-
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
-        {warningMessage && <div className="warning-message">{warningMessage}</div>}
 
         <form onSubmit={handleLogin} autoComplete="on">
           <input

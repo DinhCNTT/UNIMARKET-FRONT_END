@@ -1,7 +1,6 @@
-/* Container chính của ChatBox */
 .chatbox-container {
-  width: 600px;              /* Độ rộng cố định mong muốn */
-  max-width: 700px;          /* (optional) không vượt quá max nếu co lại */
+  width: 600px;
+  max-width: 700px;
   height: 700px;
   background: #fff;
   border-radius: 16px;
@@ -10,7 +9,9 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  margin: 86px auto 0;       /* Căn giữa ngang */
+
+  margin-top: 86px;
+  margin-left: calc(50% - 300px + -154px);
 }
 
 /* Header của ChatBox */
@@ -532,6 +533,8 @@
   border-radius: 50%;
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   padding: 4px;
+
+  margin-bottom: 10px; /* Đẩy nó lên trên một tí */
 }
 
 .chatbox-media-upload-label:hover {

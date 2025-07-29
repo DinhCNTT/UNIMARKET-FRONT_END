@@ -1,91 +1,138 @@
 .loc-tin-dang-container {
-  padding: 20px;
-  background-color: #FFFAFA;
-  margin-left: 300px;
-  margin-top: 100px;
+  padding: 16px 20px; /* Gọn hơn */
+  background-color: #fff;
+  margin: 60px auto 0;
   width: 85%;
-  max-width: 1000px;
-  min-height: 700px; /* 👈 chiều cao tối thiểu để giữ khung luôn đầy */
+  max-width: 1100px; /* Gọn hơn */
+  min-height: 600px; /* Giảm chiều cao tối thiểu */
   box-sizing: border-box;
-  border-radius: 10px;
+  border-radius: 8px; /* Bo góc nhẹ hơn */
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* hoặc center nếu muốn nội dung ở giữa */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); /* Bóng nhẹ hơn */
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
 }
-
 
 .loc-tin-dang-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
+  font-size: 22px; /* Nhỏ gọn hơn chút nhưng vẫn nổi bật */
+  font-weight: 700; /* In đậm rõ ràng */
+  color: #111827; /* Màu chữ đen xám hiện đại */
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif; /* Font chữ đẹp */
   margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb; /* Đường kẻ rõ hơn nhưng tinh tế */
+  letter-spacing: 0.3px; /* Chữ cân đối hơn */
 }
 
-/* Thông tin lọc */
+/* Filter section - compact modern style */
+/* Filter section - clean compact style */
 .loc-tin-dang-filter-info {
-  background-color: #f0f5ff;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #0066cc;
+  background-color: #fdfefe; /* Nền trắng pha sáng hiện đại */
+  padding: 10px 14px; /* Gọn hơn */
+  border-radius: 6px; /* Bo góc nhẹ, tinh tế */
+  margin-bottom: 16px;
+  border-left: 3px solid #2563eb; /* Xanh chuyên nghiệp */
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.05); /* Bóng nhẹ */
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .loc-tin-dang-filter-info p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #333;
+  margin: 3px 0;
+  font-size: 13px; /* Nhỏ gọn hơn */
+  color: #374151; /* Xám đậm dễ đọc */
+  line-height: 1.4;
 }
 
 .loc-tin-dang-filter-info strong {
-  color: #0066cc;
+  color: #1d4ed8; /* Xanh đậm hiện đại */
+  font-weight: 600;
 }
 
-/* Danh sách tin đăng theo chiều dọc */
+
+/* List container */
+/* List container - clean modern style */
 .loc-tin-dang-list {
   display: flex;
   flex-direction: column;
+  gap: 6px; /* Khoảng cách siêu gọn */
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-/* Mỗi tin đăng */
+/* List items - card style */
+.loc-tin-dang-list > * {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 10px; /* Gọn hơn */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: all 0.15s ease;
+}
+
+.loc-tin-dang-list > *:hover {
+  border-color: #d1d5db;
+  background: #fafafa; /* Nền nhẹ khi hover */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+/* Item card - compact and modern */
 .loc-tin-dang-item {
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: 20px; /* 👈 thêm dòng này để tăng khoảng cách giữa các item */
+  transition: all 0.2s ease;
+  padding: 8px 10px;
 }
 
 .loc-tin-dang-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);
+  border-color: #d1d5db;
+  background-color: #fafafa;
 }
 
+/* Links */
 .loc-tin-dang-link {
   text-decoration: none;
   color: inherit;
   display: block;
 }
 
+/* Content layout */
 .loc-tin-dang-content {
   display: flex;
-  padding: 15px;
+  padding: 16px; /* Giảm padding cho gọn */
 }
 
-/* Container cho ảnh */
+
+/* Image container - improved aspect ratio */
+/* Image container - clean modern style */
 .loc-tin-dang-image-container {
-  flex: 0 0 150px;
-  height: 150px;
-  margin-right: 20px;
+  flex: 0 0 160px; /* Nhỏ gọn hơn */
+  height: 160px;
+  margin-right: 16px;
   position: relative;
   overflow: hidden;
+  border-radius: 6px;
+  background-color: #f5f7fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); /* Bóng nhẹ tinh tế */
 }
 
 .loc-tin-dang-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 6px;
+  transition: transform 0.25s ease;
+}
+
+.loc-tin-dang-item:hover .loc-tin-dang-image {
+  transform: scale(1.03);
 }
 
 .loc-tin-dang-no-image {
@@ -94,86 +141,188 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
-  color: #777;
-  border-radius: 6px;
-  font-size: 14px;
+  background: linear-gradient(135deg, #f7f9fc 0%, #eaeef2 100%);
+  color: #7a7a7a;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  padding: 4px;
 }
 
-/* Phần thông tin */
+/* Info section */
 .loc-tin-dang-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
+/* Title */
 .loc-tin-dang-title-item {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 10px;
-  line-height: 1.3;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.2s ease;
 }
 
+.loc-tin-dang-item:hover .loc-tin-dang-title-item {
+  color: #2563eb; /* Xanh hiện đại */
+}
+
+/* Price */
 .loc-tin-dang-price {
-  font-size: 18px;
-  font-weight: bold;
-  color: #e53935;
-  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ef4444;
+  margin: 0;
 }
 
+/* Location */
 .loc-tin-dang-location {
-  font-size: 14px;
-  color: #777;
-  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #7a7a7a;
+  margin: 0;
 }
 
+.loc-tin-dang-location:before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237a7a7a"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
+  background-repeat: no-repeat;
+  margin-right: 5px;
+}
+
+/* Description */
 .loc-tin-dang-description {
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
   margin: 0;
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
 }
 
-/* Nút xem thêm */
+/* Time */
+.loc-tin-dang-time {
+  color: #a3a3a3;
+  font-size: 12px;
+  margin-top: auto;
+  padding-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.loc-tin-dang-time:before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a3a3a3"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>');
+  background-repeat: no-repeat;
+  margin-right: 5px;
+}
+/* View more button - modern style */
+/* Load more button - modern minimal style */
 .loc-tin-dang-xem-them-btn {
-  display: block;
-  width: 180px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px; /* Gọn hơn */
   margin: 20px auto;
-  padding: 10px;
-  background-color: transparent;
-  color: #333;
-  border: 2px solid #333;
-  border-radius: 5px;
+  background-color: #fff;
+  color: #2563eb; /* Xanh hiện đại */
+  border: 1px solid #2563eb;
+  border-radius: 6px; /* Bo góc tinh tế */
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
 }
 
 .loc-tin-dang-xem-them-btn:hover {
-  background-color: #333;
-  color: white;
-  border-color: #333;
+  background-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.16);
 }
 
-/* Thông báo không có tin đăng */
+/* No results message */
 .loc-tin-dang-no-result {
-  font-size: 16px;
+  font-size: 15px;
   text-align: center;
   padding: 40px 20px;
-  border-radius: 8px;
-  margin: 20px 0;
-  width: 100%;
-  box-sizing: border-box;
+  border-radius: 6px;
+  margin: 16px 0;
+  background-color: #fafafa;
+  color: #7a7a7a;
+  border: 1px dashed #e0e0e0;
+  font-weight: 500;
+  line-height: 1.5;
 }
-/* Responsive */
+
+/* Pagination - modern compact style */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  gap: 6px;
+}
+
+.pagination button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #4d4d4d;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination button.active {
+  background-color: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+/* Responsive design */
+@media screen and (max-width: 992px) {
+  .loc-tin-dang-container {
+    width: 90%;
+    margin-top: 80px;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .loc-tin-dang-container {
-    margin-left: 0;
     width: 95%;
-    padding: 15px;
+    padding: 16px;
+    margin-left: 0;
   }
   
   .loc-tin-dang-content {
@@ -183,52 +332,31 @@
   .loc-tin-dang-image-container {
     flex: 0 0 200px;
     margin-right: 0;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     width: 100%;
+  }
+  
+  .loc-tin-dang-title {
+    font-size: 20px;
   }
 }
 
 @media screen and (max-width: 480px) {
   .loc-tin-dang-image-container {
-    height: 180px;
+    height: 160px;
   }
   
   .loc-tin-dang-title-item {
     font-size: 16px;
   }
-}
-.loc-tin-dang-time {
-  color: #888;
-  font-size: 0.85rem;
-  margin-top: 4px;
-}
-
-.pagination {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.pagination button {
-  margin: 0 5px;
-  padding: 6px 12px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background-color: white;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.pagination button:hover:not(:disabled) {
-  background-color: #f0f0f0;
-}
-
-.pagination button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.pagination button.active {
-  background-color: orange;
-  color: white;
-  border-color: orange;
+  
+  .loc-tin-dang-price {
+    font-size: 16px;
+  }
+  
+  .pagination button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
 }

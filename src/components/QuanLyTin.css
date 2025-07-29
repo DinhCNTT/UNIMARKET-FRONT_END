@@ -1,102 +1,150 @@
 .qlt-wrapper {
-  max-width: 100%;
-  width: 1200px;
-  margin-top: 80px;
-  margin-bottom: 40px;
-  margin-left: 170px;
-  padding: 24px 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 60px auto 30px;
+  padding: 28px;
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  font-family: "Segoe UI", sans-serif;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   box-sizing: border-box;
   min-height: 80vh;
-  transition: min-height 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .qlt-wrapper h2 {
   font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 8px;
 }
 
-/* ✅ Header chứa avatar + lời chào + ô tìm kiếm */
+.qlt-wrapper h2:before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 22px;
+  background: linear-gradient(to bottom, #ff8a00, #ff4d00);
+  border-radius: 2px;
+}
+
+/* Header chứa avatar + lời chào + ô tìm kiếm */
 .qlt-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .qlt-user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .qlt-user-avatar {
-  font-size: 28px;
-  background-color: #f3f3f3;
-  padding: 8px;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #ff8a00, #ff4d00);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(255, 138, 0, 0.2);
 }
 
+.qlt-user-greeting h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.qlt-user-greeting p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #666;
+  opacity: 0.9;
+}
+
+/* Thanh tìm kiếm tinh gọn */
 .qlt-search-wrapper {
   position: relative;
-  width: 100%;
-  max-width: 320px;
+  width: 240px;
 }
 
-.qlt-search-wrapper::before {
-  content: "🔍";
+.qlt-search {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  outline: none;
+  font-size: 13px;
+  background-color: #f9f9f9;
+  color: #333;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.qlt-search:focus {
+  background-color: #fff;
+  border-color: rgba(255, 138, 0, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 138, 0, 0.1);
+}
+
+.search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 16px;
+  font-size: 14px;
   color: #888;
+  pointer-events: none;
 }
 
-.qlt-search {
-  width: 90%;
-  padding: 10px 12px 10px 36px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  outline: none;
-  font-size: 15px;
-}
-
-/* Tabs */
+/* Tabs tinh giản */
 .qlt-tabs {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   margin-bottom: 20px;
+  padding-bottom: 4px;
 }
 
 .qlt-tab-btn {
   padding: 8px 16px;
   border: none;
-  border-radius: 6px;
-  background-color: #f0f0f0;
+  border-radius: 20px;
+  background-color: #f5f5f5;
   cursor: pointer;
   font-weight: 500;
-  transition: 0.2s;
+  font-size: 14px;
+  color: #555;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
-.qlt-tab-btn:hover,
-.qlt-tab-btn:focus {
-  background-color: #ddd;
+.qlt-tab-btn:hover {
+  background-color: #eee;
 }
 
 .qlt-tab-btn.active {
-  background-color: #ff9900;
+  background: linear-gradient(to right, #ff8a00, #ff4d00);
   color: white;
+  box-shadow: 0 2px 6px rgba(255, 77, 0, 0.2);
 }
 
-/* Danh sách tin */
+/* Danh sách tin tối giản */
 .qlt-post-list {
   display: flex;
   flex-direction: column;
@@ -104,122 +152,191 @@
 }
 
 .qlt-post-item {
-    display: flex;
-    gap: 20px;
-    padding: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background-color: #fafafa;
-    transition: box-shadow 0.2s;
-    cursor: pointer;
-  }
-  
-  .qlt-post-item:hover {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  }
-  
-.qlt-post-item img {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-  .qlt-post-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .qlt-post-content h3 {
-    font-size: 20px;
-    font-weight: bold;
-    color: #111;
-    margin: 0 0 8px;
-  }
-  .qlt-post-content p {
-    margin: 4px 0;
-    color: #444;
-    font-size: 15px;
-  }
-  .qlt-post-content p strong {
-    font-weight: 600;
-  }
-  
-  .qlt-post-content .qlt-price {
-    color: #e53935; /* 🔴 Màu đỏ */
-    font-weight: bold;
-  }  
-
-.qlt-post-item p {
-  margin: 4px 0;
-  color: #444;
-}
-
-/* Nút hành động */
-.qlt-actions {
-  margin-top: 10px;
   display: flex;
-  gap: 12px;
-}
-
-.qlt-actions a,
-.qlt-actions button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  background-color: #fff;
+  transition: all 0.2s ease;
   cursor: pointer;
-  text-decoration: none;
 }
 
+.qlt-post-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: transparent;
+}
+
+.qlt-post-item img {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Container chính */
+.qlt-post-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
+}
+
+/* Tiêu đề tin đăng */
+.qlt-post-content h3 {
+  font-size: 16px;        /* nhỏ hơn một chút */
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 6px;
+  line-height: 1.4;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Mô tả ngắn */
+.qlt-post-content p {
+  margin: 2px 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+/* Nội dung được bôi đậm */
+.qlt-post-content p strong {
+  font-weight: 600;
+  color: #111;
+}
+
+/* Giá sản phẩm nổi bật */
+.qlt-post-content .qlt-price {
+  color: #e53935;
+  font-weight: 700;
+  font-size: 18px;
+  margin-top: 6px;
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* Nút hành động nhỏ gọn */
+.qlt-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  max-width: fit-content;
+  align-items: center;
+}
+
+.qlt-actions button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+/* Nút Sửa - vàng đậm */
 .qlt-edit-btn {
-  background-color: #ffc107;
-  color: #000;
+  background-color: #f9a825;
+  color: #fff;
 }
 
-.qlt-delete-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-.qlt-delete-btn:hover,
 .qlt-edit-btn:hover {
-  opacity: 0.9;
+  background-color: #f57f17;
+  transform: translateY(-1px);
 }
 
-/* Phân trang */
+/* Nút Xoá - đỏ đậm */
+.qlt-delete-btn {
+  background-color: #d32f2f;
+  color: #fff;
+}
+
+.qlt-delete-btn:hover {
+  background-color: #b71c1c;
+  transform: translateY(-1px);
+}
+
+.action-icon {
+  font-size: 16px;
+}
+
+/* Phân trang tinh tế */
 .qlt-pagination {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
   margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .qlt-pagination button {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  background-color: #fff;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.15s ease;
+  font-weight: 500;
+  font-size: 12px;
+  color: #444;
 }
 
 .qlt-pagination button:hover {
-  background-color: #eee;
+  background-color: #f5f5f5;
 }
 
 .qlt-pagination button.active {
-  background-color: #ff9900;
-  color: black;
-  border-color: #ff9900;
+  background: linear-gradient(135deg, #ff8a00, #ff4d00);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px rgba(255, 77, 0, 0.2);
 }
-/* ✅ Icon trạng thái bên phải */
-.qlt-post-status {
-    font-size: 24px;
-    margin-left: 12px;
-    display: flex;
-    align-items: center;
-  }
 
+/* Responsive */
+@media (max-width: 768px) {
+  .qlt-wrapper {
+    margin: 16px auto;
+    padding: 16px;
+    border-radius: 0;
+    border: none;
+  }
+  
+  .qlt-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .qlt-search-wrapper {
+    width: 100%;
+  }
+  
+  .qlt-post-item {
+    flex-direction: column;
+  }
+  
+  .qlt-post-item img {
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+  }
+  
+  .qlt-actions {
+    justify-content: flex-start;
+  }
+}
