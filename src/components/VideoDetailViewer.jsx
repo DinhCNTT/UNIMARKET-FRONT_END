@@ -1,14 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import axios from 'axios';
 import './VideoDetailViewer.css';
 import TopNavbar from "../components/TopNavbar";
-import { FaHeart, FaRegCommentDots } from 'react-icons/fa';
+import { IoHeart, IoHeartOutline } from "react-icons/io5"; // Icon mới
+import { FaRegCommentDots } from 'react-icons/fa';
+import { SiMinutemailer } from "react-icons/si";
 import CommentDrawer from './CommentDrawer';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import defaultAvatar from '../assets/default-avatar.png';
+import { AuthContext } from "../context/AuthContext";
 
-const VideoDetailViewer = () => {
+const VideoDetailViewer = ({ onOpenChat }) => {
   const [videoList, setVideoList] = useState([]);
   const [searchParams] = useSearchParams();
   const initialIndexFromUrl = parseInt(searchParams.get('index')) || 0;
@@ -24,6 +27,8 @@ const VideoDetailViewer = () => {
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef(null);
   const [videoAspectRatio, setVideoAspectRatio] = useState(null);
+  
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchAllVideos = async () => {
@@ -77,12 +82,11 @@ const VideoDetailViewer = () => {
     let scrollTimeout = null;
 
     const handleWheel = (e) => {
-      if (isScrolling) return; // Bỏ qua các sự kiện cuộn khi đang xử lý
+      if (isScrolling) return;
       isScrolling = true;
 
       clearTimeout(scrollTimeout);
 
-      // Tăng thời gian chờ lên 1000ms để tạo hiệu ứng "khựng"
       scrollTimeout = setTimeout(() => {
         if (e.deltaY > 0 && currentIndex < videoList.length - 1) {
           setCurrentIndex((prev) => prev + 1);
@@ -92,7 +96,7 @@ const VideoDetailViewer = () => {
           setShowMore(false);
         }
         isScrolling = false;
-      }, 1000); // Độ trễ 1000ms (1 giây) để tạo cảm giác khựng
+      }, 1000);
     };
 
     window.addEventListener("wheel", handleWheel, { passive: true });
@@ -141,6 +145,47 @@ const VideoDetailViewer = () => {
     }
   };
 
+  const handleChatWithSeller = async () => {
+    const currentVideo = videoList[currentIndex];
+    
+    if (!user) {
+      alert("Bạn cần đăng nhập để chat với người bán.");
+      return;
+    }
+    
+    if (user.id === currentVideo.nguoiDang?.id) {
+      alert("Bạn không thể chat với chính mình.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5133/api/chat/start", {
+        MaNguoiDung1: user.id,
+        MaNguoiDung2: currentVideo.nguoiDang?.id,
+        MaTinDang: currentVideo.maTinDang,
+      });
+      
+      const maCuocTroChuyen =
+        response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
+        
+      if (maCuocTroChuyen) {
+        if (typeof onOpenChat === "function") {
+          onOpenChat(maCuocTroChuyen);
+        } else {
+          navigate(`/chat/${maCuocTroChuyen}`);
+        }
+      } else {
+        alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+      }
+    } catch (error) {
+      console.error("Lỗi tạo cuộc trò chuyện:", error);
+      if (error.response) {
+        console.error("Chi tiết lỗi từ server:", error.response.data);
+      }
+      alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
+    }
+  };
+
   const handleVideoClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -166,11 +211,6 @@ const VideoDetailViewer = () => {
       setTimeout(() => setShowHeart(false), 700);
       clickCountRef.current = 0;
     }
-  };
-
-  const handleDoubleClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
   };
 
   const formatCount = (num) => {
@@ -202,12 +242,11 @@ const VideoDetailViewer = () => {
           autoPlay
           loop
           onClick={handleVideoClick}
-          onDoubleClick={handleDoubleClick}
         />
 
         {showHeart && (
           <div className="vdv-heart-animation">
-            <FaHeart size={80} color="red" />
+            <IoHeart size={80} color="#ff4d6d" />
           </div>
         )}
 
@@ -264,21 +303,17 @@ const VideoDetailViewer = () => {
           }}
         />
 
+        {/* Like Button */}
         <div
-          className="vdv-icon-button"
+          className={`vdv-icon-button vdv-like-button ${videoData.isLiked ? "liked" : ""}`}
           onClick={handleLike}
-          title={
-            !token
-              ? "Bạn cần đăng nhập để tym"
-              : videoData.isLiked
-              ? "Đã tym"
-              : "Nhấn để tym"
-          }
+          title={!token ? "Bạn cần đăng nhập để tym" : videoData.isLiked ? "Đã tym" : "Nhấn để tym"}
         >
-          <FaHeart
-            size={26}
-            color={token && videoData.isLiked ? "red" : "#ccc"}
-          />
+          {videoData.isLiked ? (
+            <IoHeart size={28} color="#ff4d6d" />
+          ) : (
+            <IoHeartOutline size={28} color="#ccc" />
+          )}
         </div>
         <div className="vdv-icon-label">{formatCount(videoData.soTym || 0)}</div>
 
@@ -289,6 +324,17 @@ const VideoDetailViewer = () => {
           <FaRegCommentDots size={24} color="#ccc" />
         </div>
         <div className="vdv-icon-label">{videoData.soBinhLuan || 0}</div>
+
+        {user?.id !== videoData.nguoiDang?.id && (
+  <div
+    className="vdv-icon-button vdv-chat-button"
+    onClick={handleChatWithSeller}
+    title={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán 💬"}
+    data-tooltip={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán 💬"}
+  >
+    <SiMinutemailer size={24} color="#ccc"/>
+  </div>
+)}
       </div>
 
       {showComments && (

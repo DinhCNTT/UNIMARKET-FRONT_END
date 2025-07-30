@@ -224,8 +224,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Hàm logout
+  // ✅ Hàm logout với cross-tab sync
   const logout = () => {
+    // Reset tất cả state
     setUserState(null);
     setTokenState(null);
     setRoleState(null);
@@ -234,8 +235,55 @@ export const AuthProvider = ({ children }) => {
     setPhoneNumberState("");
     setAvatarUrlState("");
     
+    // Xóa storage
     clearStorage();
+    
+    // 🔥 THÊM: Gửi signal logout cho các tab khác
+    // Sử dụng localStorage để trigger storage event trên các tab khác
+    localStorage.setItem("logout_signal", Date.now().toString());
+    // Xóa ngay sau đó để không ảnh hưởng đến việc restore data
+    setTimeout(() => {
+      localStorage.removeItem("logout_signal");
+    }, 100);
   };
+
+  // 🔥 THÊM: Listen cho storage events để đồng bộ logout cross-tab
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      // Chỉ xử lý logout signal
+      if (e.key === "logout_signal" && e.newValue) {
+        console.log(`Tab ${tabId}: Received logout signal from another tab`);
+        
+        // Reset tất cả state (không cần gọi clearStorage vì tab khác đã xóa rồi)
+        setUserState(null);
+        setTokenState(null);
+        setRoleState(null);
+        setFullNameState("");
+        setEmailState("");
+        setPhoneNumberState("");
+        setAvatarUrlState("");
+        
+        // Xóa sessionStorage của tab hiện tại
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("userFullName");
+        sessionStorage.removeItem("userRole");
+        sessionStorage.removeItem("userPhoneNumber");
+        sessionStorage.removeItem("userAvatar");
+        sessionStorage.removeItem("token");
+        
+        console.log(`Tab ${tabId}: Logged out due to cross-tab logout`);
+      }
+    };
+
+    // Chỉ listen storage event khi đã mount và có user
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [tabId]); // Dependency chỉ cần tabId
 
   // ✅ Khôi phục dữ liệu khi component mount
   useEffect(() => {

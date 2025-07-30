@@ -646,3 +646,34 @@
   color: #555;
   margin-right: 6px;
 }
+/* Thông báo yêu cầu xác minh email */
+.topnnavbar-toast-verify-email {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background-color: #eff6ff !important;  /* Xanh nhạt */
+  color: #1d4ed8 !important;             /* Xanh đậm */
+  border: 1px solid #60a5fa !important;
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  max-width: 420px !important;
+}
+
+/* Thông báo yêu cầu cập nhật số điện thoại */
+.topnnavbar-toast-update-phone {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background-color: #fff7ed !important;  /* Cam nhạt */
+  color: #b45309 !important;             /* Cam đậm */
+  border: 1px solid #fdba74 !important;
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  max-width: 420px !important;
+}
+
+.topnnavbar-toast-verify-email svg,
+.topnnavbar-toast-update-phone svg {
+  width: 22px !important;
+  height: 22px !important;
+}
