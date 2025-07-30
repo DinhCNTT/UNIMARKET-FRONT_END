@@ -354,8 +354,8 @@
 /* Nút chọn lại từ khóa lịch sử */
 .video-search-history-keyword-btn {
   flex-grow: 1;
-  display: flex; /* 👉 để icon + chữ nằm ngang */
-  align-items: center; /* 👉 căn giữa icon theo chiều dọc */
+  display: flex;
+  align-items: center;
   background: transparent;
   border: none;
   text-align: left;
@@ -363,8 +363,13 @@
   color: #222;
   padding: 4px 0;
   font-size: 15px;
-  gap: 20px; /* 👉 khoảng cách giữa icon và chữ */
+  gap: 8px;
+  /* Thêm các dòng này */
+  white-space: normal;     /* Cho phép xuống dòng */
+  word-break: break-word;  /* Ngắt từ khi quá dài */
+  max-width: 400px;        /* Giới hạn chiều rộng để buộc xuống dòng */
 }
+
 
 .video-search-history-keyword-btn:hover {
   text-decoration: underline;

@@ -4,6 +4,7 @@ import './CommentDrawer.css';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import defaultAvatar from '../assets/default-avatar.png';
+import toast from 'react-hot-toast'; // Import react-hot-toast
 
 const CommentDrawer = ({ maTinDang, onClose }) => {
   const [comments, setComments] = useState([]);
@@ -108,36 +109,174 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
 
   const handleDeleteComment = async (commentId) => {
     if (!token) {
-      console.error("No token available");
+      toast.error("Không có quyền thực hiện thao tác này", {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: '#ef4444',
+          color: '#fff',
+          fontWeight: '500',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#ef4444',
+        },
+      });
       return;
     }
 
-    if (!window.confirm("Bạn có chắc chắn muốn xóa bình luận này không?")) {
-      return;
-    }
+    // Tạo toast xác nhận với các nút hành động
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ 
+          fontSize: '14px', 
+          fontWeight: '600', 
+          color: '#374151',
+          marginBottom: '4px'
+        }}>
+          🗑️ Xác nhận xóa bình luận
+        </div>
+        <div style={{ 
+          fontSize: '13px', 
+          color: '#6b7280',
+          lineHeight: '1.4'
+        }}>
+          Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác.
+        </div>
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          justifyContent: 'flex-end',
+          marginTop: '8px'
+        }}>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            style={{
+              padding: '6px 12px',
+              background: '#f3f4f6',
+              color: '#374151',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#e5e7eb';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#f3f4f6';
+            }}
+          >
+            Hủy
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              
+              // Hiển thị toast đang xử lý
+              const loadingToast = toast.loading('Đang xóa bình luận...', {
+                position: 'top-right',
+                style: {
+                  background: '#3b82f6',
+                  color: '#fff',
+                },
+              });
 
-    try {
-      await axios.delete(`http://localhost:5133/api/video/comment/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      setComments(prev => {
-        const removeFromList = (commentsList) => {
-          return commentsList
-            .filter(comment => comment.id !== commentId)
-            .map(comment => ({
-              ...comment,
-              replies: comment.replies ? removeFromList(comment.replies) : []
-            }));
-        };
-        return removeFromList(prev);
-      });
-      
-      setMenuOpenId(null);
-    } catch (err) {
-      console.error("Lỗi khi xóa bình luận:", err);
-      fetchComments();
-    }
+              try {
+                await axios.delete(`http://localhost:5133/api/video/comment/${commentId}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                
+                setComments(prev => {
+                  const removeFromList = (commentsList) => {
+                    return commentsList
+                      .filter(comment => comment.id !== commentId)
+                      .map(comment => ({
+                        ...comment,
+                        replies: comment.replies ? removeFromList(comment.replies) : []
+                      }));
+                  };
+                  return removeFromList(prev);
+                });
+                
+                setMenuOpenId(null);
+                
+                // Dismiss loading toast và hiển thị success
+                toast.dismiss(loadingToast);
+                toast.success('Đã xóa bình luận thành công! ✨', {
+                  duration: 3000,
+                  position: 'top-right',
+                  style: {
+                    background: '#10b981',
+                    color: '#fff',
+                    fontWeight: '500',
+                  },
+                  iconTheme: {
+                    primary: '#fff',
+                    secondary: '#10b981',
+                  },
+                });
+                
+              } catch (err) {
+                console.error("Lỗi khi xóa bình luận:", err);
+                
+                // Dismiss loading toast và hiển thị error
+                toast.dismiss(loadingToast);
+                toast.error('Có lỗi xảy ra khi xóa bình luận!', {
+                  duration: 4000,
+                  position: 'top-right',
+                  style: {
+                    background: '#ef4444',
+                    color: '#fff',
+                    fontWeight: '500',
+                  },
+                  iconTheme: {
+                    primary: '#fff',
+                    secondary: '#ef4444',
+                  },
+                });
+                
+                fetchComments();
+              }
+            }}
+            style={{
+              padding: '6px 12px',
+              background: '#ef4444',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = '#dc2626';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = '#ef4444';
+            }}
+          >
+            Xóa
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+      position: 'top-right',
+      style: {
+        background: '#fff',
+        color: '#374151',
+        border: '1px solid #e5e7eb',
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
+        padding: '16px',
+        maxWidth: '350px',
+        width: '350px',
+      },
+    });
   };
 
   const handleSubmitComment = async () => {
