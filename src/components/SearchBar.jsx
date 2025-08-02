@@ -4,6 +4,7 @@ import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 import { SearchContext } from "../context/SearchContext";
 import { LocationContext } from "../context/LocationContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const SearchBar = () => {
   const { setSearchTerm } = useContext(SearchContext);
@@ -23,7 +24,7 @@ const SearchBar = () => {
     const searchQuery = queryParams.get("search");
     if (searchQuery) {
       setInputValue(searchQuery);
-      setSearchTerm(searchQuery); // Đặt từ khóa tìm kiếm cho SearchContext
+      setSearchTerm(searchQuery);
     }
   }, [location.search, setSearchTerm]);
 
@@ -34,29 +35,50 @@ const SearchBar = () => {
         setShowDropdown(false);
       }
     }
-    
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Hàm xử lý tìm kiếm
   const handleSearch = () => {
+    if (!inputValue.trim()) {
+      toast.error("⚡ Vui lòng nhập từ khóa tìm kiếm!", {
+  id: "search-error", // 🔹 ngăn không cho hiển thị trùng lặp
+  duration: 2000, // 🔹 thời gian hiển thị 2 giây
+ position: "top-right",
+  style: {
+    background: "linear-gradient(135deg, #ff512f, #dd2476)",
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: "15px",
+    padding: "14px 18px",
+    borderRadius: "12px",
+    border: "1px solid #ff6b81",
+    boxShadow: "0 0 15px rgba(255, 0, 70, 0.6)",
+    textShadow: "0 0 5px rgba(0,0,0,0.3)",
+  },
+  icon: "🚫",
+  className: "SearchBar-shake-toast",
+});
+
+      return;
+    }
+
     setSearchTerm(inputValue);
 
-    // Thêm query parameter vào URL và chuyển đến /market
     if (location.pathname !== "/loc-tin-dang") {
       navigate(`/loc-tin-dang?search=${inputValue}`);
     } else {
-      // Nếu đã ở trang /loc-tin-dang, chỉ cập nhật query parameter
       navigate(`?search=${inputValue}`);
     }
   };
 
+  // Bắt sự kiện Enter
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
   };
 
+  // Hiển thị dropdown chọn vị trí
   const handleLocationClick = () => {
     setShowDropdown(!showDropdown);
   };
@@ -74,8 +96,8 @@ const SearchBar = () => {
         {showDropdown && (
           <div className="location-dropdown">
             {cities.map((city) => (
-              <div 
-                key={city} 
+              <div
+                key={city}
                 className="location-option"
                 onClick={() => handleCitySelect(city)}
               >
