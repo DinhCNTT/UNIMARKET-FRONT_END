@@ -329,8 +329,8 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   <div
     className="vdv-icon-button vdv-chat-button"
     onClick={handleChatWithSeller}
-    title={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán 💬"}
-    data-tooltip={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán 💬"}
+    title={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán"}
+    data-tooltip={!user ? "Bạn cần đăng nhập để chat" : "Chat với người bán"}
   >
     <SiMinutemailer size={24} color="#ccc"/>
   </div>

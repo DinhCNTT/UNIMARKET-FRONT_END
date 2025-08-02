@@ -146,18 +146,6 @@ const TinDangDanhChoBan = () => {
   return (
     <div className="tin-dang-danh-cho-ban">
       <h2 className="tieu-de">Tin Đăng Dành Cho Bạn</h2>
-      
-      {/* Debug info - có thể bỏ sau khi fix xong */}
-      {/* <div style={{ padding: '10px', backgroundColor: '#f0f0f0', margin: '10px 0', fontSize: '12px' }}>
-        <p><strong>Debug Info:</strong></p>
-        <p>User: {user ? '✅ Có' : '❌ Không'}</p>
-        <p>Token từ context: {token ? '✅ Có' : '❌ Không'}</p>
-        <p>User Token: {user?.token ? '✅ Có' : '❌ Không'}</p>
-        <p>Auth Token: {getAuthToken() ? '✅ Có' : '❌ Không'}</p>
-        <p>Is Logged In: {isLoggedIn() ? '✅ Có' : '❌ Không'}</p>
-        <p>Saved Posts Count: {savedIds.length}</p>
-      </div> */}
-
       <div className="post-list">
         {renderNoPostsMessage() ? (
           <p>{renderNoPostsMessage()}</p> 
