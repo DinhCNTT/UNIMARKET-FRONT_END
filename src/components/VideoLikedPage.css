@@ -186,11 +186,11 @@
 .vlp-tabs {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;              /* Giảm khoảng cách giữa 2 nút */
   margin: 0 auto 24px;
-  max-width: 500px;
-  padding: 0 20px;
-  flex-wrap: wrap;
+  max-width: 360px;      /* ✅ Giảm chiều ngang khung chứa */
+  padding: 0;
+  flex-wrap: nowrap;     /* ✅ Bắt buộc nằm ngang */
 }
 
 .vlp-tabs .vlp-tab {
@@ -200,11 +200,12 @@
   font-weight: 500;
   cursor: pointer;
   color: #666;
-  padding: 8px 22px;
-  border-radius: 50px;
+  padding: 6px 14px;      /* ✅ Viền ngắn gọn hơn */
+  border-radius: 30px;    /* Làm tròn đẹp hơn */
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   position: relative;
   z-index: 1;
+  white-space: nowrap;   /* ✅ Không cho text bị xuống dòng */
 }
 
 .vlp-tabs .vlp-tab::after {
@@ -213,9 +214,9 @@
   bottom: 0;
   left: 50%;
   width: 0;
-  height: 3px;
+  height: 2px;
   background: #ff7a00;
-  border-radius: 3px;
+  border-radius: 2px;
   transform: translateX(-50%);
   transition: width 0.3s ease;
 }
@@ -227,13 +228,14 @@
 }
 
 .vlp-tabs .vlp-tab.active::after {
-  width: 70%;
+  width: 60%;
 }
 
 .vlp-tabs .vlp-tab:hover {
   color: #ff7a00;
   background: rgba(255, 122, 0, 0.05);
 }
+
 
 /* VIDEO GRID - HIỆN ĐẠI HÓA */
 .vlp-video-grid {
@@ -395,4 +397,26 @@
   .vlp-brand-name {
     font-size: 1.15rem;
   }
+}
+/* Thanh cuộn nhỏ gọn và hiện đại */
+body::-webkit-scrollbar {
+  width: 5px; /* Nhỏ gọn hơn nữa */
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 4px; /* Tạo khoảng trống đầu/cuối thanh */
+}
+
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffa366, #ff6600); /* Gradient nhẹ chuyên nghiệp */
+  border-radius: 8px; /* Bo tròn vừa phải */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Tạo chiều sâu nhẹ */
+  background-clip: padding-box;
+  transition: background 0.25s ease;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1); /* Bóng trong tinh tế */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff7a00, #ff3d00); /* Gradient hover nổi bật */
 }

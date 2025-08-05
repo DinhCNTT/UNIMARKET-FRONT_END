@@ -5,12 +5,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import EditProfileModal from "../components/EditProfileModal"; // ✅ Đảm bảo path đúng với thư mục của bạn
+import { useNavigate } from "react-router-dom";
 
 const VideoLikedPage = () => {
   const [videos, setVideos] = useState([]);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("liked");
   const [showModal, setShowModal] = useState(false); // ✅ Thêm state để điều khiển modal
+  const navigate = useNavigate();
   const fetchUser = async () => {
     try {
       const res = await axios.get("http://localhost:5133/api/Auth/me", {
@@ -126,8 +128,16 @@ const VideoLikedPage = () => {
             : "Chưa có video nào đã lưu."}
         </p>
       ) : (
-        videos.map((video) => (
-          <div key={video.maTinDang} className="vlp-video-card">
+        videos.map((video, index) => (
+          <div
+            key={video.maTinDang}
+            className="vlp-video-card"
+            onClick={() =>
+                navigate(`/liked-videos/${video.maTinDang}`, {
+                state: { videos: videos, initialIndex: index, },
+              })
+            }
+          >
             <video
               src={video.videoUrl}
               muted
