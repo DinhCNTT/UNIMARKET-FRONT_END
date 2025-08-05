@@ -132,16 +132,13 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #f1f1f2; /* nền nhẹ cho rõ hình tròn */
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: -10px;
 }
 
-.vdv-icon-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
-}
+
 
 .vdv-icon-label {
   font-size: 12px;
@@ -304,7 +301,7 @@
 
 /* Hover: đổi sang màu xanh */
 .vdv-chat-button:hover {
-  background: rgba(0, 123, 255, 0.9);
+  background: rgba(93, 167, 246, 0.9);
   transform: scale(1.1);
 }
 

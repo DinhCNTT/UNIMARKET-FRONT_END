@@ -1,14 +1,10 @@
 .vsp-wrapper {
   padding: 20px;
   max-width: 1200px;
-  margin-left: 315px;  /* Đẩy toàn bộ container sang phải */
-  margin-right: 0;
+  margin: 150px auto 0 auto; /* căn giữa ngang, cách top 150px */
   width: 100%;
   box-sizing: border-box;
-
-  margin-top: 150px;   /* Đẩy xuống dưới 150px */
 }
-
 
 .vsp-title {
   font-size: 28px;
@@ -17,17 +13,14 @@
   margin-bottom: 20px;
 }
 
-
-
 /* ✅ Grid responsive & căn giữa nội dung */
 .vsp-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  justify-items: center; /* căn giữa nội dung từng ô */
-  
-  width: fit-content; /* hoặc đặt width cố định như 960px */
-  margin: 0 auto;     /* căn giữa toàn bộ grid trong vùng cha */
+  justify-items: center;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 /* Mỗi card chỉ chiếm chiều rộng nhỏ */
@@ -139,10 +132,6 @@
   padding: 12px 32px; /* Thêm padding cho thoáng */
   border-radius: 8px; /* Bo góc nhẹ */
 }
-
-
-
-
 .vsp-menu-item {
   cursor: pointer;
   position: relative;
@@ -167,10 +156,11 @@
   transition: left 0.3s ease, width 0.3s ease;
 }
 .vsp-user-list {
-  position: absolute;
+  position: fixed; /* dùng fixed để giữ nguyên vị trí trên màn hình */
   top: 200px;
-  right: 550px;
-
+  left: 50%; /* căn giữa theo chiều ngang */
+  transform: translateX(-50%); /* dịch ngược 50% để thật sự giữa */
+  
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -184,7 +174,7 @@
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
     0 8px 20px rgba(0, 0, 0, 0.08);
-  
+
   overflow-y: auto;
   scroll-behavior: smooth;
 
@@ -194,7 +184,6 @@
   transition: box-shadow 0.3s ease, transform 0.25s ease;
   z-index: 1000;
 
-  /* subtle backdrop blur */
   backdrop-filter: saturate(180%) blur(8px);
   -webkit-backdrop-filter: saturate(180%) blur(8px);
 }
@@ -203,7 +192,7 @@
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     0 14px 35px rgba(0, 0, 0, 0.12);
-  transform: translateY(-4px);
+  transform: translateX(-50%) translateY(-4px);
 }
 
 .vsp-user-row {

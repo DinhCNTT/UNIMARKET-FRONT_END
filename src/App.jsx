@@ -7,8 +7,8 @@ import { CategoryProvider } from "./context/CategoryContext";
 import { LocationProvider } from "./context/LocationContext"; 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Toaster as HotToaster } from "react-hot-toast";   // ✅ đổi tên
-import { Toaster as SonnerToaster } from "sonner";         // ✅ đổi tên
+import { Toaster as HotToaster } from "react-hot-toast";   // ✅ Đổi tên tránh xung đột
+import { Toaster as SonnerToaster } from "sonner";         // ✅ Đổi tên tránh xung đột
 
 const clientId = "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com"; 
 
@@ -21,9 +21,15 @@ function App() {
             <CategoryProvider>
               <LocationProvider>
                 <AppRoutes />
-                <HotToaster position="top-center" reverseOrder={false} />
+
+                {/* ✅ Hot Toast (thời gian hiển thị tùy chỉnh) */}
+                <HotToaster position="top-center" reverseOrder={false} toastOptions={{ duration: 2500 }} />
+
+                {/* ✅ Sonner Toast */}
                 <SonnerToaster position="top-center" richColors reverseOrder={false} /> 
-                <ToastContainer/>
+
+                {/* ✅ React Toastify */}
+                <ToastContainer />
               </LocationProvider>
             </CategoryProvider>
           </SearchProvider>

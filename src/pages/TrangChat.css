@@ -1,9 +1,22 @@
 .trang-chat-container {
   display: flex;
   flex: 1;
-  background: #f9f9f9;
-  min-height: 0; /* cần cho flexbox scroll đúng */
+  min-height: 0;
+  /* ✅ Giữ bố cục ổn định */
+  position: relative;
+  width: 1500px; /* chiều rộng gốc */
+  margin: 0 auto; /* căn giữa toàn bộ */
+  transform-origin: top center;
+  transition: transform 0.2s ease;
 }
+
+/* ✅ Scale toàn bộ layout khi màn hình nhỏ hơn 1440px */
+@media (width: 1500px) {
+  .trang-chat-container {
+    transform: scale(calc(100vw / 1440));
+  }
+}
+
 
 .chat-list-container {
   width: 320px;

@@ -1,15 +1,14 @@
 /* ===== TIN ĐĂNG ĐÃ LƯU - IMPROVED STYLES ===== */
-
 /* Container */
 .Tin-dang-da-luu-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  padding: 20px 0;
-  margin-top: 85px
+  margin-top: 85px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fafafa, #f5f5f5);
 }
 
 .Tin-dang-da-luu-wrapper {
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -25,7 +24,8 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  margin-top: -5px;
 }
 
 .Tin-dang-da-luu-main-title h1 {
@@ -69,7 +69,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: -15px;
 }
 
 .Tin-dang-da-luu-title h2 {
@@ -147,16 +147,17 @@
 }
 
 .Tin-dang-da-luu-browse-btn {
-  background: linear-gradient(135deg, #ff9800, #ff6f00);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    background: linear-gradient(135deg, #ff9800, #ff6f00);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    margin-top: 150px; /* Dịch xuống 16px */
 }
 
 .Tin-dang-da-luu-browse-btn:hover {
@@ -215,7 +216,6 @@
 .Tin-dang-da-luu-toggle-container {
   display: flex;
   justify-content: flex-start;
-  margin: 20px 0;
   padding: 0;
 }
 

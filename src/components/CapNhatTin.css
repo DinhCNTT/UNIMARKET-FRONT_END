@@ -6,12 +6,11 @@
   padding: 20px;
   background-color: #fff;
   width: 720px;
-  margin: 0 auto;
   max-width: 1000px;
-  margin-left: 35%;
-  margin-right: auto;
+  margin: 0 auto;
+  position: relative;
+  left: -10px; /* dịch sang trái 20px */
 }
-
 /* Form chính */
 .capnhat-form {
   display: flex;
