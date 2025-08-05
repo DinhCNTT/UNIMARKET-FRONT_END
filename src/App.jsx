@@ -21,6 +21,7 @@ function App() {
               <LocationProvider>
                 <AppRoutes />
                 <Toaster position="top-center" reverseOrder={false} />
+                <Toaster position="top-center" toastOptions={{ duration: 2500 }} />
                 <ToastContainer/>
               </LocationProvider>
             </CategoryProvider>

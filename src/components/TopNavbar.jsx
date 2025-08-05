@@ -269,7 +269,6 @@ const TopNavbar = () => {
       <div className="nav-search">
         <SearchBar />
       </div>
-
       <div className="nav-right">
         <FaBell className="nav-icon" title="Thông báo" />
         <div className="nav-icon-chat" onClick={() => navigate("/chat")} style={{ position: "relative" }} title="Tin nhắn">
@@ -304,7 +303,13 @@ const TopNavbar = () => {
               ) : (
                 <FaUserCircle className="account-avatar" style={{ fontSize: "26px" }} />
               )}
-              <span className="account-name">{user.fullName || user.tenNguoiDung || "Tài khoản"}</span>
+              <span
+              className="account-name"
+              title={user.fullName || user.tenNguoiDung || "Tài khoản"}
+              >
+              {(user.fullName || user.tenNguoiDung || "Tài khoản").slice(0, 12)}
+              {(user.fullName || user.tenNguoiDung || "Tài khoản").length > 12 && "..."}
+              </span>
               <FaChevronDown className="dropdown-icon" />
             </div>
               {showAccountDropdown && (
@@ -340,8 +345,6 @@ const TopNavbar = () => {
     </span>
   </div>
 )}
-
-
           </div>
         ) : (
           <>
