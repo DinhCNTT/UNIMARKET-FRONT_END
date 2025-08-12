@@ -97,12 +97,13 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h2>Đăng nhập</h2>
+    <div className="logf-container">
+      <div className="logf-box">
+        <h2 className="logf-title">Đăng nhập</h2>
 
-        <form onSubmit={handleLogin} autoComplete="on">
+        <form className="logf-form" onSubmit={handleLogin} autoComplete="on">
           <input
+            className="logf-input"
             type="email"
             name="email"
             placeholder="Email"
@@ -112,6 +113,7 @@ const Login = () => {
             required
           />
           <input
+            className="logf-input"
             type="password"
             name="password"
             placeholder="Mật khẩu"
@@ -121,16 +123,16 @@ const Login = () => {
             required
           />
 
-          <button type="submit">Đăng nhập</button>
+          <button className="logf-button" type="submit">Đăng nhập</button>
         </form>
 
-        <div style={{ margin: "16px 0", textAlign: "center" }}>
-          <span>Hoặc đăng nhập với</span>
+        <div className="logf-social-section">
+          <span className="logf-social-text">Hoặc đăng nhập với</span>
           <GoogleLoginButton />
           <FacebookLoginButton />
         </div>
 
-        <p className="signup-link">
+        <p className="logf-signup-link">
           Chưa có tài khoản? <a href="/register">Đăng ký</a>
         </p>
       </div>

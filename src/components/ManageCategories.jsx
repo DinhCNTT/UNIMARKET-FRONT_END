@@ -16,26 +16,20 @@ const ManageCategories = () => {
         fetchParentCategories();
     }, []);
 
-    // Lấy danh sách danh mục con
     const fetchCategories = async () => {
         try {
             const res = await axios.get("http://localhost:5133/api/admin/get-categories");
-            console.log("Categories fetched:", res.data);  // Debug log for categories
             setCategories(res.data);
         } catch (error) {
-            console.error("Lỗi khi lấy danh mục con:", error);
             toast.error("Lỗi khi tải danh sách danh mục con");
         }
     };
 
-    // Lấy danh sách danh mục cha
     const fetchParentCategories = async () => {
         try {
             const res = await axios.get("http://localhost:5133/api/admin/get-parent-categories");
-            console.log("Parent categories fetched:", res.data);  // Debug log for parent categories
             setParentCategories(res.data);
         } catch (error) {
-            console.error("Lỗi khi lấy danh mục cha:", error);
             toast.error("Không thể lấy danh mục cha");
         }
     };
@@ -43,7 +37,7 @@ const ManageCategories = () => {
     const handleEdit = (category) => {
         setEditingCategory(category);
         setNewName(category.tenDanhMuc);
-        setParentId(category.maDanhMucCha); // Make sure this is the correct property for the parent ID
+        setParentId(category.maDanhMucCha);
     };
 
     const handleUpdate = async () => {
@@ -55,16 +49,12 @@ const ManageCategories = () => {
         try {
             await axios.put(
                 `http://localhost:5133/api/admin/update-category/${editingCategory.maDanhMuc}`,
-                {
-                    tenDanhMuc: newName,
-                    danhMucChaId: parentId
-                }
+                { tenDanhMuc: newName, danhMucChaId: parentId }
             );
             toast.success("Cập nhật danh mục thành công!");
-            fetchCategories(); // Re-fetch categories after update
-            setEditingCategory(null); // Close the edit form
+            fetchCategories();
+            setEditingCategory(null);
         } catch (error) {
-            console.error("Lỗi khi cập nhật danh mục:", error);
             toast.error(error.response?.data?.message || "Lỗi khi cập nhật");
         }
     };
@@ -75,45 +65,43 @@ const ManageCategories = () => {
         try {
             await axios.delete(`http://localhost:5133/api/admin/delete-category/${id}`);
             toast.success("Xóa danh mục thành công!");
-            fetchCategories(); // Re-fetch categories after delete
+            fetchCategories();
         } catch (error) {
-            console.error("Lỗi khi xóa danh mục:", error);
             toast.error(error.response?.data?.message || "Lỗi khi xóa danh mục!");
         }
     };
 
-    // Tìm tên danh mục cha dựa vào ID
     const getParentCategoryName = (parentId) => {
         const parent = parentCategories.find((p) => p.maDanhMucCha === parentId);
         return parent ? parent.tenDanhMucCha : "Không xác định";
     };
 
     return (
-        <div className="category-page-container">
-            <h2>Quản Lý Danh Mục Con</h2>
+        <div className="manage-categories">
+            <h2 className="manage-categories__title">Quản Lý Danh Mục Con</h2>
             <ToastContainer autoClose={3000} />
 
-            <table className="category-table">
+            <table className="manage-categories__table">
                 <thead>
                     <tr>
                         <th>STT</th>
                         <th>Tên Danh Mục</th>
                         <th>Danh Mục Cha</th>
-                        <th>Thao Tác</th>  
+                        <th>Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     {categories.length > 0 ? (
                         categories.map((cat, index) => (
                             <tr key={cat.maDanhMuc}>
-                                <td>{index + 1}</td> {/* Hiển thị thứ tự theo index */}
+                                <td>{index + 1}</td>
                                 <td>
                                     {editingCategory?.maDanhMuc === cat.maDanhMuc ? (
                                         <input
                                             type="text"
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
-                                            className="edit-input"
+                                            className="manage-categories__input"
                                         />
                                     ) : (
                                         cat.tenDanhMuc
@@ -124,6 +112,7 @@ const ManageCategories = () => {
                                         <select
                                             value={parentId}
                                             onChange={(e) => setParentId(parseInt(e.target.value))}
+                                            className="manage-categories__select"
                                         >
                                             {parentCategories.length > 0 ? (
                                                 parentCategories.map((parent) => (
@@ -142,19 +131,31 @@ const ManageCategories = () => {
                                 <td>
                                     {editingCategory?.maDanhMuc === cat.maDanhMuc ? (
                                         <>
-                                            <button className="save-btn" onClick={handleUpdate}>
+                                            <button
+                                                className="manage-categories__btn manage-categories__btn--save"
+                                                onClick={handleUpdate}
+                                            >
                                                 💾 Lưu
                                             </button>
-                                            <button className="cancel-btn" onClick={() => setEditingCategory(null)}>
+                                            <button
+                                                className="manage-categories__btn manage-categories__btn--cancel"
+                                                onClick={() => setEditingCategory(null)}
+                                            >
                                                 ❌ Hủy
                                             </button>
                                         </>
                                     ) : (
                                         <>
-                                            <button className="edit-btn" onClick={() => handleEdit(cat)}>
+                                            <button
+                                                className="manage-categories__btn manage-categories__btn--edit"
+                                                onClick={() => handleEdit(cat)}
+                                            >
                                                 ✏️ Sửa
                                             </button>
-                                            <button className="delete-btn" onClick={() => handleDelete(cat.maDanhMuc)}>
+                                            <button
+                                                className="manage-categories__btn manage-categories__btn--delete"
+                                                onClick={() => handleDelete(cat.maDanhMuc)}
+                                            >
                                                 🗑️ Xóa
                                             </button>
                                         </>
@@ -164,13 +165,15 @@ const ManageCategories = () => {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="4" style={{ textAlign: "center" }}>Không có danh mục nào</td>
+                            <td colSpan="4" className="manage-categories__empty">
+                                Không có danh mục nào
+                            </td>
                         </tr>
                     )}
                 </tbody>
             </table>
         </div>
     );
-}; 
+};
 
 export default ManageCategories;

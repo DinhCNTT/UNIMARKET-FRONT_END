@@ -558,7 +558,7 @@
 }
 
 .nav-icon {
-  font-size: 45px;              /* font-size gốc vừa phải */
+  font-size: 13px;              /* font-size gốc vừa phải */
   transform: scale(1.8);        /* phóng to bằng transform để không đẩy chiều cao cha */
   margin: 0 2px;
   cursor: pointer;

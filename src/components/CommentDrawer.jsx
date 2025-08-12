@@ -4,7 +4,7 @@ import './CommentDrawer.css';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import defaultAvatar from '../assets/default-avatar.png';
-import toast from 'react-hot-toast'; // Import react-hot-toast
+import toast from 'react-hot-toast';
 
 const CommentDrawer = ({ maTinDang, onClose }) => {
   const [comments, setComments] = useState([]);
@@ -108,175 +108,114 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
   }, []);
 
   const handleDeleteComment = async (commentId) => {
-    if (!token) {
-      toast.error("Không có quyền thực hiện thao tác này", {
-        duration: 3000,
-        position: 'top-right',
-        style: {
-          background: '#ef4444',
-          color: '#fff',
-          fontWeight: '500',
-        },
-        iconTheme: {
-          primary: '#fff',
-          secondary: '#ef4444',
-        },
-      });
-      return;
-    }
+    if (!token) return;
 
-    // Tạo toast xác nhận với các nút hành động
-    toast((t) => (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ 
-          fontSize: '14px', 
-          fontWeight: '600', 
-          color: '#374151',
-          marginBottom: '4px'
-        }}>
-          🗑️ Xác nhận xóa bình luận
-        </div>
-        <div style={{ 
-          fontSize: '13px', 
-          color: '#6b7280',
-          lineHeight: '1.4'
-        }}>
-          Bạn có chắc chắn muốn xóa bình luận này không? Hành động này không thể hoàn tác.
-        </div>
-        <div style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          justifyContent: 'flex-end',
-          marginTop: '8px'
-        }}>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            style={{
-              padding: '6px 12px',
-              background: '#f3f4f6',
-              color: '#374151',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = '#e5e7eb';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = '#f3f4f6';
-            }}
-          >
-            Hủy
-          </button>
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id);
-              
-              // Hiển thị toast đang xử lý
-              const loadingToast = toast.loading('Đang xóa bình luận...', {
-                position: 'top-right',
-                style: {
-                  background: '#3b82f6',
-                  color: '#fff',
-                },
-              });
+    const confirmed = await new Promise((resolve) => {
+      toast(
+        (t) => (
+          <div style={{ fontSize: "14px", color: "white" }}>
+            <div style={{ marginBottom: "12px" }}>
+              Bạn có chắc muốn xoá bình luận này?
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(false);
+                }}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  border: "1px solid #888",
+                  borderRadius: "6px",
+                  backgroundColor: "transparent",
+                  color: "#ddd",
+                  cursor: "pointer",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#444";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                }}
+              >
+                Huỷ
+              </button>
 
-              try {
-                await axios.delete(`http://localhost:5133/api/video/comment/${commentId}`, {
-                  headers: { Authorization: `Bearer ${token}` },
-                });
-                
-                setComments(prev => {
-                  const removeFromList = (commentsList) => {
-                    return commentsList
-                      .filter(comment => comment.id !== commentId)
-                      .map(comment => ({
-                        ...comment,
-                        replies: comment.replies ? removeFromList(comment.replies) : []
-                      }));
-                  };
-                  return removeFromList(prev);
-                });
-                
-                setMenuOpenId(null);
-                
-                // Dismiss loading toast và hiển thị success
-                toast.dismiss(loadingToast);
-                toast.success('Đã xóa bình luận thành công! ✨', {
-                  duration: 3000,
-                  position: 'top-right',
-                  style: {
-                    background: '#10b981',
-                    color: '#fff',
-                    fontWeight: '500',
-                  },
-                  iconTheme: {
-                    primary: '#fff',
-                    secondary: '#10b981',
-                  },
-                });
-                
-              } catch (err) {
-                console.error("Lỗi khi xóa bình luận:", err);
-                
-                // Dismiss loading toast và hiển thị error
-                toast.dismiss(loadingToast);
-                toast.error('Có lỗi xảy ra khi xóa bình luận!', {
-                  duration: 4000,
-                  position: 'top-right',
-                  style: {
-                    background: '#ef4444',
-                    color: '#fff',
-                    fontWeight: '500',
-                  },
-                  iconTheme: {
-                    primary: '#fff',
-                    secondary: '#ef4444',
-                  },
-                });
-                
-                fetchComments();
-              }
-            }}
-            style={{
-              padding: '6px 12px',
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = '#dc2626';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = '#ef4444';
-            }}
-          >
-            Xóa
-          </button>
-        </div>
-      </div>
-    ), {
-      duration: Infinity,
-      position: 'top-right',
-      style: {
-        background: '#fff',
-        color: '#374151',
-        border: '1px solid #e5e7eb',
-        borderRadius: '12px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)',
-        padding: '16px',
-        maxWidth: '350px',
-        width: '350px',
-      },
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(true);
+                }}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  border: "1px solid #f44",
+                  borderRadius: "6px",
+                  backgroundColor: "transparent",
+                  color: "#f77",
+                  cursor: "pointer",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#f44";
+                  e.target.style.color = "#fff";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                  e.target.style.color = "#f77";
+                }}
+              >
+                Xoá
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: Infinity,
+          style: {
+            background: "#1c1c1e",
+            color: "#fff",
+            borderRadius: "12px",
+            padding: "12px 16px",
+            width: "fit-content",
+            minWidth: "unset",
+            maxWidth: "90vw",
+          },
+        }
+      );
     });
+
+    if (!confirmed) return;
+
+    const deletePromise = axios.delete(
+      `http://localhost:5133/api/video/comment/${commentId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    toast.promise(deletePromise, {
+      loading: "Đang xoá bình luận...",
+      success: "Đã xoá bình luận!",
+      error: "Xoá thất bại. Vui lòng thử lại.",
+    });
+
+    try {
+      await deletePromise;
+
+      const removeFromList = (list) =>
+        list
+          .filter((c) => c.id !== commentId)
+          .map((c) => ({
+            ...c,
+            replies: c.replies ? removeFromList(c.replies) : [],
+          }));
+
+      setComments((prev) => removeFromList(prev));
+    } catch (err) {
+      console.error("Delete error", err);
+      fetchComments();
+    }
   };
 
   const handleSubmitComment = async () => {
@@ -392,295 +331,667 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       [parentId]: !prev[parentId]
     }));
   };
-  
-  const extractThreads = (comment, parentChain = []) => {
-    if (!comment.replies || comment.replies.length === 0) {
-      return [[...parentChain, comment]];
-    }
 
-    const threads = [];
-    for (const reply of comment.replies) {
-      const childThreads = extractThreads(reply, [...parentChain, comment]);
-      threads.push(...childThreads);
-    }
-    return threads;
-  };
-
-  const renderThread = (thread, threadIndex) => {
-    const parent = thread[0];
-    const replies = thread.slice(1);
-    const hasReplies = replies.length > 0;
-    const showReplies = expandedThreads[parent.id] || false;
+  // Render comment với replies - CHỈ 2 CẤP, KHÔNG RECURSIVE
+  const renderComment = (comment) => {
+    const isAuthor = comment.isAuthor;
+    const isMyComment = comment.userId === currentUserId;
+    const isOptimistic = comment.isOptimistic;
+    const hasReplies = comment.replies && comment.replies.length > 0;
+    const showReplies = expandedThreads[comment.id] || false;
 
     return (
-      <div className="comment-thread" key={`thread-${parent.id}-${threadIndex}`}>
-        {[parent, ...(showReplies ? replies : [])].map((cmt, i) => {
-          const isReply = i > 0;
-          const prev = i > 0 ? thread[i - 1] : null;
-          const isAuthor = cmt.isAuthor;
-          const isMyComment = cmt.userId === currentUserId;
-          const isOptimistic = cmt.isOptimistic;
-
-          return (
-            <div
-              key={`cmt-${cmt.id}-${i}`}
-              className={`comment-item ${isReply ? 'comment-item-vertical' : ''} ${isOptimistic ? 'optimistic-comment' : ''}`}
-              style={{
-                marginLeft: isReply ? 40 : 0,
-                position: 'relative',
-                zIndex: menuOpenId === cmt.id ? 100 : 1,
-                opacity: isOptimistic ? 0.7 : 1,
+      <div key={comment.id} className="comment-thread">
+        <div 
+          className="comment-item"
+          style={{ 
+            marginLeft: 0,
+            marginBottom: '16px',
+            position: 'relative',
+            opacity: isOptimistic ? 0.7 : 1,
+          }}
+          onMouseEnter={() => setHoveredCommentId(comment.id)}
+          onMouseLeave={() => setHoveredCommentId(null)}
+        >
+          
+          {/* Avatar và nội dung */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            {/* Avatar */}
+            <img
+              src={comment.avatarUrl || defaultAvatar}
+              className="comment-avatar"
+              alt="avatar"
+              onClick={() => navigate(`/nguoi-dung/${comment.userId}`)}
+              onError={(e) => (e.target.src = defaultAvatar)}
+              style={{ 
+                cursor: 'pointer',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                flexShrink: 0
               }}
-              onMouseEnter={() => setHoveredCommentId(cmt.id)}
-              onMouseLeave={() => setHoveredCommentId(null)}
-            >
-              <img
-                src={cmt.avatarUrl || defaultAvatar}
-                className="comment-avatar"
-                alt="avatar"
-                onClick={() => navigate(`/nguoi-dung/${cmt.userId}`)}
-                onError={(e) => (e.target.src = defaultAvatar)}
-                style={{ cursor: 'pointer' }}
-              />
+            />
 
-              <div className="comment-body">
-                {isReply && prev && (
-                  <div className="reply-to-line" style={{ marginBottom: 4, fontSize: 12, color: '#555' }}>
-                    <strong>@{cmt.userName}</strong> đã phản hồi <strong>@{prev.userName}</strong>
-                  </div>
-                )}
-
-                <div
-                  className="comment-name"
-                  style={{
+            {/* Nội dung comment */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Header với tên và menu */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '4px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{
                     fontWeight: 600,
-                    fontSize: 14,
-                    lineHeight: 1.2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    fontSize: '14px',
+                    cursor: 'pointer'
                   }}
-                >
-                  <span>
-                    @{cmt.userName} {isAuthor && <span className="author-badge">• Tác giả</span>}
-                    {isOptimistic && <span style={{fontSize: 10, color: '#999', marginLeft: 4}}>• Đang gửi...</span>}
+                  onClick={() => navigate(`/nguoi-dung/${comment.userId}`)}
+                  >
+                    @{comment.userName}
                   </span>
-
-                  {isMyComment && !isOptimistic && (hoveredCommentId === cmt.id || menuOpenId === cmt.id) && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        fontSize: 20,
-                        color: 'red',
-                        cursor: 'pointer',
-                        zIndex: 1001,
-                        userSelect: 'none',
-                      }}
-                      onClick={() => setMenuOpenId(menuOpenId === cmt.id ? null : cmt.id)}
-                      title="Tùy chọn"
-                    >
-                      &#x22EE;
-                    </div>
+                  
+                  {isAuthor && (
+                    <span style={{ 
+                      color: '#007aff', 
+                      fontSize: '11px',
+                      fontWeight: 500
+                    }}>
+                      • Tác giả
+                    </span>
+                  )}
+                  
+                  {isOptimistic && (
+                    <span style={{
+                      fontSize: '10px', 
+                      color: '#999'
+                    }}>
+                      • Đang gửi...
+                    </span>
                   )}
                 </div>
 
-                <div className="comment-text" style={{ marginTop: 2, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  {cmt.content.match(/.{1,35}/g)?.map((line, index) => (
-                    <div key={index}>{line}</div>
-                  ))}
-                </div>
-
-                <button
-                  className="reply-button"
-                  style={{
-                    marginTop: 6,
-                    fontSize: 13,
-                    color: '#007aff',
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setActiveReplyId(cmt.id === activeReplyId ? null : cmt.id)}
-                  disabled={isOptimistic}
-                >
-                  Trả lời
-                </button>
-
-                {activeReplyId === cmt.id && (
-                  <div className="reply-input" style={{ display: 'flex', alignItems: 'center', marginTop: 6, gap: 8 }}>
-                    <textarea
-                      placeholder="Trả lời..."
-                      value={replyContent}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 150) {
-                          setReplyContent(e.target.value);
-                        }
-                      }}
-                      onInput={handleTextareaChange}
-                      maxLength={150}
-                      rows={1}
-                      style={{
-                        resize: 'horizontal',
-                        minHeight: '36px',
-                        minWidth: '40px',
-                        maxWidth: '60%',
-                        padding: '6px 10px',
-                        fontSize: '14px',
-                        borderRadius: '6px',
-                        border: '1px solid #ccc',
-                        boxSizing: 'border-box',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <button
-                      className="reply-cancel"
-                      onClick={() => setActiveReplyId(null)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        fontSize: '22px',
-                        lineHeight: '22px',
-                        cursor: 'pointer',
-                        color: '#888',
-                        padding: '0 6px',
-                        userSelect: 'none',
-                      }}
-                      aria-label="Đóng"
-                    >
-                      ×
-                    </button>
-                    <button
-                      className="reply-send"
-                      onClick={() => handleReplySubmit(cmt.id)}
-                      style={{
-                        backgroundColor: '#007aff',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '6px 12px',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      Gửi
-                    </button>
-                  </div>
-                )}
-
-                {menuOpenId === cmt.id && isMyComment && !isOptimistic && (
+                {/* Menu 3 chấm */}
+                {isMyComment && !isOptimistic && 
+                (hoveredCommentId === comment.id || menuOpenId === comment.id) && (
                   <div
-                    className="comment-menu"
                     style={{
                       position: 'absolute',
-                      top: 24,
-                      right: 0,
-                      background: '#fff',
-                      border: '1px solid #ddd',
-                      borderRadius: 4,
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                      zIndex: 1000,
-                      minWidth: 100,
+                      top: '8px',
+                      right: '8px',
+                      cursor: 'pointer',
+                      fontSize: '20px',
+                      lineHeight: '1'
                     }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenId(menuOpenId === comment.id ? null : comment.id);
+                    }}
+                    title="Tùy chọn"
                   >
-                    <div
-                      onClick={() => handleDeleteComment(cmt.id)}
-                      style={{
-                        padding: '8px 12px',
-                        cursor: 'pointer',
-                        fontSize: 14,
-                        color: 'red',
-                      }}
-                    >
-                      Xoá
-                    </div>
+                    ⋯
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })}
 
-        {hasReplies && (
-          <div style={{ marginLeft: 50, marginTop: 6 }}>
-            <button
-              onClick={() => toggleReplies(parent.id)}
-              style={{
-                fontSize: 13,
-                color: '#007aff',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-              }}
-            >
-              {showReplies ? 'Thu gọn bình luận' : `Xem thêm ${replies.length} phản hồi`}
-            </button>
+              {/* Nội dung */}
+              <div style={{ 
+                fontSize: '14px',
+                lineHeight: 1.4,
+                color: '#000',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                marginBottom: '8px'
+              }}>
+                {comment.content}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                marginTop: '8px'
+              }}>
+                {/* Nút trả lời */}
+                {token && (
+                  <button
+                    onClick={() => {
+                      if (activeReplyId === comment.id) {
+                        setActiveReplyId(null);
+                        setReplyContent('');
+                      } else {
+                        setActiveReplyId(comment.id);
+                        setReplyContent('');
+                      }
+                    }}
+                    disabled={isOptimistic}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '12px',
+                      color: activeReplyId === comment.id ? '#007aff' : '#666',
+                      cursor: isOptimistic ? 'not-allowed' : 'pointer',
+                      opacity: isOptimistic ? 0.5 : 1,
+                      padding: '4px 0',
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    💬 {activeReplyId === comment.id ? 'Hủy' : 'Trả lời'}
+                  </button>
+                )}
+
+                {/* Thời gian */}
+                <span style={{
+                  fontSize: '11px',
+                  color: '#999'
+                }}>
+                  {new Date(comment.createdAt).toLocaleString('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit'
+                  })}
+                </span>
+
+                {/* Số replies nếu có */}
+                {hasReplies && (
+                  <button
+                    onClick={() => toggleReplies(comment.id)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '12px',
+                      color: '#007aff',
+                      cursor: 'pointer',
+                      padding: '4px 0',
+                      fontWeight: 500
+                    }}
+                  >
+                    {showReplies ? `Ẩn ${comment.replies.length} phản hồi` : `${comment.replies.length} phản hồi`}
+                  </button>
+                )}
+              </div>
+
+              {/* Form trả lời */}
+              {activeReplyId === comment.id && token && (
+                <div style={{ 
+                  marginTop: '12px',
+                  padding: '12px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid #e9ecef'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start', 
+                    gap: '8px'
+                  }}>
+                    <img
+                      src={user?.avatarUrl || defaultAvatar}
+                      alt="Your avatar"
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        flexShrink: 0,
+                        marginTop: '4px'
+                      }}
+                    />
+                    
+                    <div style={{ flex: 1 }}>
+                      <textarea
+                        placeholder={`Trả lời @${comment.userName}...`}
+                        value={replyContent}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 150) {
+                            setReplyContent(e.target.value);
+                          }
+                        }}
+                        onInput={handleTextareaChange}
+                        maxLength={150}
+                        rows={1}
+                        style={{
+                          width: '100%',
+                          resize: 'none',
+                          minHeight: '36px',
+                          padding: '8px 12px',
+                          fontSize: '14px',
+                          borderRadius: '18px',
+                          border: '1px solid #ddd',
+                          boxSizing: 'border-box',
+                          outline: 'none',
+                          backgroundColor: '#fff'
+                        }}
+                      />
+                      
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginTop: '8px' 
+                      }}>
+                        <span style={{ fontSize: '11px', color: '#999' }}>
+                          {replyContent.length}/150
+                        </span>
+                        
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => {
+                              setActiveReplyId(null);
+                              setReplyContent('');
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid #ddd',
+                              borderRadius: '16px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              color: '#666'
+                            }}
+                          >
+                            Hủy
+                          </button>
+                          
+                          <button
+                            onClick={() => handleReplySubmit(comment.id)}
+                            disabled={!replyContent.trim()}
+                            style={{
+                              backgroundColor: replyContent.trim() ? '#fc5b5b' : '#ccc',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '20px',
+                              padding: '6px 14px',
+                              fontSize: '13px',
+                              cursor: replyContent.trim() ? 'pointer' : 'not-allowed'
+                            }}
+                          >
+                            Gửi
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Menu xóa dropdown */}
+              {menuOpenId === comment.id && isMyComment && !isOptimistic && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '25px',
+                    right: '0px',
+                    background: '#fff',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    minWidth: '120px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpenId(null);
+                      handleDeleteComment(comment.id);
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: '#ff3b30',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#f5f5f5';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    🗑️ Xóa bình luận
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* HIỂN THỊ REPLIES - CHỈ 1 CẤP, KHÔNG RECURSIVE */}
+        {hasReplies && showReplies && (
+          <div style={{ 
+            marginLeft: 40,
+            borderLeft: '2px solid #e9ecef',
+            paddingLeft: 20,
+            marginTop: 12
+          }}>
+            {comment.replies.map(reply => (
+              <div key={reply.id} style={{ marginBottom: '16px' }}>
+                <div 
+                  className="comment-item comment-reply"
+                  style={{ 
+                    marginLeft: 0,
+                    position: 'relative',
+                    opacity: reply.isOptimistic ? 0.7 : 1,
+                  }}
+                  onMouseEnter={() => setHoveredCommentId(reply.id)}
+                  onMouseLeave={() => setHoveredCommentId(null)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    {/* Avatar reply */}
+                    <img
+                      src={reply.avatarUrl || defaultAvatar}
+                      className="comment-avatar"
+                      alt="avatar"
+                      onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
+                      onError={(e) => (e.target.src = defaultAvatar)}
+                      style={{ 
+                        cursor: 'pointer',
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        flexShrink: 0
+                      }}
+                    />
+
+                    {/* Nội dung reply */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* Header reply */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: '4px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
+                          >
+                            @{reply.userName}
+                          </span>
+                          
+                          <span style={{
+                            color: '#007aff',
+                            fontSize: '12px',
+                            fontWeight: 500
+                          }}>
+                            đã phản hồi @{comment.userName}
+                          </span>
+                          
+                          {reply.isAuthor && (
+                            <span style={{ 
+                              color: '#007aff', 
+                              fontSize: '11px',
+                              fontWeight: 500
+                            }}>
+                              • Tác giả
+                            </span>
+                          )}
+                          
+                          {reply.isOptimistic && (
+                            <span style={{
+                              fontSize: '10px', 
+                              color: '#999'
+                            }}>
+                              • Đang gửi...
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Menu 3 chấm cho reply */}
+                        {reply.userId === currentUserId && !reply.isOptimistic && 
+                        (hoveredCommentId === reply.id || menuOpenId === reply.id) && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                              cursor: 'pointer',
+                              fontSize: '20px',
+                              lineHeight: '1'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(menuOpenId === reply.id ? null : reply.id);
+                            }}
+                            title="Tùy chọn"
+                          >
+                            ⋯
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Nội dung reply */}
+                      <div style={{ 
+                        fontSize: '13px',
+                        lineHeight: 1.4,
+                        color: '#000',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        marginBottom: '8px'
+                      }}>
+                        {reply.content}
+                      </div>
+
+                      {/* Action buttons reply */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px',
+                        marginTop: '8px'
+                      }}>
+                        {/* Nút trả lời cho reply - TRẢ LỜI VÀO COMMENT GỐC */}
+                        {token && (
+                          <button
+                            onClick={() => {
+                              if (activeReplyId === comment.id) {
+                                setActiveReplyId(null);
+                                setReplyContent('');
+                              } else {
+                                setActiveReplyId(comment.id);
+                                setReplyContent(`@${reply.userName} `);
+                              }
+                            }}
+                            disabled={reply.isOptimistic}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              fontSize: '12px',
+                              color: activeReplyId === comment.id ? '#007aff' : '#666',
+                              cursor: reply.isOptimistic ? 'not-allowed' : 'pointer',
+                              opacity: reply.isOptimistic ? 0.5 : 1,
+                              padding: '4px 0',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            💬 Trả lời
+                          </button>
+                        )}
+
+                        {/* Thời gian reply */}
+                        <span style={{
+                          fontSize: '11px',
+                          color: '#999'
+                        }}>
+                          {new Date(reply.createdAt).toLocaleString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: '2-digit',
+                            month: '2-digit'
+                          })}
+                        </span>
+                      </div>
+
+                      {/* Menu xóa dropdown cho reply */}
+                      {menuOpenId === reply.id && reply.userId === currentUserId && !reply.isOptimistic && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '25px',
+                            right: '0px',
+                            background: '#fff',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                            zIndex: 1000,
+                            minWidth: '120px',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOpenId(null);
+                              handleDeleteComment(reply.id);
+                            }}
+                            style={{
+                              padding: '12px 16px',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              color: '#ff3b30',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = '#f5f5f5';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            🗑️ Xóa bình luận
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
     );
   };
 
-  // Thêm hàm xử lý sự kiện wheel
   const handleWheel = (e) => {
-    e.stopPropagation(); // Ngăn sự kiện wheel lan truyền ra ngoài
+    e.stopPropagation();
   };
+
+  // Click outside để đóng menu
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setMenuOpenId(null);
+    };
+
+    if (menuOpenId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [menuOpenId]);
+
+  const totalComments = comments.reduce((acc, comment) => acc + 1 + (comment.replies?.length || 0), 0);
 
   return (
     <div className="comment-drawer-overlay" onClick={onClose}>
       <div
         className="comment-drawer"
         onClick={(e) => e.stopPropagation()}
-        onWheel={handleWheel} // Thêm sự kiện wheel
+        onWheel={handleWheel}
       >
         <div className="comment-header">
-          <span>Bình luận</span>
+          <span>Bình luận ({totalComments})</span>
           <button onClick={onClose}>&times;</button>
         </div>
 
         <div className="comment-list">
-          {comments.length === 0 && <p className="no-comment">Chưa có bình luận nào.</p>}
-          {comments.flatMap((root) =>
-            extractThreads(root).map((thread, index) => renderThread(thread, index))
+          {comments.length === 0 && (
+            <p className="no-comment" style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+              Chưa có bình luận nào.
+            </p>
           )}
+          {comments.map(comment => renderComment(comment))}
         </div>
 
-        <div className="comment-input-area">
-          <textarea
-            placeholder="Nhập bình luận..."
-            value={newComment}
-            onChange={(e) => {
-              if (e.target.value.length <= 150) {
-                setNewComment(e.target.value);
-              }
-            }}
-            onInput={handleTextareaChange}
-            maxLength={150}
-            rows={1}
-            style={{
-              resize: 'none',
-              overflow: 'hidden',
-              minHeight: '40px',
-              lineHeight: '20px',
-              width: '100%',
-              padding: '6px 10px',
-              fontSize: '15px',
-              boxSizing: 'border-box',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              marginBottom: '8px'
-            }}
-          />
-          <button onClick={handleSubmitComment}>Gửi</button>
-        </div>
+        {/* Input area cho comment mới */}
+        {token && (
+          <div className="comment-input-area" style={{ 
+            padding: '12px',
+            borderTop: '1px solid #eee',
+            backgroundColor: '#fff'
+          }}>
+            <textarea
+              placeholder="Nhập bình luận..."
+              value={newComment}
+              onChange={(e) => {
+                if (e.target.value.length <= 150) {
+                  setNewComment(e.target.value);
+                }
+              }}
+              onInput={handleTextareaChange}
+              maxLength={150}
+              rows={1}
+              style={{
+                resize: 'none',
+                overflow: 'hidden',
+                minHeight: '40px',
+                lineHeight: '20px',
+                width: '100%',
+                padding: '8px 12px',
+                fontSize: '15px',
+                boxSizing: 'border-box',
+                borderRadius: '6px',
+                border: '1px solid #ddd',
+                marginBottom: '8px',
+                outline: 'none'
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                {newComment.length}/150
+              </span>
+              <button 
+                onClick={handleSubmitComment}
+                disabled={!newComment.trim()}
+              >
+                Gửi
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!token && (
+          <div style={{ 
+            padding: '20px', 
+            textAlign: 'center', 
+            borderTop: '1px solid #eee',
+            color: '#666'
+          }}>
+            Đăng nhập để bình luận
+          </div>
+        )}
       </div>
     </div>
   );

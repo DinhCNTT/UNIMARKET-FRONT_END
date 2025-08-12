@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "axios";  
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./ManageParentCategories.css";
@@ -13,7 +13,6 @@ const ManageParentCategories = () => {
     const [previewImage, setPreviewImage] = useState("");
     const [previewIcon, setPreviewIcon] = useState("");
 
-    // Địa chỉ baseUrl cho hình ảnh
     const baseUrl = "http://localhost:5133/";
 
     useEffect(() => {
@@ -23,15 +22,12 @@ const ManageParentCategories = () => {
     const fetchCategories = async () => {
         try {
             const res = await axios.get("http://localhost:5133/api/admin/get-parent-categories");
-            console.log("Data from API:", res.data); // Xem dữ liệu có icon chưa
             setCategories(res.data);
         } catch (error) {
-            console.error("Lỗi khi lấy danh mục cha:", error);
             toast.error("Lỗi khi tải danh sách danh mục cha");
         }
     };
     
-
     const handleEdit = (category) => {
         setEditingCategory(category);
         setNewName(category.tenDanhMucCha);
@@ -42,13 +38,13 @@ const ManageParentCategories = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         setNewImage(file);
-        setPreviewImage(URL.createObjectURL(file)); // Hiển thị ảnh preview
+        setPreviewImage(URL.createObjectURL(file));
     };
 
     const handleIconChange = (e) => {
         const file = e.target.files[0];
         setNewIcon(file);
-        setPreviewIcon(URL.createObjectURL(file)); // Hiển thị icon preview
+        setPreviewIcon(URL.createObjectURL(file));
     };
 
     const handleUpdate = async () => {
@@ -63,7 +59,7 @@ const ManageParentCategories = () => {
         if (newIcon) formData.append("icon", newIcon);
 
         try {
-            const response = await axios.put(
+            await axios.put(
                 `http://localhost:5133/api/admin/update-parent-category/${editingCategory.maDanhMucCha}`,
                 formData,
                 {
@@ -75,6 +71,11 @@ const ManageParentCategories = () => {
             );
             toast.success("Cập nhật danh mục cha thành công!");
             fetchCategories();
+            setEditingCategory(null);
+            setNewImage(null);
+            setNewIcon(null);
+            setPreviewImage("");
+            setPreviewIcon("");
         } catch (error) {
             toast.error("Lỗi khi cập nhật");
         }
@@ -84,28 +85,16 @@ const ManageParentCategories = () => {
         if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
 
         try {
-            // Trước khi xóa, kiểm tra xem có danh mục con nào không
             const childCategoriesResponse = await axios.get("http://localhost:5133/api/admin/get-categories");
             const childCategories = childCategoriesResponse.data;
-            
-            // Lọc ra các danh mục con thuộc danh mục cha cần xóa
-            const relatedChildCategories = childCategories.filter(
-                (child) => child.maDanhMucCha === id
-            );
+            const relatedChildCategories = childCategories.filter(child => child.maDanhMucCha === id);
 
-            // Nếu có danh mục con, hiển thị thông báo chi tiết
             if (relatedChildCategories.length > 0) {
-                const childCategoryNames = relatedChildCategories.map(
-                    (child) => child.tenDanhMuc
-                ).join(", ");
-                
-                toast.error(
-                    `Không thể xóa danh mục vì đang tồn tại các danh mục con: ${childCategoryNames}`
-                );
+                const childCategoryNames = relatedChildCategories.map(child => child.tenDanhMuc).join(", ");
+                toast.error(`Không thể xóa danh mục vì đang tồn tại các danh mục con: ${childCategoryNames}`);
                 return;
             }
 
-            // Nếu không có danh mục con, tiến hành xóa
             await axios.delete(`http://localhost:5133/api/admin/delete-parent-category/${id}`);
             toast.success("Xóa danh mục cha thành công!");
             fetchCategories();
@@ -115,11 +104,11 @@ const ManageParentCategories = () => {
     };
 
     return (
-        <div className="parent-category-page-container">
-            <h2>Quản Lý Danh Mục Cha</h2>
+        <div className="manage-parent-categories">
+            <h2 className="manage-parent-categories__title">Quản Lý Danh Mục Cha</h2>
             <ToastContainer autoClose={3000} />
 
-            <table className="parent-category-table">
+            <table className="manage-parent-categories__table">
                 <thead>
                     <tr>
                         <th>Mã DM</th>
@@ -130,68 +119,74 @@ const ManageParentCategories = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {categories.map((cat) => (
-                        <tr key={cat.maDanhMucCha}>
-                            <td>{cat.maDanhMucCha}</td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <input
-                                        type="text"
-                                        value={newName}
-                                        onChange={(e) => setNewName(e.target.value)}
-                                        className="edit-input"
-                                    />
-                                ) : (
-                                    cat.tenDanhMucCha
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="file-upload">
-                                        <input type="file" onChange={handleImageChange} />
-                                        {previewImage && (
-                                            <img src={previewImage} alt="Preview" className="image-preview" />
-                                        )}
-                                    </div>
-                                ) : (
-                                    <img
-                                        src={cat.anhDanhMucCha}
-                                        alt="Ảnh DM"
-                                        className="category-image"
-                                    />
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="file-upload">
-                                        <input type="file" onChange={handleIconChange} />
-                                        {previewIcon && (
-                                            <img src={previewIcon} alt="Icon Preview" className="icon-preview" />
-                                        )}
-                                    </div>
-                                ) : (
-                                    <img
-                                        src={cat.icon}
-                                        alt="Icon DM"
-                                        className="category-icon"
-                                    />
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <>
-                                        <button className="save-btn" onClick={handleUpdate}>💾 Lưu</button>
-                                        <button className="cancel-btn" onClick={() => setEditingCategory(null)}>❌ Hủy</button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="edit-btn" onClick={() => handleEdit(cat)}>✏️ Sửa</button>
-                                        <button className="delete-btn" onClick={() => handleDelete(cat.maDanhMucCha)}>🗑️ Xóa</button>
-                                    </>
-                                )}
-                            </td>
+                    {categories.length > 0 ? (
+                        categories.map(cat => (
+                            <tr key={cat.maDanhMucCha}>
+                                <td>{cat.maDanhMucCha}</td>
+                                <td>
+                                    {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
+                                        <input
+                                            type="text"
+                                            value={newName}
+                                            onChange={e => setNewName(e.target.value)}
+                                            className="manage-parent-categories__input"
+                                        />
+                                    ) : (
+                                        cat.tenDanhMucCha
+                                    )}
+                                </td>
+                                <td>
+                                    {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
+                                        <div className="manage-parent-categories__file-upload">
+                                            <input type="file" onChange={handleImageChange} />
+                                            {previewImage && (
+                                                <img src={previewImage} alt="Ảnh preview" className="manage-parent-categories__image-preview" />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <img
+                                            src={cat.anhDanhMucCha}
+                                            alt="Ảnh danh mục"
+                                            className="manage-parent-categories__image"
+                                        />
+                                    )}
+                                </td>
+                                <td>
+                                    {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
+                                        <div className="manage-parent-categories__file-upload">
+                                            <input type="file" onChange={handleIconChange} />
+                                            {previewIcon && (
+                                                <img src={previewIcon} alt="Icon preview" className="manage-parent-categories__icon-preview" />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <img
+                                            src={cat.icon}
+                                            alt="Icon danh mục"
+                                            className="manage-parent-categories__icon"
+                                        />
+                                    )}
+                                </td>
+                                <td>
+                                    {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
+                                        <>
+                                            <button className="manage-parent-categories__btn manage-parent-categories__btn--save" onClick={handleUpdate}>💾 Lưu</button>
+                                            <button className="manage-parent-categories__btn manage-parent-categories__btn--cancel" onClick={() => setEditingCategory(null)}>❌ Hủy</button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className="manage-parent-categories__btn manage-parent-categories__btn--edit" onClick={() => handleEdit(cat)}>✏️ Sửa</button>
+                                            <button className="manage-parent-categories__btn manage-parent-categories__btn--delete" onClick={() => handleDelete(cat.maDanhMucCha)}>🗑️ Xóa</button>
+                                        </>
+                                    )}
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="5" className="manage-parent-categories__empty">Không có danh mục cha nào</td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
         </div>
