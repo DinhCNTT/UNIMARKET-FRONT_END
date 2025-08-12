@@ -1,29 +1,30 @@
 .lvv-container {
-  position: relative;
+  position: fixed; /* ✅ Bám cố định toàn màn hình */
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   background-color: #000;
   display: flex;
-  justify-content: center; /* ✅ sửa từ flex-start thành center */
+  justify-content: center;
   align-items: center;
 }
 
-
-/* Video nền làm mờ */
 .lvv-bg-blur {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120vw;            /* ✅ Tăng rộng nền mờ (vượt quá chiều ngang để tạo hiệu ứng đẹp) */
-  max-width: none;         /* ❌ Bỏ giới hạn chiều ngang */
-  height: auto;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  filter: blur(25px) brightness(0.35); /* Mờ + hơi tối, dịu hơn */
+  filter: blur(25px) brightness(0.35);
   z-index: 0;
-  border-radius: 16px;     /* Bo nhẹ, tạo cảm giác êm */
+  border-radius: 0; /* ✅ Không bo góc để không bị hở */
 }
+
 
 .lvv-video-wrapper {
   position: relative;
@@ -80,18 +81,22 @@
 
 /* Thông tin người đăng */
 .lvv-user-info-wrapper {
+  position: sticky;         /* 👈 Mấu chốt giúp mượt */
+  top: 0;                   /* Bám sát đầu vùng scroll */
+  z-index: 99;
   background-color: rgba(128, 128, 128, 0.3);
   border-radius: 16px;
   padding: 12px 16px;
   color: #fff;
-  width: 95%;        /* 👈 tăng chiều ngang */
-  max-width: 800px;  /* 👈 giới hạn để không quá rộng */
+  width: 95%;
+  max-width: 800px;
   margin: 0 auto 12px;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
 .lvv-user-info-wrapper.hidden {
   opacity: 0;
-  transform: translateY(-16px);
+  transform: translateY(-20px);
   pointer-events: none;
 }
 .hidden {

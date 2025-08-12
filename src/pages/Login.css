@@ -1,5 +1,5 @@
 /* Căn giữa toàn bộ trang */
-.login-container {
+.logf-container {
     display: flex;
     justify-content: center; /* Căn giữa theo chiều ngang */
     align-items: center; /* Căn giữa theo chiều dọc */
@@ -11,7 +11,7 @@
 }
 
 /* Hộp đăng nhập */
-.login-box {
+.logf-box {
     background: white !important; /* Đảm bảo nền trắng */
     padding: 30px;
     border-radius: 10px;
@@ -24,19 +24,30 @@
     justify-content: center;
     align-items: center;
 }
+
 /* Tiêu đề "Đăng nhập" */
-.login-box h2 {
+.logf-title {
     color: black !important; /* Đổi màu chữ thành đen */
 }
 
 /* Link đăng ký */
-.signup-link {
+.logf-signup-link {
     color: black !important; /* Đổi màu "Chưa có tài khoản?" thành đen */
     margin-top: 10px;
 }
 
+.logf-signup-link a {
+    color: orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logf-signup-link a:hover {
+    text-decoration: underline;
+}
+
 /* Ô nhập liệu */
-input {
+.logf-input {
     width: 100%;
     padding: 12px;
     margin: 8px 0;
@@ -48,7 +59,7 @@ input {
 }
 
 /* Nút đăng nhập */
-button {
+.logf-button {
     width: 100%;
     padding: 12px;
     background-color: #ff9800;
@@ -61,30 +72,11 @@ button {
     font-weight: bold;
 }
 
-button:hover {
+.logf-button:hover {
     background-color: #e68900;
 }
 
-
-button:hover {
-    background-color: #e68900;
-}
-
-/* Link đăng ký */
-.signup-link {
-    color: white;
-    margin-top: 10px;
-}
-
-.signup-link a {
-    color: orange;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.signup-link a:hover {
-    text-decoration: underline;
-}
+/* Thông báo lỗi */
 .error-message {
     color: #fff;
     background: #d32f2f; /* Màu đỏ chính */

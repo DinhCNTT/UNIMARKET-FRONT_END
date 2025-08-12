@@ -1,46 +1,74 @@
 /* Định dạng container chính */
-.register-container {
+.regf-container {
     display: flex;
     justify-content: center; /* Căn giữa theo chiều ngang */
     align-items: center; /* Căn giữa theo chiều dọc */
     height: 100vh; /* Chiều cao chiếm toàn bộ màn hình */
     width: 100vw; /* Đảm bảo chiếm toàn bộ chiều rộng */
-    background-color: white !important; /* Chuyển sang nền trắng */
+    background-color: white !important; /* Nền trắng */
 }
 
-/* Định dạng form */
-form {
+/* Hộp chứa form */
+.regf-box {
     display: flex;
-    flex-direction: column; /* Xếp các input theo chiều dọc */
+    flex-direction: column;
     align-items: center;
-    background: white !important; /* Chuyển nền sang màu trắng */
+    background: white !important;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Giảm độ sáng của bóng */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px; /* Giới hạn chiều rộng form */
+    max-width: 400px;
 }
-/* Ô nhập liệu */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ccc; /* Làm viền sáng hơn */
-    border-radius: 5px;
-    background: white !important; /* Chuyển nền sang màu trắng */
-    color: black !important; /* Chuyển chữ thành màu đen để dễ nhìn */
-    font-size: 16px;
-}
+
 /* Tiêu đề "Đăng ký tài khoản" */
-.register-title {
-    color: black !important; /* Chuyển màu chữ thành đen */
+.regf-title {
+    color: black !important;
     text-align: center;
     margin-bottom: 20px;
 }
 
+/* Form đăng ký */
+.regf-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Ô nhập liệu */
+.regf-input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white !important;
+    color: black !important;
+    font-size: 16px;
+}
+
+/* Điều khoản */
+.regf-terms {
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.regf-terms a {
+    color: orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.regf-terms a:hover {
+    text-decoration: underline;
+}
 
 /* Nút đăng ký */
-button {
+.regf-button {
     width: 100%;
     padding: 12px;
     background-color: #ff9800;
@@ -53,45 +81,24 @@ button {
     font-weight: bold;
 }
 
-button:hover {
+.regf-button:hover {
     background-color: #e68900;
 }
 
-/* Điều khoản */
-.terms {
-    font-size: 12px;
-    color: #aaa;
+/* Khu vực đăng ký bằng Google hoặc MXH */
+.regf-google-section {
+    margin-top: 20px;
     text-align: center;
-    margin-top: 5px;
-    margin-bottom: 10px;
 }
 
-.terms a {
-    color: orange;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.terms a:hover {
-    text-decoration: underline;
-}
-
-/* Hoặc đăng nhập bằng mạng xã hội */
-.or {
-    text-align: center;
-    color: white;
-    font-size: 14px;
-    margin: 10px 0;
-}
-
-/* Nút đăng nhập mạng xã hội */
-.social-login {
+/* Nút MXH */
+.regf-social-login {
     display: flex;
     justify-content: space-between;
     width: 100%;
 }
 
-.social-login button {
+.regf-social-login button {
     flex: 1;
     padding: 8px;
     margin: 5px;
@@ -102,45 +109,45 @@ button:hover {
     cursor: pointer;
 }
 
-/* Màu nền của các nút mạng xã hội */
-.facebook {
+/* Màu nền các nút MXH */
+.regf-facebook {
     background-color: #3b5998;
 }
 
-.google {
+.regf-google {
     background-color: #db4437;
 }
 
-.apple {
+.regf-apple {
     background-color: #000;
 }
 
-/* Hover hiệu ứng */
-.facebook:hover {
+/* Hover hiệu ứng MXH */
+.regf-facebook:hover {
     background-color: #2d4373;
 }
 
-.google:hover {
+.regf-google:hover {
     background-color: #a42820;
 }
 
-.apple:hover {
+.regf-apple:hover {
     background-color: #333;
 }
 
 /* Link chuyển sang đăng nhập */
-.login-link {
+.regf-login-link {
     text-align: center;
     color: white;
     margin-top: 10px;
 }
 
-.login-link a {
+.regf-login-link a {
     color: orange;
     text-decoration: none;
     font-weight: bold;
 }
 
-.login-link a:hover {
+.regf-login-link a:hover {
     text-decoration: underline;
 }

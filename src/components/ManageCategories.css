@@ -1,35 +1,36 @@
-.category-page-container {
+.manage-categories {
     padding: 20px;
     width: calc(90vw - 190px);
     margin-left: 250px;
 }
 
-.category-page-container h2 {
+.manage-categories__title {
     text-align: center;
     margin-bottom: 20px;
     color: #333;
 }
 
-.category-table {
+.manage-categories__table {
     width: 100%;
     border-collapse: collapse;
     background: white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.category-table th, 
-.category-table td {
+.manage-categories__table th, 
+.manage-categories__table td {
     border: 1px solid #ddd;
     padding: 12px;
     text-align: center;
 }
 
-.category-table th {
+.manage-categories__table th {
     background-color: #f5f5f5;
     font-weight: 600;
 }
 
-.edit-input, select {
+.manage-categories__input,
+.manage-categories__select {
     padding: 8px;
     width: 100%;
     border: 1px solid #ddd;
@@ -37,7 +38,7 @@
     text-align: center;
 }
 
-button {
+.manage-categories__btn {
     padding: 8px 12px;
     margin: 2px;
     border: none;
@@ -47,27 +48,33 @@ button {
     transition: all 0.2s;
 }
 
-.edit-btn {
+.manage-categories__btn--edit {
     background-color: #ffc107;
     color: black;
 }
 
-.delete-btn {
+.manage-categories__btn--delete {
     background-color: #dc3545;
     color: white;
 }
 
-.save-btn {
+.manage-categories__btn--save {
     background-color: #28a745;
     color: white;
 }
 
-.cancel-btn {
+.manage-categories__btn--cancel {
     background-color: #6c757d;
     color: white;
 }
 
-button:hover {
+.manage-categories__btn:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+}
+
+.manage-categories__empty {
+    text-align: center;
+    padding: 15px;
+    color: #777;
 }

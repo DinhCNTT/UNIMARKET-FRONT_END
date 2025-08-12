@@ -67,7 +67,7 @@ export default function LikedVideoDetailViewer() {
   const textareaRef = useRef(null);
   const scrollRef = useRef(null);
   const scrollStopTimer = useRef(null);
- const lastHideStateRef = useRef(hideUserInfo);
+  const lastHideStateRef = useRef(hideUserInfo);
   useEffect(() => {
   const handleScroll = () => {
     const scrollTop = scrollRef.current?.scrollTop || 0;
