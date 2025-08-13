@@ -15,12 +15,32 @@
   margin-bottom: 20px;
   margin-left: -720px;
 }
+
+/* Fix gạch chân cho tất cả link trong component */
+.tin-dang-danh-cho-ban a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
+.tin-dang-danh-cho-ban a:hover {
+  text-decoration: none !important;
+}
+
+.tin-dang-danh-cho-ban a:visited {
+  text-decoration: none !important;
+}
+
+.tin-dang-danh-cho-ban a:active {
+  text-decoration: none !important;
+}
+
 /* Lưới tin đăng */
 .post-list {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 15px;
 }
+
 /* Các phần tử trong tin đăng */
 .post-item {
   background-color: #fff;
@@ -32,6 +52,18 @@
   height: auto;
   position: relative; /* Cần thiết cho nút lưu */
 }
+
+/* Fix cụ thể cho post-link */
+.post-item .post-link {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.post-item .post-link:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
 /* Phần hiển thị ảnh tin đăng - ĐÃ SỬA */
 .post-images-tin-dang-danh-cho-ban {
   width: 100%;
@@ -40,6 +72,7 @@
   overflow: hidden;
   margin-bottom: 10px;
 }
+
 .post-images-tin-dang-danh-cho-ban img {
   position: absolute;
   top: 0;
@@ -49,10 +82,13 @@
   object-fit: cover; /* Đảm bảo ảnh phủ kín không gian mà không bị méo */
   border-radius: 8px;
 }
-/* Phần thông tin tin đăng */
+
+/* Phần thông tin tin đăng - ĐÃ FIX GẠCH CHÂN */
 .post-info {
   padding: 10px;
+  text-decoration: none !important;
 }
+
 .post-info h3 {
   font-size: 16px;
   font-weight: bold;
@@ -64,18 +100,24 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  text-decoration: none !important;
 }
+
 .post-info p {
   font-size: 14px;
   color: #777;
   margin: 5px 0;
+  text-decoration: none !important;
 }
+
 .post-info .price {
   font-size: 16px;
   font-weight: bold;
   color: #e53935;
   margin-top: 10px;
+  text-decoration: none !important;
 }
+
 .post-item:hover {
   transform: translateY(-5px);
 }
@@ -139,6 +181,18 @@
   }
 }
 
+/* Animation cho tin HOT */
+@keyframes hot-fire {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  100% {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
 /* Hiệu ứng ripple khi click nút lưu */
 .save-heart-btn:active {
   transform: scale(0.95);
@@ -150,16 +204,19 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
 @media screen and (max-width: 768px) {
   .post-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media screen and (max-width: 480px) {
   .post-list {
     grid-template-columns: 1fr;
   }
 }
+
 /* Style cho nút Xem thêm */
 .xem-them-btn {
   display: block;
@@ -175,12 +232,16 @@
   font-size: 16px;
   font-weight: bold;
   transition: all 0.3s ease;
+  text-decoration: none !important;
 }
+
 .xem-them-btn:hover {
   background-color: #333;
   color: white;
   border-color: #333;
+  text-decoration: none !important;
 }
+
 /* Thêm style cho thông báo không có ảnh */
 .post-images-tin-dang-danh-cho-ban p {
   position: absolute;
@@ -194,11 +255,15 @@
   background-color: #f5f5f5;
   color: #777;
   margin: 0;
+  text-decoration: none !important;
 }
+
 .tin-dang-danh-cho-ban .tieu-de {
   margin-left: 3px; /* Dịch sang trái 50px */
 }
+
 .post-time {
   font-size: 13px;
   color: #999;
+  text-decoration: none !important;
 }

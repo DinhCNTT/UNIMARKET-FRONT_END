@@ -77,9 +77,26 @@ const FacebookLoginButton = () => {
       onClick={handleFacebookLogin}
       disabled={!sdkReady}
       className="facebook-button"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fff',
+        border: '1px solid #ddd',
+        borderRadius: 8,
+        width: 120,
+        height: 44,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        cursor: sdkReady ? 'pointer' : 'not-allowed',
+        padding: 0,
+        gap: 8,
+        marginTop: '-2px'
+      }}
     >
-      <FaFacebookF className="facebook-icon" />
-      {sdkReady ? 'Đăng nhập bằng Facebook' : 'Đang tải Facebook...'}
+      <FaFacebookF style={{ fontSize: 24, color: '#1877F2' }} />
+      <span style={{ color: '#1877F2', fontWeight: 500, fontSize: 15 }}>
+        Facebook
+      </span>
     </button>
   );
 };

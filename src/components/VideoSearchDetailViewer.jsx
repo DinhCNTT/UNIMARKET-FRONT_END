@@ -1,379 +1,747 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { FaHeart, FaCommentDots } from "react-icons/fa";
+import { FaHeart, FaPlay, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import axios from "axios";
+import { toast } from 'react-hot-toast';
 import TopNavbar from "./TopNavbar";
 import defaultAvatar from "../assets/default-avatar.png";
 import { AuthContext } from '../context/AuthContext'; // ✅ Import AuthContext
 import "./VideoSearchDetailViewer.css";
 
 export default function VideoSearchDetailViewer() {
+  // Ẩn mô tả video khi cuộn comment xuống, giống TikTok
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollRef.current) return;
+      const scrollY = scrollRef.current.scrollTop;
+      // Nếu cuộn xuống > 60px thì ẩn user info
+      setHideUserInfo(scrollY > 60);
+    };
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (el) el.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+  // Cuộn mượt comment section khi mount, giống LikedVideoDetailViewer
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    // Ẩn thanh cuộn body khi vào trang
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+  const location = useLocation();
   const navigate = useNavigate();
-  const [videoData, setVideoData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Hỗ trợ cả truyền videoList hoặc videos
+  const { videoList: passedVideoList, videos: passedVideos, initialIndex = 0 } = location.state || {};
+  const safeVideoList = passedVideoList || passedVideos || [];
+  const [videoList, setVideoList] = useState(safeVideoList);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [showHeartEffect, setShowHeartEffect] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [soTym, setSoTym] = useState(0);
-  const [visibleMenuId, setVisibleMenuId] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [showComments, setShowComments] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isInteracted, setIsInteracted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [replyContent, setReplyContent] = useState("");
   const [activeReplyId, setActiveReplyId] = useState(null);
   const [expandedThreads, setExpandedThreads] = useState({});
-  
-  // Sử dụng AuthContext thay vì localStorage
-  const { user, token } = useContext(AuthContext);
-  const currentUserId = user?.id;
-  
-  const location = useLocation();
-  const { videoList: passedVideoList, initialIndex } = location.state || {};
-  const [videoList, setVideoList] = useState(passedVideoList || []);
-  const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
-  const params = useParams();
-  const [maTinDang, setMaTinDang] = useState(params.maTinDang);
+  const [totalCommentCount, setTotalCommentCount] = useState(0);
+  const [hideUserInfo, setHideUserInfo] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [showCharCount, setShowCharCount] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [showReplyCharCount, setShowReplyCharCount] = useState(false);
+  const [activeMenuCommentId, setActiveMenuCommentId] = useState(null);
+  const [replyContentMap, setReplyContentMap] = useState({});
+  const [activeReplyMap, setActiveReplyMap] = useState({});
+  const [expandedComments, setExpandedComments] = useState({});
+  const [volume, setVolume] = useState(1);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const volumeSliderTimeoutRef = useRef(null);
+  const playerRef = useRef(null);
+  const bgPlayerRef = useRef(null);
+  const audioRef = useRef(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+  const currentIndexRef = useRef(initialIndex);
+  const iconCircleRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastFetchTimeRef = useRef(Date.now());
+  const textareaRef = useRef(null);
+  const scrollRef = useRef(null);
+  const scrollStopTimer = useRef(null);
+  const lastHideStateRef = useRef(hideUserInfo);
+  const replyTextareaRef = useRef(null);
+  const mainCommentRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const hideVolumeTimeoutRef = useRef(null);
+  const { user } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
+  const currentUserId = localStorage.getItem("userId");
+  const video = videoList && videoList.length > 0 ? videoList[currentIndex] : null;
+  const videoUrl = video?.videoUrl;
 
+  // Fetch video like state and comments when video changes
   useEffect(() => {
-    fetchVideoDetail();
+    if (!video?.maTinDang) return;
+    // Fetch like state
+    axios.get(`http://localhost:5133/api/video/${video.maTinDang}`, {
+  headers: token ? { Authorization: `Bearer ${token}` } : {},
+}).then(res => {
+  const updatedVideo = res.data;
+  setIsLiked(updatedVideo.isLiked || false);
+  setSoTym(updatedVideo.soTym || 0);
+
+  // ✅ Cập nhật cả videoList để có moTa, tieuDe, ...
+  setVideoList(prev =>
+    prev.map((v, i) => i === currentIndex ? { ...v, ...updatedVideo } : v)
+  );
+}).catch(err => console.error(err));
+    // Fetch comments
     fetchComments();
-  }, [maTinDang]);
+  }, [video?.maTinDang]);
 
+  // Count total comments (including replies)
   useEffect(() => {
-    if (videoList.length > 0) {
-      const current = videoList[currentIndex];
-      if (current && current.maTinDang !== maTinDang) {
-        setMaTinDang(current.maTinDang);
-      }
-    }
-  }, [currentIndex, videoList]);
+    const countAll = (list) => list.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
+    setTotalCommentCount(countAll(comments));
+  }, [comments]);
 
-  const fetchVideoDetail = async () => {
-    try {
-      const res = await fetch(`http://localhost:5133/api/Video/${maTinDang}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu video.");
-      const data = await res.json();
-      setVideoData(data);
-      setIsLiked(data.isLiked || false);
-      setSoTym(data.soTym || 0);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch comments
+  const fetchComments = useCallback(() => {
+    if (!video?.maTinDang) return;
+    axios.get(`http://localhost:5133/api/video/${video.maTinDang}/comments`)
+      .then(res => setComments(res.data || []))
+      .catch(() => {});
+  }, [video?.maTinDang]);
 
-  const fetchComments = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5133/api/video/${maTinDang}/comments`);
-      setComments(res.data || []);
-    } catch (err) {
-      console.error("Lỗi khi lấy bình luận:", err);
-    }
-  };
-
+  // Handle like
   const handleLike = async () => {
     if (!token) return alert("Bạn cần đăng nhập để tym video.");
     try {
-      const res = await fetch(`http://localhost:5133/api/Video/${maTinDang}/like`, {
-        method: "POST",
+      const res = await axios.post(`http://localhost:5133/api/Video/${video.maTinDang}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Lỗi khi tym video.");
-      const data = await res.json();
-      setIsLiked(data.isLiked);
-      setSoTym(data.soTym);
+      setIsLiked(res.data.isLiked);
+      setSoTym(res.data.soTym);
+      setShowHeartEffect(true);
+      setTimeout(() => setShowHeartEffect(false), 600);
     } catch (err) {
-      console.error("Lỗi khi gửi yêu cầu tym:", err);
+      alert("Lỗi khi tym video");
     }
   };
 
-  const handleSubmitComment = async () => {
+  const handleDeleteComment = async (commentId) => {
+    if (!token) {
+      toast.error("Bạn chưa đăng nhập!");
+      return;
+    }
+
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{ fontSize: "14px", color: "#374151" }}>
+          <div style={{ fontWeight: "600", marginBottom: "8px" }}>
+            🗑️ Xác nhận xoá bình luận
+          </div>
+          <div style={{ marginBottom: "12px", fontSize: "13px" }}>
+            Bạn có chắc chắn muốn xoá bình luận này không? Hành động này không thể hoàn tác.
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                padding: "6px 12px",
+                background: "#f3f4f6",
+                color: "#374151",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                padding: "6px 12px",
+                background: "#ef4444",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              Xoá
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: Infinity,
+        position: "top-right",
+        style: {
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: "12px",
+          padding: "16px",
+          maxWidth: "340px",
+        },
+      });
+    });
+
+    if (!confirmed) return;
+
+    const loadingToast = toast.loading("Đang xoá bình luận...");
+
+    try {
+      await axios.delete(`http://localhost:5133/api/video/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const removeFromList = (list) =>
+        list.filter((c) => c.id !== commentId)
+          .map((c) => ({
+            ...c,
+            replies: c.replies ? removeFromList(c.replies) : [],
+          }));
+
+      setComments((prev) => removeFromList(prev));
+      setActiveMenuCommentId(null);
+
+      toast.dismiss(loadingToast);
+      toast.success("Đã xoá bình luận thành công! ✅", {
+        style: {
+          background: "#10b981",
+          color: "#fff",
+        },
+      });
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error("Lỗi khi xoá bình luận!", {
+        style: {
+          background: "#ef4444",
+          color: "#fff",
+        },
+      });
+      fetchComments();
+    }
+  };
+
+
+  // Handle submit comment
+  const submitComment = async () => {
     if (!token || !newComment.trim()) return;
     try {
       await axios.post(
-        `http://localhost:5133/api/video/${maTinDang}/comment`,
+        `http://localhost:5133/api/video/${video.maTinDang}/comment`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewComment("");
       fetchComments();
     } catch (err) {
-      console.error("Lỗi khi gửi bình luận:", err);
+      alert("Lỗi khi gửi bình luận");
     }
   };
 
-  const handleReplySubmit = async (parentId) => {
-    if (!token || !replyContent.trim()) return;
+  // Toggle hiển thị ô nhập reply cho từng comment
+  const toggleChildReplyInput = (commentId) => {
+    setActiveReplyMap((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
+
+  // Gửi reply cho comment
+  const handleReplySubmit = async (parentCommentId, replyContent) => {
+    if (!token || !replyContent?.trim()) return;
+    // Optimistic UI
+    const optimisticReply = {
+      id: `temp-${Date.now()}`,
+      content: replyContent,
+      userName: user?.fullName || user?.userName || "Bạn",
+      userId: currentUserId,
+      avatarUrl: user?.avatarUrl,
+      createdAt: new Date().toISOString(),
+      parentCommentId,
+      replies: [],
+      isOptimistic: true
+    };
+    setComments((prev) => prev.map(c =>
+      c.id === parentCommentId
+        ? { ...c, replies: [...(c.replies || []), optimisticReply] }
+        : c
+    ));
+    setReplyContentMap((prev) => ({ ...prev, [parentCommentId]: "" }));
+    setActiveReplyMap((prev) => ({ ...prev, [parentCommentId]: false }));
     try {
       await axios.post(
-        `http://localhost:5133/api/video/${maTinDang}/comment`,
-        {
-          content: replyContent,
-          parentCommentId: parentId,
-        },
+        `http://localhost:5133/api/video/${video.maTinDang}/comment`,
+        { content: replyContent, parentCommentId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setReplyContent("");
-      setActiveReplyId(null);
       fetchComments();
     } catch (err) {
-      console.error("Lỗi khi gửi phản hồi:", err);
+      alert("Lỗi khi gửi phản hồi");
+      fetchComments();
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!token) return;
-    if (!window.confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
-    try {
-      await axios.delete(`http://localhost:5133/api/video/comment/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+  // Toggle expand/collapse replies
+  const toggleExpandReplies = (commentId) => {
+    setExpandedComments((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
+
+  // Hàm làm phẳng replies
+  const flattenReplies = (replies, parentUser) => {
+    let flat = [];
+    for (const r of replies || []) {
+      flat.push({
+        ...r,
+        replyTo: parentUser
       });
-      fetchComments();
-    } catch (err) {
-      console.error("Lỗi khi xóa bình luận:", err);
+      if (r.replies?.length) {
+        flat = flat.concat(flattenReplies(r.replies, r.userName));
+      }
     }
+    return flat;
   };
 
-  const toggleReplies = (parentId) => {
-    setExpandedThreads((prev) => ({
-      ...prev,
-      [parentId]: !prev[parentId],
-    }));
-  };
-
-  const handleAutoResize = (e) => {
-    e.target.style.height = "auto";
-    e.target.style.height = e.target.scrollHeight + "px";
-  };
-
-  const handleWheel = (e) => {
-    const sensitivity = 90;
-    if (e.deltaY > sensitivity && currentIndex < videoList.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else if (e.deltaY < -sensitivity && currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-    }
-  };
-
-  if (loading) return <p>Đang tải video...</p>;
-  if (!videoData) return <p>Không tìm thấy video.</p>;
-
-  return (
-    <div className="vsdv-container">
-      <TopNavbar />
-      <div className="vsdv-main-wrapper">
-        <div className="vsdv-main-content">
-          <button onClick={() => navigate(-1)} className="vsdv-close-btn">❌</button>
-
-          <div className="vsdv-video-section" onWheel={handleWheel}>
-            {videoList.length > 0 && (
-              <div className="vsdv-video-item">
-                <video
-                  src={videoList[currentIndex]?.videoUrl}
-                  controls
-                  autoPlay
-                  loop
-                  muted
-                  className="vsdv-video"
-                />
+  // Render comments cha và replies phẳng với chức năng xem thêm/thu gọn replies
+  const [expandedRepliesMap, setExpandedRepliesMap] = useState({});
+  const renderCommentsFlat = (commentList) => {
+    return commentList.map((comment) => {
+      const isMenuOpen = activeMenuCommentId === comment.id;
+      const hasReplies = comment.replies?.length > 0;
+      // Làm phẳng replies
+      const flatReplies = flattenReplies(comment.replies, comment.userName);
+      const isExpanded = expandedRepliesMap[comment.id];
+      const showReplies = flatReplies.length > 1 && !isExpanded ? flatReplies.slice(0, 1) : flatReplies;
+      return (
+        <div key={comment.id} className="lvv-comment-item" style={{ marginLeft: 0 }}>
+          <div className="lvv-comment-wrapper">
+            <div className="lvv-comment-user-header">
+              <img src={comment.avatarUrl || defaultAvatar} className="lvv-avatar" alt="user" />
+              <div className="lvv-comment-main">
+                <div className="lvv-comment-header">
+                  <strong className="lvv-username">{comment.userName}</strong>
+                </div>
+                <div className="lvv-comment-content">{comment.content}</div>
+                <div className="lvv-comment-meta">
+                  <span className="lvv-time">{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("vi-VN") : ""}</span>
+                  <button className="lvv-reply-toggle-btn" onClick={() => toggleChildReplyInput(comment.id)}>Trả lời</button>
+                </div>
+                {/* Ô nhập trả lời */}
+                {activeReplyMap[comment.id] && (
+                  <div className="lvv-reply-input-inline">
+                    <div className="lvv-reply-input-wrapper">
+                      <textarea
+                        value={replyContentMap[comment.id] || ""}
+                        onChange={(e) => {
+                          const text = e.target.value;
+                          if (text.length <= 150) {
+                            setReplyContentMap((prev) => ({ ...prev, [comment.id]: text }));
+                          }
+                        }}
+                        placeholder="Trả lời..."
+                        className="lvv-reply-input textarea"
+                        rows={1}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = "auto";
+                            el.style.height = el.scrollHeight + "px";
+                          }
+                        }}
+                      />
+                      <div className="lvv-reply-footer">
+                        <div className="lvv-reply-actions">
+                          <button
+                            onClick={() => handleReplySubmit(comment.id, replyContentMap[comment.id])}
+                            className="lvv-reply-submit-btn"
+                            disabled={!replyContentMap[comment.id]?.trim()}
+                          >Gửi</button>
+                          <button
+                            className="lvv-reply-cancel-btn"
+                            onClick={() => {
+                              setReplyContentMap((prev) => ({ ...prev, [comment.id]: "" }));
+                              setActiveReplyMap((prev) => ({ ...prev, [comment.id]: false }));
+                            }}
+                          >X</button>
+                        </div>
+                      </div>
+                    </div>
+                    {replyContentMap[comment.id]?.length >= 30 && (
+                      <div className="lvv-char-count">{replyContentMap[comment.id].length}/150</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Nút menu */}
+            {comment.userId === currentUserId && (
+              <div className="lvv-menu-wrapper-parent">
+                <button
+                  className="lvv-menu-btn"
+                  onClick={() => setActiveMenuCommentId((prevId) => prevId === comment.id ? null : comment.id)}
+                >⋯</button>
+                {isMenuOpen && (
+                  <div className="lvv-popup-menu">
+                    <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(comment.id); setActiveMenuCommentId(null); }}>Xoá</button>
+                  </div>
+                )}
               </div>
             )}
           </div>
-
-          {/* THÔNG TIN VIDEO */}
-          <div className="vsdv-info-section">
-            <div className="vsdv-user-info">
-              <img
-                src={videoData.nguoiDang?.avatarUrl || defaultAvatar}
-                alt="avatar"
-                className="vsdv-user-avatar"
-                onClick={() => navigate(`/nguoi-dung/${videoData.nguoiDang?.userId}`)}
-                style={{ cursor: "pointer" }}
-              />
-              <div>
-                <div className="vsdv-username">@{videoData.nguoiDang?.fullName}</div>
-                <div className="vsdv-caption">{videoData.tieuDe}</div>
-                <div className="vsdv-meta">
-                  <span onClick={handleLike} style={{ cursor: "pointer", fontSize: "1.2rem" }}>
-                    <FaHeart color={isLiked ? "red" : "gray"} /> {soTym}
-                  </span>
-                  <span style={{ fontSize: "1.2rem" }}>
-                    <FaCommentDots /> {comments.length}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <hr />
-
-            {/* BÌNH LUẬN */}
-            <div className="vsdv-comment-section">
-              <h4 className="vsdv-comment-section__title">💬 BÌNH LUẬN ({comments.length})</h4>
-
-              <div className="vsdv-comment-section__scroll-wrapper">
-                <div className="vsdv-comment-section__list">
-                  {comments.map((parent) => (
-                    <div className="vsdv-comment-thread" key={`parent-${parent.id}`}>
-                      <div className="vsdv-comment-item">
-                        <img
-                          src={parent.avatarUrl || defaultAvatar}
-                          className="vsdv-comment-item__avatar"
-                          onClick={() => navigate(`/nguoi-dung/${parent.userId}`)}
-                          style={{ cursor: "pointer" }}
-                        />
-                        <div className="vsdv-comment-item__body">
-                          <div className="vsdv-comment-item__header">
-                            <div className="vsdv-comment-item__name">@{parent.userName}</div>
-                            {parent.userId === currentUserId && (
-                              <div className="vsdv-comment-item__menu-wrapper">
-                                <button
-                                  className="vsdv-comment-item__menu-btn"
-                                  onClick={() =>
-                                    setVisibleMenuId(visibleMenuId === parent.id ? null : parent.id)
+          {/* Replies phẳng với xem thêm/thu gọn */}
+          {hasReplies && (
+            <div className="lvv-replies">
+              {showReplies.map((reply) => {
+                const isReplyMenuOpen = activeMenuCommentId === reply.id;
+                return (
+                  <div
+                    key={reply.id}
+                    className="lvv-comment-item"
+                    style={{ marginLeft: "1px" }}
+                  >
+                    <div className="lvv-comment-wrapper" style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
+                      <img src={reply.avatarUrl || defaultAvatar} className="lvv-avatar" alt="user" style={{ marginRight: 8 }} />
+                      <div className="lvv-comment-main" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <strong className="lvv-username">{reply.userName}</strong>
+                          {reply.replyTo && (
+                            <span className="lvv-reply-to" style={{ color: '#888', fontSize: 13, marginLeft: 4 }}>trả lời {reply.replyTo}</span>
+                          )}
+                          {reply.userId === currentUserId && (
+                            <div className="lvv-menu-wrapper-child" style={{ marginLeft: '-30px' }}>
+                              <button
+                                className="lvv-menu-btn"
+                                onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
+                              >⋯</button>
+                              {isReplyMenuOpen && (
+                                <div className="lvv-popup-menu">
+                                  <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="lvv-comment-content">{reply.content}</div>
+                        <div className="lvv-comment-meta">
+                          <span className="lvv-time">{reply.createdAt ? new Date(reply.createdAt).toLocaleDateString("vi-VN") : ""}</span>
+                          <button className="lvv-reply-toggle-btn" onClick={() => toggleChildReplyInput(reply.id)}>Trả lời</button>
+                        </div>
+                        {/* Ô nhập trả lời cho reply */}
+                        {activeReplyMap[reply.id] && (
+                          <div className="lvv-reply-input-inline">
+                            <div className="lvv-reply-input-wrapper">
+                              <textarea
+                                value={replyContentMap[reply.id] || ""}
+                                onChange={(e) => {
+                                  const text = e.target.value;
+                                  if (text.length <= 150) {
+                                    setReplyContentMap((prev) => ({ ...prev, [reply.id]: text }));
                                   }
-                                >
-                                  ⋯
-                                </button>
-                                {visibleMenuId === parent.id && (
-                                  <div className="vsdv-comment-item__menu-dropdown">
-                                    <button
-                                      className="vsdv-comment-item__menu-option"
-                                      onClick={() => {
-                                        handleDeleteComment(parent.id);
-                                        setVisibleMenuId(null);
-                                      }}
-                                    >
-                                      🗑 Xoá bình luận
-                                    </button>
-                                    <button
-                                      className="vsdv-comment-item__menu-option"
-                                      onClick={() => setVisibleMenuId(null)}
-                                    >
-                                      ❌ Đóng
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          <div className="vsdv-comment-item__text">{parent.content}</div>
-                          <button
-                            onClick={() => setActiveReplyId(parent.id)}
-                            className="vsdv-comment-item__reply-btn"
-                          >
-                            Trả lời
-                          </button>
-                        </div>
-                      </div>
-
-                      {activeReplyId === parent.id && (
-                        <div className="vsdv-reply-box">
-                          <textarea
-                            className="vsdv-auto-resize-textarea"
-                            maxLength={150}
-                            wrap="soft"
-                            value={replyContent}
-                            onChange={(e) => {
-                              setReplyContent(e.target.value);
-                              handleAutoResize(e);
-                            }}
-                            placeholder="Phản hồi (tối đa 150 ký tự)..."
-                          />
-                          <button
-                            onClick={() => handleReplySubmit(parent.id)}
-                            className="vsdv-reply-box__send"
-                          >
-                            Gửi
-                          </button>
-                          <button
-                            onClick={() => setActiveReplyId(null)}
-                            className="vsdv-reply-box__cancel"
-                          >
-                            Hủy
-                          </button>
-                        </div>
-                      )}
-
-                      {parent.replies?.length > 0 && (
-                        <div className="vsdv-replies">
-                          <button
-                            onClick={() => toggleReplies(parent.id)}
-                            className="vsdv-comment-thread__toggle"
-                          >
-                            {expandedThreads[parent.id]
-                              ? "Ẩn phản hồi"
-                              : `Xem ${parent.replies.length} phản hồi`}
-                          </button>
-
-                          {expandedThreads[parent.id] &&
-                            parent.replies.map((reply) => (
-                              <div key={reply.id} className="vsdv-comment-item vsdv-comment-item--reply">
-                                <img
-                                  src={reply.avatarUrl || defaultAvatar}
-                                  className="vsdv-comment-item__avatar"
-                                  onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
-                                  style={{ cursor: "pointer" }}
-                                />
-                                <div className="vsdv-comment-item__body">
-                                  <div className="vsdv-comment-item__name">@{reply.userName}</div>
-                                  <div className="vsdv-comment-item__replying">↳ @{parent.userName}</div>
-                                  <div className="vsdv-comment-item__text">{reply.content}</div>
-                                  {reply.userId === currentUserId && (
-                                    <div className="vsdv-comment-item__menu-wrapper">
-                                      <button
-                                        className="vsdv-comment-item__menu-btn"
-                                        onClick={() =>
-                                          setVisibleMenuId(visibleMenuId === reply.id ? null : reply.id)
-                                        }
-                                      >
-                                        ⋯
-                                      </button>
-                                      {visibleMenuId === reply.id && (
-                                        <div className="vsdv-comment-item__menu-dropdown">
-                                          <button
-                                            className="vsdv-comment-item__menu-option"
-                                            onClick={() => {
-                                              handleDeleteComment(reply.id);
-                                              setVisibleMenuId(null);
-                                            }}
-                                          >
-                                            🗑 Xoá bình luận
-                                          </button>
-                                          <button
-                                            className="vsdv-comment-item__menu-option"
-                                            onClick={() => setVisibleMenuId(null)}
-                                          >
-                                            ❌ Đóng
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
+                                }}
+                                placeholder="Trả lời..."
+                                className="lvv-reply-input textarea"
+                                rows={1}
+                                ref={(el) => {
+                                  if (el) {
+                                    el.style.height = "auto";
+                                    el.style.height = el.scrollHeight + "px";
+                                  }
+                                }}
+                              />
+                              <div className="lvv-reply-footer">
+                                <div className="lvv-reply-actions">
+                                  <button
+                                    onClick={() => handleReplySubmit(reply.id, replyContentMap[reply.id])}
+                                    className="lvv-reply-submit-btn"
+                                    disabled={!replyContentMap[reply.id]?.trim()}
+                                  >Gửi</button>
+                                  <button
+                                    className="lvv-reply-cancel-btn"
+                                    onClick={() => {
+                                      setReplyContentMap((prev) => ({ ...prev, [reply.id]: "" }));
+                                      setActiveReplyMap((prev) => ({ ...prev, [reply.id]: false }));
+                                    }}
+                                  >X</button>
                                 </div>
                               </div>
-                            ))}
+                            </div>
+                            {replyContentMap[reply.id]?.length >= 30 && (
+                              <div className="lvv-char-count">{replyContentMap[reply.id].length}/150</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {/* Nút menu xóa cho reply */}
+                      {reply.userId === currentUserId && (
+                        <div className="lvv-menu-wrapper-child" style={{ position: 'absolute', right: 0, top: 0 }}>
+                          <button
+                            className="lvv-menu-btn"
+                            onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
+                          >⋯</button>
+                          {isReplyMenuOpen && (
+                            <div className="lvv-popup-menu">
+                              <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="vsdv-comment-input">
-                <textarea
-                  className="vsdv-auto-resize-textarea"
-                  maxLength={150}
-                  wrap="soft"
-                  value={newComment}
-                  onChange={(e) => {
-                    setNewComment(e.target.value);
-                    handleAutoResize(e);
-                  }}
-                  placeholder="Nhập bình luận (tối đa 150 ký tự)..."
-                />
-                <button onClick={handleSubmitComment} className="vsdv-comment-input__submit">
-                  GỬI
+                  </div>
+                );
+              })}
+              {/* Nút xem thêm/thu gọn nếu có nhiều hơn 1 reply */}
+              {flatReplies.length > 1 && (
+                <button
+                  className="lvv-replies-toggle-btn"
+                  style={{ marginLeft: -10, marginTop: 4, color: '#ffffffff', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 ,padding: '2px 8px',
+    width: 'auto'}}
+                  onClick={() => setExpandedRepliesMap(prev => ({ ...prev, [comment.id]: !isExpanded }))}
+                >
+                  {isExpanded ? `Thu gọn (${flatReplies.length})` : `Xem thêm ${flatReplies.length - 1} phản hồi`}
                 </button>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  // Thêm các chức năng nâng cao cho video search detail viewer
+  // 1. Chuyển video khi lăn chuột trên video (chỉ trong videoList truyền từ VideoSearchPage)
+  useEffect(() => {
+    const handleWheel = (e) => {
+      if (!videoList || videoList.length <= 1) return;
+      const videoArea = playerRef.current;
+      if (!videoArea) return;
+      const rect = videoArea.getBoundingClientRect();
+      const x = e.clientX, y = e.clientY;
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        if (Math.abs(e.deltaY) > 60) {
+          if (e.deltaY > 0 && currentIndex < videoList.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+          } else if (e.deltaY < 0 && currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+          }
+        }
+      }
+    };
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, [currentIndex, videoList]);
+
+  // 2. Double click vào video chỉ để tym (không bỏ tym), không ảnh hưởng dừng/phát
+  let clickTimeout = null;
+  let clickCount = 0;
+  const handleVideoClick = () => {
+    clickCount++;
+    if (clickCount === 1) {
+      clickTimeout = setTimeout(() => {
+        // Single click: toggle play/pause
+        if (playerRef.current) {
+          if (playerRef.current.paused) {
+            playerRef.current.play();
+          } else {
+            playerRef.current.pause();
+          }
+        }
+        clickCount = 0;
+      }, 250);
+    } else if (clickCount === 2) {
+      clearTimeout(clickTimeout);
+      // Double click: only like, never unlike
+      if (!isLiked) {
+        handleLike();
+        setShowHeartEffect(true);
+        setTimeout(() => setShowHeartEffect(false), 600);
+      } else {
+        setShowHeartEffect(true);
+        setTimeout(() => setShowHeartEffect(false), 600);
+      }
+      clickCount = 0;
+    }
+  };
+
+  // 3. Chỉnh âm lượng khi kéo slider
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+    if (playerRef.current) playerRef.current.volume = newVolume;
+    if (playerRef.current) playerRef.current.muted = newVolume === 0;
+  };
+
+  // UI rendering
+  if (!videoList || videoList.length === 0) {
+    return <div style={{color: '#fff', textAlign: 'center', padding: '40px'}}>Không có video nào để hiển thị.</div>;
+  }
+  if (!video) {
+    return <div style={{color: '#fff', textAlign: 'center', padding: '40px'}}>Không tìm thấy video phù hợp.</div>;
+  }
+  return (
+    <div className="lvv-container" onClick={() => setIsInteracted(true)}>
+      {/* Nút quay lại */}
+      <button className="lvv-back-btn" onClick={(e) => { e.stopPropagation(); navigate(-1); }}>
+        ←
+      </button>
+      {videoUrl ? (
+        <>
+          {/* Video nền blur */}
+          <video ref={bgPlayerRef} className="lvv-bg-blur" src={videoUrl} autoPlay loop muted playsInline />
+          {/* Nút âm lượng + thanh trượt */}
+          <div style={{ position: "fixed", bottom: 100, right: 16, zIndex: 100, display: 'flex', alignItems: 'center', gap: '12px', height: '40px' }}>
+            <button
+              className="lvv-volume-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMuted(!isMuted);
+                setVolume(isMuted ? 1 : volume);
+                if (playerRef.current) playerRef.current.muted = !isMuted;
+              }}
+              onMouseEnter={() => {
+                setShowVolumeSlider(true);
+                if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
+              }}
+              onMouseLeave={() => {
+                if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
+                volumeSliderTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 5000);
+              }}
+            >
+              {isMuted || volume === 0 ? <FaVolumeMute size={22} color="#fff" /> : <FaVolumeUp size={22} color="#fff" />}
+            </button>
+            {showVolumeSlider && (
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={handleVolumeChange}
+                className="lvv-volume-slider"
+                style={{ writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical', height: '120px', width: '18px', marginLeft: '10px', borderRadius: '8px', background: 'linear-gradient(180deg, #ff7a00 0%, #ff9500 100%)', accentColor: '#ff7a00' }}
+                onMouseEnter={() => {
+                  setShowVolumeSlider(true);
+                  if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
+                }}
+                onMouseLeave={() => {
+                  if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
+                  volumeSliderTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 5000);
+                }}
+              />
+            )}
+          </div>
+          {/* Video chính */}
+          <div className="lvv-video-wrapper" style={{ position: "relative" }}>
+            <video
+              ref={playerRef}
+              src={videoUrl}
+              autoPlay
+              loop
+              playsInline
+              muted={isMuted}
+              onPlay={() => {
+                setIsPlaying(true);
+                if (bgPlayerRef.current && bgPlayerRef.current.paused) {
+                  bgPlayerRef.current.play();
+                }
+              }}
+              onPause={() => {
+                setIsPlaying(false);
+                if (bgPlayerRef.current && !bgPlayerRef.current.paused) {
+                  bgPlayerRef.current.pause();
+                }
+              }}
+              style={{ width: "100%", height: "100%" }}
+              onClick={handleVideoClick}
+            />
+            {showHeartEffect && <FaHeart className="lvv-heart-effect" />}
+            {!isPlaying && (
+              <div className="lvv-play-icon" onClick={() => { if (playerRef.current) playerRef.current.play(); }}>
+                <FaPlay size={48} color="#fff" />
+              </div>
+            )}
+            <audio ref={audioRef} src="/audio/background-music.mp3" autoPlay loop muted={isMuted} style={{ display: "none" }} />
+          </div>
+        </>
+      ) : (
+        <p style={{ color: "#fff" }}>Không tìm thấy video</p>
+      )}
+      {/* OVERLAY */}
+      <div className="lvv-overlay">
+        {/* USER INFO */}
+        {!hideUserInfo && (
+          <div className="lvv-user-info-wrapper">
+            <div className="lvv-user-info">
+              <img src={video.nguoiDang.avatarUrl} alt="avatar" className="lvv-avatar" />
+              <div className="lvv-user-details">
+                <strong className="lvv-user-name">{video.nguoiDang.fullName}</strong>
+                <div className="lvv-location">{video.diaChi}, {video.quanHuyen}, {video.tinhThanh}</div>
+              </div>
+            </div>
+            <div className="lvv-video-info">
+              <h2 className="lvv-title">{video.tieuDe}</h2>
+              <p className={`lvv-description ${expanded ? "expanded" : ""}`}>{video.moTa}</p>
+              {video.moTa?.length > 120 && (
+                <button onClick={() => setExpanded((prev) => !prev)} className="lvv-read-more">{expanded ? "Thu gọn" : "Xem thêm"}</button>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Nút tym & comment */}
+        {!hideUserInfo && (
+          <div className="lvv-actions">
+            <button onClick={handleLike} className={`lvv-like-btn ${isLiked ? "liked" : ""}`}> 
+              <span className="icon-circle" ref={iconCircleRef}>
+                {isLiked && showHeartEffect && <div className="heart-pulse-circle" />}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill={isLiked ? "#ff2e63" : "#ccc"}>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+                      2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                      C13.09 3.81 14.76 3 16.5 3 
+                      19.58 3 22 5.42 22 8.5
+                      c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </span>
+              <span className="count">{soTym}</span>
+            </button>
+            <button onClick={() => setShowComments(!showComments)} className="lvv-comment-toggle-btn">
+              <svg width="24" height="24" fill="#FF7A00" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+              <span className="lvv-comment-count">{totalCommentCount}</span>
+            </button>
+          </div>
+        )}
+        {/* COMMENT SECTION */}
+        <div className={`lvv-comment-section ${hideUserInfo ? "pull-up" : ""}`}>
+          <div className="lvv-comments-title-header"><strong>Comments ({totalCommentCount})</strong></div>
+          <div ref={scrollRef} className="lvv-comment-scrollable" style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}>
+            {renderCommentsFlat(comments)}
+            {/* Ô nhập bình luận mới */}
+            <div className="lvv-comment-input-fixed">
+              <div className="lvv-comment-input-wrapper">
+                <div className="lvv-textarea-group">
+                  <textarea ref={mainCommentRef} value={newComment} onChange={(e) => { const text = e.target.value; if (text.length <= 150) setNewComment(text); }} placeholder="Nhập bình luận..." className="lvv-comment-input" rows={1} />
+                  {newComment.length > 50 && (<div className="lvv-char-counter">{newComment.length}/150</div>)}
+                </div>
+                <button onClick={submitComment} className="lvv-comment-submit-btn">Gửi</button>
               </div>
             </div>
           </div>

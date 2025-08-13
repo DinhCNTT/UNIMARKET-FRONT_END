@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +85,29 @@ import "react-toastify/dist/ReactToastify.css";
           onSuccess={handleGoogleLoginSuccess}
           onError={() => alert("Đăng nhập Google thất bại")}
           disabled={loading}
+          render={renderProps => (
+            <button
+              onClick={renderProps.onClick}
+              disabled={loading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#fff',
+                border: '1px solid #ddd',
+                borderRadius: 8,
+                width: 120,
+                height: 44,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+                padding: 0,
+                gap: 8
+              }}
+            >
+              <FcGoogle size={24} />
+              <span style={{ color: '#222', fontWeight: 500, fontSize: 15 }}>Google</span>
+            </button>
+          )}
         />
         {loading && <p>Đang xử lý đăng nhập...</p>}
       </div>

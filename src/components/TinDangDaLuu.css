@@ -1,21 +1,26 @@
-/* ===== TIN ĐĂNG ĐÃ LƯU - IMPROVED STYLES ===== */
+/* ===== TIN ĐĂNG ĐÃ LƯU - IMPROVED STYLES (Scaled 90%) ===== */
 /* Container */
 .Tin-dang-da-luu-container {
   min-height: 100vh;
-  margin-top: 85px;
-  padding: 20px;
-  background: linear-gradient(135deg, #fafafa, #f5f5f5);
+  margin: 76.5px auto 0; /* canh giữa ngang (85px * 0.9) */
+  padding: 18px; /* 20px * 0.9 */
+  width: 1341px; /* kích thước tối đa (1490px * 0.9) */
+  max-width: 100%; /* tự thu nhỏ khi màn hình nhỏ */
+  position: relative;
+  transform-origin: top center;
+  transition: transform 0.2s ease;
 }
 
 .Tin-dang-da-luu-wrapper {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 0 20px;
+  max-width: calc(100% - 360px); /* trừ 180px mỗi bên (200px * 0.9) */
+  margin-left: 180px; /* 200px * 0.9 */
+  margin-right: 180px; /* 200px * 0.9 */
+  padding: 0 18px; /* 20px * 0.9 */
 }
 
 /* Header */
 .Tin-dang-da-luu-header {
-  margin-bottom: 30px;
+  margin-bottom: 27px; /* 30px * 0.9 */
   text-align: center;
 }
 
@@ -23,13 +28,13 @@
 .Tin-dang-da-luu-main-title {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 15px;
-  margin-top: -5px;
+  gap: 13.5px; /* 15px * 0.9 */
+  margin-bottom: 13.5px; /* 15px * 0.9 */
+  margin-top: -4.5px; /* -5px * 0.9 */
 }
 
 .Tin-dang-da-luu-main-title h1 {
-  font-size: 22px;
+  font-size: 19.8px; /* 22px * 0.9 */
   color: #333;
   margin: 0;
   font-weight: 800;
@@ -40,59 +45,59 @@
 }
 
 .Tin-dang-da-luu-heart-icon {
-  font-size: 22px;
+  font-size: 19.8px; /* 22px * 0.9 */
   color: #ff0035;
   animation: Tin-dang-da-luu-heartbeat 2.3s infinite ease-in-out;
-  filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
+  filter: drop-shadow(0 0 9px rgba(231, 76, 60, 0.5)); /* 10px * 0.9 */
 }
 
 @keyframes Tin-dang-da-luu-heartbeat {
   0%, 100% { 
     transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
+    filter: drop-shadow(0 0 9px rgba(231, 76, 60, 0.5)); /* 10px * 0.9 */
   }
   25% { 
     transform: scale(1.3);
-    filter: drop-shadow(0 0 20px rgba(231, 76, 60, 0.8));
+    filter: drop-shadow(0 0 18px rgba(231, 76, 60, 0.8)); /* 20px * 0.9 */
   }
   50% { 
     transform: scale(1.1);
-    filter: drop-shadow(0 0 15px rgba(231, 76, 60, 0.6));
+    filter: drop-shadow(0 0 13.5px rgba(231, 76, 60, 0.6)); /* 15px * 0.9 */
   }
   75% { 
     transform: scale(1.4);
-    filter: drop-shadow(0 0 25px rgba(231, 76, 60, 0.9));
+    filter: drop-shadow(0 0 22.5px rgba(231, 76, 60, 0.9)); /* 25px * 0.9 */
   }
 }
 
 .Tin-dang-da-luu-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: -15px;
+  gap: 10.8px; /* 12px * 0.9 */
+  margin-bottom: -13.5px; /* -15px * 0.9 */
 }
 
 .Tin-dang-da-luu-title h2 {
-  font-size: 18px;
+  font-size: 16.2px; /* 18px * 0.9 */
   color: #555;
   margin: 0;
   font-weight: 600;
 }
 
 .Tin-dang-da-luu-icon {
-  font-size: 17px;
+  font-size: 15.3px; /* 17px * 0.9 */
   color: #ff9800;
-  filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3));
+  filter: drop-shadow(0 1.8px 3.6px rgba(255, 152, 0, 0.3)); /* 2px 4px * 0.9 */
 }
 
 .Tin-dang-da-luu-count {
   background: linear-gradient(135deg, #ff9800, #ff6f00);
   color: white;
-  font-size: 14px;
+  font-size: 12.6px; /* 14px * 0.9 */
   font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+  padding: 3.6px 10.8px; /* 4px 12px * 0.9 */
+  border-radius: 18px; /* 20px * 0.9 */
+  box-shadow: 0 1.8px 7.2px rgba(255, 152, 0, 0.3); /* 2px 8px * 0.9 */
 }
 
 /* Loading */
@@ -101,18 +106,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 360px; /* 400px * 0.9 */
   color: #666;
 }
 
 .Tin-dang-da-luu-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #ff9800;
+  width: 36px; /* 40px * 0.9 */
+  height: 36px; /* 40px * 0.9 */
+  border: 3.6px solid #f3f3f3; /* 4px * 0.9 */
+  border-top: 3.6px solid #ff9800; /* 4px * 0.9 */
   border-radius: 50%;
   animation: Tin-dang-da-luu-spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: 14.4px; /* 16px * 0.9 */
 }
 
 @keyframes Tin-dang-da-luu-spin {
@@ -123,46 +128,46 @@
 /* Empty State */
 .Tin-dang-da-luu-empty {
   text-align: center;
-  padding: 60px 20px;
+  padding: 54px 18px; /* 60px 20px * 0.9 */
   color: #666;
 }
 
 .Tin-dang-da-luu-empty-icon {
-  font-size: 64px;
+  font-size: 57.6px; /* 64px * 0.9 */
   color: #ddd;
-  margin-bottom: 20px;
+  margin-bottom: 18px; /* 20px * 0.9 */
 }
 
 .Tin-dang-da-luu-empty h3 {
-  font-size: 24px;
+  font-size: 21.6px; /* 24px * 0.9 */
   color: #333;
-  margin-bottom: 12px;
+  margin-bottom: 10.8px; /* 12px * 0.9 */
   font-weight: 600;
 }
 
 .Tin-dang-da-luu-empty p {
-  font-size: 16px;
-  margin-bottom: 24px;
+  font-size: 14.4px; /* 16px * 0.9 */
+  margin-bottom: 21.6px; /* 24px * 0.9 */
   line-height: 1.5;
 }
 
 .Tin-dang-da-luu-browse-btn {
-    background: linear-gradient(135deg, #ff9800, #ff6f00);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-    margin-top: 150px; /* Dịch xuống 16px */
+  background: linear-gradient(135deg, #ff9800, #ff6f00);
+  color: white;
+  border: none;
+  padding: 10.8px 21.6px; /* 12px 24px * 0.9 */
+  border-radius: 22.5px; /* 25px * 0.9 */
+  font-size: 14.4px; /* 16px * 0.9 */
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 3.6px 13.5px rgba(255, 152, 0, 0.3); /* 4px 15px * 0.9 */
+  margin-top: 135px; /* Dịch xuống 16px (150px * 0.9) */
 }
 
 .Tin-dang-da-luu-browse-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  transform: translateY(-1.8px); /* -2px * 0.9 */
+  box-shadow: 0 5.4px 18px rgba(255, 152, 0, 0.4); /* 6px 20px * 0.9 */
 }
 
 /* Content Container */
@@ -177,34 +182,35 @@
 /* Grid khi chưa có cuộn */
 .Tin-dang-da-luu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  padding: 10px 0;
+  grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); /* 240px * 0.9 */
+  gap: 14.4px; /* 16px * 0.9 */
+  padding: 9px 0; /* 10px * 0.9 */
   transition: all 0.3s ease;
 }
 
 /* Grid khi có cuộn */
 .Tin-dang-da-luu-grid.scrollable {
-  max-height: 90vh;
+  max-height: 70vh; /* Fixed height thay vì 81vh */
   overflow-y: auto;
-  padding-right: 10px;
+  padding-right: 9px; /* 10px * 0.9 */
   scrollbar-width: thin;
   scrollbar-color: #ff9800 transparent;
+  scroll-behavior: smooth; /* THÊM: smooth scrolling */
 }
 
 /* Custom Scrollbar */
 .Tin-dang-da-luu-grid.scrollable::-webkit-scrollbar {
-  width: 8px;
+  width: 7.2px; /* 8px * 0.9 */
 }
 
 .Tin-dang-da-luu-grid.scrollable::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  border-radius: 9px; /* 10px * 0.9 */
 }
 
 .Tin-dang-da-luu-grid.scrollable::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #ff9800, #ff6f00);
-  border-radius: 10px;
+  border-radius: 9px; /* 10px * 0.9 */
   transition: background 0.3s ease;
 }
 
@@ -216,23 +222,24 @@
 .Tin-dang-da-luu-toggle-container {
   display: flex;
   justify-content: flex-start;
-  padding: 0;
+  padding: 10px 0; /* THÊM padding top/bottom */
+  gap: 10px; /* THÊM gap giữa các nút */
 }
 
 .Tin-dang-da-luu-toggle-btn {
   background: linear-gradient(135deg, #ff9800, #ff6f00);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 7.2px 14.4px; /* 8px 16px * 0.9 */
+  border-radius: 18px; /* 20px * 0.9 */
+  font-size: 11.7px; /* 13px * 0.9 */
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5.4px; /* 6px * 0.9 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 10px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 1.8px 9px rgba(255, 152, 0, 0.3); /* 2px 10px * 0.9 */
   position: relative;
   overflow: hidden;
   min-width: auto;
@@ -251,8 +258,8 @@
 }
 
 .Tin-dang-da-luu-toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  transform: translateY(-1.8px); /* -2px * 0.9 */
+  box-shadow: 0 3.6px 13.5px rgba(255, 152, 0, 0.4); /* 4px 15px * 0.9 */
   background: linear-gradient(135deg, #ff6f00, #e65100);
 }
 
@@ -267,7 +274,7 @@
 .Tin-dang-da-luu-toggle-btn.collapse {
   background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
   color: #ff9800;
-  border: 2px solid #ff9800;
+  border: 1.8px solid #ff9800; /* 2px * 0.9 */
 }
 
 .Tin-dang-da-luu-toggle-btn.collapse:hover {
@@ -277,30 +284,30 @@
 }
 
 .Tin-dang-da-luu-toggle-btn svg {
-  font-size: 12px;
+  font-size: 10.8px; /* 12px * 0.9 */
   transition: transform 0.3s ease;
 }
 
 .Tin-dang-da-luu-toggle-btn:hover svg {
-  transform: translateY(-1px);
+  transform: translateY(-0.9px); /* -1px * 0.9 */
 }
 
 /* Card Styles */
 .Tin-dang-da-luu-card {
   position: relative;
   background: white;
-  border-radius: 16px;
+  border-radius: 14.4px; /* 16px * 0.9 */
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3.6px 18px rgba(0, 0, 0, 0.08); /* 4px 20px * 0.9 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: Tin-dang-da-luu-fadeInUp 0.6s ease-out forwards;
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(18px); /* 20px * 0.9 */
 }
 
 .Tin-dang-da-luu-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-7.2px); /* -8px * 0.9 */
+  box-shadow: 0 10.8px 36px rgba(0, 0, 0, 0.15); /* 12px 40px * 0.9 */
 }
 
 @keyframes Tin-dang-da-luu-fadeInUp {
@@ -313,37 +320,37 @@
 /* HOT Badge */
 .Tin-dang-da-luu-hot-badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 10.8px; /* 12px * 0.9 */
+  left: 10.8px; /* 12px * 0.9 */
   z-index: 10;
   background: linear-gradient(135deg, #ff4444, #ff6b35);
   color: white;
-  font-size: 12px;
+  font-size: 10.8px; /* 12px * 0.9 */
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 5.4px 10.8px; /* 6px 12px * 0.9 */
+  border-radius: 18px; /* 20px * 0.9 */
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 2px 12px rgba(255, 68, 68, 0.4);
+  gap: 3.6px; /* 4px * 0.9 */
+  box-shadow: 0 1.8px 10.8px rgba(255, 68, 68, 0.4); /* 2px 12px * 0.9 */
   animation: Tin-dang-da-luu-pulse 1.6s infinite ease-in-out;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.45px; /* 0.5px * 0.9 */
 }
 
 .Tin-dang-da-luu-fire-icon {
-  font-size: 14px;
-  filter: drop-shadow(0 0 4px #ff6b35);
+  font-size: 12.6px; /* 14px * 0.9 */
+  filter: drop-shadow(0 0 3.6px #ff6b35); /* 4px * 0.9 */
 }
 
 @keyframes Tin-dang-da-luu-pulse {
   0%, 100% { 
     transform: scale(1);
-    box-shadow: 0 2px 12px rgba(255, 68, 68, 0.4);
+    box-shadow: 0 1.8px 10.8px rgba(255, 68, 68, 0.4); /* 2px 12px * 0.9 */
     filter: brightness(1);
   }
   50% { 
     transform: scale(1.12);
-    box-shadow: 0 6px 30px rgba(255, 68, 68, 0.9);
+    box-shadow: 0 5.4px 27px rgba(255, 68, 68, 0.9); /* 6px 30px * 0.9 */
     filter: brightness(1.3);
   }
 }
@@ -351,33 +358,33 @@
 /* Remove Button */
 .Tin-dang-da-luu-remove-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 10.8px; /* 12px * 0.9 */
+  right: 10.8px; /* 12px * 0.9 */
   z-index: 10;
   background: rgba(255, 255, 255, 0.9);
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 32.4px; /* 36px * 0.9 */
+  height: 32.4px; /* 36px * 0.9 */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(9px); /* 10px * 0.9 */
+  box-shadow: 0 1.8px 10.8px rgba(0, 0, 0, 0.1); /* 2px 12px * 0.9 */
 }
 
 .Tin-dang-da-luu-remove-btn svg {
-  color: #ff0035;;
-  font-size: 16px;
+  color: #ff0035;
+  font-size: 14.4px; /* 16px * 0.9 */
   transition: all 0.3s ease;
 }
 
 .Tin-dang-da-luu-remove-btn:hover {
   background: rgba(231, 76, 60, 0.1);
   transform: scale(1.1);
-  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
+  box-shadow: 0 3.6px 18px rgba(231, 76, 60, 0.3); /* 4px 20px * 0.9 */
 }
 
 .Tin-dang-da-luu-remove-btn:hover svg {
@@ -396,7 +403,7 @@
 /* Image Container */
 .Tin-dang-da-luu-image-container {
   position: relative;
-  height: 160px;
+  height: 144px; /* 160px * 0.9 */
   overflow: hidden;
 }
 
@@ -416,7 +423,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 40px;
+  height: 36px; /* 40px * 0.9 */
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
   pointer-events: none;
 }
@@ -434,15 +441,15 @@
 
 /* Info Section */
 .Tin-dang-da-luu-info {
-  padding: 12px;
+  padding: 10.8px; /* 12px * 0.9 */
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5.4px; /* 6px * 0.9 */
 }
 
 .Tin-dang-da-luu-post-title {
-  font-size: 14px;
+  font-size: 12.6px; /* 14px * 0.9 */
   font-weight: 600;
   color: #333;
   margin: 0;
@@ -454,31 +461,31 @@
 }
 
 .Tin-dang-da-luu-price {
-  font-size: 16px;
+  font-size: 14.4px; /* 16px * 0.9 */
   font-weight: 700;
   color: #ff9800;
-  margin: 2px 0;
+  margin: 1.8px 0; /* 2px * 0.9 */
 }
 
 .Tin-dang-da-luu-location {
-  font-size: 12px;
+  font-size: 10.8px; /* 12px * 0.9 */
   color: #666;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3.6px; /* 4px * 0.9 */
 }
 
 /* Notification */
 .Tin-dang-da-luu-notification {
   position: fixed;
-  top: 100px;
-  right: 20px;
+  top: 90px; /* 100px * 0.9 */
+  right: 18px; /* 20px * 0.9 */
   z-index: 9999;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 10.8px 21.6px; /* 12px 24px * 0.9 */
+  border-radius: 7.2px; /* 8px * 0.9 */
   color: white;
   font-weight: 500;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3.6px 18px rgba(0, 0, 0, 0.2); /* 4px 20px * 0.9 */
   animation: Tin-dang-da-luu-slideIn 0.3s ease-out, Tin-dang-da-luu-slideOut 0.3s ease-in 2.7s;
 }
 
@@ -515,88 +522,88 @@
 /* Responsive Design */
 @media (max-width: 1200px) {
   .Tin-dang-da-luu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(198px, 1fr)); /* 220px * 0.9 */
+    gap: 12.6px; /* 14px * 0.9 */
   }
 }
 
 @media (max-width: 768px) {
   .Tin-dang-da-luu-wrapper {
-    padding: 0 15px;
+    padding: 0 13.5px; /* 15px * 0.9 */
   }
   
   .Tin-dang-da-luu-main-title h1 {
-    font-size: 26px;
+    font-size: 23.4px; /* 26px * 0.9 */
   }
   
   .Tin-dang-da-luu-title h2 {
-    font-size: 20px;
+    font-size: 18px; /* 20px * 0.9 */
   }
   
   .Tin-dang-da-luu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); /* 240px * 0.9 */
+    gap: 10.8px; /* 12px * 0.9 */
   }
   
   .Tin-dang-da-luu-grid.scrollable {
-    max-height: 60vh;
-    padding-right: 5px;
+    max-height: 54vh; /* 60vh * 0.9 */
+    padding-right: 4.5px; /* 5px * 0.9 */
   }
   
   .Tin-dang-da-luu-card {
-    border-radius: 12px;
+    border-radius: 10.8px; /* 12px * 0.9 */
   }
   
   .Tin-dang-da-luu-image-container {
-    height: 140px;
+    height: 126px; /* 140px * 0.9 */
   }
 
   .Tin-dang-da-luu-toggle-btn {
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 5.4px 10.8px; /* 6px 12px * 0.9 */
+    font-size: 10.8px; /* 12px * 0.9 */
   }
 
   .Tin-dang-da-luu-toggle-btn svg {
-    font-size: 10px;
+    font-size: 9px; /* 10px * 0.9 */
   }
 }
 
 @media (max-width: 480px) {
   .Tin-dang-da-luu-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10.8px; /* 12px * 0.9 */
   }
   
   .Tin-dang-da-luu-main-title {
     flex-direction: column;
-    gap: 10px;
+    gap: 9px; /* 10px * 0.9 */
   }
   
   .Tin-dang-da-luu-main-title h1 {
-    font-size: 22px;
+    font-size: 19.8px; /* 22px * 0.9 */
   }
   
   .Tin-dang-da-luu-heart-icon {
-    font-size: 24px;
+    font-size: 21.6px; /* 24px * 0.9 */
   }
   
   .Tin-dang-da-luu-title {
     flex-direction: column;
-    gap: 8px;
+    gap: 7.2px; /* 8px * 0.9 */
   }
   
   .Tin-dang-da-luu-notification {
-    right: 10px;
-    left: 10px;
-    font-size: 14px;
+    right: 9px; /* 10px * 0.9 */
+    left: 9px; /* 10px * 0.9 */
+    font-size: 12.6px; /* 14px * 0.9 */
   }
   
   .Tin-dang-da-luu-toggle-btn {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 5.4px 9px; /* 6px 10px * 0.9 */
+    font-size: 9.9px; /* 11px * 0.9 */
   }
 
   .Tin-dang-da-luu-toggle-btn svg {
-    font-size: 9px;
+    font-size: 8.1px; /* 9px * 0.9 */
   }
 }

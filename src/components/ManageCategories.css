@@ -1,35 +1,35 @@
-.category-page-container {
+.ManageCategoriesPageContainer {
     padding: 20px;
     width: calc(90vw - 190px);
     margin-left: 250px;
 }
 
-.category-page-container h2 {
+.ManageCategoriesPageContainer h2 {
     text-align: center;
     margin-bottom: 20px;
     color: #333;
 }
 
-.category-table {
+.ManageCategoriesTable {
     width: 100%;
     border-collapse: collapse;
     background: white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.category-table th, 
-.category-table td {
+.ManageCategoriesTable th, 
+.ManageCategoriesTable td {
     border: 1px solid #ddd;
     padding: 12px;
     text-align: center;
 }
 
-.category-table th {
+.ManageCategoriesTable th {
     background-color: #f5f5f5;
     font-weight: 600;
 }
 
-.edit-input, select {
+.ManageCategoriesEditInput, .ManageCategoriesSelect {
     padding: 8px;
     width: 100%;
     border: 1px solid #ddd;
@@ -37,7 +37,7 @@
     text-align: center;
 }
 
-button {
+.ManageCategoriesPageContainer button {
     padding: 8px 12px;
     margin: 2px;
     border: none;
@@ -47,27 +47,27 @@ button {
     transition: all 0.2s;
 }
 
-.edit-btn {
+.ManageCategoriesEditBtn {
     background-color: #ffc107;
     color: black;
 }
 
-.delete-btn {
+.ManageCategoriesDeleteBtn {
     background-color: #dc3545;
     color: white;
 }
 
-.save-btn {
+.ManageCategoriesSaveBtn {
     background-color: #28a745;
     color: white;
 }
 
-.cancel-btn {
+.ManageCategoriesCancelBtn {
     background-color: #6c757d;
     color: white;
 }
 
-button:hover {
+.ManageCategoriesPageContainer button:hover {
     opacity: 0.9;
     transform: translateY(-1px);
 }

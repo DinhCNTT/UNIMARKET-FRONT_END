@@ -222,84 +222,68 @@ const TopNavbar = () => {
   };
 
   const handlePostClick = async () => {
-    if (!user) {
-      toast.error("⚠️ Vui lòng đăng nhập để đăng tin.", {
-        position: "top-center",
-      });
-      navigate("/login");
+  if (!user) {
+    toast.error("⚠️ Vui lòng đăng nhập để đăng tin.", {
+      position: "top-center",
+    });
+    navigate("/login");
+    return;
+  }
+
+  const loadingToast = toast.loading("🔍 Đang kiểm tra thông tin tài khoản...", {
+    position: "top-center",
+  });
+
+  try {
+    const validation = await checkUserInfo();
+
+    toast.dismiss(loadingToast);
+
+    if (!validation.valid) {
+      if (validation.message.includes("hết hạn")) {
+        toast.error(`🔒 ${validation.message}`, {
+          position: "top-center",
+          duration: 4000,
+          className: "toast-session-expired"
+        });
+        logout();
+        navigate("/login");
+        return;
+      } else if (validation.message.includes("xác minh email")) {
+        toast.error(`📧 ${validation.message}`, {
+          position: "top-center",
+          duration: 3500,
+          className: "topnnavbar-toast-verify-email"
+        });
+      } else if (validation.message.includes("số điện thoại")) {
+        toast.error(`📱 ${validation.message}`, {
+          position: "top-center",
+          duration: 3500,
+          className: "topnnavbar-toast-update-phone"
+        });
+      } else {
+        toast.error(`❌ ${validation.message}`, {
+          position: "top-center",
+          duration: 3500,
+        });
+      }
+      
+      navigate("/cai-dat-tai-khoan");
       return;
     }
 
-    const loadingToast = toast.loading("🔍 Đang kiểm tra thông tin tài khoản...", {
+    // ✅ Nếu hợp lệ thì chuyển trang, KHÔNG hiển thị thông báo thành công
+    navigate("/dang-tin");
+    
+  } catch (error) {
+    toast.dismiss(loadingToast);
+    console.error("❌ Unexpected error in handlePostClick:", error);
+    toast.error("❌ Có lỗi xảy ra. Vui lòng thử lại.", {
       position: "top-center",
     });
+  }
+};
 
-    try {
-      const validation = await checkUserInfo();
-
-      toast.dismiss(loadingToast);
-
-      if (!validation.valid) {
-        if (validation.message.includes("hết hạn")) {
-          toast.error(`🔒 ${validation.message}`, {
-            position: "top-center",
-            duration: 4000,
-            className: "toast-session-expired"
-          });
-          logout();
-          navigate("/login");
-          return;
-        } else if (validation.message.includes("xác minh email")) {
-          toast.error(`📧 ${validation.message}`, {
-            position: "top-center",
-            duration: 3500,
-            className: "topnnavbar-toast-verify-email"
-          });
-        } else if (validation.message.includes("số điện thoại")) {
-          toast.error(`📱 ${validation.message}`, {
-            position: "top-center",
-            duration: 3500,
-            className: "topnnavbar-toast-update-phone"
-          });
-        } else {
-          toast.error(`❌ ${validation.message}`, {
-            position: "top-center",
-            duration: 3500,
-          });
-        }
-        
-        navigate("/cai-dat-tai-khoan");
-        return;
-      }
-
-     toast.success("Thông tin hợp lệ! Chuyển đến trang đăng tin...", {
-  position: "top-center",
-  duration: 2500,
-  style: {
-    background: "linear-gradient(135deg, #16a34a, #15803d)", // xanh lá đậm
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: "14px",         // 🔹 Chữ nhỏ hơn
-    borderRadius: "12px",
-    padding: "12px 18px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-    letterSpacing: "0.3px",
-    whiteSpace: "nowrap",     // 🔹 Không cho xuống dòng
-    maxWidth: "none",         // 🔹 Không giới hạn chiều rộng
-  },
-});
-
-      
-      navigate("/dang-tin");
-      
-    } catch (error) {
-      toast.dismiss(loadingToast);
-      console.error("❌ Unexpected error in handlePostClick:", error);
-      toast.error("❌ Có lỗi xảy ra. Vui lòng thử lại.", {
-        position: "top-center",
-      });
-    }
-  };
 
   return (
     <header className="top-navbar">

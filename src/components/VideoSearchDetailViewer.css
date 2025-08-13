@@ -1,3 +1,21 @@
+/* Nút xoá bình luận trong popup menu */
+.lvv-delete-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  color: #ff2e63;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lvv-delete-btn:hover {
+  background-color: #ffeaea;
+  color: #d9002b;
+}
 .vsdv-main-content {
   display: flex;
   width: 1100px;
@@ -418,4 +436,551 @@ html, body {
   box-sizing: border-box;
   font-family: inherit;
   word-wrap: break-word;
+}
+/* --- CSS đẹp như LikedVideoDetailViewer --- */
+.lvv-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lvv-bg-blur {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vw;
+  max-width: none;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  filter: blur(25px) brightness(0.35);
+  z-index: 0;
+  border-radius: 16px;
+}
+
+.lvv-video-wrapper {
+  position: relative;
+  max-width: 100%;
+  max-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transform: translateX(-250px);
+}
+
+.lvv-video-wrapper video {
+  max-width: 100%;
+  max-height: 100vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.lvv-video-wrapper audio {
+  display: none;
+}
+
+.lvv-overlay {
+  position: fixed;
+  top: 50%;
+  right: 0px;
+  transform: translateY(-50%);
+  background-color: #1c1c1e;
+  border-radius: 20px;
+  padding: 20px;
+  width: 460px;
+  height: 800px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  z-index: 10;
+  overflow: hidden;
+  padding-top: 130px;
+  padding-bottom: 20px;
+}
+
+.lvv-user-info-wrapper {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 16px;
+  padding: 12px 16px;
+  color: #fff;
+  width: 95%;
+  max-width: 800px;
+  margin: 0 auto 12px;
+  transition: all 0.3s ease;
+}
+.lvv-user-info-wrapper.hidden {
+  opacity: 0;
+  transform: translateY(-16px);
+  pointer-events: none;
+}
+.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pull-up {
+  bottom: 18vh;
+  transition: bottom 0.3s ease;
+}
+
+.lvv-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lvv-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.lvv-user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.lvv-user-name {
+  font-weight: bold;
+  font-size: 16px;
+  color: #fff;
+}
+
+.lvv-location {
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.lvv-video-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.lvv-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  margin-top: -4px;
+  color: #ffffff;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.3px;
+}
+
+.lvv-description {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: -7px;
+  word-wrap: break-word;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.lvv-description.expanded {
+  display: block;
+  overflow: visible;
+  margin-top: -8px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+}
+
+.lvv-read-more {
+  display: inline-block;
+  color: #aaa;
+  background-color: transparent;
+  border: none;
+  padding: 2px 4px;
+  margin-top: 4px;
+  margin-left: 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  max-width: fit-content;
+}
+.lvv-read-more:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+
+.lvv-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  margin-top: 8px;
+}
+.lvv-actions button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.4,0,.2,1);
+}
+.lvv-actions button:active {
+  transform: scale(1.08);
+}
+.icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #232323;
+  border: 1.5px solid #ffd98e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  margin-right: 6px;
+  position: relative;
+  transition: background 0.2s, border 0.2s;
+}
+.lvv-like-btn.liked .icon-circle {
+  background: #ffe9ef;
+  border-color: #ff2e63;
+}
+.lvv-like-btn .icon-circle svg {
+  fill: #ccc;
+  transition: fill 0.2s;
+}
+.lvv-like-btn.liked .icon-circle svg {
+  fill: #ff2e63;
+}
+.lvv-like-btn .count {
+  font-weight: bold;
+  color: #ff2e63;
+  margin-left: 2px;
+  font-size: 15px;
+}
+.lvv-comment-toggle-btn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  padding: 0;
+}
+.lvv-comment-toggle-btn svg {
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  fill: #FF7A00;
+}
+.lvv-comment-count {
+  font-weight: bold;
+  color: #FF7A00;
+  font-size: 15px;
+}
+.lvv-heart-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 90px;
+  color: #ff0033;
+  transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  opacity: 0;
+  animation: popHeart 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: 999;
+  filter: drop-shadow(0 0 12px rgba(255, 46, 99, 0.9)) brightness(1.3);
+  transition: all 0.3s ease-in-out;
+  will-change: transform, opacity;
+}
+@keyframes popHeart {
+  0% {}
+  15% {}
+  30% {}
+  45% {}
+  60% {}
+  100% {}
+}
+.heart-pulse-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 46, 99, 0.3), transparent);
+  border: 2px solid rgba(255, 46, 99, 0.7);
+  box-shadow: 0 0 40px rgba(255, 46, 99, 0.2);
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0.8;
+  animation: pulseCircle 1s ease-out forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes pulseCircle {
+  0% {}
+  50% {}
+  100% {}
+}
+.lvv-comment-section {
+  bottom: 12vh;
+  left: 0;
+  width: 90vw;
+  background: #1c1c1e;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  transition: bottom 0.3s ease, height 0.3s ease;
+}
+.lvv-comment-section.pull-up {
+  bottom: 30vh;
+  height: 85vh;
+}
+.lvv-comments-title-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 16px;
+  background-color: #1c1c1e;
+  color: white;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+.lvv-comment-scrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 12px 16px 0;
+  box-sizing: border-box;
+  max-height: 100%;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  transition: padding-top 0.3s ease;
+}
+.lvv-comment-bottom-spacer {
+  height: 60px;
+  flex-shrink: 0;
+}
+.lvv-comment-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.lvv-comment-scrollable::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+.lvv-comment-item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #1c1c1e;
+  margin-bottom: 6px;
+  min-height: unset;
+  position: relative;
+}
+.lvv-comment-user-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  position: relative;
+}
+.lvv-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.lvv-avatar.small {
+  width: 24px;
+  height: 24px;
+}
+.lvv-comment-content {
+  font-size: 15px;
+  font-weight: 400;
+  margin-top: 6px;
+  color: #f1f1f1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 30ch;
+  line-height: 1.6;
+}
+.lvv-comment-meta {}
+.lvv-reply-toggle-btn {}
+.lvv-reply-toggle-btn:focus,
+.lvv-reply-toggle-btn:active {}
+.lvv-reply-toggle-btn:hover {}
+.lvv-reply-input-wrapper {}
+.lvv-replies {}
+.lvv-reply-item {}
+.lvv-reply-user-header {}
+.lvv-reply-content {}
+.lvv-reply-meta {}
+.lvv-reply-input {}
+.lvv-reply-cancel-btn {}
+.lvv-reply-cancel-btn:hover {}
+.lvv-reply-close-btn:hover {}
+.lvv-reply-footer {}
+.lvv-char-count {}
+.lvv-reply-input-inline {}
+.lvv-reply-input-inline input {}
+.lvv-reply-submit-btn {}
+.lvv-reply-submit-btn:hover {}
+.lvv-reply-submit-btn:disabled {}
+.lvv-reply-actions {}
+.lvv-comment-input-fixed {}
+.lvv-comment-input {}
+.lvv-comment-input::-webkit-scrollbar {}
+.lvv-comment-input::-webkit-scrollbar-track {}
+.lvv-comment-input::-webkit-scrollbar-thumb {}
+.lvv-comment-input::-webkit-scrollbar-thumb:hover {}
+.lvv-comment-input-wrapper {}
+.lvv-char-counter {}
+.lvv-textarea-group {}
+.lvv-comment-submit-btn {}
+.lvv-comment-submit-btn:hover {}
+.lvv-comment-submit-btn:active {}
+.lvv-comment-toggle-btn {}
+.lvv-comment-toggle-btn:hover {}
+.lvv-comment-count {}
+.lvv-back-btn {}
+.lvv-back-btn:hover {}
+.lvv-menu-wrapper-parent {}
+.lvv-menu-wrapper-child {}
+.lvv-comment-item:hover .lvv-menu-wrapper-parent {}
+.lvv-comment-item:hover .lvv-menu-wrapper-child{}
+.lvv-menu-btn {}
+.lvv-menu-btn:hover {}
+.lvv-menu-btn:focus {}
+/* Popup menu xóa bình luận */
+.lvv-popup-menu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 100;
+  min-width: 120px;
+  padding: 6px 0;
+}
+.lvv-delete-btn {
+  width: 100%;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  color: #ff2e63;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.lvv-delete-btn:hover {
+  background: #ffeaea;
+  color: #d9002c;
+}
+.lvv-comment-main {}
+.lvv-username {}
+.lvv-comment-header {}
+.lvv-reply-to {}
+/* Reply box ở cuối comment, giống LikedVideoDetailViewer */
+.lvv-reply-input-inline {
+  margin-top: 8px;
+  margin-bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lvv-reply-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lvv-reply-input {
+  width: 100%;
+  min-height: 36px;
+  max-height: 120px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
+  background: #fff;
+  color: #222;
+  box-sizing: border-box;
+}
+.lvv-reply-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.lvv-reply-actions {
+  display: flex;
+  gap: 8px;
+}
+.lvv-reply-submit-btn {
+  padding: 6px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ff2e63;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.lvv-reply-submit-btn:hover {
+  background-color: #d9002c;
+}
+.lvv-reply-submit-btn:disabled {
+  background-color: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
+.lvv-reply-cancel-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 20px;
+  background-color: #eee;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.lvv-reply-cancel-btn:hover {
+  background-color: #ccc;
+  color: #111;
 }

@@ -89,11 +89,11 @@ const ManageCategories = () => {
     };
 
     return (
-        <div className="category-page-container">
+        <div className="ManageCategoriesPageContainer">
             <h2>Quản Lý Danh Mục Con</h2>
             <ToastContainer autoClose={3000} />
 
-            <table className="category-table">
+            <table className="ManageCategoriesTable">
                 <thead>
                     <tr>
                         <th>STT</th>
@@ -113,7 +113,7 @@ const ManageCategories = () => {
                                             type="text"
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
-                                            className="edit-input"
+                                            className="ManageCategoriesEditInput"
                                         />
                                     ) : (
                                         cat.tenDanhMuc
@@ -124,6 +124,7 @@ const ManageCategories = () => {
                                         <select
                                             value={parentId}
                                             onChange={(e) => setParentId(parseInt(e.target.value))}
+                                            className="ManageCategoriesSelect"
                                         >
                                             {parentCategories.length > 0 ? (
                                                 parentCategories.map((parent) => (
@@ -142,19 +143,19 @@ const ManageCategories = () => {
                                 <td>
                                     {editingCategory?.maDanhMuc === cat.maDanhMuc ? (
                                         <>
-                                            <button className="save-btn" onClick={handleUpdate}>
+                                            <button className="ManageCategoriesSaveBtn" onClick={handleUpdate}>
                                                 💾 Lưu
                                             </button>
-                                            <button className="cancel-btn" onClick={() => setEditingCategory(null)}>
+                                            <button className="ManageCategoriesCancelBtn" onClick={() => setEditingCategory(null)}>
                                                 ❌ Hủy
                                             </button>
                                         </>
                                     ) : (
                                         <>
-                                            <button className="edit-btn" onClick={() => handleEdit(cat)}>
+                                            <button className="ManageCategoriesEditBtn" onClick={() => handleEdit(cat)}>
                                                 ✏️ Sửa
                                             </button>
-                                            <button className="delete-btn" onClick={() => handleDelete(cat.maDanhMuc)}>
+                                            <button className="ManageCategoriesDeleteBtn" onClick={() => handleDelete(cat.maDanhMuc)}>
                                                 🗑️ Xóa
                                             </button>
                                         </>

@@ -63,14 +63,11 @@
 }
 
 .post-tindang-group input[type="checkbox"] {
-  transform: scale(1.5);
+  transform: scale(1.5) translateY(13px) translateX(-70px);
   margin-right: 10px;
-  margin-top: 5px;
+  accent-color: #ffa500; /* đổi màu khi tick */
 }
 
-button:hover {
-  background-color: #e68900;
-}
 
 .post-tindang-preview h3 {
   font-size: 1.5rem;
@@ -178,9 +175,8 @@ button:hover {
 .post-tindang-group-image-video {
   left: -320px;
   position: relative;
-  top: -950px;
+  top: -850px;
   width: 400px;
-  background: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -214,12 +210,10 @@ button:hover {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  border: 1px solid transparent; /* viền trong suốt */
   margin: 20px auto;
-  width: 400x;
   max-width: 600px;
 }
-
 .media-title {
   font-weight: 600;
   font-size: 16px;
@@ -310,7 +304,9 @@ button:hover {
   color: #007bff;
   gap: 5px;
 }
-
+.info-icon{
+   font-style: normal; /* bỏ in nghiêng */
+}
 .media-icon-container {
   margin: 10px 0;
 }

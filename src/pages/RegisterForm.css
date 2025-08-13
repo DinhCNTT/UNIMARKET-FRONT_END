@@ -1,146 +1,268 @@
-/* Định dạng container chính */
-.register-container {
-    display: flex;
-    justify-content: center; /* Căn giữa theo chiều ngang */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    height: 100vh; /* Chiều cao chiếm toàn bộ màn hình */
-    width: 100vw; /* Đảm bảo chiếm toàn bộ chiều rộng */
-    background-color: white !important; /* Chuyển sang nền trắng */
-}
+/* RegisterForm.css - CSS với tiền tố rf- */
 
-/* Định dạng form */
-form {
+.rf-register-container {
     display: flex;
-    flex-direction: column; /* Xếp các input theo chiều dọc */
+    justify-content: center;
     align-items: center;
-    background: white !important; /* Chuyển nền sang màu trắng */
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Giảm độ sáng của bóng */
-    width: 100%;
-    max-width: 400px; /* Giới hạn chiều rộng form */
+    min-height: 100vh;
+    background-color: #f5f5f5 !important;
+    background-image: url('https://static.chotot.com/storage/marketplace/login-background.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
-/* Ô nhập liệu */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ccc; /* Làm viền sáng hơn */
-    border-radius: 5px;
-    background: white !important; /* Chuyển nền sang màu trắng */
-    color: black !important; /* Chuyển chữ thành màu đen để dễ nhìn */
-    font-size: 16px;
-}
-/* Tiêu đề "Đăng ký tài khoản" */
-.register-title {
-    color: black !important; /* Chuyển màu chữ thành đen */
+
+.rf-register-box {
+    background: #fff;
+    padding: 40px 32px 32px 32px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.12), 0 1.5px 6px 0 rgba(0,0,0,0.08);
+    width: 50vw;
+    min-width: 340px;
+    max-width: 600px;
     text-align: center;
-    margin-bottom: 20px;
+    border: 1px solid #ececec;
+    margin: 0 auto;
 }
 
+.rf-register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+}
 
-/* Nút đăng ký */
-button {
+.rf-register-input {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 0;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 7px;
+    background: #fff !important;
+    color: #222 !important;
+    font-size: 16px;
+    transition: border 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.rf-register-input:focus {
+    border: 1.5px solid #ff9800;
+    box-shadow: 0 0 0 2px #ffe0b2;
+}
+
+.rf-register-input.rf-error {
+    border: 1.5px solid #e53935;
+    background: #fff5f5 !important;
+}
+
+.rf-register-title {
+    color: #222 !important;
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.rf-register-button {
     width: 100%;
     padding: 12px;
     background-color: #ff9800;
-    color: white;
+    color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 7px;
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
     font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255,152,0,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
-button:hover {
+.rf-register-button:hover {
     background-color: #e68900;
+    box-shadow: 0 4px 16px rgba(255,152,0,0.13);
 }
 
-/* Điều khoản */
-.terms {
-    font-size: 12px;
-    color: #aaa;
+.rf-register-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.rf-register-terms {
+    font-size: 12.5px;
+    color: #888;
     text-align: center;
     margin-top: 5px;
     margin-bottom: 10px;
-}
-
-.terms a {
-    color: orange;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.terms a:hover {
-    text-decoration: underline;
-}
-
-/* Hoặc đăng nhập bằng mạng xã hội */
-.or {
-    text-align: center;
-    color: white;
-    font-size: 14px;
-    margin: 10px 0;
-}
-
-/* Nút đăng nhập mạng xã hội */
-.social-login {
     display: flex;
-    justify-content: space-between;
-    width: 100%;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.social-login button {
-    flex: 1;
-    padding: 8px;
-    margin: 5px;
+.rf-register-terms a {
+    color: #ff9800;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.rf-register-terms a:hover {
+    color: #e68900;
+}
+
+.rf-register-terms input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #ff9800;
+    width: 18px;
+    height: 18px;
+}
+
+.rf-register-terms label {
+    font-weight: 400;
+    color: #888;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.rf-social-login {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin: 18px 0 10px 0;
+}
+
+.rf-social-login button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     border: none;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: #f5f5f5;
+    color: #555;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    margin: 0;
+    padding: 0;
     cursor: pointer;
 }
 
-/* Màu nền của các nút mạng xã hội */
-.facebook {
-    background-color: #3b5998;
+.rf-social-login button.rf-facebook {
+    background: #1877F2;
+    color: #fff;
 }
 
-.google {
-    background-color: #db4437;
+.rf-social-login button.rf-facebook:hover {
+    background: #1456b8;
 }
 
-.apple {
-    background-color: #000;
+.rf-social-login button.rf-google {
+    background: #fff;
+    color: #db4437;
+    border: 1.5px solid #eee;
 }
 
-/* Hover hiệu ứng */
-.facebook:hover {
-    background-color: #2d4373;
+.rf-social-login button.rf-google:hover {
+    background: #f5f5f5;
+    color: #a42820;
 }
 
-.google:hover {
-    background-color: #a42820;
+.rf-social-login button.rf-apple {
+    background: #222;
+    color: #fff;
 }
 
-.apple:hover {
-    background-color: #333;
+.rf-social-login button.rf-apple:hover {
+    background: #444;
 }
 
-/* Link chuyển sang đăng nhập */
-.login-link {
+.rf-login-link {
     text-align: center;
-    color: white;
-    margin-top: 10px;
+    color: #111 !important;
+    margin-top: 18px;
+    font-size: 14px;
 }
 
-.login-link a {
-    color: orange;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.login-link a:hover {
+.rf-login-link a {
+    color: #ff9800;
     text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.rf-login-link a:hover {
+    color: #e68900;
+}
+
+/* Password criteria styles */
+.rf-password-criteria {
+    position: absolute;
+    left: 0;
+    top: 110%;
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 12px 16px;
+    z-index: 10;
+    font-size: 14px;
+    text-align: left;
+}
+
+.rf-password-criteria-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+.rf-password-criteria-list {
+    padding-left: 18px;
+    margin: 0;
+}
+
+.rf-password-criteria-item {
+    list-style: disc;
+    margin-bottom: 2px;
+}
+
+.rf-password-criteria-item.rf-valid {
+    color: #388e3c;
+    font-weight: 500;
+}
+
+.rf-password-criteria-item.rf-invalid {
+    color: #d32f2f;
+    font-weight: 400;
+}
+
+/* Password error styles */
+.rf-password-error {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    text-align: left;
+    width: 100%;
+}
+
+.rf-password-error-list {
+    padding-left: 18px;
+    margin: 0;
+}
+
+.rf-password-error-item {
+    color: #d32f2f;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+/* Password input wrapper */
+.rf-password-wrapper {
+    position: relative;
+    width: 100%;
 }

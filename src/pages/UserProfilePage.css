@@ -1,4 +1,4 @@
-
+/* Loading State */
 .userprofilepage-modern-loading {
   display: flex;
   flex-direction: column;
@@ -23,89 +23,110 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Main Container */
+/* Main Container - FIX RESPONSIVE */
 .userprofilepage-modern-profile-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  padding: 32px;
-  width: 1450px;             /* ✅ Chiều ngang cố định */
-  height: 730px;             /* ✅ Chiều cao cố định */
-  overflow-y: auto;          /* ✅ Cuộn nếu nội dung vượt chiều cao */
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  margin-top: 60px;
-
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Profile Card */
 .userprofilepage-modern-profile-card {
-  width: 100%;
-  max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
   background: #ffffff;
   border-radius: 20px;
-  padding: 32px 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  position: sticky;
-  top: 32px;
-  height: fit-content;
+  padding: 30px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* nhẹ hơn */
   border: 1px solid #f0f0f0;
+  width: 100%;
+  max-width: 1020px;
+  margin: 30px auto 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.userprofilepage-modern-profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); /* đậm hơn khi hover */
 }
 
 .userprofilepage-profile-avatar-wrapper {
+  flex-shrink: 0;
+  width: 160px; /* tăng kích thước ngang */
+  height: 160px; /* tăng kích thước cao */
   position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
+  top: -20px; /* dịch lên trên 10px */
 }
 
 .userprofilepage-modern-avatar {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 152, 6, 0.3), 0 0 40px rgba(255, 179, 71, 0.2);
+  margin-bottom: 10px;
 }
 
 .userprofilepage-modern-avatar:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 152, 6, 0.5), 0 0 60px rgba(255, 179, 71, 0.3), 0 0 80px rgba(255, 152, 6, 0.2);
 }
 
 .userprofilepage-avatar-ring {
   position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 132px;
-  height: 132px;
+  top: -8px; /* Căn lại để khớp avatar */
+  left: -8px;
+  width: 176px; /* Nhỏ hơn */
+  height: 176px;
   border-radius: 50%;
-  background: linear-gradient(45deg, #ff6600, #ff8533);
+  background: linear-gradient(45deg, #ff9706d6, #ffb347, #ffa500);
   z-index: -1;
   animation: userprofilepage-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(255, 152, 6, 0.4);
 }
 
 @keyframes userprofilepage-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 1; }
+  0%, 100% { 
+    transform: scale(0.98); /* Thu nhỏ */
+    opacity: 0.85; 
+  }
+  50% { 
+    transform: scale(1); /* Mở rộng nhẹ */
+    opacity: 1; 
+  }
+}
+
+.userprofilepage-modern-info {
+  flex: 1;
 }
 
 .userprofilepage-modern-username {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 7px;
+  margin-top: -30px; /* giá trị âm kéo lên */
 }
 
 .userprofilepage-modern-verification {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
+  border-radius: 25px;
+  font-size: 12px;
   font-weight: 600;
   margin-bottom: 24px;
+  transform: translateX(20px);
+  transition: transform 0.2s ease;
 }
 
 .userprofilepage-modern-verification.userprofilepage-verified {
@@ -119,59 +140,72 @@
 }
 
 .userprofilepage-verify-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
+  font-weight: bold;
 }
 
 .userprofilepage-profile-stats {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 20px 0;
-  border-top: 1px solid #f0f0f0;
+  gap: 30px;
+  margin-top: 8px;
 }
 
 .userprofilepage-stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  text-align: center;
+  padding: 6px 10px; /* giảm kích thước bên trong */
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border-radius: 15px;
+  transition: transform 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  transform: translateY(12px);
+}
+
+.userprofilepage-stat-item:hover {
+  background: linear-gradient(135deg, #ff9806, #ffb347);
+  color: white;
 }
 
 .userprofilepage-stat-number {
-  font-size: 20px;
+  display: block;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #ff6600;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.userprofilepage-stat-item:hover .userprofilepage-stat-number {
+  color: white;
 }
 
 .userprofilepage-stat-label {
-  font-size: 13px;
+  display: block;
+  font-size: 0.75rem;
   color: #666;
-  font-weight: 500;
+  margin-top: 4px;
+  transition: color 0.2s ease;
 }
 
-.userprofilepage-stat-divider {
-  width: 1px;
-  height: 30px;
-  background: #e5e5e5;
+.userprofilepage-stat-item:hover .userprofilepage-stat-label {
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Content Area */
+/* Content Area - FIX RESPONSIVE */
 .userprofilepage-modern-content-area {
-  flex: 1;
-  min-width: 400px;
+  width: 1075px; /* kích thước cố định bạn muốn */
   background: #ffffff;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid #f0f0f0;
+  margin-top: -20px;
+  box-sizing: border-box;
 }
 
 /* Tabs */
@@ -179,7 +213,6 @@
   display: flex;
   background: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
-  padding: 0 24px;
 }
 
 .userprofilepage-modern-tab {
@@ -198,6 +231,7 @@
   transition: all 0.3s ease;
   position: relative;
   border-radius: 12px 12px 0 0;
+  outline: none;
 }
 
 .userprofilepage-modern-tab:hover {
@@ -205,10 +239,48 @@
   background: rgba(255, 102, 0, 0.05);
 }
 
+.userprofilepage-modern-tab:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.userprofilepage-modern-tab:active {
+  outline: none;
+  border: none;
+}
+
 .userprofilepage-modern-tab.userprofilepage-active {
   color: #ff6600;
   background: #ffffff;
-  border-bottom: 3px solid #ff6600;
+  position: relative;
+  border-bottom: none;
+  transition: color 0.3s ease, background 0.3s ease;
+  outline: none;
+}
+
+/* Gạch chân animate */
+.userprofilepage-modern-tab.userprofilepage-active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: #ff6600;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+  animation: tab-underline 0.4s ease forwards;
+}
+
+@keyframes tab-underline {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 .userprofilepage-tab-icon {
@@ -220,11 +292,16 @@
   padding: 32px;
 }
 
+.userprofilepage-video-tab {
+  padding: 24px 0 0 0;
+}
+
 .userprofilepage-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin: -20px 0 14px 0;
+  padding: 0 32px;
 }
 
 .userprofilepage-section-title {
@@ -269,61 +346,61 @@
   margin: 0;
 }
 
-/* Carousel Section */
-.userprofilepage-modern-carousel-section {
+/* Posts Grid Layout */
+.userprofilepage-posts-grid-section {
   position: relative;
 }
 
-.userprofilepage-modern-carousel-container {
+.userprofilepage-posts-grid-container {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
 }
 
-.userprofilepage-modern-carousel-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+.userprofilepage-posts-grid-container.userprofilepage-show-all {
+  max-height: calc(100vh - 400px);
+  min-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #ff6600 #f1f1f1;
+}
+
+.userprofilepage-posts-grid-container.userprofilepage-show-all::-webkit-scrollbar {
+  width: 8px;
+}
+
+.userprofilepage-posts-grid-container.userprofilepage-show-all::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.userprofilepage-posts-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #ff6600, #ff8533);
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
-  transition: all 0.3s ease;
-  z-index: 10;
-  flex-shrink: 0;
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
-.userprofilepage-modern-carousel-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4);
+.userprofilepage-posts-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e55a00, #e5782e);
+  transform: scaleX(1.1);
 }
 
-.userprofilepage-modern-carousel-btn:active {
-  transform: translateY(0);
+.userprofilepage-posts-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #cc5200, #cc6b29);
 }
 
-.userprofilepage-modern-carousel-track {
-  display: flex;
-  overflow-x: auto;
-  scroll-behavior: smooth;
+.userprofilepage-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  padding: 4px 0;
-  flex: 1;
+  margin-bottom: 24px;
 }
 
-.userprofilepage-modern-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-.userprofilepage-modern-post-card {
-  flex: 0 0 260px;
+.userprofilepage-grid-post-card {
   background: #ffffff;
   border-radius: 16px;
   overflow: hidden;
@@ -333,24 +410,24 @@
   border: 1px solid #f0f0f0;
 }
 
-.userprofilepage-modern-post-card:hover {
+.userprofilepage-grid-post-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-.userprofilepage-post-image-wrapper {
+.userprofilepage-grid-post-card .userprofilepage-post-image-wrapper {
   position: relative;
   overflow: hidden;
 }
 
-.userprofilepage-post-image {
+.userprofilepage-grid-post-card .userprofilepage-post-image {
   width: 100%;
-  height: 180px;
+  height: 160px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.userprofilepage-modern-post-card:hover .userprofilepage-post-image {
+.userprofilepage-grid-post-card:hover .userprofilepage-post-image {
   transform: scale(1.05);
 }
 
@@ -365,16 +442,16 @@
   transition: opacity 0.3s ease;
 }
 
-.userprofilepage-modern-post-card:hover .userprofilepage-post-overlay {
+.userprofilepage-grid-post-card:hover .userprofilepage-post-overlay {
   opacity: 1;
 }
 
-.userprofilepage-post-content {
+.userprofilepage-grid-post-card .userprofilepage-post-content {
   padding: 16px;
 }
 
 .userprofilepage-post-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0 0 8px 0;
@@ -386,25 +463,68 @@
 }
 
 .userprofilepage-post-price {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #ff6600;
   margin: 0;
 }
 
-/* Video Section */
-.userprofilepage-modern-video-section {
+/* Videos Grid Layout - FIXED FOR 5 COLUMNS */
+.userprofilepage-videos-grid-section {
   position: relative;
 }
 
-.userprofilepage-modern-video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
+.userprofilepage-videos-grid-container {
+  position: relative;
 }
 
-.userprofilepage-modern-video-card {
+.userprofilepage-videos-grid-container.userprofilepage-show-all {
+  max-height: calc(100vh - 400px);
+  min-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #ff6600 #f1f1f1;
+}
+
+.userprofilepage-videos-grid-container.userprofilepage-show-all::-webkit-scrollbar {
+  width: 8px;
+}
+
+.userprofilepage-videos-grid-container.userprofilepage-show-all::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.userprofilepage-videos-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ff6600, #ff8533);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.userprofilepage-videos-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e55a00, #e5782e);
+  transform: scaleX(1.1);
+}
+
+.userprofilepage-videos-grid-container.userprofilepage-show-all::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, #cc5200, #cc6b29);
+}
+
+/* Video Grid - 5 columns layout */
+.userprofilepage-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.userprofilepage-grid-video-card {
   background: #ffffff;
   border-radius: 16px;
   overflow: hidden;
@@ -412,147 +532,309 @@
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #f0f0f0;
+  aspect-ratio: 9/16; /* Tỷ lệ video dọc như TikTok */
 }
 
-.userprofilepage-modern-video-card:hover {
+.userprofilepage-grid-video-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .userprofilepage-video-wrapper {
   position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 16px;
   overflow: hidden;
 }
 
-.userprofilepage-modern-video-player {
+.userprofilepage-grid-video-player {
   width: 100%;
-  aspect-ratio: 9 / 16;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  border-radius: 16px;
 }
 
-.userprofilepage-modern-video-card:hover .userprofilepage-modern-video-player {
-  transform: scale(1.02);
-}
-
-.userprofilepage-video-play-overlay {
+.userprofilepage-video-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, transparent 70%, rgba(0, 0, 0, 0.7) 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.userprofilepage-modern-video-card:hover .userprofilepage-video-play-overlay {
-  opacity: 1;
-}
-
-.userprofilepage-play-button {
-  color: white;
-  font-size: 16px;
-  margin-left: 2px;
-}
-
-.userprofilepage-video-likes-badge {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 6px 10px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #ff6600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.userprofilepage-heart-icon {
-  color: #ff4757;
-  font-size: 14px;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
+  pointer-events: none;
 }
 
 .userprofilepage-video-info {
-  padding: 16px;
+  width: 100%;
 }
 
 .userprofilepage-video-title {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: white;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Show More Button */
+.userprofilepage-show-more-container {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.userprofilepage-show-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* canh giữa nội dung */
+  gap: 8px;
+  width: 160px; /* chiều ngang cố định */
+  padding: 12px 0; /* bỏ padding ngang, chỉ giữ padding dọc */
+  background: linear-gradient(135deg, #ff6600, #ff8533);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+  margin-left: -840px; 
+}
+
+.userprofilepage-show-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4);
+}
+
+.userprofilepage-arrow-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+/* TikTok Video Layout */
+.userprofilepage-tiktok-video-section {
+  height: 100%;
+}
+
+.userprofilepage-tiktok-video-container {
+  height: 500px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  padding: 0 24px;
+}
+
+.userprofilepage-tiktok-video-container::-webkit-scrollbar {
+  display: none;
+}
+
+.userprofilepage-tiktok-video-card {
+  height: 500px;
+  margin-bottom: 20px;
+  scroll-snap-align: start;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.userprofilepage-tiktok-video-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.userprofilepage-tiktok-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.userprofilepage-tiktok-video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, transparent 70%, rgba(0, 0, 0, 0.7) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  pointer-events: none;
+}
+
+.userprofilepage-tiktok-video-info {
+  align-self: flex-end;
+  margin-top: auto;
+  max-width: calc(100% - 80px);
+}
+
+.userprofilepage-tiktok-video-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.userprofilepage-tiktok-video-actions {
+  position: absolute;
+  right: 20px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.userprofilepage-tiktok-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.3s ease;
+}
+
+.userprofilepage-tiktok-action-btn:hover {
+  transform: scale(1.1);
+}
+
+.userprofilepage-tiktok-heart-icon,
+.userprofilepage-tiktok-share-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.userprofilepage-tiktok-heart-icon {
+  color: #ff4757;
+}
+
+.userprofilepage-tiktok-action-btn:hover .userprofilepage-tiktok-heart-icon,
+.userprofilepage-tiktok-action-btn:hover .userprofilepage-tiktok-share-icon {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.userprofilepage-tiktok-action-count {
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
-  .userprofilepage-modern-profile-container {
-    margin-left: 0;
-    margin-top: 80px;
-    padding: 16px;
+@media (max-width: 1200px) {
+  .userprofilepage-videos-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .userprofilepage-modern-profile-card {
     flex-direction: column;
+    text-align: center;
+    padding: 25px 20px;
+  }
+
+  .userprofilepage-profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .userprofilepage-avatar-ring {
+    width: 140px;
+    height: 140px;
+    top: -10px;
+    left: -10px;
+  }
+
+  .userprofilepage-modern-username {
+    font-size: 1.1rem;
+  }
+
+  .userprofilepage-profile-stats {
+    justify-content: center;
     gap: 20px;
   }
 
-  .userprofilepage-modern-profile-card {
-    max-width: 100%;
-    padding: 24px;
-  }
-
-  .userprofilepage-modern-content-area {
-    min-width: auto;
-  }
-
-  .userprofilepage-tab-content {
-    padding: 20px;
-  }
-
-  .userprofilepage-modern-carousel-container {
+  .navbar-content {
     flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 992px) {
+  .userprofilepage-videos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .userprofilepage-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-
-  .userprofilepage-modern-carousel-btn {
-    display: none;
+  
+  .userprofilepage-grid-video-card {
+    aspect-ratio: 9/14; /* Điều chỉnh tỷ lệ cho mobile */
+  }
+  
+  .userprofilepage-video-title {
+    font-size: 11px;
   }
 
-  .userprofilepage-modern-video-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-  }
-
-  .userprofilepage-section-header {
+  .userprofilepage-profile-stats {
     flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .userprofilepage-stat-item {
+    padding: 12px 16px;
   }
 }
 
 @media (max-width: 480px) {
-  .userprofilepage-modern-video-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+  .userprofilepage-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
-
-  .userprofilepage-modern-carousel-track {
-    gap: 12px;
+  
+  .userprofilepage-video-overlay {
+    padding: 8px;
   }
-
-  .userprofilepage-modern-post-card {
-    flex: 0 0 200px;
+  
+  .userprofilepage-video-title {
+    font-size: 10px;
+    -webkit-line-clamp: 1;
   }
 }

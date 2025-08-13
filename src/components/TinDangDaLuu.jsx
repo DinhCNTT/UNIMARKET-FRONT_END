@@ -15,6 +15,7 @@ const TinDangDaLuu = () => {
   const [showScrollable, setShowScrollable] = useState(false);
   const [visiblePosts, setVisiblePosts] = useState(8); // Hiển thị 8 tin đầu tiên
   const [expandedPosts, setExpandedPosts] = useState(8); // Theo dõi số tin đã mở rộng
+  const gridRef = useRef(null); // Thêm ref cho grid
 
   const fetchSavedPosts = async (token) => {
     if (!token) return;
@@ -95,23 +96,63 @@ const TinDangDaLuu = () => {
     return price?.toLocaleString();
   };
 
+  // SỬA FUNCTION handleShowMore
   const handleShowMore = () => {
     const newExpandedCount = Math.min(expandedPosts + 8, posts.length);
     setExpandedPosts(newExpandedCount);
-    setShowScrollable(true);
+    
+    // Kích hoạt scrollable mode
+    if (!showScrollable) {
+      setShowScrollable(true);
+    }
+
+    // Cuộn xuống để hiển thị nội dung mới sau khi render
+    setTimeout(() => {
+      if (gridRef.current) {
+        const currentScrollTop = gridRef.current.scrollTop;
+        const scrollHeight = gridRef.current.scrollHeight;
+        const clientHeight = gridRef.current.clientHeight;
+        
+        // Cuộn xuống một khoảng để hiển thị nội dung mới
+        const newScrollPosition = Math.min(currentScrollTop + clientHeight * 0.7, scrollHeight - clientHeight);
+        gridRef.current.scrollTo({
+          top: newScrollPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   };
 
+  // SỬA FUNCTION handleCollapse
   const handleCollapse = () => {
     if (expandedPosts > 8) {
       const newExpandedCount = Math.max(expandedPosts - 8, 8);
       setExpandedPosts(newExpandedCount);
+      
       if (newExpandedCount === 8) {
         setShowScrollable(false);
+        // Cuộn về đầu khi thu gọn về trạng thái ban đầu
+        if (gridRef.current) {
+          gridRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        // Cuộn lên một chút khi thu gọn nhưng vẫn giữ scrollable
+        setTimeout(() => {
+          if (gridRef.current) {
+            const currentScrollTop = gridRef.current.scrollTop;
+            const newScrollPosition = Math.max(currentScrollTop - gridRef.current.clientHeight * 0.5, 0);
+            gridRef.current.scrollTo({
+              top: newScrollPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
       }
     }
   };
 
-  const displayedPosts = showScrollable ? posts.slice(0, expandedPosts) : posts.slice(0, visiblePosts);
+  // SỬA displayedPosts
+  const displayedPosts = posts.slice(0, expandedPosts);
 
   if (loading) {
     return (
@@ -165,7 +206,11 @@ const TinDangDaLuu = () => {
               </div>
             ) : (
               <div className="Tin-dang-da-luu-grid-container">
-                <div className={`Tin-dang-da-luu-grid ${showScrollable ? 'scrollable' : ''}`}>
+                {/* THÊM ref={gridRef} vào div grid */}
+                <div 
+                  ref={gridRef}
+                  className={`Tin-dang-da-luu-grid ${showScrollable ? 'scrollable' : ''}`}
+                >
                   {displayedPosts.map((post, index) => (
                     <div
                       key={post.maTinDang}
@@ -232,23 +277,24 @@ const TinDangDaLuu = () => {
                   ))}
                 </div>
                 
-                {/* Nút "Xem thêm" / "Thu gọn" */}
+                {/* SỬA NÚT "Xem thêm" / "Thu gọn" */}
                 {posts.length > 8 && (
                   <div className="Tin-dang-da-luu-toggle-container">
-                    {!showScrollable || expandedPosts < posts.length ? (
+                    {expandedPosts < posts.length && (
                       <button 
                         className="Tin-dang-da-luu-toggle-btn"
                         onClick={handleShowMore}
                       >
                         <FaChevronDown />
-                        Xem thêm
+                        Xem thêm ({Math.min(8, posts.length - expandedPosts)} tin)
                       </button>
-                    ) : null}
+                    )}
                     
                     {showScrollable && expandedPosts > 8 && (
                       <button 
                         className="Tin-dang-da-luu-toggle-btn collapse"
                         onClick={handleCollapse}
+                        style={{ marginLeft: '10px' }}
                       >
                         <FaChevronUp />
                         Thu gọn
@@ -261,7 +307,7 @@ const TinDangDaLuu = () => {
           </div>
         </div>
       </div>
-      
+      <Footer />
     </>
   );
 };

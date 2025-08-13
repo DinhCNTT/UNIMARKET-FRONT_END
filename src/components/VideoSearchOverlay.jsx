@@ -1,30 +1,33 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiSearch, FiX } from "react-icons/fi";
-import { CgSearchLoading } from "react-icons/cg";
 import { useNavigate } from "react-router-dom";
 import "./VideoSearchOverlay.css";
+import { FiSearch, FiClock, FiX } from "react-icons/fi";
 
-export default function VideoSearchOverlay() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const [keyword, setKeyword] = useState("");
   const [history, setHistory] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const containerRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Load lịch sử
   useEffect(() => {
     const stored = localStorage.getItem("videoSearchHistory");
     if (stored) setHistory(JSON.parse(stored));
   }, []);
 
-  // Gợi ý từ khóa từ backend
+  useEffect(() => {
+    if (isOpen) {
+      const id = setTimeout(() => inputRef.current?.focus(), 200);
+      return () => clearTimeout(id);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (!keyword.trim()) {
       setSuggestions([]);
       return;
     }
+    let canceled = false;
     const fetchSuggestions = async () => {
       try {
         const res = await fetch(
@@ -33,16 +36,18 @@ export default function VideoSearchOverlay() {
           )}&limit=10`
         );
         const data = await res.json();
-        setSuggestions(data);
+        if (!canceled) setSuggestions(data);
       } catch (err) {
         console.error("Lỗi gợi ý từ khóa:", err);
-        setSuggestions([]);
+        if (!canceled) setSuggestions([]);
       }
     };
     fetchSuggestions();
+    return () => {
+      canceled = true;
+    };
   }, [keyword]);
 
-  // Lưu lịch sử
   const saveHistory = (kw) => {
     if (!kw.trim()) return;
     let newHistory = [kw, ...history.filter((h) => h !== kw)];
@@ -57,146 +62,106 @@ export default function VideoSearchOverlay() {
     localStorage.setItem("videoSearchHistory", JSON.stringify(newHistory));
   };
 
-  // Mở popup
-  const handleOpen = () => {
-    setIsOpen(true);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 300);
-  };
-
-  // Đóng popup
-  const handleClose = () => {
-    setIsOpen(false);
-    setKeyword("");
-    setSuggestions([]);
-  };
-
-  // Tìm kiếm và chuyển trang
   const doSearchAndRedirect = (kw) => {
     if (!kw.trim()) return;
     saveHistory(kw);
-    handleClose();
+    setKeyword("");
+    onClose();
     navigate(`/search/${encodeURIComponent(kw)}`);
   };
 
-  const handleSearch = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!keyword.trim()) return;
     doSearchAndRedirect(keyword);
   };
 
-  // Khi chọn từ khóa từ lịch sử/gợi ý
   const onSelectKeyword = (kw) => {
-    setKeyword(kw);
     doSearchAndRedirect(kw);
   };
 
-  // Đóng popup nếu click ra ngoài
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target) &&
-        isOpen
-      ) {
-        handleClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  // Chặn propagation sự kiện để không ảnh hưởng đến VideoDetailViewer
+  const stopEventPropagation = (e) => {
+    e.stopPropagation();
+  };
 
   return (
     <div
-      className={`video-search-container ${isOpen ? "open" : "closed"}`}
-      ref={containerRef}
+      className={`video-search-panel ${isOpen ? "open" : ""}`}
+      onWheel={stopEventPropagation}
+      onTouchMove={stopEventPropagation}
+      onScroll={stopEventPropagation}
+      onTouchStart={stopEventPropagation}
+      onTouchEnd={stopEventPropagation}
     >
-      {/* Nút tìm kiếm */}
-      <button
-        className={`video-search-btn ${isOpen ? "small" : "large"}`}
-        onClick={() => {
-          if (!isOpen) handleOpen();
-        }}
-        aria-label="Mở tìm kiếm"
-        type="button"
-      >
-        <FiSearch size={20} />
-        {!isOpen && <span className="search-btn-text">Search</span>}
-      </button>
-
-      {/* Popup tìm kiếm */}
-      <div className={`video-search-popup ${isOpen ? "visible" : ""}`}>
-        <div className="video-search-popup-body">
-          <form onSubmit={handleSearch} className="video-search-popup-form">
-            <input
-              ref={inputRef}
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Bạn cần tìm gì?"
-              className="video-search-popup-input"
-              autoComplete="off"
-              autoFocus={isOpen}
-              maxLength={80} // Giới hạn 80 ký tự
-            />
+      <form className="search-form" onSubmit={handleSubmit}>
+        <div className="search-wrapper">
+          <label className="search-label">Search</label>
+          <input
+            ref={inputRef}
+            className="search-input"
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Bạn cần tìm gì?"
+            maxLength={80}
+            autoComplete="off"
+          />
+          {keyword.length > 0 && (
             <button
               type="button"
-              className="popup-close-btn"
-              onClick={handleClose}
-              aria-label="Đóng tìm kiếm"
+              className="clear-btn"
+              onClick={() => setKeyword("")}
+              aria-label="Xóa"
             >
-              <FiX size={24} />
+              <FiX size={18} />
             </button>
-          </form>
-
-          {/* Lịch sử tìm kiếm */}
-          {keyword.trim() === "" && (
-            <ul className="video-search-history-list">
-              {history.length === 0 ? (
-                <li className="video-search-no-history">
-                  Chưa có lịch sử tìm kiếm
-                </li>
-              ) : (
-                history.map((kw, idx) => (
-                  <li key={idx} className="video-search-history-item">
-                    <button
-                      type="button"
-                      className="video-search-history-keyword-btn"
-                      onClick={() => onSelectKeyword(kw)}
-                    >
-                      <CgSearchLoading size={20} className="video-search-history-icon"/> {kw}
-                    </button>
-                    <button
-                      type="button"
-                      className="history-remove-btn"
-                      onClick={() => removeHistory(kw)}
-                      aria-label={`Xóa ${kw} khỏi lịch sử`}
-                    >
-                      <FiX size={16} />
-                    </button>
-                  </li>
-                ))
-              )}
-            </ul>
-          )}
-
-          {/* Gợi ý từ khóa */}
-          {keyword.trim() !== "" && suggestions.length > 0 && (
-            <ul className="video-search-suggestions-list">
-              {suggestions.map((suggestion, idx) => (
-                <li
-                  key={idx}
-                  className="video-search-suggestion-item"
-                  onClick={() => onSelectKeyword(suggestion)}
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
           )}
         </div>
-      </div>
+      </form>
+    <div className="search-body">
+  {keyword.trim() === "" ? (
+    <ul className="history-list">
+      {history.length === 0 ? (
+        <li className="no-history">Chưa có lịch sử tìm kiếm</li>
+      ) : (
+        history.map((kw, idx) => (
+          <li className="history-item" key={idx}>
+            <button
+              type="button"
+              className="history-key"
+              onClick={() => onSelectKeyword(kw)}
+            >
+              <FiClock size={16} /> {kw}
+            </button>
+            <button
+              type="button"
+              className="history-remove"
+              onClick={() => removeHistory(kw)}
+              aria-label={`Xóa ${kw}`}
+            >
+              <FiX size={14} />
+            </button>
+          </li>
+        ))
+      )}
+    </ul>
+  ) : (
+    suggestions.length > 0 && (
+      <ul className="suggestions-list">
+        {suggestions.map((s, i) => (
+          <li
+            key={i}
+            className="suggestion-item"
+            onClick={() => onSelectKeyword(s)}
+          >
+            <FiSearch size={16} style={{ marginRight: "6px" }} /> {s}
+          </li>
+        ))}
+      </ul>
+    )
+  )}
+</div>
+    
     </div>
   );
 }

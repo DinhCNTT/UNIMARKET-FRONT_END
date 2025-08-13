@@ -115,11 +115,11 @@ const ManageParentCategories = () => {
     };
 
     return (
-        <div className="parent-category-page-container">
+        <div className="ManageParentCategoriesPageContainer">
             <h2>Quản Lý Danh Mục Cha</h2>
             <ToastContainer autoClose={3000} />
 
-            <table className="parent-category-table">
+            <table className="ManageParentCategoriesTable">
                 <thead>
                     <tr>
                         <th>Mã DM</th>
@@ -139,7 +139,7 @@ const ManageParentCategories = () => {
                                         type="text"
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
-                                        className="edit-input"
+                                        className="ManageParentCategoriesEditInput"
                                     />
                                 ) : (
                                     cat.tenDanhMucCha
@@ -147,46 +147,46 @@ const ManageParentCategories = () => {
                             </td>
                             <td>
                                 {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="file-upload">
+                                    <div className="ManageParentCategoriesFileUpload">
                                         <input type="file" onChange={handleImageChange} />
                                         {previewImage && (
-                                            <img src={previewImage} alt="Preview" className="image-preview" />
+                                            <img src={previewImage} alt="Preview" className="ManageParentCategoriesImagePreview" />
                                         )}
                                     </div>
                                 ) : (
                                     <img
                                         src={cat.anhDanhMucCha}
                                         alt="Ảnh DM"
-                                        className="category-image"
+                                        className="ManageParentCategoriesCategoryImage"
                                     />
                                 )}
                             </td>
                             <td>
                                 {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="file-upload">
+                                    <div className="ManageParentCategoriesFileUpload">
                                         <input type="file" onChange={handleIconChange} />
                                         {previewIcon && (
-                                            <img src={previewIcon} alt="Icon Preview" className="icon-preview" />
+                                            <img src={previewIcon} alt="Icon Preview" className="ManageParentCategoriesIconPreview" />
                                         )}
                                     </div>
                                 ) : (
                                     <img
                                         src={cat.icon}
                                         alt="Icon DM"
-                                        className="category-icon"
+                                        className="ManageParentCategoriesCategoryIcon"
                                     />
                                 )}
                             </td>
                             <td>
                                 {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
                                     <>
-                                        <button className="save-btn" onClick={handleUpdate}>💾 Lưu</button>
-                                        <button className="cancel-btn" onClick={() => setEditingCategory(null)}>❌ Hủy</button>
+                                        <button className="ManageParentCategoriesSaveBtn" onClick={handleUpdate}>💾 Lưu</button>
+                                        <button className="ManageParentCategoriesCancelBtn" onClick={() => setEditingCategory(null)}>❌ Hủy</button>
                                     </>
                                 ) : (
                                     <>
-                                        <button className="edit-btn" onClick={() => handleEdit(cat)}>✏️ Sửa</button>
-                                        <button className="delete-btn" onClick={() => handleDelete(cat.maDanhMucCha)}>🗑️ Xóa</button>
+                                        <button className="ManageParentCategoriesEditBtn" onClick={() => handleEdit(cat)}>✏️ Sửa</button>
+                                        <button className="ManageParentCategoriesDeleteBtn" onClick={() => handleDelete(cat.maDanhMucCha)}>🗑️ Xóa</button>
                                     </>
                                 )}
                             </td>

@@ -558,21 +558,22 @@
 }
 
 .nav-icon {
-  font-size: 45px;              /* font-size gốc vừa phải */
+  font-size: 10px;              /* font-size gốc vừa phải */
   transform: scale(1.8);        /* phóng to bằng transform để không đẩy chiều cao cha */
   margin: 0 2px;
   cursor: pointer;
   color: #000;
   transition: transform 0.2s ease, color 0.2s ease;
 }
-.nav-icon-chat{
-  font-size: 13px;              /* font-size gốc vừa phải */
-  transform: scale(1.8);        /* phóng to bằng transform để không đẩy chiều cao cha */
+.nav-icon-chat {
+  font-size: 10px;              
+  transform: scale(1.8) translateY(2px); /* phóng to + dịch xuống 2px */
   margin: 0 2px;
   cursor: pointer;
   color: #000;
   transition: transform 0.2s ease, color 0.2s ease;
 }
+
 .nav-icon:hover {
   color: #ff6600;
   transform: scale(2);          /* hover lớn hơn chút */

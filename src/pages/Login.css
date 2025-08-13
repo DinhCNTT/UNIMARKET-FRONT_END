@@ -1,108 +1,476 @@
-/* Căn giữa toàn bộ trang */
+/* Scoped CSS cho Login Component */
+
+/* Container chính */
 .login-container {
-    display: flex;
-    justify-content: center; /* Căn giữa theo chiều ngang */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    height: 100vh; /* Chiều cao toàn màn hình */
-    width: 100vw; /* Chiều rộng toàn màn hình */
-    position: fixed; /* Giữ form cố định giữa màn hình */
-    top: 0;
-    left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f5f5;
+  background-image: url('https://static.chotot.com/storage/marketplace/login-background.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Hộp đăng nhập */
-.login-box {
-    background: white !important; /* Đảm bảo nền trắng */
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+.login-container .login-box {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 60vw;
+  min-width: 340px;
+  max-width: 600px;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  margin: 0 auto;
 }
-/* Tiêu đề "Đăng nhập" */
-.login-box h2 {
-    color: black !important; /* Đổi màu chữ thành đen */
+
+/* Tiêu đề */
+.login-container .login-box h2 {
+  color: #333333;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  margin-top: 0;
+}
+
+/* Form styling */
+.login-container .login-form,
+.login-container .login-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Input fields - Chỉ áp dụng cho input trong login-box */
+.login-container .login-box input[type="email"],
+.login-container .login-box input[type="password"],
+.login-container .login-box input[type="tel"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #333;
+  font-size: 14px;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.login-container .login-box input[type="email"]:focus,
+.login-container .login-box input[type="password"]:focus,
+.login-container .login-box input[type="tel"]:focus {
+  border-color: #ffba00;
+  box-shadow: 0 0 0 2px rgba(255, 186, 0, 0.2);
+}
+
+.login-container .login-box input[type="email"]::placeholder,
+.login-container .login-box input[type="password"]::placeholder,
+.login-container .login-box input[type="tel"]::placeholder {
+  color: #999;
+  font-weight: 400;
+}
+
+.login-container .login-box input[type="email"]:disabled,
+.login-container .login-box input[type="password"]:disabled,
+.login-container .login-box input[type="tel"]:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Required indicator */
+.login-container .required {
+  color: #ff4757;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+/* Forgot password link */
+.login-container .forgot-password {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.login-container .forgot-password a {
+  color: #666;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-container .forgot-password a:hover {
+  color: #ffba00;
+}
+
+/* Nút đăng nhập chính - Chỉ áp dụng trong login-box */
+.login-container .login-box button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #ffba00;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.login-container .login-box button[type="submit"]:hover:not(:disabled) {
+  background-color: #e6a600;
+}
+
+.login-container .login-box button[type="submit"]:active:not(:disabled) {
+  background-color: #cc9500;
+}
+
+.login-container .login-box button[type="submit"]:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.login-container .divider {
+  margin: 40px 5px 24px 5px;
+  position: relative;
+  text-align: center;
+}
+
+.login-container .divider span {
+  background: #ffffff;
+  color: #666;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.login-container .divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+/* Social login buttons */
+.login-container .social-login {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.login-container .social-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-weight: 400;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #666;
+  position: relative;
+  min-height: 40px;
+}
+
+.login-container .social-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #d0d0d0;
+}
+
+.login-container .social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Facebook button styling */
+.login-container .facebook-button {
+  flex: 1;
+  background-color: #1877F2;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  gap: 6px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+.login-container .facebook-button:hover:not(:disabled) {
+  background-color: #166fe5;
+}
+
+.login-container .facebook-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.login-container .facebook-icon {
+  font-size: 14px;
+}
+
+/* Google login button container */
+.login-container .google-login-container {
+  flex: 1;
+}
+
+.login-container .google-login-container > div {
+  width: 100% !important;
+}
+
+.login-container .google-login-container button {
+  width: 100% !important;
+  height: 40px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  justify-content: center !important;
+}
+
+/* Loading state for social buttons */
+.login-container .social-loading {
+  color: #666;
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
 }
 
 /* Link đăng ký */
-.signup-link {
-    color: black !important; /* Đổi màu "Chưa có tài khoản?" thành đen */
-    margin-top: 10px;
+.login-container .signup-link {
+  color: #666;
+  font-size: 13px;
+  font-weight: 400;
+  margin: 0;
 }
 
-/* Ô nhập liệu */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ccc; /* Viền nhẹ */
-    border-radius: 5px;
-    background: #f9f9f9; /* Màu nền sáng */
-    color: black;
-    font-size: 16px;
+.login-container .signup-link a {
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: 400;
+  transition: color 0.2s ease;
 }
 
-/* Nút đăng nhập */
-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #ff9800;
-    color: white;
+.login-container .signup-link a:hover {
+  color: #166fe5;
+  text-decoration: underline;
+}
+
+/* Footer links */
+.login-container .footer-links {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.login-container .footer-links a {
+  color: #666;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-container .footer-links a:hover {
+  color: #ffba00;
+}
+
+/* Brand logos section */
+.login-container .brand-logos {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.login-container .brand-logos p {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+
+.login-container .logos-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  align-items: center;
+}
+
+.login-container .logo-item {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.login-container .chotot { color: #ffba00; }
+.login-container .nhatot { color: #ff6b35; }
+.login-container .vatot { color: #0066cc; }
+.login-container .chotot-xe { color: #ff4757; }
+
+/* Toast styles */
+.login-container .error-message {
+  background: #fff5f5;
+  color: #c53030;
+  padding: 12px 16px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 400;
+  margin-bottom: 16px;
+  border: 1px solid #fed7d7;
+  font-size: 13px;
+}
+
+/* Loading animation */
+.login-container .loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.login-container .loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #666;
+  border-radius: 50%;
+  animation: login-spin 0.8s linear infinite;
+}
+
+@keyframes login-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Phone number input specific styling */
+.login-container .phone-input-container {
+  position: relative;
+}
+
+.login-container .country-code {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.login-container input[type="tel"] {
+  padding-left: 45px !important;
+}
+
+/* Icon styling for social buttons */
+.login-container .social-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Additional Chợ Tốt specific styles */
+.login-container .chotot-brand {
+  color: #ffba00;
+  font-weight: 700;
+}
+
+.login-container .secondary-text {
+  color: #666;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 16px;
+  }
+  
+  .login-container .login-box {
+    padding: 24px 20px;
+    max-width: 100%;
+    box-shadow: none;
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-    font-weight: bold;
+    width: 100%;
+  }
+  
+  .login-container .login-box h2 {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .login-container .social-login {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .login-container .footer-links {
+    gap: 16px;
+  }
+  
+  .login-container .logos-container {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .login-container .google-login-container > div {
+    width: 100% !important;
+  }
+  
+  .login-container .facebook-button {
+    width: 100%;
+  }
 }
 
-button:hover {
-    background-color: #e68900;
+/* Đảm bảo không ảnh hưởng đến các component khác */
+.login-container * {
+  box-sizing: border-box;
 }
 
-
-button:hover {
-    background-color: #e68900;
+/* Override các style global có thể conflict */
+.login-container button:not([type="submit"]):not(.facebook-button):not(.social-btn) {
+  /* Reset styles cho các button khác */
+  all: unset;
+  display: inline-block;
+  cursor: pointer;
 }
 
-/* Link đăng ký */
-.signup-link {
-    color: white;
-    margin-top: 10px;
-}
-
-.signup-link a {
-    color: orange;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.signup-link a:hover {
-    text-decoration: underline;
-}
-.error-message {
-    color: #fff;
-    background: #d32f2f; /* Màu đỏ chính */
-    border: 2px solid #ffa726; /* Viền màu cam */
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 15px;
-    box-shadow: 0px 4px 10px rgba(211, 47, 47, 0.5);
-    animation: fadeInShake 0.6s ease-in-out;
-    transform-origin: center;
-}
-
-/* Hiệu ứng xuất hiện + rung nhẹ */
-@keyframes fadeInShake {
-    0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-    50% { opacity: 0.5; transform: translateY(3px) rotate(-1.5deg); }
-    70% { opacity: 1; transform: translateY(-2px) rotate(1.5deg); }
-    100% { opacity: 1; transform: translateY(0) rotate(0); }
+/* Đảm bảo form không bị ảnh hưởng bởi global styles */
+.login-container form {
+  margin: 0;
+  padding: 0;
 }

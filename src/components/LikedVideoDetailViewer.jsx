@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 export default function LikedVideoDetailViewer() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const { videos: initialVideos, initialIndex } = location.state || {
     videos: [],
     initialIndex: 0,
@@ -54,8 +55,91 @@ export default function LikedVideoDetailViewer() {
   const [activeReplyMap, setActiveReplyMap] = useState({});
   const [expandedComments, setExpandedComments] = useState({});
   const [volume, setVolume] = useState(1); // 1 = 100%
+  const [isSaved, setIsSaved] = useState(false);
+  const [soNguoiLuu, setSoNguoiLuu] = useState(0);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const playerRef = useRef(null);
+    const videoData = videoList[currentIndex];
+
+  // 📌 Lấy thông tin lưu video khi đổi video hoặc user
+  useEffect(() => {
+    if (!videoData) return;
+
+    const fetchSaveInfo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        let headers = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const res = await axios.get(
+          `http://localhost:5133/api/video/${videoData.maTinDang}/savedinfo`,
+          { headers }
+        );
+
+        const { isSaved, soNguoiLuu } = res.data;
+
+        // Cập nhật danh sách video
+        setVideoList((prevList) =>
+          prevList.map((v, i) =>
+            i === currentIndex ? { ...v, isSaved, soNguoiLuu } : v
+          )
+        );
+
+        setIsSaved(isSaved);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin lưu video:", err);
+      }
+    };
+
+    fetchSaveInfo();
+  }, [user, currentIndex, videoData]);
+
+  // 📌 Toggle lưu/xóa lưu video
+  const handleToggleSave = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      toast.error("Bạn cần đăng nhập để lưu video!");
+      return;
+    }
+
+    try {
+      const { data } = await axios.post(
+        `http://localhost:5133/api/video/ToggleSave`,
+        { maTinDang: videoData.maTinDang },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { saved, totalSaves } = data;
+
+      // Cập nhật list video
+      setVideoList((prevList) =>
+        prevList.map((v, i) =>
+          i === currentIndex
+            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
+            : v
+        )
+      );
+
+      setIsSaved(saved);
+      toast.success(saved ? "Đã lưu video!" : "Đã xóa khỏi danh sách lưu.");
+    } catch (err) {
+      console.error("Lỗi khi lưu video:", err);
+
+      if (err.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+      } else {
+        toast.error("Lỗi khi lưu video. Vui lòng thử lại.");
+      }
+    }
+  };
   const bgPlayerRef = useRef(null);
   const audioRef = useRef(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -67,7 +151,7 @@ export default function LikedVideoDetailViewer() {
   const textareaRef = useRef(null);
   const scrollRef = useRef(null);
   const scrollStopTimer = useRef(null);
- const lastHideStateRef = useRef(hideUserInfo);
+  const lastHideStateRef = useRef(hideUserInfo);
   useEffect(() => {
   const handleScroll = () => {
     const scrollTop = scrollRef.current?.scrollTop || 0;
@@ -116,9 +200,57 @@ export default function LikedVideoDetailViewer() {
 
   const token = localStorage.getItem("token");
   const currentUserId = localStorage.getItem("userId");
-  const { user } = useContext(AuthContext);
   const video = videoList[currentIndex];
   const videoUrl = video?.videoUrl;
+   let clickTimeout = null;
+  let clickCount = 0;
+
+  const handleClick = useCallback(() => {
+    clickCount++;
+
+    if (!isLiked) {
+      handleLike();
+    }
+
+    if (clickCount >= 2) {
+      showHeart();
+      clickCount = 0;
+      clearTimeout(clickTimeout);
+      return;
+    }
+
+    clickTimeout = setTimeout(() => {
+      togglePlayPause();
+      clickCount = 0;
+    }, 300);
+  }, [isLiked, video?.maTinDang]);
+
+  const togglePlayPause = () => {
+    const videoMain = playerRef.current;
+    const videoBlur = bgPlayerRef.current;
+    const audio = audioRef.current;
+
+    if (!videoMain || !videoBlur) return;
+
+    if (videoMain.paused) {
+      videoMain.play();
+      videoBlur.play();
+      audio?.play();
+      setIsPlaying(true);
+    } else {
+      videoMain.pause();
+      videoBlur.pause();
+      audio?.pause();
+      setIsPlaying(false);
+    }
+
+    setIsInteracted(true);
+  };
+
+  const showHeart = () => {
+    setShowHeartEffect(true);
+    setTimeout(() => setShowHeartEffect(false), 600);
+  };
 
   const toggleReplyInput = (commentId) => {
     setActiveReplyId((prev) => (prev === commentId ? null : commentId));
@@ -426,57 +558,7 @@ export default function LikedVideoDetailViewer() {
     setIsInteracted(true);
   };
   
-  // hàm nhấp tym vd giống tik tok 
-let clickTimeout = null;
-let clickCount = 0;
 
-const handleClick = () => {
-  clickCount++;
-
-  // ✅ Luôn tym (không được bỏ tym)
-  if (!isLiked) {
-    handleLike(); // chỉ gọi nếu chưa tym
-  }
-
-  if (clickCount >= 2) {
-    showHeart(); // hiệu ứng trái tim lớn
-    clickCount = 0;
-    clearTimeout(clickTimeout);
-    return;
-  }
-
-  clickTimeout = setTimeout(() => {
-    togglePlayPause(); // play/pause nếu chỉ click 1 lần
-    clickCount = 0;
-  }, 300);
-};
-
-const showHeart = () => {
-  setShowHeartEffect(true);
-  setTimeout(() => setShowHeartEffect(false), 600); // hiệu ứng trái tim
-};
-
-const togglePlayPause = () => {
-  const videoMain = playerRef.current;
-  const videoBlur = bgPlayerRef.current;
-  const audio = audioRef.current;
-
-  if (!videoMain || !videoBlur) return;
-
-  if (videoMain.paused) {
-    videoMain.play();
-    videoBlur.play();
-    audio?.play();
-    setIsPlaying(true);
-  } else {
-    videoMain.pause();
-    videoBlur.pause();
-    audio?.pause();
-    setIsPlaying(false);
-  }
-
-  setIsInteracted(true);
-};
 
   const handleLike = async () => {
   const video = videoList[currentIndex];
@@ -1149,7 +1231,27 @@ const toggleMenu = (commentId) => {
             </span>
             <span className="count">{soTym}</span>
           </button>
-
+           {/* Nút lưu video */}
+       <button
+        onClick={(e) => {
+        e.stopPropagation();
+        handleToggleSave();
+      }}
+      className="lvv-save-btn"
+       >
+        <span className="icon-circle">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill={isSaved ? "#FFD700" : "#ccc"}
+        >
+          <path d="M6 2a2 2 0 0 0-2 2v18l8-5.333L20 22V4a2 2 0 0 0-2-2H6z" />
+           </svg>
+         </span>
+         <span className="count">{video?.soNguoiLuu || 0}</span>
+       </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
