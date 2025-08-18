@@ -28,7 +28,9 @@ import VideoSearchDetailViewer from "../components/VideoSearchDetailViewer";
 import UserProfilePage from "../pages/UserProfilePage";
 import TinDangDaLuu from "../components/TinDangDaLuu";
 import VideoLikedPage from "../components/VideoLikedPage";
-import LikedVideoDetailViewer from "../components/LikedVideoDetailViewer"
+import LikedVideoDetailViewer from "../components/LikedVideoDetailViewer";
+import ErrorBoundary from "../components/ErrorBoundary";
+
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
 
@@ -99,6 +101,7 @@ function AppRoutes() {
         }} />}
       />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
+      
       {/* Route chat realtime */}
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
       <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
@@ -106,13 +109,17 @@ function AppRoutes() {
       {/* ✅ Route mới: Cài đặt tài khoản */}
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
 
-       {/* Route video */}
+       {/* Route video - Đã sắp xếp lại thứ tự để tránh conflict */}
        <Route path="/video/:maTinDang" element={<VideoDetailViewer />} />
        <Route path="/search/:keyword" element={<VideoSearchPage />} />
-       <Route path="/video/:maTinDang" element={<VideoSearchDetailViewer />} />
-       <Route path="/video-search-detail/:maTinDang" element={<VideoSearchDetailViewer />} />
+       <Route path="/video-search-detail/:maTinDang" element={
+         <ErrorBoundary>
+           <VideoSearchDetailViewer />
+         </ErrorBoundary>
+       } />
        <Route path="/video-da-tym" element={<VideoLikedPage />} />
        <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
+       
         {/* Route trang hồ sơ người dùng */}
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
     </Routes>

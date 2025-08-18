@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
 import "./VideoSearchPage.css";
-import TopNavbar from "../components/TopNavbar";
-import VideoSearchOverlay from "../components/VideoSearchOverlay";
+import TopNavbarUniMarket from './TopNavbarUniMarket';
 import defaultAvatar from "../assets/default-avatar.png"; // ✅ Fallback ảnh
 
 export default function VideoSearchPage() {
@@ -126,9 +125,7 @@ export default function VideoSearchPage() {
 
   return (
     <div className="vsp-wrapper">
-      <TopNavbar />
-      <VideoSearchOverlay />
-
+     <TopNavbarUniMarket />
       {/* Menu tab */}
       <div className="vsp-menu" ref={menuRef} onMouseLeave={resetUnderline}>
         <div

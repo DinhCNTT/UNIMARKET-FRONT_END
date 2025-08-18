@@ -5,42 +5,18 @@ import axios from "axios";
 import { toast } from 'react-hot-toast';
 import TopNavbar from "./TopNavbar";
 import defaultAvatar from "../assets/default-avatar.png";
-import { AuthContext } from '../context/AuthContext'; // ✅ Import AuthContext
+import { AuthContext } from '../context/AuthContext';
 import "./VideoSearchDetailViewer.css";
 
 export default function VideoSearchDetailViewer() {
-  // Ẩn mô tả video khi cuộn comment xuống, giống TikTok
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollRef.current) return;
-      const scrollY = scrollRef.current.scrollTop;
-      // Nếu cuộn xuống > 60px thì ẩn user info
-      setHideUserInfo(scrollY > 60);
-    };
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", handleScroll);
-    }
-    return () => {
-      if (el) el.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-  // Cuộn mượt comment section khi mount, giống LikedVideoDetailViewer
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    // Ẩn thanh cuộn body khi vào trang
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
   const location = useLocation();
   const navigate = useNavigate();
-  // Hỗ trợ cả truyền videoList hoặc videos
+  const { maTinDang } = useParams();
+  
+  // ✅ Kiểm tra state truyền từ UserProfilePage hoặc VideoSearchPage
   const { videoList: passedVideoList, videos: passedVideos, initialIndex = 0 } = location.state || {};
   const safeVideoList = passedVideoList || passedVideos || [];
+  
   const [videoList, setVideoList] = useState(safeVideoList);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showHeartEffect, setShowHeartEffect] = useState(false);
@@ -67,11 +43,16 @@ export default function VideoSearchDetailViewer() {
   const [expandedComments, setExpandedComments] = useState({});
   const [volume, setVolume] = useState(1);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [expandedRepliesMap, setExpandedRepliesMap] = useState({});
+  const [loading, setLoading] = useState(false);
+  
+  // Refs
   const volumeSliderTimeoutRef = useRef(null);
   const playerRef = useRef(null);
   const bgPlayerRef = useRef(null);
   const audioRef = useRef(null);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const scrollTimeoutRef = useRef(null);
   const currentIndexRef = useRef(initialIndex);
   const iconCircleRef = useRef(null);
@@ -83,51 +64,119 @@ export default function VideoSearchDetailViewer() {
   const lastHideStateRef = useRef(hideUserInfo);
   const replyTextareaRef = useRef(null);
   const mainCommentRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(true);
   const hideVolumeTimeoutRef = useRef(null);
-  const { user } = useContext(AuthContext);
+  
+  // Context
+  const { user } = useContext(AuthContext) || {};
   const token = localStorage.getItem("token");
   const currentUserId = localStorage.getItem("userId");
-  const video = videoList && videoList.length > 0 ? videoList[currentIndex] : null;
+
+  // ✅ Nếu không có videoList từ state, fetch video đơn lẻ từ API
+  useEffect(() => {
+    const fetchSingleVideo = async () => {
+      if (safeVideoList.length > 0) return; // Đã có video list từ state
+      
+      if (!maTinDang) return;
+      
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5133/api/video/${maTinDang}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        
+        if (response.data) {
+          setVideoList([response.data]);
+          setCurrentIndex(0);
+        }
+      } catch (error) {
+        console.error('Lỗi khi fetch video:', error);
+        toast.error('Không thể tải video');
+        navigate(-1);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSingleVideo();
+  }, [maTinDang, token, navigate, safeVideoList.length]);
+
+  // ✅ Current video với error handling
+  const video = videoList && videoList.length > 0 && currentIndex >= 0 && currentIndex < videoList.length 
+    ? videoList[currentIndex] 
+    : null;
   const videoUrl = video?.videoUrl;
 
-  // Fetch video like state and comments when video changes
+  // ✅ Ẩn mô tả video khi cuộn comment xuống, giống TikTok
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollRef.current) return;
+      const scrollY = scrollRef.current.scrollTop;
+      setHideUserInfo(scrollY > 60);
+    };
+    
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", handleScroll);
+      return () => el.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
+  // ✅ Cuộn mượt comment section khi mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
+  // ✅ Fetch video like state and comments when video changes
   useEffect(() => {
     if (!video?.maTinDang) return;
+    
     // Fetch like state
     axios.get(`http://localhost:5133/api/video/${video.maTinDang}`, {
-  headers: token ? { Authorization: `Bearer ${token}` } : {},
-}).then(res => {
-  const updatedVideo = res.data;
-  setIsLiked(updatedVideo.isLiked || false);
-  setSoTym(updatedVideo.soTym || 0);
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }).then(res => {
+      const updatedVideo = res.data;
+      setIsLiked(updatedVideo.isLiked || false);
+      setSoTym(updatedVideo.soTym || 0);
 
-  // ✅ Cập nhật cả videoList để có moTa, tieuDe, ...
-  setVideoList(prev =>
-    prev.map((v, i) => i === currentIndex ? { ...v, ...updatedVideo } : v)
-  );
-}).catch(err => console.error(err));
+      // Cập nhật videoList để có moTa, tieuDe, ...
+      setVideoList(prev =>
+        prev.map((v, i) => i === currentIndex ? { ...v, ...updatedVideo } : v)
+      );
+    }).catch(err => console.error('Lỗi khi fetch video info:', err));
+    
     // Fetch comments
     fetchComments();
-  }, [video?.maTinDang]);
+  }, [video?.maTinDang, token, currentIndex]);
 
-  // Count total comments (including replies)
+  // ✅ Count total comments (including replies)
   useEffect(() => {
     const countAll = (list) => list.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
     setTotalCommentCount(countAll(comments));
   }, [comments]);
 
-  // Fetch comments
+  // ✅ Fetch comments
   const fetchComments = useCallback(() => {
     if (!video?.maTinDang) return;
     axios.get(`http://localhost:5133/api/video/${video.maTinDang}/comments`)
       .then(res => setComments(res.data || []))
-      .catch(() => {});
+      .catch(err => console.error('Lỗi khi fetch comments:', err));
   }, [video?.maTinDang]);
 
-  // Handle like
+  // ✅ Handle like
   const handleLike = async () => {
-    if (!token) return alert("Bạn cần đăng nhập để tym video.");
+    if (!token) {
+      toast.error("Bạn cần đăng nhập để tym video.");
+      return;
+    }
+    
+    if (!video?.maTinDang) return;
+    
     try {
       const res = await axios.post(`http://localhost:5133/api/Video/${video.maTinDang}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` },
@@ -137,10 +186,12 @@ export default function VideoSearchDetailViewer() {
       setShowHeartEffect(true);
       setTimeout(() => setShowHeartEffect(false), 600);
     } catch (err) {
-      alert("Lỗi khi tym video");
+      console.error('Lỗi khi tym video:', err);
+      toast.error("Lỗi khi tym video");
     }
   };
 
+  // ✅ Handle delete comment
   const handleDeleteComment = async (commentId) => {
     if (!token) {
       toast.error("Bạn chưa đăng nhập!");
@@ -244,10 +295,10 @@ export default function VideoSearchDetailViewer() {
     }
   };
 
-
-  // Handle submit comment
+  // ✅ Handle submit comment
   const submitComment = async () => {
-    if (!token || !newComment.trim()) return;
+    if (!token || !newComment.trim() || !video?.maTinDang) return;
+    
     try {
       await axios.post(
         `http://localhost:5133/api/video/${video.maTinDang}/comment`,
@@ -257,18 +308,20 @@ export default function VideoSearchDetailViewer() {
       setNewComment("");
       fetchComments();
     } catch (err) {
-      alert("Lỗi khi gửi bình luận");
+      console.error('Lỗi khi gửi bình luận:', err);
+      toast.error("Lỗi khi gửi bình luận");
     }
   };
 
-  // Toggle hiển thị ô nhập reply cho từng comment
+  // ✅ Toggle hiển thị ô nhập reply cho từng comment
   const toggleChildReplyInput = (commentId) => {
     setActiveReplyMap((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
   };
 
-  // Gửi reply cho comment
+  // ✅ Gửi reply cho comment
   const handleReplySubmit = async (parentCommentId, replyContent) => {
-    if (!token || !replyContent?.trim()) return;
+    if (!token || !replyContent?.trim() || !video?.maTinDang) return;
+    
     // Optimistic UI
     const optimisticReply = {
       id: `temp-${Date.now()}`,
@@ -281,13 +334,16 @@ export default function VideoSearchDetailViewer() {
       replies: [],
       isOptimistic: true
     };
+    
     setComments((prev) => prev.map(c =>
       c.id === parentCommentId
         ? { ...c, replies: [...(c.replies || []), optimisticReply] }
         : c
     ));
+    
     setReplyContentMap((prev) => ({ ...prev, [parentCommentId]: "" }));
     setActiveReplyMap((prev) => ({ ...prev, [parentCommentId]: false }));
+    
     try {
       await axios.post(
         `http://localhost:5133/api/video/${video.maTinDang}/comment`,
@@ -296,17 +352,13 @@ export default function VideoSearchDetailViewer() {
       );
       fetchComments();
     } catch (err) {
-      alert("Lỗi khi gửi phản hồi");
+      console.error('Lỗi khi gửi phản hồi:', err);
+      toast.error("Lỗi khi gửi phản hồi");
       fetchComments();
     }
   };
 
-  // Toggle expand/collapse replies
-  const toggleExpandReplies = (commentId) => {
-    setExpandedComments((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
-  };
-
-  // Hàm làm phẳng replies
+  // ✅ Hàm làm phẳng replies
   const flattenReplies = (replies, parentUser) => {
     let flat = [];
     for (const r of replies || []) {
@@ -321,16 +373,15 @@ export default function VideoSearchDetailViewer() {
     return flat;
   };
 
-  // Render comments cha và replies phẳng với chức năng xem thêm/thu gọn replies
-  const [expandedRepliesMap, setExpandedRepliesMap] = useState({});
+  // ✅ Render comments cha và replies phẳng
   const renderCommentsFlat = (commentList) => {
     return commentList.map((comment) => {
       const isMenuOpen = activeMenuCommentId === comment.id;
       const hasReplies = comment.replies?.length > 0;
-      // Làm phẳng replies
       const flatReplies = flattenReplies(comment.replies, comment.userName);
       const isExpanded = expandedRepliesMap[comment.id];
       const showReplies = flatReplies.length > 1 && !isExpanded ? flatReplies.slice(0, 1) : flatReplies;
+      
       return (
         <div key={comment.id} className="lvv-comment-item" style={{ marginLeft: 0 }}>
           <div className="lvv-comment-wrapper">
@@ -489,20 +540,6 @@ export default function VideoSearchDetailViewer() {
                           </div>
                         )}
                       </div>
-                      {/* Nút menu xóa cho reply */}
-                      {reply.userId === currentUserId && (
-                        <div className="lvv-menu-wrapper-child" style={{ position: 'absolute', right: 0, top: 0 }}>
-                          <button
-                            className="lvv-menu-btn"
-                            onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
-                          >⋯</button>
-                          {isReplyMenuOpen && (
-                            <div className="lvv-popup-menu">
-                              <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -511,8 +548,7 @@ export default function VideoSearchDetailViewer() {
               {flatReplies.length > 1 && (
                 <button
                   className="lvv-replies-toggle-btn"
-                  style={{ marginLeft: -10, marginTop: 4, color: '#ffffffff', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 ,padding: '2px 8px',
-    width: 'auto'}}
+                  style={{ marginLeft: -10, marginTop: 4, color: '#ffffffff', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, padding: '2px 8px', width: 'auto'}}
                   onClick={() => setExpandedRepliesMap(prev => ({ ...prev, [comment.id]: !isExpanded }))}
                 >
                   {isExpanded ? `Thu gọn (${flatReplies.length})` : `Xem thêm ${flatReplies.length - 1} phản hồi`}
@@ -525,8 +561,7 @@ export default function VideoSearchDetailViewer() {
     });
   };
 
-  // Thêm các chức năng nâng cao cho video search detail viewer
-  // 1. Chuyển video khi lăn chuột trên video (chỉ trong videoList truyền từ VideoSearchPage)
+  // ✅ Chuyển video khi lăn chuột trên video (chỉ trong videoList)
   useEffect(() => {
     const handleWheel = (e) => {
       if (!videoList || videoList.length <= 1) return;
@@ -548,7 +583,7 @@ export default function VideoSearchDetailViewer() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, [currentIndex, videoList]);
 
-  // 2. Double click vào video chỉ để tym (không bỏ tym), không ảnh hưởng dừng/phát
+  // ✅ Video click handling
   let clickTimeout = null;
   let clickCount = 0;
   const handleVideoClick = () => {
@@ -570,42 +605,117 @@ export default function VideoSearchDetailViewer() {
       // Double click: only like, never unlike
       if (!isLiked) {
         handleLike();
-        setShowHeartEffect(true);
-        setTimeout(() => setShowHeartEffect(false), 600);
-      } else {
-        setShowHeartEffect(true);
-        setTimeout(() => setShowHeartEffect(false), 600);
       }
+      setShowHeartEffect(true);
+      setTimeout(() => setShowHeartEffect(false), 600);
       clickCount = 0;
     }
   };
 
-  // 3. Chỉnh âm lượng khi kéo slider
+  // ✅ Volume handling
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
-    if (playerRef.current) playerRef.current.volume = newVolume;
-    if (playerRef.current) playerRef.current.muted = newVolume === 0;
+    if (playerRef.current) {
+      playerRef.current.volume = newVolume;
+      playerRef.current.muted = newVolume === 0;
+    }
   };
 
-  // UI rendering
+  // ✅ Loading state
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#000',
+        color: '#fff'
+      }}>
+        <div>Đang tải video...</div>
+      </div>
+    );
+  }
+
+  // ✅ Error states
   if (!videoList || videoList.length === 0) {
-    return <div style={{color: '#fff', textAlign: 'center', padding: '40px'}}>Không có video nào để hiển thị.</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#000',
+        color: '#fff',
+        textAlign: 'center'
+      }}>
+        <div style={{ marginBottom: '20px', fontSize: '18px' }}>
+          Không có video nào để hiển thị
+        </div>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#ff7a00',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          Quay lại
+        </button>
+      </div>
+    );
   }
+
   if (!video) {
-    return <div style={{color: '#fff', textAlign: 'center', padding: '40px'}}>Không tìm thấy video phù hợp.</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#000',
+        color: '#fff',
+        textAlign: 'center'
+      }}>
+        <div style={{ marginBottom: '20px', fontSize: '18px' }}>
+          Không tìm thấy video phù hợp
+        </div>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#ff7a00',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          Quay lại
+        </button>
+      </div>
+    );
   }
+
   return (
     <div className="lvv-container" onClick={() => setIsInteracted(true)}>
       {/* Nút quay lại */}
       <button className="lvv-back-btn" onClick={(e) => { e.stopPropagation(); navigate(-1); }}>
         ←
       </button>
+      
       {videoUrl ? (
         <>
           {/* Video nền blur */}
           <video ref={bgPlayerRef} className="lvv-bg-blur" src={videoUrl} autoPlay loop muted playsInline />
+          
           {/* Nút âm lượng + thanh trượt */}
           <div style={{ position: "fixed", bottom: 100, right: 16, zIndex: 100, display: 'flex', alignItems: 'center', gap: '12px', height: '40px' }}>
             <button
@@ -636,7 +746,16 @@ export default function VideoSearchDetailViewer() {
                 value={volume}
                 onChange={handleVolumeChange}
                 className="lvv-volume-slider"
-                style={{ writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical', height: '120px', width: '18px', marginLeft: '10px', borderRadius: '8px', background: 'linear-gradient(180deg, #ff7a00 0%, #ff9500 100%)', accentColor: '#ff7a00' }}
+                style={{ 
+                  writingMode: 'bt-lr', 
+                  WebkitAppearance: 'slider-vertical', 
+                  height: '120px', 
+                  width: '18px', 
+                  marginLeft: '10px', 
+                  borderRadius: '8px', 
+                  background: 'linear-gradient(180deg, #ff7a00 0%, #ff9500 100%)', 
+                  accentColor: '#ff7a00' 
+                }}
                 onMouseEnter={() => {
                   setShowVolumeSlider(true);
                   if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
@@ -648,6 +767,7 @@ export default function VideoSearchDetailViewer() {
               />
             )}
           </div>
+          
           {/* Video chính */}
           <div className="lvv-video-wrapper" style={{ position: "relative" }}>
             <video
@@ -682,29 +802,49 @@ export default function VideoSearchDetailViewer() {
           </div>
         </>
       ) : (
-        <p style={{ color: "#fff" }}>Không tìm thấy video</p>
+        <p style={{ color: "#fff", textAlign: "center", padding: "40px" }}>Không tìm thấy video</p>
       )}
+      
       {/* OVERLAY */}
       <div className="lvv-overlay">
         {/* USER INFO */}
-        {!hideUserInfo && (
+        {!hideUserInfo && video && (
           <div className="lvv-user-info-wrapper">
             <div className="lvv-user-info">
-              <img src={video.nguoiDang.avatarUrl} alt="avatar" className="lvv-avatar" />
+              <img 
+                src={video.nguoiDang?.avatarUrl || defaultAvatar} 
+                alt="avatar" 
+                className="lvv-avatar" 
+              />
               <div className="lvv-user-details">
-                <strong className="lvv-user-name">{video.nguoiDang.fullName}</strong>
-                <div className="lvv-location">{video.diaChi}, {video.quanHuyen}, {video.tinhThanh}</div>
+                <strong className="lvv-user-name">
+                  {video.nguoiDang?.fullName || 'Người dùng'}
+                </strong>
+                <div className="lvv-location">
+                  {video.diaChi && video.quanHuyen && video.tinhThanh 
+                    ? `${video.diaChi}, ${video.quanHuyen}, ${video.tinhThanh}`
+                    : 'Vị trí không xác định'
+                  }
+                </div>
               </div>
             </div>
             <div className="lvv-video-info">
-              <h2 className="lvv-title">{video.tieuDe}</h2>
-              <p className={`lvv-description ${expanded ? "expanded" : ""}`}>{video.moTa}</p>
-              {video.moTa?.length > 120 && (
-                <button onClick={() => setExpanded((prev) => !prev)} className="lvv-read-more">{expanded ? "Thu gọn" : "Xem thêm"}</button>
+              <h2 className="lvv-title">{video.tieuDe || 'Tiêu đề video'}</h2>
+              <p className={`lvv-description ${expanded ? "expanded" : ""}`}>
+                {video.moTa || 'Không có mô tả'}
+              </p>
+              {video.moTa && video.moTa.length > 120 && (
+                <button 
+                  onClick={() => setExpanded((prev) => !prev)} 
+                  className="lvv-read-more"
+                >
+                  {expanded ? "Thu gọn" : "Xem thêm"}
+                </button>
               )}
             </div>
           </div>
         )}
+        
         {/* Nút tym & comment */}
         {!hideUserInfo && (
           <div className="lvv-actions">
@@ -729,17 +869,33 @@ export default function VideoSearchDetailViewer() {
             </button>
           </div>
         )}
+        
         {/* COMMENT SECTION */}
         <div className={`lvv-comment-section ${hideUserInfo ? "pull-up" : ""}`}>
-          <div className="lvv-comments-title-header"><strong>Comments ({totalCommentCount})</strong></div>
+          <div className="lvv-comments-title-header">
+            <strong>Comments ({totalCommentCount})</strong>
+          </div>
           <div ref={scrollRef} className="lvv-comment-scrollable" style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}>
             {renderCommentsFlat(comments)}
+            
             {/* Ô nhập bình luận mới */}
             <div className="lvv-comment-input-fixed">
               <div className="lvv-comment-input-wrapper">
                 <div className="lvv-textarea-group">
-                  <textarea ref={mainCommentRef} value={newComment} onChange={(e) => { const text = e.target.value; if (text.length <= 150) setNewComment(text); }} placeholder="Nhập bình luận..." className="lvv-comment-input" rows={1} />
-                  {newComment.length > 50 && (<div className="lvv-char-counter">{newComment.length}/150</div>)}
+                  <textarea 
+                    ref={mainCommentRef} 
+                    value={newComment} 
+                    onChange={(e) => { 
+                      const text = e.target.value; 
+                      if (text.length <= 150) setNewComment(text); 
+                    }} 
+                    placeholder="Nhập bình luận..." 
+                    className="lvv-comment-input" 
+                    rows={1} 
+                  />
+                  {newComment.length > 50 && (
+                    <div className="lvv-char-counter">{newComment.length}/150</div>
+                  )}
                 </div>
                 <button onClick={submitComment} className="lvv-comment-submit-btn">Gửi</button>
               </div>

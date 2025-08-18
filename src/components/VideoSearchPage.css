@@ -17,21 +17,21 @@
 .vsp-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 80px;
   justify-items: center;
   width: fit-content;
   margin: 0 auto;
 }
 
-/* Mỗi card chỉ chiếm chiều rộng nhỏ */
 .vsp-card {
-  width: 180px;
+  width: 200px; /* Tăng từ 180px → 220px */
+  margin-top: -70px; /* Giữ nguyên nếu vẫn muốn đẩy lên cao */
 }
 
 .vsp-thumbnail {
   position: relative;
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 9 / 16; /* Tỷ lệ dọc như TikTok */
   overflow: hidden;
   border-radius: 10px;
   background-color: #000;
@@ -44,6 +44,7 @@
   object-fit: cover;
   display: block;
 }
+
 
 .vsp-heart {
   color: red;
@@ -111,7 +112,7 @@
 }
 .vsp-menu {
   position: fixed;
-  top: 100px;
+  top: 20px;
   left: 51%;
   transform: translateX(-50%);
 
@@ -156,93 +157,82 @@
   transition: left 0.3s ease, width 0.3s ease;
 }
 .vsp-user-list {
-  position: fixed; /* dùng fixed để giữ nguyên vị trí trên màn hình */
-  top: 200px;
-  left: 50%; /* căn giữa theo chiều ngang */
-  transform: translateX(-50%); /* dịch ngược 50% để thật sự giữa */
+  position: fixed;
+  top: 100px; /* Hạ xuống hợp lý */
+  left: 50%;
+  transform: translateX(-50%);
   
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 
-  width: 360px;
-  max-height: 600px;
-  padding: 20px 24px;
-  background: #ffffff;
-  border-radius: 16px;
+  width: 320px; /* Nhỏ gọn hơn */
+  max-height: 520px;
+  padding: 16px 20px;
+  
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb; /* Viền nhẹ để nổi khối */
 
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 8px 20px rgba(0, 0, 0, 0.08);
-
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  
   overflow-y: auto;
-  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 
-  transition: box-shadow 0.3s ease, transform 0.25s ease;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
   z-index: 1000;
-
-  backdrop-filter: saturate(180%) blur(8px);
-  -webkit-backdrop-filter: saturate(180%) blur(8px);
 }
 
 .vsp-user-list:hover {
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 14px 35px rgba(0, 0, 0, 0.12);
-  transform: translateX(-50%) translateY(-4px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  transform: translateX(-50%) translateY(-2px);
 }
 
+/* Hàng người dùng */
 .vsp-user-row {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 10px 12px;
 
-  background-color: #fefefe;
-  border-radius: 14px;
+  background-color: #fafafa;
+  border-radius: 8px;
 
   cursor: pointer;
   user-select: none;
 
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.2s ease;
+  transition: background-color 0.25s ease, transform 0.15s ease;
 }
 
 .vsp-user-row:hover {
-  background-color: #e7f0ff;
-  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.24);
-  transform: translateX(8px);
+  background-color: #f0f7ff;
+  transform: translateX(4px);
 }
 
+/* Avatar */
 .vsp-user-avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
-}
-
-.vsp-user-row:hover .vsp-user-avatar {
-  box-shadow: 0 0 18px rgba(0, 123, 255, 0.7);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .vsp-user-name {
-  font-weight: 700;
-  font-size: 18px;
-  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: #1f2937;
   white-space: nowrap;
-  color: #222;
-  user-select: text;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 /* Scrollbar (Webkit-based browsers) */
 .vsp-user-list::-webkit-scrollbar {
@@ -261,4 +251,24 @@
 
 .vsp-user-list:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3);
+}
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 8px;
+  margin-left: -40px; /* đẩy sang trái nhẹ */
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  transition: background 0.2s ease;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.suggestion-item:hover {
+  background: rgba(255, 165, 0, 0.08);
 }

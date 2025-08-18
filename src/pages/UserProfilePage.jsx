@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { IoNewspaperOutline } from "react-icons/io5";
+import { MdOutlineOndemandVideo } from "react-icons/md";
+import { CiFolderOff } from "react-icons/ci";
+import { CiVideoOff } from "react-icons/ci";
 import './UserProfilePage.css';
 
 import ShareButton from '../components/ShareButton';
@@ -59,6 +63,17 @@ const UserProfilePage = () => {
     } else {
       video.pause();
     }
+  };
+
+  // Hàm xử lý click vào video để chuyển đến VideoSearchDetailViewer
+  const handleVideoClick = (clickedVideo, videoIndex) => {
+    navigate(`/video-search-detail/${clickedVideo.maTinDang}`, {
+      state: {
+        videoList: videos, // Truyền toàn bộ danh sách video của user
+        initialIndex: videoIndex, // Chỉ số của video được click
+        from: 'userProfile' // Để biết nguồn gốc
+      }
+    });
   };
 
   if (!userInfo) {
@@ -131,13 +146,13 @@ const UserProfilePage = () => {
           className={`userprofilepage-modern-tab ${activeTab === 'posts' ? 'userprofilepage-active' : ''}`}
           onClick={() => setActiveTab('posts')}
         >
-          📋 Tin đăng
+          <IoNewspaperOutline className="userprofilepage-tab-posts-icon" /> Tin đăng
         </button>
         <button
           className={`userprofilepage-modern-tab ${activeTab === 'videos' ? 'userprofilepage-active' : ''}`}
           onClick={() => setActiveTab('videos')}
         >
-          🎥 Video
+          <MdOutlineOndemandVideo className="userprofilepage-tab-videos-icon" /> Video
         </button>
       </div>
 
@@ -146,7 +161,7 @@ const UserProfilePage = () => {
         <div className="userprofilepage-tab-content">
           {posts.length === 0 ? (
             <div className="userprofilepage-modern-empty-state">
-              <div className="userprofilepage-empty-icon">📦</div>
+              <CiFolderOff className="userprofilepage-empty-posts-icon" />
               <p className="userprofilepage-empty-title">Chưa có tin đăng</p>
               <p className="userprofilepage-empty-subtitle">Người dùng này chưa đăng tin nào</p>
             </div>
@@ -209,7 +224,7 @@ const UserProfilePage = () => {
         <div className="userprofilepage-tab-content">
           {videos.length === 0 ? (
             <div className="userprofilepage-modern-empty-state">
-              <div className="userprofilepage-empty-icon">🎬</div>
+              <CiVideoOff className="userprofilepage-empty-videos-icon" />
               <p className="userprofilepage-empty-title">Chưa có video</p>
               <p className="userprofilepage-empty-subtitle">Người dùng này chưa đăng video nào</p>
             </div>
@@ -226,6 +241,8 @@ const UserProfilePage = () => {
                     <div
                       key={video.maTinDang}
                       className="userprofilepage-grid-video-card"
+                      onClick={() => handleVideoClick(video, index)} // Thêm xử lý click
+                      style={{ cursor: 'pointer' }} // Thêm cursor pointer
                       onMouseEnter={(e) => {
                         const videoElement = e.currentTarget.querySelector('video');
                         handleVideoHover(videoElement, true);
@@ -244,6 +261,10 @@ const UserProfilePage = () => {
                           playsInline
                           preload="metadata"
                           className="userprofilepage-grid-video-player"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Ngăn không cho event bubble up
+                            handleVideoClick(video, index);
+                          }}
                         />
                         <div className="userprofilepage-video-overlay">
                           <div className="userprofilepage-video-info">

@@ -1,5 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BiIdCard } from "react-icons/bi";
+import { FaSignOutAlt } from "react-icons/fa";
+import { IoSettingsOutline } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 import defaultAvatar from '../assets/default-avatar.png';
 import './UserAuthButton.css';
@@ -82,19 +85,19 @@ const UserAuthButton = () => {
           <div className="userauthbutton-dropdown-divider"></div>
           
           <button className="userauthbutton-dropdown-item" onClick={handleProfileClick}>
-            <span className="userauthbutton-dropdown-icon">👤</span>
+            <BiIdCard className="userauthbutton-dropdown-icon" />
             Trang cá nhân
           </button>
           
           <button className="userauthbutton-dropdown-item" onClick={handleSettingsClick}>
-            <span className="userauthbutton-dropdown-icon">⚙️</span>
+            <IoSettingsOutline className="userauthbutton-dropdown-icon" />
             Cài đặt tài khoản
           </button>
           
           <div className="userauthbutton-dropdown-divider"></div>
           
           <button className="userauthbutton-dropdown-item userauthbutton-logout" onClick={handleLogoutClick}>
-            <span className="userauthbutton-dropdown-icon">🚪</span>
+            <FaSignOutAlt className="userauthbutton-dropdown-icon" />
             Đăng xuất
           </button>
         </div>
