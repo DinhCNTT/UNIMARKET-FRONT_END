@@ -21,6 +21,7 @@ const UserProfilePage = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showMorePosts, setShowMorePosts] = useState(false);
   const [showMoreVideos, setShowMoreVideos] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false); // State để theo dõi scroll
   const videoRefs = useRef([]);
 
   // Lấy dữ liệu người dùng
@@ -45,6 +46,17 @@ const UserProfilePage = () => {
 
     fetchData();
   }, [userId]);
+
+  // Xử lý scroll để thay đổi navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setIsScrolled(scrollTop > 100); // Thay đổi navbar khi scroll xuống hơn 100px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Xử lý hover video
   const handleVideoHover = (video, shouldPlay) => {
@@ -94,8 +106,8 @@ const UserProfilePage = () => {
     {/* User Auth Button - Góc phải bên trên */}
     <UserAuthButton />
 
-    {/* Navbar */}
-    <TopNavbarUserProfile profileUser={userInfo} />
+    {/* Navbar - Truyền thêm prop isScrolled */}
+    <TopNavbarUserProfile profileUser={userInfo} isScrolled={isScrolled} />
 
     {/* Thông tin người dùng */}
     <div className="userprofilepage-modern-profile-card">

@@ -1,9 +1,9 @@
-/* TopNavbarUserProfile.css - Cleaned & Optimized */
+/* TopNavbarUserProfile.css - Updated with Scroll Effects */
 .topnavbar-userprofile {
     display: flex;
     align-items: center;
     padding: 4px 16px;
-    background: #ff9806; /* 1 màu cam */
+    background: #ff9806; /* Màu cam ban đầu */
     backdrop-filter: blur(10px);
     box-shadow: 
         0 4px 20px rgba(255, 153, 0, 0.3),
@@ -17,6 +17,18 @@
     height: 44px;
     min-height: 44px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease-in-out; /* Hiệu ứng chuyển đổi mượt */
+}
+
+/* Khi scroll - làm navbar trong suốt hoàn toàn */
+.topnavbar-userprofile.topnavbar-userprofile-scrolled {
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    border-bottom: none;
+    padding: 8px 16px;
+    height: 56px;
+    min-height: 56px;
 }
 
 .topnavbar-userprofile-container {
@@ -35,8 +47,42 @@
     gap: 12px;
 }
 
+/* Nội dung khi scroll - chỉ khối trắng bo tròn nổi */
+.topnavbar-userprofile-scrolled-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 25px;
+    padding: 12px 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.topnavbar-userprofile-scrolled-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+    text-align: center;
+    white-space: nowrap;
+    /* Loại bỏ max-width và overflow để tên hiển thị đầy đủ */
+}
+
+.topnavbar-userprofile-scrolled-loading {
+    font-size: 16px;
+    color: #666666;
+    text-align: center;
+    font-style: italic;
+}
+
 /* Back button */
-.topnavbar-userprofile-back-btn {
+.topnavbar-userprofile-btn-back {
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #ffffff;
@@ -53,7 +99,7 @@
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.topnavbar-userprofile-back-btn::before {
+.topnavbar-userprofile-btn-back::before {
     content: '';
     position: absolute;
     top: 0;
@@ -64,36 +110,48 @@
     transition: left 0.6s;
 }
 
-.topnavbar-userprofile-back-btn:hover::before {
+.topnavbar-userprofile-btn-back:hover::before {
     left: 100%;
 }
 
-.topnavbar-userprofile-back-btn:hover {
+.topnavbar-userprofile-btn-back:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateX(-3px) scale(1.05);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.topnavbar-userprofile-back-btn:active {
+.topnavbar-userprofile-btn-back:active {
     transform: translateX(-2px) scale(0.98);
 }
 
 /* Logo */
 .topnavbar-userprofile-logo {
-    font-size: 19px;
+    display: flex;
+    align-items: center;
     font-weight: 800;
+    font-size: 19px;
+    cursor: pointer;
+    gap: 8px;
     color: #ffffff;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    cursor: pointer;
     user-select: none;
-    background: none;
-    -webkit-text-fill-color: #fff;
+    transition: all 0.3s ease;
 }
 
 .topnavbar-userprofile-logo:hover {
     transform: scale(1.05) translateY(-1px);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.topnavbar-userprofile-logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.topnavbar-userprofile-logo-text {
+    color: #ffffff;
 }
 
 /* Center section */
@@ -105,31 +163,24 @@
     margin: 0 24px;
 }
 
-.topnavbar-userprofile-info {
-    text-align: center;
-    position: relative;
-}
-
 .topnavbar-userprofile-title {
     font-size: 15px;
     font-weight: 600;
     color: #ffffff;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 400px;
+    /* Loại bỏ overflow và text-overflow để hiển thị tên đầy đủ */
     display: block;
-
+    text-align: center;
     position: relative;
     left: -70px; /* âm = sang trái, dương = sang phải */
 }
 
-.topnavbar-userprofile-title-prefix {
+.topnavbar-userprofile-title .prefix {
     opacity: 0.9;
     margin-right: 6px;
 }
 
-.topnavbar-userprofile-title-name {
+.topnavbar-userprofile-title .name {
     color: #fff;
     background: none;
     -webkit-text-fill-color: #fff;
@@ -143,7 +194,7 @@
     font-style: italic;
 }
 
-.topnavbar-userprofile-loading-dots {
+.topnavbar-userprofile-loading .dots {
     width: 4px;
     height: 4px;
     border-radius: 50%;
@@ -152,8 +203,8 @@
     animation: loadingDots 1.4s infinite ease-in-out both;
 }
 
-.topnavbar-userprofile-loading-dots::before,
-.topnavbar-userprofile-loading-dots::after {
+.topnavbar-userprofile-loading .dots::before,
+.topnavbar-userprofile-loading .dots::after {
     content: '';
     width: 4px;
     height: 4px;
@@ -163,12 +214,12 @@
     animation: loadingDots 1.4s infinite ease-in-out both;
 }
 
-.topnavbar-userprofile-loading-dots::before {
+.topnavbar-userprofile-loading .dots::before {
     left: -8px;
     animation-delay: -0.32s;
 }
 
-.topnavbar-userprofile-loading-dots::after {
+.topnavbar-userprofile-loading .dots::after {
     left: 8px;
     animation-delay: 0.32s;
 }
@@ -179,7 +230,7 @@
 }
 
 /* Home button */
-.topnavbar-userprofile-home-btn {
+.topnavbar-userprofile-btn-home {
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #ffffff;
@@ -196,7 +247,7 @@
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.topnavbar-userprofile-home-btn::before {
+.topnavbar-userprofile-btn-home::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -209,92 +260,105 @@
     transform: translate(-50%, -50%);
 }
 
-.topnavbar-userprofile-home-btn:hover::before {
+.topnavbar-userprofile-btn-home:hover::before {
     width: 100px;
     height: 100px;
 }
 
-.topnavbar-userprofile-home-btn:hover {
+.topnavbar-userprofile-btn-home:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-.topnavbar-userprofile-home-btn:active {
+.topnavbar-userprofile-btn-home:active {
     transform: translateY(-1px) scale(0.98);
+}
+
+/* Hiệu ứng hover cho khối trắng khi scroll */
+.topnavbar-userprofile-scrolled .topnavbar-userprofile-scrolled-content:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .topnavbar-userprofile {
+    .topnavbar-userprofile-scrolled-content {
+        padding: 8px 16px;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .topnavbar-userprofile { 
+        padding: 6px 12px; 
+    }
+    
+    .topnavbar-userprofile.topnavbar-userprofile-scrolled {
+        padding: 6px 12px;
+    }
+    
+    .topnavbar-userprofile-logo { 
+        font-size: 16px; 
+        letter-spacing: 0.5px; 
+    }
+    
+    .topnavbar-userprofile-title { 
+        font-size: 13px; 
+        /* Tên hiển thị đầy đủ trên mobile nhỏ */
+        left: -30px;
+    }
+    
+    .topnavbar-userprofile-scrolled-title {
+        font-size: 13px;
+        /* Tên sẽ hiển thị đầy đủ trên mobile */
+    }
+    
+    .topnavbar-userprofile-left { 
+        gap: 8px; 
+    }
+    
+    .topnavbar-userprofile-scrolled-content {
+        padding: 6px 12px;
+        border-radius: 18px;
+    }
+}topnavbar-userprofile {
         padding: 6px 15px;
         height: 42px;
         min-height: 42px;
     }
-    .topnavbar-userprofile-logo { font-size: 18px; }
-    .topnavbar-userprofile-title { font-size: 14px; max-width: 200px; }
-    .topnavbar-userprofile-center { margin: 0 10px; }
-    .topnavbar-userprofile-back-btn,
-    .topnavbar-userprofile-home-btn { width: 30px; height: 30px; font-size: 13px; }
-}
-
-@media (max-width: 480px) {
-    .topnavbar-userprofile { padding: 6px 12px; }
-    .topnavbar-userprofile-logo { font-size: 16px; letter-spacing: 0.5px; }
-    .topnavbar-userprofile-title { font-size: 13px; max-width: 150px; }
-    .topnavbar-userprofile-left { gap: 8px; }
-}
-.topnavbar-userprofile-logo {
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  font-size: 1.4rem;
-  cursor: pointer;
-  gap: 8px; /* Khoảng cách giữa logo và chữ */
-  color: #333;
-}
-
-.topnavbar-userprofile-logo:hover {
-  color: #ff2e63;
-}
-
-.topnavbar-userprofile-logo-img {
-  height: 32px;
-  width: auto;
-  object-fit: contain;
-}
-.topnavbar-userprofile-btn-home {
-  background-color: #ff9806;     /* nền màu cam */
-  color: #fff;                   /* icon trắng */
-  border: none;
-  border-radius: 8px;            /* bo tròn nhẹ */
-  padding: 8px 12px;             /* khoảng cách bên trong */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;                /* kích thước icon */
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-.topnavbar-userprofile-btn-home:hover {
-  background-color: #e68905;     /* màu cam đậm hơn khi hover */
-  transform: scale(1.05);        /* hiệu ứng phóng nhẹ khi hover */
-}
-.topnavbar-userprofile-btn-back {
-  background-color: #ff9806;     /* nền cam */
-  color: #fff;                   /* icon trắng */
-  border: none;
-  border-radius: 8px;            /* bo tròn nhẹ */
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.topnavbar-userprofile-btn-back:hover {
-  background-color: #e68905;     /* cam đậm hơn khi hover */
-  transform: scale(1.05);
-}
+    
+    .topnavbar-userprofile.topnavbar-userprofile-scrolled {
+        height: 50px;
+        min-height: 50px;
+        padding: 6px 15px;
+    }
+    
+    .topnavbar-userprofile-logo { 
+        font-size: 18px; 
+    }
+    
+    .topnavbar-userprofile-title { 
+        font-size: 14px; 
+        /* Loại bỏ max-width để tên hiển thị đầy đủ trên mobile */
+        left: -50px;
+    }
+    
+    .topnavbar-userprofile-scrolled-title {
+        font-size: 14px;
+        /* Loại bỏ max-width để tên hiển thị đầy đủ trên mobile */
+    }
+    
+    .topnavbar-userprofile-center { 
+        margin: 0 10px; 
+    }
+    
+    .topnavbar-userprofile-btn-back,
+    .topnavbar-userprofile-btn-home { 
+        width: 30px; 
+        height: 30px; 
+        font-size: 13px; 
+    }
+    
+    .
