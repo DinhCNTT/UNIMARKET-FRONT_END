@@ -32,6 +32,7 @@
   background: #000;
   height: 98%;
   max-width: 650px; /* mặc định video dọc */
+  flex-shrink: 0;
 }
 
 /* Container video ngang */
@@ -39,7 +40,10 @@
   max-width: 1000px;   /* chiều ngang video ngang */
   max-height: 600px;  /* chiều cao video ngang */
 }
-
+.vdv-container.vdv-square {
+  max-width: 600px;
+  max-height: 600px;
+}
 /* Player video */
 .vdv-player {
   width: 100%;
@@ -69,18 +73,37 @@
   position: relative;
 }
 
-/* Mỗi video full màn hình */
+
+/* Mỗi "màn hình" 1 video full-viewport */
 .video-item {
   height: 100vh;
-  transition: transform 0.65s ease-out; /* Chậm hơn, mượt hơn */
-  will-change: transform;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
 /* Khi đang chuyển video */
+/* Khi đang chuyển video: chặn click để không vướng logic cũ */
 body.video-transitioning .video-item {
-  pointer-events: none; /* Chặn click khi đang animating */
+  pointer-events: none;
 }
 
+
+/* Viewport hứng nội dung và chặn overflow */
+.video-list-container {
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Cả khối trượt */
+.video-list-wrapper {
+  height: 100%;
+  width: 100%;
+  transition: transform 0.65s ease-out;
+  will-change: transform;
+}
 .vdv-overlay {
   position: absolute;
   bottom: 20px;
@@ -92,9 +115,20 @@ body.video-transitioning .video-item {
 }
 
 .vdv-user-name {
-  font-weight: bold;
   font-size: 16px;
-  margin-bottom: 4px;
+  font-weight: 600; /* vừa phải, không nặng như bold */
+  margin-bottom: 6px;
+
+  color: #ffffff; /* trắng sáng nổi bật */
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+  letter-spacing: 0.3px; /* giãn nhẹ cho cân đối */
+  
+  /* Bóng mờ nhẹ để đọc rõ trên video */
+  text-shadow: 
+    0 1px 2px rgba(0,0,0,0.6),
+    0 0 3px rgba(0,0,0,0.4);
+
+  user-select: none; /* tránh bị bôi đen */
 }
 
 .vdv-title {
@@ -104,37 +138,83 @@ body.video-transitioning .video-item {
 
 .vdv-description {
   font-size: 14px;
-  margin-bottom: 4px;
+  font-weight: 400; /* chữ nhẹ nhàng hơn giá */
+  line-height: 1.5;
+  max-width: 30em; /* khoảng 55-60 ký tự / dòng */
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* chỉ 2 dòng */
   overflow: hidden;
   text-overflow: ellipsis;
-  -webkit-line-clamp: 2; /* Giới hạn 2 hàng */
+  white-space: normal;
+  word-break: break-word;
+
+  color: #eaeaea; /* xám trắng tinh tế, dễ đọc trên video */
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+
+  /* thêm bóng mờ nhẹ để nổi bật trên video */
+  text-shadow: 
+    0 1px 2px rgba(0,0,0,0.6), 
+    0 0 3px rgba(0,0,0,0.4);
+
+  user-select: none;
 }
 
 .vdv-description-expanded {
-  -webkit-line-clamp: unset; /* Hiển thị toàn bộ khi mở rộng */
+  -webkit-line-clamp: unset;
+  display: block;
+  max-width: 100%; /* cho bung hết khi mở rộng */
 }
 
 .vdv-toggle-description {
-  color: #00f;
+  margin-top: 4px;
+  color: #4da3ff; /* xanh hiện đại, dễ nhìn */
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 13px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .vdv-price-address {
   font-size: 14px;
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+.vdv-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ff3b30; /* đỏ cam cực nổi */
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+  font-family: 'Inter', 'Roboto', 'Segoe UI', sans-serif;
+
+  text-shadow: 
+    0 2px 4px rgba(0,0,0,0.6), /* viền đen mạnh để nổi trên video */
+    0 0 6px rgba(255,59,48,0.4);
+
+  user-select: none;
 }
 
-.vdv-price {
-  font-weight: bold;
-  color: #2ecc71;
-}
 
 .vdv-address {
-  color: white;
-}
+  font-size: 13px; 
+  font-weight: 500;
+  color: #f1f1f1; /* xám trắng dịu, không lấn át giá */
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+  max-width: 90%;  /* tránh quá dài tràn màn hình */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
+  /* Bóng nhẹ cho dễ đọc trên nền video */
+  text-shadow: 
+    0 1px 2px rgba(0,0,0,0.6), 
+    0 0 3px rgba(0,0,0,0.4);
+
+  user-select: none;
+}
 .vdv-info-left {
   color: white;
 }
@@ -143,11 +223,11 @@ body.video-transitioning .video-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  margin-top: 100px; /* ↓ dịch lên trên */
-  position: relative;
+  gap: 10px;
+  margin-left: 20px; /* đẩy sang phải ngoài video */
+  z-index: 5;
+  margin-top: 100px;
 }
-
 .vdv-user-avatar {
   width: 48px;
   height: 48px;
@@ -170,16 +250,22 @@ body.video-transitioning .video-item {
   position: relative; /* Để vòng tròn lan tỏa định vị đúng */
 }
 
-
-
 .vdv-icon-label {
-  font-size: 12px;
-  color: #000;
+  font-size: 13px;                       /* dễ đọc trên mobile */
+  font-weight: 600;                      /* chữ dày hơn */
+  color: #111;                           /* đen sang, không quá gắt */
   text-align: center;
-  text-shadow: 0 0 3px white;
-  margin-bottom: -5px;
-  font-weight: 500;
+  letter-spacing: 0.3px;                 /* cân đối */
+  text-shadow: 
+    0 0 2px rgba(255,255,255,0.6),       /* viền sáng mờ */
+    0 0 4px rgba(255,255,255,0.4);       /* glow nhẹ để nổi bật */
+  margin-top: 4px;
+  line-height: 1.2;
+  font-family: 'Inter', 'Roboto', sans-serif; /* font hiện đại */
+  user-select: none;                     /* tránh bôi đen */
 }
+
+
 /* Hiệu ứng trái tim lớn khi nhấp đúp hoặc tym lần đầu */
 .vdv-heart-effect {
   position: absolute;
@@ -433,67 +519,110 @@ body.video-transitioning .video-item {
   color: white;
 }
 
-/* Responsive cho mobile - tooltip hiển thị phía trên */
 @media (max-width: 768px) {
   .vdv-chat-button::after {
+    content: attr(title); /* lấy text từ title */
+    position: absolute;
     left: 50%;
     top: -45px;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
-  
+
+  .vdv-chat-button:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .vdv-chat-button::before {
+    content: "";
+    position: absolute;
     left: 50%;
     top: -15px;
     transform: translateX(-50%);
-    border-right-color: transparent;
-    border-top-color: rgba(0, 0, 0, 0.8);
+    border: 7px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.85);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .vdv-chat-button:hover::before {
+    opacity: 1;
   }
 }
-/* Nút tym hiệu ứng đẹp */
 .vdv-like-button {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .vdv-like-button:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 12px rgba(255, 77, 109, 0.6);
+  transform: scale(1.2) rotate(-5deg);
+  box-shadow: 0 0 15px rgba(255, 77, 109, 0.7);
 }
 
-/* Khi đã tym */
 .vdv-like-button.liked {
-  animation: heartBeat 0.4s ease;
+  animation: heartBeat 0.6s ease, pulseGlow 1s ease-out;
 }
 
-/* Hiệu ứng nhịp tim */
 @keyframes heartBeat {
   0% { transform: scale(1); }
-  25% { transform: scale(1.4); }
-  50% { transform: scale(0.9); }
-  75% { transform: scale(1.2); }
+  20% { transform: scale(1.4); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.3); }
+  80% { transform: scale(0.97); }
   100% { transform: scale(1); }
 }
 
-/* Hiệu ứng trái tim double-click */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 rgba(255, 77, 109, 0.7); }
+  70% { box-shadow: 0 0 20px rgba(255, 77, 109, 0); }
+  100% { box-shadow: 0 0 0 rgba(255, 77, 109, 0); }
+}
+
+
 .vdv-heart-animation {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  animation: vdv-fadeOut 0.7s ease-out forwards;
+  transform: translate(-50%, -50%) scale(0);
+  animation: vdv-heart-pop 1s ease forwards;
   pointer-events: none;
   z-index: 3;
+  color: #ff4d6d; /* màu tím/đỏ chủ đạo */
+  filter: drop-shadow(0 0 8px rgba(255, 77, 109, 0.5));
 }
 
-@keyframes vdv-fadeOut {
+@keyframes vdv-heart-pop {
   0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  20% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.3);
+    transform: translate(-50%, -50%) scale(1.3) rotate(-10deg);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(-5deg);
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(5deg);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.8);
+    transform: translate(-50%, -50%) scale(1.8) rotate(0deg);
   }
 }
+
 /* Khi mở comment - video dọc */
 .vdv-container.vdv-portrait.comment-open {
   transform: translateX(-100px); /* dịch sang trái */
@@ -516,4 +645,70 @@ body.video-transitioning .video-item {
 .vdv-container.vdv-landscape.comment-open ~ .vdv-side-info {
   transform: translateX(-250px);
   transition: transform 0.3s ease;
+}
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px); /* Hiệu ứng mờ chuyên nghiệp */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Spinner dạng vòng tròn mảnh */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #eee;
+  letter-spacing: 0.5px;
+  animation: pulse 1.5s infinite;
+}
+
+/* Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
 }
