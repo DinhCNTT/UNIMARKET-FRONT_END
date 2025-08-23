@@ -9,8 +9,9 @@
   max-width: 1000px;
   margin: 0 auto;
   position: relative;
-  left: -10px; /* dịch sang trái 20px */
+  left: -125px; /* dịch sang trái 20px */
 }
+
 /* Form chính */
 .capnhat-form {
   display: flex;
@@ -25,6 +26,7 @@
   margin-left: -10%;
   margin-right: auto;
   min-height: 1300px;
+  position: relative; /* Thêm để kiểm soát z-index */
 }
 
 /* Thông báo trạng thái */
@@ -51,6 +53,28 @@
   margin-bottom: 20px;
   margin-left: 45%;
   margin-right: 0;
+  position: relative;
+  z-index: 10; /* Đảm bảo nằm trên media-box */
+}
+
+.capnhat-group-ViTri1{
+  width: 570px;
+  margin-bottom: 20px;
+  margin-left: 38%;
+  margin-right: 0;
+  position: absolute; /* Thay đổi thành absolute */
+  z-index: 10;
+  top: 635px; /* Đặt vị trí cố định */
+}
+
+.capnhat-group-ViTri2{
+  width: 570px;
+  margin-bottom: 20px;
+  margin-left: 38%;
+  margin-right: 0;
+  position: absolute; /* Thay đổi thành absolute */
+  z-index: 10;
+  top: 725px; /* Đặt vị trí cố định, cách group 1 khoảng 90px */
 }
 
 .capnhat-label {
@@ -58,6 +82,38 @@
   display: block;
   margin-bottom: 5px;
   color: #333;
+}
+
+.capnhat-TinhThanh-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.capnhat-QuanHuyen-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.capnhat-TinhThanh-select{
+   width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.capnhat-QuanHuyen-select{
+   width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
 .capnhat-input,
@@ -73,7 +129,9 @@
 
 .capnhat-input:focus,
 .capnhat-select:focus,
-.capnhat-textarea:focus {
+.capnhat-textarea:focus,
+.capnhat-TinhThanh-select:focus,
+.capnhat-QuanHuyen-select:focus {
   outline: none;
   border-color: #f76c0d;
   box-shadow: 0 0 5px rgba(247, 108, 13, 0.3);
@@ -98,7 +156,7 @@
   max-width: 600px;
   position: relative;
   left: -320px;
-  top: -670px;
+  top: -670px; /* Giữ nguyên như cũ */
   z-index: 1;
 }
 
@@ -359,7 +417,9 @@
     padding: 20px;
   }
   
-  .capnhat-group {
+  .capnhat-group,
+  .capnhat-group-ViTri1,
+  .capnhat-group-ViTri2 {
     width: 100%;
     margin-left: 0;
   }

@@ -1,363 +1,210 @@
-/* Scoped CSS cho Login Component */
 
-/* Container chính */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Layout HomePage */
+.unimarketHomeContainer {
   min-height: 100vh;
-  padding: 20px;
-  background-color: #f5f5f5;
-  background-image: url('https://static.chotot.com/storage/marketplace/login-background.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #fef3c7, #fde68a, #f59e0b, #d97706);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.unimarketHomeContent {
+  text-align: center;
+}
+.unimarketHomeBrand {
+  margin-bottom: 2rem;
+}
+.unimarketHomeBrandLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.unimarketHomeBrandIcon {
+  background: #fbbf24;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-right: 0.75rem;
+}
+.unimarketHomeBrandIconText {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+.unimarketHomeBrandText {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+.unimarketHomeBrandSlogan {
+  font-size: 1.25rem;
+  color: #374151;
+}
+.unimarketHomeActions {
+  margin-top: 2rem;
+}
+.unimarketHomeLoginBtn {
+  background: #fbbf24;
+  color: #1f2937;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-right: 1rem;
+}
+.unimarketHomeLoginBtn:hover {
+  background: #f59e0b;
+}
+.unimarketHomeRegisterBtn {
+  background: #fff;
+  color: #1f2937;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.unimarketHomeRegisterBtn:hover {
+  background: #f3f4f6;
+}
+
+/* Sửa lại login cho đồng bộ layout */
+.unimarketLoginContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdf6e3, #fceabb, #f9d776, #f6c453);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
-
-/* Hộp đăng nhập */
-.login-container .login-box {
-  background: #ffffff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  width: 60vw;
-  min-width: 340px;
-  max-width: 600px;
+.unimarketLoginLeftSide {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.unimarketLoginBranding {
   text-align: center;
-  border: 1px solid #e0e0e0;
-  margin: 0 auto;
+  max-width: 32rem;
 }
-
-/* Tiêu đề */
-.login-container .login-box h2 {
-  color: #333333;
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 30px;
-  margin-top: 0;
+.unimarketLoginBranding img {
+  animation: float 3s ease-in-out infinite;
+  transition: transform 0.3s ease;
 }
-
-/* Form styling */
-.login-container .login-form,
-.login-container .login-box form {
+.unimarketLoginBranding img:hover {
+  transform: scale(1.1);
+}
+.unimarketLoginSlogan {
+  margin-top: -4rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.5;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.unimarketLoginWelcomeText {
+  margin-top: 2rem;
+  color: #374151;
+}
+.unimarketLoginWelcomeTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+.unimarketLoginWelcomeSubtitle {
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+.unimarketLoginRightSide {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.unimarketLoginFormWrapper {
+  width: 100%;
+  max-width: 28rem;
+}
+.unimarketLoginFormContainer {
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2.5rem;
+  border: 1px solid #fef3c7;
+  transition: all 0.3s ease;
+}
+.unimarketLoginFormContainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+}
+.unimarketLoginTitle {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.unimarketLoginForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 1.5rem;
 }
-
-/* Input fields - Chỉ áp dụng cho input trong login-box */
-.login-container .login-box input[type="email"],
-.login-container .login-box input[type="password"],
-.login-container .login-box input[type="tel"] {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #333;
-  font-size: 14px;
-  font-weight: 400;
-  transition: all 0.2s ease;
+.unimarketLoginInput {
+  width: 90%;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-align: left; /* Thêm dòng này để căn trái nội dung input */
+}
+.unimarketLoginInput:focus {
+  border-color: #fbbf24;
   outline: none;
-  box-sizing: border-box;
-  margin: 0;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(251, 191, 36, 0.2);
 }
-
-.login-container .login-box input[type="email"]:focus,
-.login-container .login-box input[type="password"]:focus,
-.login-container .login-box input[type="tel"]:focus {
-  border-color: #ffba00;
-  box-shadow: 0 0 0 2px rgba(255, 186, 0, 0.2);
+.unimarketLoginInput:hover {
+  border-color: #fbbf24;
+  transform: translateY(-1px);
 }
-
-.login-container .login-box input[type="email"]::placeholder,
-.login-container .login-box input[type="password"]::placeholder,
-.login-container .login-box input[type="tel"]::placeholder {
-  color: #999;
-  font-weight: 400;
+.unimarketLoginForgotPassword {
+  text-align: right;
 }
-
-.login-container .login-box input[type="email"]:disabled,
-.login-container .login-box input[type="password"]:disabled,
-.login-container .login-box input[type="tel"]:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Required indicator */
-.login-container .required {
-  color: #ff4757;
-  font-size: 12px;
-  margin-left: 2px;
-}
-
-/* Forgot password link */
-.login-container .forgot-password {
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-.login-container .forgot-password a {
-  color: #666;
-  font-size: 13px;
+.unimarketLoginForgotPasswordLink {
+  font-size: 0.875rem;
+  color: #6b7280;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s;
 }
-
-.login-container .forgot-password a:hover {
-  color: #ffba00;
+.unimarketLoginForgotPasswordLink:hover {
+  color: #d97706;
 }
-
-/* Nút đăng nhập chính - Chỉ áp dụng trong login-box */
-.login-container .login-box button[type="submit"] {
+.unimarketLoginButton {
   width: 100%;
-  padding: 12px;
-  background-color: #ffba00;
-  color: #333;
+  background: linear-gradient(to right, #fbbf24, #f59e0b);
+  color: #1f2937;
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 0.75rem;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: none;
-  letter-spacing: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-.login-container .login-box button[type="submit"]:hover:not(:disabled) {
-  background-color: #e6a600;
-}
-
-.login-container .login-box button[type="submit"]:active:not(:disabled) {
-  background-color: #cc9500;
-}
-
-.login-container .login-box button[type="submit"]:disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: not-allowed;
-}
-
-/* Divider */
-.login-container .divider {
-  margin: 40px 5px 24px 5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   position: relative;
-  text-align: center;
+  overflow: hidden;
 }
-
-.login-container .divider span {
-  background: #ffffff;
-  color: #666;
-  padding: 0 16px;
-  font-size: 13px;
-  font-weight: 400;
-}
-
-.login-container .divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e0e0e0;
-}
-
-/* Social login buttons */
-.login-container .social-login {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.login-container .social-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-  font-weight: 400;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: #666;
-  position: relative;
-  min-height: 40px;
-}
-
-.login-container .social-btn:hover:not(:disabled) {
-  background: #f8f9fa;
-  border-color: #d0d0d0;
-}
-
-.login-container .social-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Facebook button styling */
-.login-container .facebook-button {
-  flex: 1;
-  background-color: #1877F2;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  gap: 6px;
-  min-height: 40px;
-  box-sizing: border-box;
-}
-
-.login-container .facebook-button:hover:not(:disabled) {
-  background-color: #166fe5;
-}
-
-.login-container .facebook-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.login-container .facebook-icon {
-  font-size: 14px;
-}
-
-/* Google login button container */
-.login-container .google-login-container {
-  flex: 1;
-}
-
-.login-container .google-login-container > div {
-  width: 100% !important;
-}
-
-.login-container .google-login-container button {
-  width: 100% !important;
-  height: 40px !important;
-  border-radius: 4px !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  justify-content: center !important;
-}
-
-/* Loading state for social buttons */
-.login-container .social-loading {
-  color: #666;
-  font-size: 12px;
-  margin-top: 8px;
-  text-align: center;
-}
-
-/* Link đăng ký */
-.login-container .signup-link {
-  color: #666;
-  font-size: 13px;
-  font-weight: 400;
-  margin: 0;
-}
-
-.login-container .signup-link a {
-  color: #1877f2;
-  text-decoration: none;
-  font-weight: 400;
-  transition: color 0.2s ease;
-}
-
-.login-container .signup-link a:hover {
-  color: #166fe5;
-  text-decoration: underline;
-}
-
-/* Footer links */
-.login-container .footer-links {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.login-container .footer-links a {
-  color: #666;
-  font-size: 12px;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.login-container .footer-links a:hover {
-  color: #ffba00;
-}
-
-/* Brand logos section */
-.login-container .brand-logos {
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.login-container .brand-logos p {
-  color: #666;
-  font-size: 12px;
-  margin-bottom: 12px;
-  margin-top: 0;
-}
-
-.login-container .logos-container {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  align-items: center;
-}
-
-.login-container .logo-item {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.login-container .chotot { color: #ffba00; }
-.login-container .nhatot { color: #ff6b35; }
-.login-container .vatot { color: #0066cc; }
-.login-container .chotot-xe { color: #ff4757; }
-
-/* Toast styles */
-.login-container .error-message {
-  background: #fff5f5;
-  color: #c53030;
-  padding: 12px 16px;
-  border-radius: 4px;
-  text-align: center;
-  font-weight: 400;
-  margin-bottom: 16px;
-  border: 1px solid #fed7d7;
-  font-size: 13px;
-}
-
-/* Loading animation */
-.login-container .loading {
-  position: relative;
+.unimarketLoginButton.loading {
   color: transparent !important;
 }
-
-.login-container .loading::after {
+.unimarketLoginButton.loading::after {
   content: '';
   position: absolute;
   width: 16px;
@@ -371,106 +218,95 @@
   border-radius: 50%;
   animation: login-spin 0.8s linear infinite;
 }
-
 @keyframes login-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
-/* Phone number input specific styling */
-.login-container .phone-input-container {
+.unimarketLoginButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.unimarketLoginDivider {
+  margin-top: 2rem;
+  text-align: center;
+}
+.unimarketLoginDividerLine {
   position: relative;
 }
-
-.login-container .country-code {
+.unimarketLoginDividerLine::before {
+  content: "";
   position: absolute;
-  left: 12px;
   top: 50%;
-  transform: translateY(-50%);
-  color: #666;
-  font-size: 14px;
-  pointer-events: none;
-  z-index: 1;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e7eb;
 }
-
-.login-container input[type="tel"] {
-  padding-left: 45px !important;
+.unimarketLoginDividerText {
+  position: relative;
+  padding: 0 1rem;
+  background: white;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
-
-/* Icon styling for social buttons */
-.login-container .social-btn .icon {
-  width: 16px;
-  height: 16px;
+.unimarketLoginSocialButtons {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
 }
-
-/* Additional Chợ Tốt specific styles */
-.login-container .chotot-brand {
-  color: #ffba00;
-  font-weight: 700;
-}
-
-.login-container .secondary-text {
-  color: #666;
-  font-size: 13px;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .login-container {
-    padding: 16px;
-  }
-  
-  .login-container .login-box {
-    padding: 24px 20px;
-    max-width: 100%;
-    box-shadow: none;
-    border: none;
-    width: 100%;
-  }
-  
-  .login-container .login-box h2 {
-    font-size: 20px;
-    margin-bottom: 24px;
-  }
-  
-  .login-container .social-login {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .login-container .footer-links {
-    gap: 16px;
-  }
-  
-  .login-container .logos-container {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  
-  .login-container .google-login-container > div {
-    width: 100% !important;
-  }
-  
-  .login-container .facebook-button {
-    width: 100%;
-  }
-}
-
-/* Đảm bảo không ảnh hưởng đến các component khác */
-.login-container * {
-  box-sizing: border-box;
-}
-
-/* Override các style global có thể conflict */
-.login-container button:not([type="submit"]):not(.facebook-button):not(.social-btn) {
-  /* Reset styles cho các button khác */
-  all: unset;
-  display: inline-block;
+.unimarketLoginSocialButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  background: transparent;
+  border-radius: 0.75rem;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+.unimarketLoginSocialButton:hover {
+  border-color: transparent;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
 }
 
-/* Đảm bảo form không bị ảnh hưởng bởi global styles */
-.login-container form {
-  margin: 0;
-  padding: 0;
+.google-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+.unimarketLoginSignupLink {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+.unimarketLoginSignupLinkText {
+  color: #d97706;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.unimarketLoginSignupLinkText::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #d97706;
+  transition: width 0.3s ease;
+}
+.unimarketLoginSignupLinkText:hover::after {
+  width: 100%;
+}
+.unimarketLoginSignupLinkText:hover {
+  color: #b45309;
+  transform: translateY(-1px);
 }
