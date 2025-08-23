@@ -42,6 +42,7 @@
 .um-tn-icon-btn svg {
   font-size: 28px; /* icon to rõ hơn */
   transition: transform 0.25s ease, color 0.25s ease;
+  flex-shrink: 0; 
 }
 
 .um-tn-icon-btn:hover,
@@ -73,7 +74,7 @@
 .um-tn-icon-btn.search-btn {
   border: 1px solid #ccc;     /* viền */
   border-radius: 20px;        /* bo tròn */
-  padding: 8px 12px;
+  padding: 8px 10px;
   background: #fff;
 }
 
@@ -147,6 +148,7 @@
 .um-tn-navbar.collapsed .um-tn-icon-btn svg {
   width: 24px;
   height: 24px;
+
 }
 
 /* Ô search khi thu gọn */

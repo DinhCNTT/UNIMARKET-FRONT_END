@@ -1,16 +1,18 @@
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from "react-router-dom";
-import { SearchProvider } from "./context/SearchContext"; 
-import { CategoryProvider } from "./context/CategoryContext"; 
-import { LocationProvider } from "./context/LocationContext"; 
+import { AuthProvider } from "./context/AuthContext";
+import { SearchProvider } from "./context/SearchContext";
+import { CategoryProvider } from "./context/CategoryContext";
+import { LocationProvider } from "./context/LocationContext";
+import { VideoProvider } from "./context/VideoContext"; // ✅ thêm dòng này
+import AppRoutes from "./routes/AppRoutes";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Toaster as HotToaster } from "react-hot-toast";   // ✅ Đổi tên tránh xung đột
-import { Toaster as SonnerToaster } from "sonner";         // ✅ Đổi tên tránh xung đột
+import { Toaster as HotToaster } from "react-hot-toast";
+import { Toaster as SonnerToaster } from "sonner";
 
-const clientId = "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com"; 
+const clientId = "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com";
 
 function App() {
   return (
@@ -20,16 +22,18 @@ function App() {
           <SearchProvider>
             <CategoryProvider>
               <LocationProvider>
-                <AppRoutes />
+                <VideoProvider> {/* ✅ Bọc thêm ở đây */}
+                  <AppRoutes />
 
-                {/* ✅ Hot Toast (thời gian hiển thị tùy chỉnh) */}
-                <HotToaster position="top-center" reverseOrder={false} toastOptions={{ duration: 2500 }} />
+                  {/* ✅ Hot Toast */}
+                  <HotToaster position="top-center" reverseOrder={false} toastOptions={{ duration: 2500 }} />
 
-                {/* ✅ Sonner Toast */}
-                <SonnerToaster position="top-center" richColors reverseOrder={false} /> 
+                  {/* ✅ Sonner Toast */}
+                  <SonnerToaster position="top-center" richColors reverseOrder={false} /> 
 
-                {/* ✅ React Toastify */}
-                <ToastContainer />
+                  {/* ✅ React Toastify */}
+                  <ToastContainer />
+                </VideoProvider>
               </LocationProvider>
             </CategoryProvider>
           </SearchProvider>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import {
   FiSearch,
   FiBell,
@@ -10,39 +10,52 @@ import {
 } from "react-icons/fi";
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import "./TopNavbarUniMarket.css";
+import { useNavigate } from "react-router-dom"; 
+import { VideoContext } from "../context/VideoContext";
 
 export default function TopNavbarUniMarket() {
-  const [activeTab, setActiveTab] = useState(null);
   const navRef = useRef(null);
   const panelRef = useRef(null);
+  const navigate = useNavigate();
 
-  const toggleTab = (tab) => {
-    setActiveTab((prev) => (prev === tab ? null : tab));
-  };
+  const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        navRef.current &&
-        !navRef.current.contains(e.target) &&
-        panelRef.current &&
-        !panelRef.current.contains(e.target)
-      ) {
+// ✅ toggle tab
+const toggleTab = (tab) => {
+  if (tab === "forYou") {
+    setActiveTab("forYou");
+    triggerReload(); // ✅ có loading hiệu ứng
+  } else if (tab === "search") {
+    setActiveTab("search");
+  } else {
+    setActiveTab(tab);
+  }
+};
+
+
+// ✅ Click outside để đóng panel
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (
+      navRef.current &&
+      !navRef.current.contains(e.target) &&
+      panelRef.current &&
+      !panelRef.current.contains(e.target)
+    ) {
+      if (activeTab === "search") {
+        // 👉 nếu đang search mà click ngoài thì quay về forYou
+        setActiveTab("forYou");
+      } else if (activeTab !== "forYou") {
+        // 👉 nếu là tab khác (upload, message, user...) thì đóng hẳn
         setActiveTab(null);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () =>
+    document.removeEventListener("mousedown", handleClickOutside);
+}, [activeTab, setActiveTab]);
 
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") setActiveTab(null);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
 
   return (
     <div className="um-tn-root">
@@ -51,7 +64,14 @@ export default function TopNavbarUniMarket() {
         ref={navRef}
       >
         {/* Logo */}
-        <div className="um-tn-logo" onClick={() => setActiveTab(null)}>
+        <div
+          className="um-tn-logo"
+          onClick={() => {
+            setActiveTab("forYou"); // bấm logo về mặc định For You
+            navigate("/market");   
+          }}
+          style={{ cursor: "pointer" }}
+        >
           {activeTab === "search" ? (
             <div className="um-tn-logo-u">U</div>
           ) : (
@@ -74,8 +94,9 @@ export default function TopNavbarUniMarket() {
           {activeTab !== "search" && <span>Search</span>}
         </button>
 
-        {/* Các icon còn lại */}
+        {/* Các nút Menu */}
         <div className="um-tn-icons">
+          {/* For You */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "forYou" ? "active" : ""
@@ -83,9 +104,10 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("forYou")}
           >
             <FiHome size={20} />
-            {activeTab !== "search" && <span>For You</span>}
+            <span>For You</span>
           </button>
 
+          {/* Explore */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "explore" ? "active" : ""
@@ -96,6 +118,7 @@ export default function TopNavbarUniMarket() {
             {activeTab !== "search" && <span>Explore</span>}
           </button>
 
+          {/* Upload */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "upload" ? "active" : ""
@@ -106,6 +129,7 @@ export default function TopNavbarUniMarket() {
             {activeTab !== "search" && <span>Upload</span>}
           </button>
 
+          {/* Activity */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "activity" ? "active" : ""
@@ -116,6 +140,7 @@ export default function TopNavbarUniMarket() {
             {activeTab !== "search" && <span>Activity</span>}
           </button>
 
+          {/* Messages */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "messages" ? "active" : ""
@@ -126,6 +151,7 @@ export default function TopNavbarUniMarket() {
             {activeTab !== "search" && <span>Messages</span>}
           </button>
 
+          {/* Profile */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "profile" ? "active" : ""
@@ -179,12 +205,11 @@ export default function TopNavbarUniMarket() {
           </div>
         )}
 
-        {activeTab === "forYou" && (
-          <div className="um-tn-tab-content" ref={panelRef}>
-            <h3>For You</h3>
-          </div>
+        {activeTab === "forYou" && ( 
+          <div className="um-tn-tab-content" ref={panelRef}> 
+        </div>
         )}
-
+        
         {activeTab === "explore" && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <h3>Explore</h3>
