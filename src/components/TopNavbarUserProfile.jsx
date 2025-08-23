@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
-import { FaArrowLeft, FaHome } from "react-icons/fa";
+import { FaArrowLeft, FaHome, FaUser } from "react-icons/fa";
 import "./TopNavbarUserProfile.css";
 
 const TopNavbarUserProfile = ({ profileUser, isScrolled }) => {
@@ -79,13 +79,28 @@ const TopNavbarUserProfile = ({ profileUser, isScrolled }) => {
           </>
         )}
 
-        {/* Khi scroll - chỉ hiển thị tên profile trong khối trắng bo tròn */}
+        {/* Khi scroll - hiển thị avatar + tên profile trong khối trắng bo tròn */}
         {isScrolled && (
           <div className="topnavbar-userprofile-scrolled-content">
             {profileUser && (profileUser.fullName || profileUser.tenNguoiDung) ? (
-              <div className="topnavbar-userprofile-scrolled-title">
-                Trang cá nhân của {profileUser.fullName || profileUser.tenNguoiDung}
-              </div>
+              <>
+                <div className="topnavbar-userprofile-scrolled-avatar">
+                  {profileUser.avatarUrl || profileUser.anhDaiDien ? (
+                    <img 
+                      src={profileUser.avatarUrl || profileUser.anhDaiDien} 
+                      alt="Avatar" 
+                      className="topnavbar-userprofile-scrolled-avatar-img"
+                    />
+                  ) : (
+                    <div className="topnavbar-userprofile-scrolled-avatar-default">
+                      <FaUser />
+                    </div>
+                  )}
+                </div>
+                <div className="topnavbar-userprofile-scrolled-title">
+                  Trang cá nhân của {profileUser.fullName || profileUser.tenNguoiDung}
+                </div>
+              </>
             ) : (
               <div className="topnavbar-userprofile-scrolled-loading">
                 Đang tải thông tin...

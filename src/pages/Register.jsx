@@ -189,118 +189,128 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="rf-register-container">
-      <div className="rf-register-box">
-        <h2 className="rf-register-title">Đăng ký tài khoản</h2>
-        <form className="rf-register-form" onSubmit={handleRegister}>
-          <input
-            type="text"
-            placeholder="Họ và tên"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            className="rf-register-input"
-          />
-          <input
-            type="tel"
-            placeholder="Số điện thoại"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            required
-            className="rf-register-input"
-          />
-          <input
-            type="email"
-            placeholder="Email (gmail)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="rf-register-input"
-          />
-          <div className="rf-password-wrapper">
+    <div className="unimarketRegisterContainer unimarketRegisterBgGradient" style={{display:'flex',minHeight:'100vh'}}>
+      <div className="unimarketRegisterLeftSide">
+        <div className="unimarketRegisterBranding">
+          <img src="/images/unimarket-logo-only.png" alt="UNIMARKET Logo" />
+          <div className="unimarketRegisterSlogan">
+            <span className="slogan-black">Nền tảng đăng tin </span>
+            <span className="slogan-orange">rao vặt yêu thích</span>
+          </div>
+          <div className="unimarketRegisterWelcomeText">
+            <p className="unimarketRegisterWelcomeTitle">Tham gia cùng chúng tôi!</p>
+            <p className="unimarketRegisterWelcomeSubtitle">Tạo tài khoản để bắt đầu đăng tin</p>
+          </div>
+        </div>
+      </div>
+      <div className="unimarketRegisterRightSide" style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'2rem'}}>
+        <div className="unimarketRegisterFormWrapper">
+          <h2 className="unimarketRegisterTitle">Đăng ký tài khoản</h2>
+          <form className="unimarketRegisterForm" onSubmit={handleRegister}>
+            <input
+              type="text"
+              placeholder="Họ và tên"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="unimarketRegisterInput"
+            />
+            <input
+              type="tel"
+              placeholder="Số điện thoại"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+              className="unimarketRegisterInput"
+            />
+            <input
+              type="email"
+              placeholder="Email (gmail)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="unimarketRegisterInput"
+            />
+            <div className="unimarketRegisterPasswordWrapper">
+              <input
+                type="password"
+                placeholder="Mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={handlePasswordFocus}
+                onBlur={handlePasswordBlur}
+                required
+                className="unimarketRegisterInput"
+              />
+              {showPasswordCriteria && (
+                <div className="unimarketRegisterPasswordCriteria">
+                  <div className="unimarketRegisterPasswordCriteriaTitle">Mật khẩu cần có:</div>
+                  <ul className="unimarketRegisterPasswordCriteriaList">
+                    {passwordCriteria.map((c, idx) => (
+                      <li 
+                        key={c.label} 
+                        className={`unimarketRegisterPasswordCriteriaItem ${passwordCriteriaStatus[idx] ? 'unimarketRegisterValid' : 'unimarketRegisterInvalid'}`}
+                      >
+                        {passwordCriteriaStatus[idx] ? '✔️' : '❌'} {c.label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
             <input
               type="password"
-              placeholder="Mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={handlePasswordFocus}
-              onBlur={handlePasswordBlur}
+              placeholder="Xác nhận mật khẩu"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="rf-register-input"
+              className="unimarketRegisterInput"
             />
-            {showPasswordCriteria && (
-              <div className="rf-password-criteria">
-                <div className="rf-password-criteria-title">Mật khẩu cần có:</div>
-                <ul className="rf-password-criteria-list">
-                  {passwordCriteria.map((c, idx) => (
-                    <li 
-                      key={c.label} 
-                      className={`rf-password-criteria-item ${passwordCriteriaStatus[idx] ? 'rf-valid' : 'rf-invalid'}`}
-                    >
-                      {passwordCriteriaStatus[idx] ? '✔️' : '❌'} {c.label}
-                    </li>
-                  ))}
+            {passwordTouched && !passwordCriteriaStatus.every(Boolean) && !showPasswordCriteria && (
+              <div className="unimarketRegisterPasswordError">
+                Mật khẩu chưa đáp ứng đủ tiêu chí:
+                <ul className="unimarketRegisterPasswordErrorList">
+                  {passwordCriteria.map((c, idx) =>
+                    !passwordCriteriaStatus[idx] ? (
+                      <li key={c.label} className="unimarketRegisterPasswordErrorItem">
+                        <span style={{color:'#ef4444',fontWeight:'bold'}}>❌</span> {c.label}
+                      </li>
+                    ) : null
+                  )}
                 </ul>
               </div>
             )}
-          </div>
-          <input
-            type="password"
-            placeholder="Xác nhận mật khẩu"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="rf-register-input"
-          />
-          
-          {/* Hiển thị lỗi tiêu chí nếu đã chạm vào và chưa đạt */}
-          {passwordTouched && !passwordCriteriaStatus.every(Boolean) && !showPasswordCriteria && (
-            <div className="rf-password-error">
-              Mật khẩu chưa đáp ứng đủ tiêu chí:
-              <ul className="rf-password-error-list">
-                {passwordCriteria.map((c, idx) =>
-                  !passwordCriteriaStatus[idx] ? (
-                    <li key={c.label} className="rf-password-error-item">
-                      {c.label}
-                    </li>
-                  ) : null
-                )}
-              </ul>
+            <div className="unimarketRegisterCheckboxContainer">
+              <input
+                type="checkbox"
+                id="agree-terms"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                required
+                className="unimarketRegisterCheckbox"
+              />
+              <label htmlFor="agree-terms" className="unimarketRegisterCheckboxLabel">
+                Khi đăng ký, bạn đồng ý với <a href="#" className="unimarketRegisterCheckboxLink">Điều khoản sử dụng</a> và <a href="#" className="unimarketRegisterCheckboxLink">Chính sách bảo mật</a>.
+              </label>
             </div>
-          )}
-
-          <div className="rf-register-terms">
-            <input
-              type="checkbox"
-              id="agree-terms"
-              checked={agreed}
-              onChange={e => setAgreed(e.target.checked)}
-              required
-            />
-            <label htmlFor="agree-terms">
-              Khi đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a>.
-            </label>
+            <button 
+              type="submit" 
+              className="unimarketRegisterButton" 
+              disabled={!agreed}
+            >
+              Đăng ký
+            </button>
+          </form>
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
+            <p>Hoặc đăng ký bằng</p>
+            <div className="unimarketRegisterSocialButtons">
+              <GoogleLoginButton />
+              <FacebookLoginButton />
+            </div>
           </div>
-
-          <button 
-            type="submit" 
-            className="rf-register-button" 
-            disabled={!agreed}
-          >
-            Đăng ký
-          </button>
-        </form>
-        
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <p>Hoặc đăng ký bằng</p>
-          <div className="rf-social-login">
-            <GoogleLoginButton />
-            <FacebookLoginButton />
+          <div className="unimarketRegisterLoginLink">
+            Đã có tài khoản? <a href="/login" className="unimarketRegisterLoginLinkText">Đăng nhập</a>
           </div>
-        </div>
-        
-        <div className="rf-login-link">
-          Đã có tài khoản? <a href="/login">Đăng nhập</a>
         </div>
       </div>
     </div>

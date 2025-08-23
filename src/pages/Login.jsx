@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import authService from "../services/authService";
 import "./Login.css";
 import { GoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
 import { jwtDecode } from "jwt-decode";
 import { FaFacebookF } from 'react-icons/fa';
 import axios from "axios";
@@ -325,129 +326,183 @@ const Login = () => {
 
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h2>Đăng nhập</h2>
-
-        <form className="login-form" onSubmit={handleLogin} autoComplete="on">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email *"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            required
-            disabled={isLoading}
-            aria-label="Email"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Mật khẩu *"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-            disabled={isLoading}
-            aria-label="Mật khẩu"
-          />
-          <div className="forgot-password">
-            <a href="/forgot-password">Quên mật khẩu?</a>
+    <div className="unimarketLoginContainer">
+      <div className="unimarketLoginLeftSide">
+        <div className="unimarketLoginBranding">
+          <img src="/images/unimarket-logo-only.png" alt="UNIMARKET Logo" className="w-full max-w-sm mx-auto" />
+          <div className="unimarketLoginSlogan">
+            <span style={{ color: "#333" }}>Nền tảng đăng tin </span>
+            <span style={{ color: "#d97706" }}>rao vặt yêu thích</span>
           </div>
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className={isLoading ? 'loading' : ''}
-            aria-label={isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-          >
-            {isLoading ? '' : 'Đăng nhập'}
-          </button>
-        </form>
-
-        <div className="divider">
-          <span>Hoặc đăng nhập bằng</span>
+          <div className="unimarketLoginWelcomeText">
+            <p className="unimarketLoginWelcomeTitle">Chào mừng trở lại!</p>
+            <p className="unimarketLoginWelcomeSubtitle">Đăng nhập để tiếp tục sử dụng dịch vụ</p>
+          </div>
         </div>
+      </div>
 
-        <div className="social-login">
-          <div className="google-login-container">
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={() => {
-                toast.error("Đăng nhập Google thất bại", {
-                  style: {
-                    background: "#fff5f5",
-                    color: "#c53030",
-                    fontSize: "13px",
-                    fontWeight: "400",
-                    padding: "12px 16px",
-                    border: "1px solid #fed7d7",
-                    borderRadius: "4px",
-                  },
-                });
-              }}
-              disabled={googleLoading}
-              text="signin_with"
-              theme="outline"
-              size="large"
-              width="100%"
-            />
-            {googleLoading && (
-              <div className="social-loading">
-                Đang xử lý đăng nhập Google...
+      <div className="unimarketLoginRightSide">
+        <div className="unimarketLoginFormWrapper">
+          <div className="unimarketLoginFormContainer">
+      <img src="/images/unimarket-logo-only.png" alt="UNIMARKET Logo" className="w-full max-w-sm mx-auto" style={{width: 80, margin: '0 auto 16px', display: 'block'}} />
+            <h2 className="unimarketLoginTitle">ĐĂNG NHẬP</h2>
+
+            <form className="unimarketLoginForm" onSubmit={handleLogin} autoComplete="on">
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email *"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  required
+                  disabled={isLoading}
+                  aria-label="Email"
+                  className="unimarketLoginInput"
+                />
               </div>
-            )}
-          </div>
-          
-          <button
-            type="button"
-            onClick={handleFacebookLogin}
-            disabled={!sdkReady || facebookLoading}
-            className="facebook-button styled-facebook-btn"
-            aria-label={facebookLoading ? 'Đang xử lý Facebook...' : 'Đăng nhập với Facebook'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#fff',
-              border: '1px solid #ddd',
-              borderRadius: 7,
-              width: 100,
-              height: 39,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              cursor: !sdkReady || facebookLoading ? 'not-allowed' : 'pointer',
-              padding: 0,
-              gap: 8,
-              marginTop: '1px'
-            }}
-          >
-            <FaFacebookF style={{ fontSize: 24, color: '#1877F2' }} />
-            <span style={{ color: '#1877F2', fontWeight: 500, fontSize: 15 }}>
-              {facebookLoading ? 'Đang xử lý...' : 'Facebook'}
-            </span>
-          </button>
-        </div>
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Mật khẩu *"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  disabled={isLoading}
+                  aria-label="Mật khẩu"
+                  className="unimarketLoginInput"
+                />
+              </div>
+              <div className="unimarketLoginForgotPassword">
+                <a href="/forgot-password" className="unimarketLoginForgotPasswordLink">Quên mật khẩu?</a>
+              </div>
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className={isLoading ? 'unimarketLoginButton loading' : 'unimarketLoginButton'}
+                aria-label={isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              >
+                {isLoading ? '' : 'Đăng nhập'}
+              </button>
+            </form>
 
-        <p className="signup-link">
-          Chưa có tài khoản? <a href="/register">Đăng ký tài khoản mới</a>
-        </p>
+            <div className="unimarketLoginDivider">
+              <div className="unimarketLoginDividerLine">
+                <span className="unimarketLoginDividerText">Hoặc đăng nhập bằng</span>
+              </div>
+            </div>
 
-        <div className="footer-links">
-          <a href="/terms" target="_blank" rel="noopener noreferrer">
-            Quy chế hoạt động sàn
-          </a>
-          <a href="/privacy" target="_blank" rel="noopener noreferrer">
-            Chính sách bảo mật
-          </a>
-          <a href="/support" target="_blank" rel="noopener noreferrer">
-            Liên hệ hỗ trợ
-          </a>
-        </div>
+            <div className="unimarketLoginSocialButtons">
+              <div className="google-login-container unimarketLoginSocialButton" style={{padding: 0}}>
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={() => {
+                    toast.error("Đăng nhập Google thất bại", {
+                      style: {
+                        background: "#fff5f5",
+                        color: "#c53030",
+                        fontSize: "13px",
+                        fontWeight: "400",
+                        padding: "12px 16px",
+                        border: "1px solid #fed7d7",
+                        borderRadius: "4px",
+                      },
+                    });
+                  }}
+                  disabled={googleLoading}
+                  text="signin_with"
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  render={renderProps => (
+                    <button
+                      onClick={renderProps.onClick}
+                      disabled={googleLoading}
+                      className={
+                        googleLoading
+                          ? "unimarketLoginSocialButton google-button loading"
+                          : "unimarketLoginSocialButton google-button"
+                      }
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#fff',
+                        border: 'none',
+                        borderRadius: 7,
+                        width: 100,
+                        height: 39,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        cursor: googleLoading ? 'not-allowed' : 'pointer',
+                        padding: 0,
+                        gap: 8,
+                        marginTop: '1px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <FcGoogle style={{ fontSize: 24 }} />
+                      <span style={{ color: '#222', fontWeight: 500, fontSize: 15 }}>
+                        {googleLoading ? 'Đang xử lý...' : 'Google'}
+                      </span>
+                      {googleLoading && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            right: 10,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 16,
+                            height: 16,
+                            border: '2px solid #e0e0e0',
+                            borderTop: '2px solid #666',
+                            borderRadius: '50%',
+                            animation: 'login-spin 0.8s linear infinite'
+                          }}
+                        />
+                      )}
+                    </button>
+                  )}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleFacebookLogin}
+                disabled={!sdkReady || facebookLoading}
+                className="unimarketLoginSocialButton facebook-button"
+                aria-label={facebookLoading ? 'Đang xử lý Facebook...' : 'Đăng nhập với Facebook'}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#fff',
+                  border: '1px solid #ddd',
+                  borderRadius: 7,
+                  width: 100,
+                  height: 39,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  cursor: !sdkReady || facebookLoading ? 'not-allowed' : 'pointer',
+                  padding: 0,
+                  gap: 8,
+                  marginTop: '1px'
+                }}
+              >
+                <FaFacebookF style={{ fontSize: 24, color: '#1877F2' }} />
+                <span style={{ color: '#1877F2', fontWeight: 500, fontSize: 15 }}>
+                  {facebookLoading ? 'Đang xử lý...' : 'Facebook'}
+                </span>
+              </button>
+            </div>
 
-        <div className="brand-logos">
-          <p>Được phát triển bởi</p>
-          <div className="logos-container">
-            <span className="logo-item unimarket">UniMarket</span>
+            <p className="unimarketLoginSignupLink">
+              Chưa có tài khoản? <a href="/register" className="unimarketLoginSignupLinkText">Đăng ký tài khoản mới</a>
+            </p>
+
+            {/* Đã bỏ phần footer-links và brand-logos theo yêu cầu */}
           </div>
         </div>
       </div>

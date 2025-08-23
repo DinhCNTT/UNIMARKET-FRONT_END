@@ -9,7 +9,6 @@ const CapNhatTin = () => {
   const { user } = useContext(AuthContext);
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [categoryId, setCategoryId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [title, setTitle] = useState("");
@@ -348,7 +347,6 @@ useEffect(() => {
           >
             <option value="Moi">Mới</option>
             <option value="DaSuDung">Đã Sử Dụng</option>
-            <option value="CanThanh">Cần Thanh Lý</option>
           </select>
         </div>
         
@@ -472,10 +470,10 @@ useEffect(() => {
         </div>
 
         {/* Phần tỉnh thành */}
-        <div className="capnhat-group">
-          <label className="capnhat-label">Tỉnh/Thành phố</label>
+        <div className="capnhat-group-ViTri1">
+          <label className="capnhat-TinhThanh-label">Tỉnh/Thành phố</label>
           <select 
-            className="capnhat-select"
+            className="capnhat-TinhThanh-select"
             value={province} 
             onChange={e => setProvince(e.target.value)} 
             required
@@ -489,10 +487,10 @@ useEffect(() => {
           </select>
         </div>
 
-        <div className="capnhat-group">
-          <label className="capnhat-label">Quận/Huyện</label>
+        <div className="capnhat-group-ViTri2">
+          <label className="capnhat-QuanHuyen-label">Quận/Huyện</label>
           <select 
-            className="capnhat-select"
+            className="capnhat-QuanHuyen-select"
             value={district} 
             onChange={e => setDistrict(e.target.value)} 
             required

@@ -168,7 +168,6 @@ const ShareButton = ({ profileUser }) => {
         aria-label="Chia sẻ trang"
       >
         <Share2 size={16} />
-        <span className="UserProfile-ShareButton-text">Chia sẻ</span>
       </button>
 
       {renderDropdown()}
