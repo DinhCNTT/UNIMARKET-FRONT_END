@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { 
   FaUser, 
   FaSearch, 
@@ -25,13 +25,31 @@ const trangThaiMap = {
 const QuanLyTin = () => {
   const [posts, setPosts] = useState([]);
   const [userName, setUserName] = useState(sessionStorage.getItem("userFullName") || "Người dùng");
-  const [activeTab, setActiveTab] = useState("DaDuyet");
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 5;
   
-  const userId = sessionStorage.getItem("userId");
+  // Sử dụng useSearchParams để quản lý state trong URL
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Lấy giá trị từ URL parameters hoặc sử dụng giá trị mặc định
+  const activeTab = searchParams.get('tab') || 'DaDuyet';
+  const searchKeyword = searchParams.get('search') || '';
+  const currentPage = parseInt(searchParams.get('page')) || 1;
+  
+  const postsPerPage = 5;
+  const userId = sessionStorage.getItem("userId");
+
+  // Hàm helper để update URL parameters
+  const updateURLParams = (newParams) => {
+    const updatedParams = new URLSearchParams(searchParams);
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) {
+        updatedParams.set(key, value);
+      } else {
+        updatedParams.delete(key);
+      }
+    });
+    setSearchParams(updatedParams);
+  };
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -87,7 +105,40 @@ const QuanLyTin = () => {
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
+  // Các hàm xử lý sự kiện được cập nhật để lưu vào URL
+  const handleTabChange = (newTab) => {
+    updateURLParams({ 
+      tab: newTab, 
+      page: '1', // Reset về trang 1 khi đổi tab
+      search: searchKeyword || undefined 
+    });
+  };
+
+  const handleSearchChange = (newSearch) => {
+    updateURLParams({ 
+      tab: activeTab, 
+      search: newSearch || undefined,
+      page: '1' // Reset về trang 1 khi tìm kiếm
+    });
+  };
+
+  const handlePageChange = (newPage) => {
+    updateURLParams({ 
+      tab: activeTab, 
+      search: searchKeyword || undefined,
+      page: newPage.toString() 
+    });
+  };
+
   const handleUpdate = (postId) => {
+    // Lưu trạng thái hiện tại vào localStorage trước khi navigate
+    const currentState = {
+      tab: activeTab,
+      search: searchKeyword,
+      page: currentPage
+    };
+    localStorage.setItem('quan-ly-tin-state', JSON.stringify(currentState));
+    
     navigate(`/cap-nhat-tin/${postId}`);
   };
 
@@ -106,6 +157,20 @@ const QuanLyTin = () => {
     }
   };
 
+  // Khôi phục trạng thái từ localStorage khi component mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('quan-ly-tin-state');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        updateURLParams(parsedState);
+        localStorage.removeItem('quan-ly-tin-state'); // Xóa sau khi sử dụng
+      } catch (error) {
+        console.error('Error parsing saved state:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="qlt-wrapper">
       <TopNavbar />
@@ -118,44 +183,34 @@ const QuanLyTin = () => {
             Xin chào, <strong>{userName}</strong> <HiOutlineEmojiHappy className="wave-icon" />
           </h2>
         </div>
-          <div className="qlt-search-wrapper">
-  <FaSearch className="search-icon" />
-  <input
-    type="text"
-    placeholder="Tìm tin đăng của bạn..."
-    value={searchKeyword}
-    onChange={(e) => setSearchKeyword(e.target.value)}
-    className="qlt-search"
-  />
-</div>
-
+        <div className="qlt-search-wrapper">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Tìm tin đăng của bạn..."
+            value={searchKeyword}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="qlt-search"
+          />
+        </div>
       </div>
 
       <div className="qlt-tabs">
         <button
           className={`qlt-tab-btn ${activeTab === "DaDuyet" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("DaDuyet");
-            setCurrentPage(1);
-          }}
+          onClick={() => handleTabChange("DaDuyet")}
         >
           <FaCheck className="tab-icon" /> Đang hiển thị
         </button>
         <button
           className={`qlt-tab-btn ${activeTab === "ChoDuyet" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("ChoDuyet");
-            setCurrentPage(1);
-          }}
+          onClick={() => handleTabChange("ChoDuyet")}
         >
           <FaRegClock className="tab-icon" /> Chờ duyệt
         </button>
         <button
           className={`qlt-tab-btn ${activeTab === "TuChoi" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("TuChoi");
-            setCurrentPage(1);
-          }}
+          onClick={() => handleTabChange("TuChoi")}
         >
           <FaTimes className="tab-icon" /> Bị từ chối
         </button>
@@ -222,7 +277,7 @@ const QuanLyTin = () => {
             <button
               key={num}
               className={num === currentPage ? "active" : ""}
-              onClick={() => setCurrentPage(num)}
+              onClick={() => handlePageChange(num)}
             >
               {num}
             </button>

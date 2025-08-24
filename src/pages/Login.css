@@ -74,13 +74,20 @@
 
 /* Sửa lại login cho đồng bộ layout */
 .unimarketLoginContainer {
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
   background: linear-gradient(135deg, #fdf6e3, #fceabb, #f9d776, #f6c453);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
+
+
+
 .unimarketLoginLeftSide {
   flex: 1;
   display: flex;
@@ -91,8 +98,15 @@
 .unimarketLoginBranding {
   text-align: center;
   max-width: 32rem;
+  margin: 0 auto; /* căn giữa toàn bộ branding */
 }
+
 .unimarketLoginBranding img {
+  width: 250px;        /* giảm kích thước logo, nhỏ gọn hơn */
+  height: auto;        /* giữ tỉ lệ gốc */
+  display: block;
+  margin: 0 auto;      /* căn giữa logo */
+  
   animation: float 3s ease-in-out infinite;
   transition: transform 0.3s ease;
 }
@@ -100,13 +114,17 @@
   transform: scale(1.1);
 }
 .unimarketLoginSlogan {
-  margin-top: -4rem;
-  font-size: 1.75rem;
-  font-weight: 800;
-  text-align: center;
-  line-height: 1.5;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: -3rem;                  
+    font-family: 'Poppins', 'Inter', 'Segoe UI', 'Roboto', sans-serif; 
+    font-size: 1.85rem;                  /* nhỏ hơn (~30px) */
+    font-weight: 700;                   
+    text-align: center;
+    color: #d97706;                     
+    letter-spacing: 0.4px;              
+    line-height: 1.4;                   
+    text-shadow: none;                  
 }
+
 .unimarketLoginWelcomeText {
   margin-top: 2rem;
   color: #374151;
@@ -139,31 +157,41 @@
   border: 1px solid #fef3c7;
   transition: all 0.3s ease;
 }
-.unimarketLoginFormContainer:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
-}
 .unimarketLoginTitle {
-  font-size: 1.875rem;
-  font-weight: bold;
-  color: #1f2937;
-  margin-bottom: 2rem;
+  font-size: 2rem;           
+  font-weight: 700;          
+  color: #111827;            
   text-align: center;
+  letter-spacing: 0.5px;    
+  font-family: 'Inter', 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+
+  /* điều chỉnh vị trí */
+  margin-top: 15px;       /* đẩy tiêu đề lên gần logo */
+  margin-bottom: 2rem;    /* khoảng cách với form */
 }
+
 .unimarketLoginForm {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.5rem;             /* khoảng cách giữa các input */
+  width: 100%;              /* chiếm toàn bộ wrapper */
+  max-width: 400px;         /* giới hạn chiều ngang */
+  margin: 0 auto;           /* căn giữa form */
+  box-sizing: border-box;
 }
+
 .unimarketLoginInput {
-  width: 90%;
-  padding: 1rem;
+  width: 100%;              /* input luôn khớp với form */
+  padding: 0.85rem 1rem;    /* gọn gàng, thoải mái khi nhập */
   border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
+  border-radius: 0.75rem;   /* bo tròn nhẹ nhàng */
   font-size: 1rem;
   transition: all 0.3s ease;
-  text-align: left; /* Thêm dòng này để căn trái nội dung input */
+  text-align: left;          /* căn trái nội dung input */
+  box-sizing: border-box;    /* padding được tính vào width */
 }
+
 .unimarketLoginInput:focus {
   border-color: #fbbf24;
   outline: none;

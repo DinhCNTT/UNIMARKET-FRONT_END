@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import axios from 'axios';
 import './VideoDetailViewer.css';
-import { IoHeart, IoHeartOutline } from "react-icons/io5"; // Icon mới
+import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import { FaRegCommentDots } from 'react-icons/fa';
 import { SiMinutemailer } from "react-icons/si";
 import CommentDrawer from './CommentDrawer';
@@ -12,20 +12,18 @@ import { AuthContext } from "../context/AuthContext";
 import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import TopNavbarUniMarket from './TopNavbarUniMarket';
 import { VideoContext } from "../context/VideoContext";
+import VideoControls from './VideoControls'; // Import component mới
 
 const VideoDetailViewer = ({ onOpenChat }) => {
   const [videoList, setVideoList] = useState([]);
   const [searchParams] = useSearchParams();
   const initialIndexFromUrl = parseInt(searchParams.get('index')) || 0;
   const [currentIndex, setCurrentIndex] = useState(initialIndexFromUrl);
-  const [showMore, setShowMore] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef(null);
-  const descriptionRef = useRef(null);
   const iconCircleRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isOverflowing, setIsOverflowing] = useState(false);
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef(null);
   const [videoAspectRatio, setVideoAspectRatio] = useState(null);
@@ -36,6 +34,8 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   const [aspectRatios, setAspectRatios] = useState({}); 
   const { reloadFlag, loading } = useContext(VideoContext);
   const [isReloading, setIsReloading] = useState(false);
+  const [showControls, setShowControls] = useState(true); // State để điều khiển hiển thị controls
+  const controlsTimeoutRef = useRef(null); // Ref để quản lý timeout ẩn controls
 
   // Thời lượng animation phải khớp với CSS (ms)
 const SLIDE_DURATION = 650;
@@ -56,7 +56,6 @@ const goToIndex = (nextIndex) => {
   document.body.classList.add("video-transitioning");
 
   setCurrentIndex(nextIndex);
-  setShowMore(false);
 
   // Mở khoá sau khi CSS kết thúc
   setTimeout(() => {
@@ -68,6 +67,29 @@ const goToIndex = (nextIndex) => {
   const handleToggleComments = () => {
   setShowComments(prev => !prev);
 };
+
+// Function để show/hide controls
+const handleMouseMove = () => {
+  setShowControls(true);
+  
+  // Clear timeout cũ
+  if (controlsTimeoutRef.current) {
+    clearTimeout(controlsTimeoutRef.current);
+  }
+  
+  // Set timeout mới để ẩn controls sau 3 giây
+  controlsTimeoutRef.current = setTimeout(() => {
+    setShowControls(false);
+  }, 3000);
+};
+
+const handleMouseLeave = () => {
+  // Ẩn controls khi mouse leave khỏi video container
+  controlsTimeoutRef.current = setTimeout(() => {
+    setShowControls(false);
+  }, 1000);
+};
+
 useEffect(() => {
   // Khi vào trang này → chặn cuộn
   document.body.style.overflow = "hidden";
@@ -75,8 +97,13 @@ useEffect(() => {
   // Khi rời trang → khôi phục cuộn
   return () => {
     document.body.style.overflow = "";
+    // Cleanup timeout
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
   };
 }, []);
+
 // Đồng bộ khi videoData thay đổi
 useEffect(() => {
   if (!videoData?.maTinDang) return;
@@ -109,7 +136,7 @@ useEffect(() => {
   };
 
   fetchSaveInfo();
-}, [videoData?.maTinDang]); // ✅ chỉ gọi khi đổi sang video mới
+}, [videoData?.maTinDang]);
 
 // load video
 useEffect(() => {
@@ -135,8 +162,6 @@ useEffect(() => {
     fetchVideos();
   }
 }, [reloadFlag, loading]);
-
-
 
   useEffect(() => {
     const fetchAllVideos = async () => {
@@ -178,7 +203,6 @@ useEffect(() => {
   }
 }, [currentIndex, videoList]);
 
-
  useEffect(() => {
   const handleWheel = (e) => {
     e.preventDefault();
@@ -196,6 +220,7 @@ useEffect(() => {
   window.addEventListener("wheel", handleWheel, { passive: false });
   return () => window.removeEventListener("wheel", handleWheel);
 }, [currentIndex, videoList.length]);
+
 useEffect(() => {
   const el = containerRef.current;
   if (!el) return;
@@ -241,6 +266,7 @@ useEffect(() => {
     el.removeEventListener("touchend", onTouchEnd);
   };
 }, [currentIndex, videoList.length]);
+
 useEffect(() => {
   const nodes = videoElsRef.current;
   nodes.forEach((v, i) => {
@@ -254,8 +280,6 @@ useEffect(() => {
     }
   });
 }, [currentIndex]);
-
-
 
  const handleLike = async () => {
   const video = videoList[currentIndex];
@@ -294,8 +318,6 @@ useEffect(() => {
     }
   }
 };
-
-
 
   const handleChatWithSeller = async () => {
     const currentVideo = videoList[currentIndex];
@@ -425,8 +447,6 @@ const handleVideoClick = (e, index) => {
   }
 };
 
-
-
   const formatCount = (num) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
@@ -477,9 +497,16 @@ return (
                 className={`vdv-container ${ratioClass} ${
                   showComments ? "comment-open" : ""
                 }`}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
                 <video
-                  ref={(el) => (videoElsRef.current[index] = el)}
+                  ref={(el) => {
+                    videoElsRef.current[index] = el;
+                    if (index === currentIndex) {
+                      videoRef.current = el; // Set current video ref cho VideoControls
+                    }
+                  }}
                   src={video.videoUrl}
                   className="vdv-player"
                   controls={false}
@@ -498,39 +525,22 @@ return (
                     }));
                   }}
                 />
-                {/* Overlay thông tin mô tả */}
+
+                {/* Video Controls Component - chỉ hiển thị cho video hiện tại */}
+                {index === currentIndex && (
+                  <VideoControls 
+                    videoRef={videoRef} 
+                    isVisible={showControls}
+                  />
+                )}
+
+                {/* Overlay thông tin - chỉ có username, title, price, address */}
                 <div className="vdv-overlay">
                   <div className="vdv-info-left">
                     <div className="vdv-user-name">
                       @{video.nguoiDang?.fullName}
                     </div>
                     <div className="vdv-title">{video.tieuDe}</div>
-
-                    <div
-                      className={`vdv-description ${
-                        showMore ? "vdv-description-expanded" : ""
-                      }`}
-                      ref={descriptionRef}
-                    >
-                      {video.moTa}
-                    </div>
-
-                    {isOverflowing && !showMore && (
-                      <span
-                        className="vdv-toggle-description"
-                        onClick={() => setShowMore(true)}
-                      >
-                        Xem thêm
-                      </span>
-                    )}
-                    {showMore && (
-                      <span
-                        className="vdv-toggle-description"
-                        onClick={() => setShowMore(false)}
-                      >
-                        Thu gọn
-                      </span>
-                    )}
 
                     <div className="vdv-price-address">
                       <div className="vdv-price">
@@ -651,7 +661,6 @@ return (
     )}
   </div>
 );
-
 
 };
 

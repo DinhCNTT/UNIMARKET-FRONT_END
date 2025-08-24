@@ -45,13 +45,17 @@
     padding: 8px 16px;
     height: 56px;
     min-height: 56px;
+    /* QUAN TRỌNG: Cho phép click xuyên qua khi scroll */
+    pointer-events: none;
 }
+
 /* Wrapper để sticky hoạt động */
 .topnavbar-userprofile-scrolled-wrapper {
   position: relative;
   height: 80px; /* tạo khoảng trống để khối trắng chiếm chỗ */
   margin-top: 5px; /* cách nhẹ với header */
 }
+
 /* CSS2: Nội dung khi scroll - chỉ khối trắng bo tròn nổi với avatar */
 .topnavbar-userprofile-scrolled-content {
     display: flex;
@@ -69,6 +73,8 @@
     transition: all 0.3s ease;
     position: relative;
     gap: 10px; /* Khoảng cách giữa avatar và text */
+    /* QUAN TRỌNG: Khôi phục khả năng click cho khối trắng */
+    pointer-events: auto;
 }
 
 /* CSS3: Avatar khi scroll */

@@ -51,11 +51,6 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.userprofilepage-modern-profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
 /* Avatar Section */
 .userprofilepage-profile-avatar-wrapper {
   flex-shrink: 0;
@@ -79,18 +74,6 @@
 .userprofilepage-modern-avatar:hover {
   transform: scale(1.05);
   box-shadow: 0 0 30px rgba(255, 152, 6, 0.5);
-}
-
-.userprofilepage-avatar-ring {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  width: 176px;
-  height: 176px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, #ff9706d6, #ffb347, #ffa500);
-  z-index: -1;
-  animation: userprofilepage-pulse 2s ease-in-out infinite;
 }
 
 @keyframes userprofilepage-pulse {

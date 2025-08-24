@@ -1,0 +1,300 @@
+/* Volume Control - Góc trái phía trên video */
+.VideoControls-volume-control {
+  position: absolute;
+  top: 20px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.VideoControls-volume-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.VideoControls-volume-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.VideoControls-volume-button:active {
+  transform: scale(0.95);
+}
+
+/* Volume Slider Container */
+.VideoControls-volume-slider-container {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 12px 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  min-width: 120px;
+}
+
+.VideoControls-volume-slider-container.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.VideoControls-volume-slider-container::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  width: 12px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+
+/* Volume Slider */
+.VideoControls-volume-slider {
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+.VideoControls-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.VideoControls-volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.VideoControls-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Volume track fill effect */
+.VideoControls-volume-slider {
+  background: linear-gradient(to right, #fff 0%, #fff 50%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.3) 100%);
+}
+
+.VideoControls-volume-percentage {
+  text-align: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Progress Control - Dưới video */
+.VideoControls-progress-control {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Progress Bar */
+.VideoControls-progress-bar-container {
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.VideoControls-progress-bar-background {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: visible;
+}
+
+.VideoControls-progress-bar-fill {
+  height: 100%;
+  background: #fab62b;
+  border-radius: 2px;
+  transition: width 0.1s ease;
+  position: relative;
+}
+
+.VideoControls-progress-bar-thumb {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.VideoControls-progress-bar-container:hover .VideoControls-progress-bar-thumb {
+  opacity: 1;
+}
+
+.VideoControls-progress-bar-container:hover .VideoControls-progress-bar-background {
+  height: 4px;
+}
+
+.VideoControls-progress-bar-container:hover .VideoControls-progress-bar-fill {
+  height: 4px;
+}
+
+/* Time Display */
+.VideoControls-time-display {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  font-family: 'Inter', 'Roboto', monospace;
+  letter-spacing: 0.5px;
+}
+
+.VideoControls-current-time {
+  color: #fff;
+  font-weight: 600;
+}
+
+.VideoControls-time-separator {
+  margin: 0 4px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.VideoControls-total-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Animation khi thay đổi volume */
+@keyframes VideoControls-volumeChange {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.VideoControls-volume-button.changing {
+  animation: VideoControls-volumeChange 0.2s ease;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .VideoControls-volume-control {
+    top: 16px;
+    left: 12px;
+  }
+  
+  .VideoControls-volume-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .VideoControls-volume-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .VideoControls-volume-slider-container {
+    top: 42px;
+    min-width: 100px;
+    padding: 10px 6px;
+  }
+  
+  .VideoControls-volume-slider {
+    width: 70px;
+  }
+  
+  .VideoControls-progress-control {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  
+  .VideoControls-time-display {
+    font-size: 11px;
+  }
+}
+
+/* Dark theme optimization */
+@media (prefers-color-scheme: dark) {
+  .VideoControls-volume-button {
+    background: rgba(0, 0, 0, 0.7);
+  }
+  
+  .VideoControls-volume-slider-container {
+    background: rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* Accessibility */
+.VideoControls-volume-button:focus,
+.VideoControls-volume-slider:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.VideoControls-progress-bar-container:focus {
+  outline: 2px solid rgba(254, 44, 85, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth transitions cho tất cả elements */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Hide controls khi không hover trên mobile */
+@media (hover: none) and (pointer: coarse) {
+  .VideoControls-volume-control {
+    opacity: 0.8;
+  }
+  
+  .VideoControls-progress-control {
+    opacity: 0.9;
+  }
+}
