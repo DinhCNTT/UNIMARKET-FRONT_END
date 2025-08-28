@@ -1,10 +1,10 @@
-/* UserAuthButton.css */
 .userauthbutton-container {
-  position: absolute; /* hoặc bỏ hẳn thuộc tính position */
-  top: 80px;
+  position: absolute;
+  top: 20px;   /* giảm từ 80px → 50px */
   right: 240px;
   z-index: 1000;
 }
+
 
 /* Login Button Styles */
 .userauthbutton-login-btn {

@@ -1,4 +1,4 @@
-.video-search-panel {
+.VD-Overlay-video-search-panel {
   position: fixed;
   top: 1px;
   left: 80px;
@@ -17,7 +17,7 @@
 
   /* Animation mượt hơn */
   transition:
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), /* Ease-out mềm */
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.45s ease-out;
   will-change: transform, opacity;
 
@@ -26,24 +26,24 @@
   padding: 16px;
 }
 
-.video-search-panel.open {
+.VD-Overlay-video-search-panel.open {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
 
-
-.search-wrapper {
+.VD-Overlay-search-wrapper {
   position: relative;
   display: inline-block;
   width: 320px;
 }
-.search-input {
-  width: 280px; /* ngắn hơn thay vì 100% */
+
+.VD-Overlay-search-input {
+  width: 280px;
   background: rgba(37, 37, 37, 0.34);
   border: 1px solid rgba(240, 251, 251, 1);
   color: #3a3a3a;
-  padding: 8px 36px 8px 12px; /* padding nhỏ hơn */
+  padding: 8px 36px 8px 12px;
   border-radius: 8px;
   outline: none;
   font-size: 14px;
@@ -51,50 +51,48 @@
   box-shadow: 0 2px 8px rgba(240, 251, 251, 1);
 }
 
-.search-input:focus {
+.VD-Overlay-search-input:focus {
   border-color: rgba(245, 166, 35, 0.6);
   box-shadow: 0 4px 12px rgba(245, 166, 35, 0.25);
   background: #d9d9d9;
   color: #3a3a3a;
 }
 
-
-.clear-btn {
+.VD-Overlay-clear-btn {
   position: absolute;
-  top: 85%; /* đẩy xuống thấp hơn */
+  top: 85%;
   right: 10px;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.08); /* nền mờ nhẹ */
+  background: rgba(255, 255, 255, 0.08);
   border: none;
-  color: #f5f5f5; /* trắng sữa để rõ hơn */
+  color: #f5f5f5;
   cursor: pointer;
   padding: 4px;
-  border-radius: 50%; /* tròn gọn hơn */
+  border-radius: 50%;
   font-size: 14px;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.clear-btn:hover {
-  background: rgba(245, 166, 35, 0.25); /* màu cam nhấn khi hover */
-  color: #fff; /* icon sáng hơn */
+.VD-Overlay-clear-btn:hover {
+  background: rgba(245, 166, 35, 0.25);
+  color: #fff;
 }
 
-
-.search-body {
+.VD-Overlay-search-body {
   margin-top: 8px;
 }
 
-.history-list {
+.VD-Overlay-history-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: 18px; /* chữ to hơn */
+  font-size: 18px;
   font-weight: 500;
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* font hiện đại */
-  color: #222; /* màu chữ đậm */
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
 }
 
-.history-item {
+.VD-Overlay-history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -103,11 +101,11 @@
   transition: background 0.2s ease;
 }
 
-.history-item:hover {
-  background: rgba(255, 165, 0, 0.08); /* vàng nhạt khi hover */
+.VD-Overlay-history-item:hover {
+  background: rgba(255, 165, 0, 0.08);
 }
 
-.history-key {
+.VD-Overlay-history-key {
   display: inline-flex;
   gap: 8px;
   align-items: center;
@@ -116,27 +114,28 @@
   color: #222;
   cursor: pointer;
   padding: 0;
-  font-size: 18px; /* chữ to hơn */
+  font-size: 18px;
   max-width: 27ch;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 /* Bỏ nền cam đậm khi hover/focus/active */
-.history-key:hover,
-.history-key:focus,
-.history-key:active {
+.VD-Overlay-history-key:hover,
+.VD-Overlay-history-key:focus,
+.VD-Overlay-history-key:active {
   background: none !important;
   outline: none !important;
   box-shadow: none !important;
 }
 
-.history-key svg {
-  color: #ff9800; /* icon vàng cam */
+.VD-Overlay-history-key svg {
+  color: #ff9800;
   flex-shrink: 0;
 }
 
-.history-remove {
+.VD-Overlay-history-remove {
   background: transparent;
   border: none;
   color: #bbb;
@@ -144,26 +143,49 @@
   transition: color 0.2s ease;
 }
 
-.history-remove:hover {
-  color: #ff4d4f; 
+.VD-Overlay-history-remove:hover {
+  color: #ff4d4f;
 }
 
-.no-history {
+.VD-Overlay-no-history {
   color: #999;
   padding: 8px 0;
   font-size: 16px;
   font-style: italic;
 }
 
-.search-label {
+.VD-Overlay-search-label {
   display: block;
-  font-size: 26px; /* vừa phải, không quá to */
+  font-size: 26px;
   font-weight: 600;
-  color: #222; /* đen nhẹ, không gắt */
-  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* font hiện đại */
+  color: #222;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin-bottom: 8px;
-  letter-spacing: 0.5px; /* khoảng cách chữ thoáng hơn */
-  background: linear-gradient(90deg, #ff8c00, #ffcc00); /* nền gradient */
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ff8c00, #ffcc00);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent; /* hiệu ứng chữ gradient */
+  -webkit-text-fill-color: transparent;
+}
+
+/* Style cho danh sách gợi ý */
+.VD-Overlay-suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.VD-Overlay-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.VD-Overlay-suggestion-item:hover {
+  background: rgba(255, 165, 0, 0.1);
 }

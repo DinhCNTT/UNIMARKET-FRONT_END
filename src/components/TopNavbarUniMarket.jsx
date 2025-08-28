@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext, useState } from "react";
 import {
   FiSearch,
   FiBell,
@@ -10,21 +10,81 @@ import {
 } from "react-icons/fi";
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import "./TopNavbarUniMarket.css";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate, useLocation } from "react-router-dom"; 
 import { VideoContext } from "../context/VideoContext";
+
 
 export default function TopNavbarUniMarket() {
   const navRef = useRef(null);
   const panelRef = useRef(null);
   const navigate = useNavigate();
-
+  const location = useLocation();
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
+
+ // ✅ state profile user
+  const [profile, setProfile] = useState(null);
+
+  // ✅ Hàm xử lý avatar URL linh hoạt
+  const getAvatarSrc = (url) => {
+    if (!url) return null;
+    return url.startsWith("http") ? url : `http://localhost:5133${url}`;
+  };
+// ✅ Giữ For You active chỉ khi đang ở VideoDetailViewer
+useEffect(() => {
+  const path = location.pathname;
+  const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
+
+  if (path.startsWith("/video/")) {
+    // chỉ set lại forYou nếu không mở panel nổi
+    if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
+      setActiveTab("forYou");
+    }
+  } else {
+    // ra khỏi /video thì bỏ activeTab forYou
+    if (activeTab === "forYou") {
+      setActiveTab(null);
+    }
+  }
+}, [location.pathname, activeTab, setActiveTab]);
+
+
+  // ✅ fetch profile từ API khi component mount
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token"); // 👈 token đã lưu khi login
+
+  if (!user || !token) return;
+
+  fetch(`http://localhost:5133/api/user/profile/${user.id}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`, // 👈 thêm token
+      "Content-Type": "application/json"
+    }
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Không lấy được profile (Unauthorized)");
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Profile API:", data);
+      setProfile(data);
+    })
+    .catch((err) => console.error("Lỗi load profile:", err));
+}, []);
 
 // ✅ toggle tab
 const toggleTab = (tab) => {
   if (tab === "forYou") {
     setActiveTab("forYou");
     triggerReload(); // ✅ có loading hiệu ứng
+
+    // 👉 Nếu không ở trong VideoDetailViewer thì điều hướng về đó
+    if (!window.location.pathname.startsWith("/video/")) {
+      navigate("/video/1"); // tạm thời điều hướng video đầu tiên / video mặc định
+    }
+
   } else if (tab === "search") {
     setActiveTab("search");
   } else {
@@ -36,25 +96,40 @@ const toggleTab = (tab) => {
 // ✅ Click outside để đóng panel
 useEffect(() => {
   const handleClickOutside = (e) => {
-    if (
-      navRef.current &&
-      !navRef.current.contains(e.target) &&
-      panelRef.current &&
-      !panelRef.current.contains(e.target)
-    ) {
-      if (activeTab === "search") {
-        // 👉 nếu đang search mà click ngoài thì quay về forYou
-        setActiveTab("forYou");
-      } else if (activeTab !== "forYou") {
-        // 👉 nếu là tab khác (upload, message, user...) thì đóng hẳn
-        setActiveTab(null);
-      }
+    const nav = navRef.current;
+    const panel = panelRef.current;
+
+    // true nếu click ngoài navbar
+    const clickedOutsideNav = nav && !nav.contains(e.target);
+    // true nếu không có panel hoặc click ngoài panel (panel = vùng overlay như search/upload/messages/activity)
+    const clickedOutsidePanel = !panel || !panel.contains(e.target);
+
+    // Chỉ xử lý khi click thật sự bên ngoài cả nav lẫn panel
+    if (!(clickedOutsideNav && clickedOutsidePanel)) return;
+
+    // Các tab dạng "panel nổi" (click ra ngoài thì đóng)
+    const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
+
+    if (activeTab === "search") {
+      // đang search -> về forYou
+      setActiveTab("forYou");
+      return;
     }
+
+    if (floatingTabs.has(activeTab)) {
+      // nếu đang ở 1 panel nổi -> về forYou
+      setActiveTab("forYou");
+      return;
+    }
+
+    // Còn lại là các tab điều hướng "dính" (forYou, profile, explore)
+    // -> KHÔNG đổi activeTab (giữ nguyên màu vàng của Profile)
   };
+
   document.addEventListener("mousedown", handleClickOutside);
-  return () =>
-    document.removeEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
 }, [activeTab, setActiveTab]);
+
 
 
   return (
@@ -153,14 +228,26 @@ useEffect(() => {
 
           {/* Profile */}
           <button
-            className={`um-tn-icon-btn ${
-              activeTab === "profile" ? "active" : ""
-            }`}
-            onClick={() => toggleTab("profile")}
+            className={`um-tn-icon-btn ${activeTab === "profile" ? "active" : ""}`}
+            onClick={() => {
+              if (profile?.id) {
+                setActiveTab("profile"); 
+                navigate(`/nguoi-dung/${profile.id}`);  
+              }
+            }}
           >
-            <FiUser size={20} />
+            {profile && profile.avatarUrl ? (
+              <img
+                src={getAvatarSrc(profile.avatarUrl)}
+                alt="Avatar"
+                className="um-tn-avatar"
+              />
+            ) : (
+              <FiUser size={20} />
+            )}
             {activeTab !== "search" && <span>Profile</span>}
           </button>
+
         </div>
       </nav>
 
@@ -201,7 +288,6 @@ useEffect(() => {
 
         {activeTab === "profile" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <h3>Thông tin cá nhân</h3>
           </div>
         )}
 

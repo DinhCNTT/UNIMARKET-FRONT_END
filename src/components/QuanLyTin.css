@@ -1,3 +1,11 @@
+/* Tiêu đề gợi ý trong box gợi ý tìm kiếm */
+.suggestion-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
 .qlt-wrapper {
   max-width: 1200px;
   width: 100%;
@@ -82,6 +90,9 @@
 .qlt-search-wrapper {
   position: relative;
   width: 240px;
+  margin-left: 0;
+  /* Nếu muốn dịch sang trái, thử margin-right thay vì margin-left âm */
+  margin-right: 32px;
 }
 
 .qlt-search {

@@ -113,31 +113,17 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     const confirmed = await new Promise((resolve) => {
       toast(
         (t) => (
-          <div style={{ fontSize: "14px", color: "white" }}>
-            <div style={{ marginBottom: "12px" }}>
+          <div className="CommentToastContainer">
+            <div className="CommentToastMessage">
               Bạn có chắc muốn xoá bình luận này?
             </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+            <div className="CommentToastButtons">
               <button
                 onClick={() => {
                   toast.dismiss(t.id);
                   resolve(false);
                 }}
-                style={{
-                  padding: "4px 10px",
-                  fontSize: "12px",
-                  border: "1px solid #888",
-                  borderRadius: "6px",
-                  backgroundColor: "transparent",
-                  color: "#ddd",
-                  cursor: "pointer",
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = "#444";
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = "transparent";
-                }}
+                className="CommentToastCancelBtn"
               >
                 Huỷ
               </button>
@@ -147,23 +133,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                   toast.dismiss(t.id);
                   resolve(true);
                 }}
-                style={{
-                  padding: "4px 10px",
-                  fontSize: "12px",
-                  border: "1px solid #f44",
-                  borderRadius: "6px",
-                  backgroundColor: "transparent",
-                  color: "#f77",
-                  cursor: "pointer",
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = "#f44";
-                  e.target.style.color = "#fff";
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = "transparent";
-                  e.target.style.color = "#f77";
-                }}
+                className="CommentToastDeleteBtn"
               >
                 Xoá
               </button>
@@ -172,15 +142,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         ),
         {
           duration: Infinity,
-          style: {
-            background: "#1c1c1e",
-            color: "#fff",
-            borderRadius: "12px",
-            padding: "12px 16px",
-            width: "fit-content",
-            minWidth: "unset",
-            maxWidth: "90vw",
-          },
+          className: "CommentToast"
         }
       );
     });
@@ -341,73 +303,44 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
     const showReplies = expandedThreads[comment.id] || false;
 
     return (
-      <div key={comment.id} className="comment-thread">
+      <div key={comment.id} className="CommentThread">
         <div 
-          className="comment-item"
-          style={{ 
-            marginLeft: 0,
-            marginBottom: '16px',
-            position: 'relative',
-            opacity: isOptimistic ? 0.7 : 1,
-          }}
+          className={`CommentItem ${isOptimistic ? 'CommentOptimistic' : ''}`}
           onMouseEnter={() => setHoveredCommentId(comment.id)}
           onMouseLeave={() => setHoveredCommentId(null)}
         >
           
           {/* Avatar và nội dung */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div className="CommentMainContent">
             {/* Avatar */}
             <img
               src={comment.avatarUrl || defaultAvatar}
-              className="comment-avatar"
+              className="CommentAvatar"
               alt="avatar"
               onClick={() => navigate(`/nguoi-dung/${comment.userId}`)}
               onError={(e) => (e.target.src = defaultAvatar)}
-              style={{ 
-                cursor: 'pointer',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                flexShrink: 0
-              }}
             />
 
             {/* Nội dung comment */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="CommentContentWrapper">
               {/* Header với tên và menu */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '4px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => navigate(`/nguoi-dung/${comment.userId}`)}
+              <div className="CommentHeader">
+                <div className="CommentUserInfo">
+                  <span 
+                    className="CommentUserName"
+                    onClick={() => navigate(`/nguoi-dung/${comment.userId}`)}
                   >
                     @{comment.userName}
                   </span>
                   
                   {isAuthor && (
-                    <span style={{ 
-                      color: '#007aff', 
-                      fontSize: '11px',
-                      fontWeight: 500
-                    }}>
+                    <span className="CommentAuthorBadge">
                       • Tác giả
                     </span>
                   )}
                   
                   {isOptimistic && (
-                    <span style={{
-                      fontSize: '10px', 
-                      color: '#999'
-                    }}>
+                    <span className="CommentSendingStatus">
                       • Đang gửi...
                     </span>
                   )}
@@ -417,14 +350,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                 {isMyComment && !isOptimistic && 
                 (hoveredCommentId === comment.id || menuOpenId === comment.id) && (
                   <div
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      cursor: 'pointer',
-                      fontSize: '20px',
-                      lineHeight: '1'
-                    }}
+                    className="CommentMenuButton"
                     onClick={(e) => {
                       e.stopPropagation();
                       setMenuOpenId(menuOpenId === comment.id ? null : comment.id);
@@ -437,24 +363,12 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
               </div>
 
               {/* Nội dung */}
-              <div style={{ 
-                fontSize: '14px',
-                lineHeight: 1.4,
-                color: '#000',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                marginBottom: '8px'
-              }}>
+              <div className="CommentContent">
                 {comment.content}
               </div>
 
               {/* Action buttons */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginTop: '8px'
-              }}>
+              <div className="CommentActions">
                 {/* Nút trả lời */}
                 {token && (
                   <button
@@ -468,29 +382,14 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                       }
                     }}
                     disabled={isOptimistic}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '12px',
-                      color: activeReplyId === comment.id ? '#007aff' : '#666',
-                      cursor: isOptimistic ? 'not-allowed' : 'pointer',
-                      opacity: isOptimistic ? 0.5 : 1,
-                      padding: '4px 0',
-                      fontWeight: 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
+                    className={`CommentReplyButton ${activeReplyId === comment.id ? 'CommentReplyButtonActive' : ''} ${isOptimistic ? 'CommentReplyButtonDisabled' : ''}`}
                   >
                     💬 {activeReplyId === comment.id ? 'Hủy' : 'Trả lời'}
                   </button>
                 )}
 
                 {/* Thời gian */}
-                <span style={{
-                  fontSize: '11px',
-                  color: '#999'
-                }}>
+                <span className="CommentTime">
                   {new Date(comment.createdAt).toLocaleString('vi-VN', {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -503,163 +402,23 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                 {hasReplies && (
                   <button
                     onClick={() => toggleReplies(comment.id)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '12px',
-                      color: '#007aff',
-                      cursor: 'pointer',
-                      padding: '4px 0',
-                      fontWeight: 500
-                    }}
+                    className="CommentToggleRepliesButton"
                   >
                     {showReplies ? `Ẩn ${comment.replies.length} phản hồi` : `${comment.replies.length} phản hồi`}
                   </button>
                 )}
               </div>
 
-              {/* Form trả lời */}
-              {activeReplyId === comment.id && token && (
-                <div style={{ 
-                  marginTop: '12px',
-                  padding: '12px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '8px',
-                  border: '1px solid #e9ecef'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'flex-start', 
-                    gap: '8px'
-                  }}>
-                    <img
-                      src={user?.avatarUrl || defaultAvatar}
-                      alt="Your avatar"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                        marginTop: '4px'
-                      }}
-                    />
-                    
-                    <div style={{ flex: 1 }}>
-                      <textarea
-                        placeholder={`Trả lời @${comment.userName}...`}
-                        value={replyContent}
-                        onChange={(e) => {
-                          if (e.target.value.length <= 150) {
-                            setReplyContent(e.target.value);
-                          }
-                        }}
-                        onInput={handleTextareaChange}
-                        maxLength={150}
-                        rows={1}
-                        style={{
-                          width: '100%',
-                          resize: 'none',
-                          minHeight: '36px',
-                          padding: '8px 12px',
-                          fontSize: '14px',
-                          borderRadius: '18px',
-                          border: '1px solid #ddd',
-                          boxSizing: 'border-box',
-                          outline: 'none',
-                          backgroundColor: '#fff'
-                        }}
-                      />
-                      
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginTop: '8px' 
-                      }}>
-                        <span style={{ fontSize: '11px', color: '#999' }}>
-                          {replyContent.length}/150
-                        </span>
-                        
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => {
-                              setActiveReplyId(null);
-                              setReplyContent('');
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: '1px solid #ddd',
-                              borderRadius: '16px',
-                              padding: '6px 12px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              color: '#666'
-                            }}
-                          >
-                            Hủy
-                          </button>
-                          
-                          <button
-                            onClick={() => handleReplySubmit(comment.id)}
-                            disabled={!replyContent.trim()}
-                            style={{
-                              backgroundColor: replyContent.trim() ? '#fc5b5b' : '#ccc',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '20px',
-                              padding: '6px 14px',
-                              fontSize: '13px',
-                              cursor: replyContent.trim() ? 'pointer' : 'not-allowed'
-                            }}
-                          >
-                            Gửi
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Menu xóa dropdown */}
               {menuOpenId === comment.id && isMyComment && !isOptimistic && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '25px',
-                    right: '0px',
-                    background: '#fff',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    minWidth: '120px',
-                    overflow: 'hidden'
-                  }}
-                >
+                <div className="CommentDeleteMenu">
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
                       setMenuOpenId(null);
                       handleDeleteComment(comment.id);
                     }}
-                    style={{
-                      padding: '12px 16px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: '#ff3b30',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#f5f5f5';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
-                    }}
+                    className="CommentDeleteMenuItem"
                   >
                     🗑️ Xóa bình luận
                   </div>
@@ -669,225 +428,238 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
           </div>
         </div>
 
+        {/* FORM TRẢ LỜI CHO COMMENT GỐC - THÊM PHẦN NÀY */}
+        {activeReplyId === comment.id && token && (
+          <div className="CommentReplyForm CommentReplyFormAfterMain">
+            <div className="CommentReplyFormContent">
+              <img
+                src={user?.avatarUrl || defaultAvatar}
+                alt="Your avatar"
+                className="CommentReplyAvatar"
+              />
+              
+              <div className="CommentReplyInputWrapper">
+                <textarea
+                  placeholder={`Trả lời @${comment.userName}...`}
+                  value={replyContent}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 150) {
+                      setReplyContent(e.target.value);
+                    }
+                  }}
+                  onInput={handleTextareaChange}
+                  maxLength={150}
+                  rows={1}
+                  className="CommentReplyTextarea"
+                />
+                
+                <div className="CommentReplyFormFooter">
+                  <span className="CommentReplyCharCount">
+                    {replyContent.length}/150
+                  </span>
+                  
+                  <div className="CommentReplyFormButtons">
+                    <button
+                      onClick={() => {
+                        setActiveReplyId(null);
+                        setReplyContent('');
+                      }}
+                      className="CommentReplyCancelButton"
+                    >
+                      Hủy
+                    </button>
+                    
+                    <button
+                      onClick={() => handleReplySubmit(comment.id)}
+                      disabled={!replyContent.trim()}
+                      className={`CommentReplySubmitButton ${!replyContent.trim() ? 'CommentReplySubmitButtonDisabled' : ''}`}
+                    >
+                      Gửi
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* HIỂN THỊ REPLIES - CHỈ 1 CẤP, KHÔNG RECURSIVE */}
         {hasReplies && showReplies && (
-          <div style={{ 
-            marginLeft: 40,
-            borderLeft: '2px solid #e9ecef',
-            paddingLeft: 20,
-            marginTop: 12
-          }}>
-            {comment.replies.map(reply => (
-              <div key={reply.id} style={{ marginBottom: '16px' }}>
-                <div 
-                  className="comment-item comment-reply"
-                  style={{ 
-                    marginLeft: 0,
-                    position: 'relative',
-                    opacity: reply.isOptimistic ? 0.7 : 1,
-                  }}
-                  onMouseEnter={() => setHoveredCommentId(reply.id)}
-                  onMouseLeave={() => setHoveredCommentId(null)}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    {/* Avatar reply */}
-                    <img
-                      src={reply.avatarUrl || defaultAvatar}
-                      className="comment-avatar"
-                      alt="avatar"
-                      onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
-                      onError={(e) => (e.target.src = defaultAvatar)}
-                      style={{ 
-                        cursor: 'pointer',
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        flexShrink: 0
-                      }}
-                    />
-
-                    {/* Nội dung reply */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Header reply */}
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: '4px'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{
-                            fontWeight: 600,
-                            fontSize: '13px',
-                            cursor: 'pointer'
-                          }}
-                          onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
-                          >
-                            @{reply.userName}
-                          </span>
-                          
-                          <span style={{
-                            color: '#007aff',
-                            fontSize: '12px',
-                            fontWeight: 500
-                          }}>
-                            đã phản hồi @{comment.userName}
-                          </span>
-                          
-                          {reply.isAuthor && (
-                            <span style={{ 
-                              color: '#007aff', 
-                              fontSize: '11px',
-                              fontWeight: 500
-                            }}>
-                              • Tác giả
-                            </span>
-                          )}
-                          
-                          {reply.isOptimistic && (
-                            <span style={{
-                              fontSize: '10px', 
-                              color: '#999'
-                            }}>
-                              • Đang gửi...
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Menu 3 chấm cho reply */}
-                        {reply.userId === currentUserId && !reply.isOptimistic && 
-                        (hoveredCommentId === reply.id || menuOpenId === reply.id) && (
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: '8px',
-                              right: '8px',
-                              cursor: 'pointer',
-                              fontSize: '20px',
-                              lineHeight: '1'
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(menuOpenId === reply.id ? null : reply.id);
-                            }}
-                            title="Tùy chọn"
-                          >
-                            ⋯
-                          </div>
-                        )}
-                      </div>
+          <div className="CommentRepliesContainer">
+            {comment.replies.map((reply, index) => (
+              <div key={reply.id}>
+                <div className="CommentReplyItem">
+                  <div 
+                    className={`CommentItem CommentReply ${reply.isOptimistic ? 'CommentOptimistic' : ''}`}
+                    onMouseEnter={() => setHoveredCommentId(reply.id)}
+                    onMouseLeave={() => setHoveredCommentId(null)}
+                  >
+                    <div className="CommentMainContent">
+                      {/* Avatar reply */}
+                      <img
+                        src={reply.avatarUrl || defaultAvatar}
+                        className="CommentAvatar CommentReplyAvatarSmall"
+                        alt="avatar"
+                        onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
+                        onError={(e) => (e.target.src = defaultAvatar)}
+                      />
 
                       {/* Nội dung reply */}
-                      <div style={{ 
-                        fontSize: '13px',
-                        lineHeight: 1.4,
-                        color: '#000',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        marginBottom: '8px'
-                      }}>
-                        {reply.content}
-                      </div>
-
-                      {/* Action buttons reply */}
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                        marginTop: '8px'
-                      }}>
-                        {/* Nút trả lời cho reply - TRẢ LỜI VÀO COMMENT GỐC */}
-                        {token && (
-                          <button
-                            onClick={() => {
-                              if (activeReplyId === comment.id) {
-                                setActiveReplyId(null);
-                                setReplyContent('');
-                              } else {
-                                setActiveReplyId(comment.id);
-                                setReplyContent(`@${reply.userName} `);
-                              }
-                            }}
-                            disabled={reply.isOptimistic}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              fontSize: '12px',
-                              color: activeReplyId === comment.id ? '#007aff' : '#666',
-                              cursor: reply.isOptimistic ? 'not-allowed' : 'pointer',
-                              opacity: reply.isOptimistic ? 0.5 : 1,
-                              padding: '4px 0',
-                              fontWeight: 500,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            💬 Trả lời
-                          </button>
-                        )}
-
-                        {/* Thời gian reply */}
-                        <span style={{
-                          fontSize: '11px',
-                          color: '#999'
-                        }}>
-                          {new Date(reply.createdAt).toLocaleString('vi-VN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            day: '2-digit',
-                            month: '2-digit'
-                          })}
-                        </span>
-                      </div>
-
-                      {/* Menu xóa dropdown cho reply */}
-                      {menuOpenId === reply.id && reply.userId === currentUserId && !reply.isOptimistic && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '25px',
-                            right: '0px',
-                            background: '#fff',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-                            zIndex: 1000,
-                            minWidth: '120px',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setMenuOpenId(null);
-                              handleDeleteComment(reply.id);
-                            }}
-                            style={{
-                              padding: '12px 16px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              color: '#ff3b30',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              transition: 'background-color 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = '#f5f5f5';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            🗑️ Xóa bình luận
+                      <div className="CommentContentWrapper">
+                        {/* Header reply */}
+                        <div className="CommentHeader">
+                          <div className="CommentUserInfo">
+                            <span 
+                              className="CommentUserName CommentReplyUserName"
+                              onClick={() => navigate(`/nguoi-dung/${reply.userId}`)}
+                            >
+                              @{reply.userName}
+                            </span>
+                            
+                            <span className="CommentReplyToText">
+                              đã phản hồi @{comment.userName}
+                            </span>
+                            
+                            {reply.isAuthor && (
+                              <span className="CommentAuthorBadge">
+                                • Tác giả
+                              </span>
+                            )}
+                            
+                            {reply.isOptimistic && (
+                              <span className="CommentSendingStatus">
+                                • Đang gửi...
+                              </span>
+                            )}
                           </div>
+
+                          {/* Menu 3 chấm cho reply */}
+                          {reply.userId === currentUserId && !reply.isOptimistic && 
+                          (hoveredCommentId === reply.id || menuOpenId === reply.id) && (
+                            <div
+                              className="CommentMenuButton"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpenId(menuOpenId === reply.id ? null : reply.id);
+                              }}
+                              title="Tùy chọn"
+                            >
+                              ⋯
+                            </div>
+                          )}
                         </div>
-                      )}
+
+                        {/* Nội dung reply */}
+                        <div className="CommentContent CommentReplyContent">
+                          {reply.content}
+                        </div>
+
+                        {/* Action buttons reply */}
+                        <div className="CommentActions">
+                          {/* Nút trả lời cho reply - TRẢ LỜI VÀO COMMENT GỐC */}
+                          {token && (
+                            <button
+                              onClick={() => {
+                                if (activeReplyId === reply.id) {
+                                  setActiveReplyId(null);
+                                  setReplyContent('');
+                                } else {
+                                  setActiveReplyId(reply.id);
+                                  setReplyContent(`@${reply.userName} `);
+                                }
+                              }}
+                              disabled={reply.isOptimistic}
+                              className={`CommentReplyButton ${activeReplyId === reply.id ? 'CommentReplyButtonActive' : ''} ${reply.isOptimistic ? 'CommentReplyButtonDisabled' : ''}`}
+                            >
+                              💬 {activeReplyId === reply.id ? 'Hủy' : 'Trả lời'}
+                            </button>
+                          )}
+
+                          {/* Thời gian reply */}
+                          <span className="CommentTime">
+                            {new Date(reply.createdAt).toLocaleString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              day: '2-digit',
+                              month: '2-digit'
+                            })}
+                          </span>
+                        </div>
+
+                        {/* Menu xóa dropdown cho reply */}
+                        {menuOpenId === reply.id && reply.userId === currentUserId && !reply.isOptimistic && (
+                          <div className="CommentDeleteMenu">
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpenId(null);
+                                handleDeleteComment(reply.id);
+                              }}
+                              className="CommentDeleteMenuItem"
+                            >
+                              🗑️ Xóa bình luận
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* FORM TRẢ LỜI XUẤT HIỆN NGAY DƯỚI REPLY NÀY */}
+                {activeReplyId === reply.id && token && (
+                  <div className="CommentReplyForm CommentReplyFormAfterReply">
+                    <div className="CommentReplyFormContent">
+                      <img
+                        src={user?.avatarUrl || defaultAvatar}
+                        alt="Your avatar"
+                        className="CommentReplyAvatar"
+                      />
+                      
+                      <div className="CommentReplyInputWrapper">
+                        <textarea
+                          placeholder={`Trả lời @${reply.userName}...`}
+                          value={replyContent}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 150) {
+                              setReplyContent(e.target.value);
+                            }
+                          }}
+                          onInput={handleTextareaChange}
+                          maxLength={150}
+                          rows={1}
+                          className="CommentReplyTextarea"
+                        />
+                        
+                        <div className="CommentReplyFormFooter">
+                          <span className="CommentReplyCharCount">
+                            {replyContent.length}/150
+                          </span>
+                          
+                          <div className="CommentReplyFormButtons">
+                            <button
+                              onClick={() => {
+                                setActiveReplyId(null);
+                                setReplyContent('');
+                              }}
+                              className="CommentReplyCancelButton"
+                            >
+                              Hủy
+                            </button>
+                            
+                            <button
+                              onClick={() => handleReplySubmit(comment.id)}
+                              disabled={!replyContent.trim()}
+                              className={`CommentReplySubmitButton ${!replyContent.trim() ? 'CommentReplySubmitButtonDisabled' : ''}`}
+                            >
+                              Gửi
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -915,20 +687,20 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
   const totalComments = comments.reduce((acc, comment) => acc + 1 + (comment.replies?.length || 0), 0);
 
   return (
-    <div className="comment-drawer-overlay" onClick={onClose}>
+    <div className="CommentDrawerOverlay" onClick={onClose}>
       <div
-        className="comment-drawer"
+        className="CommentDrawer"
         onClick={(e) => e.stopPropagation()}
         onWheel={handleWheel}
       >
-        <div className="comment-header">
+        <div className="CommentDrawerHeader">
           <span>Bình luận ({totalComments})</span>
-          <button onClick={onClose}>&times;</button>
+          <button onClick={onClose} className="CommentDrawerCloseButton">&times;</button>
         </div>
 
-        <div className="comment-list">
+        <div className="CommentList">
           {comments.length === 0 && (
-            <p className="no-comment" style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+            <p className="CommentNoComment">
               Chưa có bình luận nào.
             </p>
           )}
@@ -937,11 +709,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
 
         {/* Input area cho comment mới */}
         {token && (
-          <div className="comment-input-area" style={{ 
-            padding: '12px',
-            borderTop: '1px solid #eee',
-            backgroundColor: '#fff'
-          }}>
+          <div className="CommentInputArea">
             <textarea
               placeholder="Nhập bình luận..."
               value={newComment}
@@ -953,28 +721,16 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
               onInput={handleTextareaChange}
               maxLength={150}
               rows={1}
-              style={{
-                resize: 'none',
-                overflow: 'hidden',
-                minHeight: '40px',
-                lineHeight: '20px',
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '15px',
-                boxSizing: 'border-box',
-                borderRadius: '6px',
-                border: '1px solid #ddd',
-                marginBottom: '8px',
-                outline: 'none'
-              }}
+              className="CommentInputTextarea"
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', color: '#666' }}>
+            <div className="CommentInputFooter">
+              <span className="CommentInputCharCount">
                 {newComment.length}/150
               </span>
               <button 
                 onClick={handleSubmitComment}
                 disabled={!newComment.trim()}
+                className={`CommentInputSubmitButton ${!newComment.trim() ? 'CommentInputSubmitButtonDisabled' : ''}`}
               >
                 Gửi
               </button>
@@ -983,12 +739,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
         )}
 
         {!token && (
-          <div style={{ 
-            padding: '20px', 
-            textAlign: 'center', 
-            borderTop: '1px solid #eee',
-            color: '#666'
-          }}>
+          <div className="CommentLoginPrompt">
             Đăng nhập để bình luận
           </div>
         )}

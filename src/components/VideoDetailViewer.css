@@ -52,7 +52,7 @@ body.video-transitioning .video-item {
 
 .vdv-container.vdv-landscape {
   max-width: 1000px;
-  max-height: 600px;
+  max-height: 530px;
 }
 
 .vdv-container.vdv-square {
@@ -313,22 +313,29 @@ body.video-transitioning .video-item {
   color: white;
 }
 
-/* Comment open states */
-.vdv-container.comment-open {
-  transform: translateX(-100px);
+/* Khi mở comment - video dọc */
+.vdv-container.vdv-portrait.comment-open {
+  transform: translateX(-100px); /* dịch sang trái */
   transition: transform 0.3s ease;
 }
 
+/* Khi mở comment - video ngang */
 .vdv-container.vdv-landscape.comment-open {
-  transform: scale(0.75) translateX(-150px);
+  transform: scale(0.75) translateX(-150px); /* thu nhỏ hơn + dịch sang trái */
   transition: transform 0.3s ease;
 }
 
-.vdv-side-info.comment-open {
+/* Khi mở comment - video dọc (side info là sibling) */
+.vdv-container.vdv-portrait.comment-open ~ .vdv-side-info {
   transform: translateX(-110px);
   transition: transform 0.3s ease;
 }
 
+/* Khi mở comment - video ngang (side info là sibling) */
+.vdv-container.vdv-landscape.comment-open ~ .vdv-side-info {
+  transform: translateX(-240px);
+  transition: transform 0.3s ease;
+}
 /* Loading overlay */
 .loading-overlay {
   position: fixed;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import axios from "axios";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { 
@@ -23,8 +24,11 @@ const trangThaiMap = {
 };
 
 const QuanLyTin = () => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [posts, setPosts] = useState([]);
   const [userName, setUserName] = useState(sessionStorage.getItem("userFullName") || "Người dùng");
+  const [userAvatar, setUserAvatar] = useState(sessionStorage.getItem("userAvatar") || "");
   
   // Sử dụng useSearchParams để quản lý state trong URL
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,18 +56,25 @@ const QuanLyTin = () => {
   };
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserInfo = async () => {
       try {
         const res = await axios.get(`http://localhost:5133/api/TinDang/user-info/${userId}`);
         sessionStorage.setItem("userFullName", res.data.fullName);
         setUserName(res.data.fullName);
+        if (res.data.avatar) {
+          sessionStorage.setItem("userAvatar", res.data.avatar);
+          setUserAvatar(res.data.avatar);
+        } else {
+          sessionStorage.removeItem("userAvatar");
+          setUserAvatar("");
+        }
       } catch (err) {
-        console.error("Không thể lấy tên người dùng:", err);
+        console.error("Không thể lấy thông tin người dùng:", err);
       }
     };
 
-    if (userId && !sessionStorage.getItem("userFullName")) {
-      fetchUserName();
+    if (userId && (!sessionStorage.getItem("userFullName") || !sessionStorage.getItem("userAvatar"))) {
+      fetchUserInfo();
     }
   }, [userId]);
 
@@ -93,12 +104,17 @@ const QuanLyTin = () => {
       });
   }, [userId]);
 
-  const filteredPosts = posts.filter(
+  let filteredPosts = posts.filter(
     (p) =>
       p.trangThaiText === activeTab &&
       (p.tieuDe?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
       p.moTa?.toLowerCase().includes(searchKeyword.toLowerCase())
    ) );
+
+  // Nếu tab là DaDuyet thì sắp xếp tin mới nhất lên đầu (xuất hiện ở sau cùng)
+  if (activeTab === "DaDuyet") {
+    filteredPosts = filteredPosts.sort((a, b) => new Date(b.ngayDang) - new Date(a.ngayDang));
+  }
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -120,6 +136,16 @@ const QuanLyTin = () => {
       search: newSearch || undefined,
       page: '1' // Reset về trang 1 khi tìm kiếm
     });
+    if (newSearch.length > 0) {
+      const lowerSearch = newSearch.toLowerCase();
+      const titles = posts.map(p => p.tieuDe).filter(Boolean);
+      const filtered = titles.filter(title => title.toLowerCase().includes(lowerSearch));
+      setSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
   };
 
   const handlePageChange = (newPage) => {
@@ -177,13 +203,21 @@ const QuanLyTin = () => {
       <div className="qlt-header-bar">
         <div className="qlt-user-info">
           <span className="qlt-user-avatar">
-            <FaUser size={18} />
+            {userAvatar ? (
+              <img
+                src={userAvatar}
+                alt="avatar"
+                style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }}
+              />
+            ) : (
+              <FaUser size={18} />
+            )}
           </span>
           <h2>
             Xin chào, <strong>{userName}</strong> <HiOutlineEmojiHappy className="wave-icon" />
           </h2>
         </div>
-        <div className="qlt-search-wrapper">
+        <div className="qlt-search-wrapper" style={{ position: "relative" }}>
           <FaSearch className="search-icon" />
           <input
             type="text"
@@ -191,7 +225,39 @@ const QuanLyTin = () => {
             value={searchKeyword}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="qlt-search"
+            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           />
+          {showSuggestions && suggestions.length > 0 && (
+            <ul style={{
+              position: "absolute",
+              top: "110%",
+              left: 0,
+              width: "120%",
+              background: "#fff",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              zIndex: 10,
+              listStyle: "none",
+              margin: 0,
+              padding: "4px 0"
+            }}>
+              {suggestions.map((s, idx) => (
+                <li
+                  key={idx}
+                  style={{ display: "flex", alignItems: "center", padding: "8px 16px", cursor: "pointer", gap: "8px" }}
+                  onMouseDown={() => {
+                    handleSearchChange(s);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <FaSearch style={{ color: "#888", minWidth: 20, minHeight: 20, width: 20, height: 20, display: "inline-block", verticalAlign: "middle" }} />
+                  <span className="suggestion-title">{s}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -218,55 +284,149 @@ const QuanLyTin = () => {
 
       <div className="qlt-post-list">
         {currentPosts.length === 0 ? (
-          <div className="qlt-empty-state">
-            <FaRegHandshake size={48} className="empty-icon" />
-            <p>Không có tin đăng cho trạng thái này.</p>
+          <div className="qlt-empty-state" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
+            <img src="/images/empty-post.png" alt="Không tìm thấy tin đăng" style={{ width: 420, marginBottom: 20 }} />
+            <h3 style={{ color: '#222', marginBottom: 8 }}>Không tìm thấy tin đăng</h3>
+            <p style={{ color: '#555', marginBottom: 20 }}>Bạn hiện tại không có tin đăng nào cho trạng thái này</p>
+            <button
+              style={{ background: '#ff8000', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 32px', fontWeight: 600, fontSize: 18, cursor: 'pointer' }}
+              onClick={async () => {
+                const loadingToast = toast.loading("🔍 Đang kiểm tra thông tin tài khoản...", { position: "top-center" });
+                try {
+                  const token = sessionStorage.getItem("token");
+                  const res = await axios.get(`http://localhost:5133/api/user/profile/${userId}`,
+                    token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+                  );
+                  const userInfo = res.data;
+                  toast.dismiss(loadingToast);
+                  let validation = { valid: true, message: "" };
+                  if (!userInfo.emailConfirmed) {
+                    validation = { valid: false, message: "Bạn cần xác minh email để đăng tin." };
+                  } else {
+                    let phone = userInfo.phoneNumber ? String(userInfo.phoneNumber).replace(/[^0-9]/g, "").trim() : "";
+                    // Chỉ hợp lệ nếu đúng 10 số và bắt đầu bằng số 0
+                    if (phone.length !== 10 || !phone.startsWith("0")) {
+                      validation = { valid: false, message: "Số điện thoại phải đủ 10 số và bắt đầu bằng số 0 để đăng tin." };
+                    }
+                  }
+                  if (!validation.valid) {
+                    if (validation.message.includes("xác minh email")) {
+                      toast.error(`📧 ${validation.message}`, { position: "top-center", duration: 3500, className: "topnnavbar-toast-verify-email" });
+                    } else if (validation.message.includes("Số điện thoại")) {
+                      toast.error(`📱 ${validation.message}`, { position: "top-center", duration: 3500, className: "topnnavbar-toast-update-phone" });
+                    } else {
+                      toast.error(`❌ ${validation.message}`, { position: "top-center", duration: 3500 });
+                    }
+                    navigate('/cai-dat-tai-khoan');
+                    return;
+                  }
+                  navigate('/dang-tin');
+                } catch (error) {
+                  toast.dismiss(loadingToast);
+                  toast.error("❌ Không thể xác thực thông tin. Vui lòng thử lại.", { position: "top-center", duration: 3500 });
+                  navigate('/cai-dat-tai-khoan');
+                }
+              }}
+            >
+              Đăng tin
+            </button>
           </div>
         ) : (
           currentPosts.map((post) => (
-            <div key={post.maTinDang} className="qlt-post-item">
-              {post.images?.length > 0 && (
-                <img
-                  src={post.images[0]}
-                  alt="Ảnh tin đăng"
-                  className="qlt-post-image"
-                />
-              )}
-              <div className="qlt-post-content">
-                <h3 className="qlt-title">{post.tieuDe}</h3>
-                <p>{post.moTa}</p>
-                <p>
-                  <strong className="qlt-price">Giá: {post.gia.toLocaleString()} đ</strong>
-                </p>
-                <p>
-                  <strong>Ngày đăng:</strong> {new Date(post.ngayDang).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Người bán:</strong> {post.nguoiBan}
-                </p>
+            activeTab === "DaDuyet" ? (
+              <div
+                key={post.maTinDang}
+                className="qlt-post-item"
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate(`/tin-dang/${post.maTinDang}`)}
+              >
+                {post.images?.length > 0 && (
+                  <img
+                    src={post.images[0]}
+                    alt="Ảnh tin đăng"
+                    className="qlt-post-image"
+                  />
+                )}
+                <div className="qlt-post-content">
+                  <h3 className="qlt-title">{post.tieuDe}</h3>
+                  <p>{post.moTa}</p>
+                  <p>
+                    <strong className="qlt-price">Giá: {post.gia.toLocaleString()} đ</strong>
+                  </p>
+                  <p>
+                    <strong>Ngày đăng:</strong> {new Date(post.ngayDang).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <strong>Người bán:</strong> {post.nguoiBan}
+                  </p>
 
-                <div className="qlt-actions">
-                  <button onClick={() => handleUpdate(post.maTinDang)} className="qlt-edit-btn">
-                    <FaEdit className="action-icon" /> Cập nhật
-                  </button>
-                  <button
-                    className="qlt-delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(post.maTinDang);
-                    }}
-                  >
-                    <FaTrash className="action-icon" /> Xóa
-                  </button>
+                  <div className="qlt-actions">
+                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(post.maTinDang); }} className="qlt-edit-btn">
+                      <FaEdit className="action-icon" /> Cập nhật
+                    </button>
+                    <button
+                      className="qlt-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(post.maTinDang);
+                      }}
+                    >
+                      <FaTrash className="action-icon" /> Xóa
+                    </button>
+                  </div>
+                </div>
+
+                <div className="qlt-post-status">
+                  {post.trangThaiText === "ChoDuyet" && <FaRegClock className="status-icon" title="Chờ duyệt" />}
+                  {post.trangThaiText === "DaDuyet" && <FaCheck className="status-icon" title="Đã duyệt" />}
+                  {post.trangThaiText === "TuChoi" && <FaRegThumbsDown className="status-icon" title="Bị từ chối" />}
                 </div>
               </div>
+            ) : (
+              <div key={post.maTinDang} className="qlt-post-item">
+                {post.images?.length > 0 && (
+                  <img
+                    src={post.images[0]}
+                    alt="Ảnh tin đăng"
+                    className="qlt-post-image"
+                  />
+                )}
+                <div className="qlt-post-content">
+                  <h3 className="qlt-title">{post.tieuDe}</h3>
+                  <p>{post.moTa}</p>
+                  <p>
+                    <strong className="qlt-price">Giá: {post.gia.toLocaleString()} đ</strong>
+                  </p>
+                  <p>
+                    <strong>Ngày đăng:</strong> {new Date(post.ngayDang).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <strong>Người bán:</strong> {post.nguoiBan}
+                  </p>
 
-              <div className="qlt-post-status">
-                {post.trangThaiText === "ChoDuyet" && <FaRegClock className="status-icon" title="Chờ duyệt" />}
-                {post.trangThaiText === "DaDuyet" && <FaCheck className="status-icon" title="Đã duyệt" />}
-                {post.trangThaiText === "TuChoi" && <FaRegThumbsDown className="status-icon" title="Bị từ chối" />}
+                  <div className="qlt-actions">
+                    <button onClick={() => handleUpdate(post.maTinDang)} className="qlt-edit-btn">
+                      <FaEdit className="action-icon" /> Cập nhật
+                    </button>
+                    <button
+                      className="qlt-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(post.maTinDang);
+                      }}
+                    >
+                      <FaTrash className="action-icon" /> Xóa
+                    </button>
+                  </div>
+                </div>
+
+                <div className="qlt-post-status">
+                  {post.trangThaiText === "ChoDuyet" && <FaRegClock className="status-icon" title="Chờ duyệt" />}
+                  {post.trangThaiText === "DaDuyet" && <FaCheck className="status-icon" title="Đã duyệt" />}
+                  {post.trangThaiText === "TuChoi" && <FaRegThumbsDown className="status-icon" title="Bị từ chối" />}
+                </div>
               </div>
-            </div>
+            )
           ))
         )}
       </div>
@@ -286,6 +446,6 @@ const QuanLyTin = () => {
       )}
     </div>
   );
-};
+}
 
 export default QuanLyTin;

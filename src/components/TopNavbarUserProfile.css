@@ -45,17 +45,13 @@
     padding: 8px 16px;
     height: 56px;
     min-height: 56px;
-    /* QUAN TRỌNG: Cho phép click xuyên qua khi scroll */
-    pointer-events: none;
 }
-
 /* Wrapper để sticky hoạt động */
 .topnavbar-userprofile-scrolled-wrapper {
   position: relative;
   height: 80px; /* tạo khoảng trống để khối trắng chiếm chỗ */
   margin-top: 5px; /* cách nhẹ với header */
 }
-
 /* CSS2: Nội dung khi scroll - chỉ khối trắng bo tròn nổi với avatar */
 .topnavbar-userprofile-scrolled-content {
     display: flex;
@@ -73,8 +69,6 @@
     transition: all 0.3s ease;
     position: relative;
     gap: 10px; /* Khoảng cách giữa avatar và text */
-    /* QUAN TRỌNG: Khôi phục khả năng click cho khối trắng */
-    pointer-events: auto;
 }
 
 /* CSS3: Avatar khi scroll */
@@ -428,4 +422,20 @@
         height: 30px; 
         font-size: 13px; 
     }
+}
+.um-tn-avatar {
+  width: 28px;              /* nhỏ gọn hơn */
+  height: 28px;
+  border-radius: 50%;        /* bo tròn */
+  object-fit: cover;         /* giữ tỷ lệ ảnh */
+  border: 1.5px solid #e5e7eb; /* viền xám nhạt (tông neutral) */
+  background-color: #f3f4f6; /* fallback nếu ảnh chưa load */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* bóng nhẹ, tinh tế */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  vertical-align: middle;
+}
+
+.um-tn-avatar:hover {
+  transform: scale(1.08);          /* phóng nhẹ khi hover */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* bóng đậm hơn chút */
 }

@@ -1,0 +1,544 @@
+.video-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0; /* Chỉnh lại để căn giữa */
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center; /* Căn ngang giữa */
+  align-items: center; /* Căn dọc giữa */
+  z-index: 999;
+}
+.video-detail-panel {
+  background: #fff;
+  width: 650px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+
+  overflow-y: auto;                 /* cho panel cuộn */
+  overscroll-behavior: contain;     /* chặn cuộn lan ra ngoài */
+  -webkit-overflow-scrolling: touch; /* mượt trên iOS */
+
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+}
+
+/* Chrome, Edge, Safari */
+.video-detail-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.video-detail-panel::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 20px 0;
+}
+
+.video-detail-panel::-webkit-scrollbar-thumb {
+  background-color: rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.video-detail-panel:hover::-webkit-scrollbar-thumb {
+  background-color: #f59e0b;
+}
+.vdv-wrapper.no-scroll,
+.vdv-full-screen-scroll.no-scroll {
+  overflow: hidden !important;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+}
+
+/* Hiệu ứng mở */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.video-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  margin-top: -20px;
+}
+
+.close-btn {
+  cursor: pointer;
+  color: #666;
+}
+
+.video-detail-content {
+  font-size: 14px;
+  color: #333;
+  margin-top: -25px; /* Tạo khoảng cách hợp lý phía trên */
+  line-height: 1.8; /* Tăng khoảng cách giữa các dòng cho dễ đọc */
+  font-family: 'Inter', 'Roboto', sans-serif; /* Font hiện đại */
+}
+.video-detail-content .title {
+  font-size: 18px; /* Gọn hơn nhưng vẫn dễ đọc */
+  font-weight: 600; /* Đậm vừa phải, không quá nặng */
+  color: #2d2d2d; /* Màu trung tính, chuyên nghiệp */
+  margin: 4px 0 10px; /* Tạo khoảng cách hợp lý trên dưới */
+  font-family: "Inter", "Segoe UI", Roboto, sans-serif; /* Font hiện đại */
+  line-height: 1.4; /* Tạo độ thoáng chữ */
+  text-transform: none; /* Giữ nguyên chữ, tự nhiên */
+}
+
+
+.video-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.video-detail-info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #4a4a4a;
+  padding: 10px 14px;
+  background: #fff7e6; /* Nền vàng cam nhạt */
+  border-radius: 10px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  transition: background 0.3s ease;
+}
+
+.video-detail-info-item:hover {
+  background: #ffeacc; /* Hover vàng nhạt hơn */
+}
+
+.video-detail-info-item .info-icon {
+  font-size: 18px;
+  color: #f59e0b; /* Cam hiện đại */
+}
+
+.video-detail-info-item .value {
+  font-weight: 500;
+}
+
+
+.price {
+  font-size: 20px; /* To hơn để nổi bật */
+  font-weight: 700;
+  color: #d32f2f; /* Đỏ nổi bật */
+  margin-bottom: 14px;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+.note {
+  font-size: 11px;           /* Nhỏ hơn giá rõ rệt */
+  color: #666;              /* Đậm hơn #999 nhưng vẫn nhạt hơn giá */
+  margin-left: 6px;         /* Tạo khoảng cách với giá */
+  font-weight: 400;         /* Nhẹ nhàng hơn giá */
+  line-height: 1;           /* Cân đối chiều cao chữ */
+  opacity: 0.95;            /* Rõ ràng hơn mà vẫn tinh tế */
+  white-space: nowrap;      /* Không xuống dòng */
+}
+
+
+.image-slider {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.slider-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: grab;
+}
+
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #fffaf5, #fff); /* Màu sáng pha cam nhẹ */
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b4f3b; /* Nâu nhạt -> dễ đọc, không chói */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  line-height: 1.4;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.seller-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.seller-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
+  padding: 8px 0;
+  font-size: 15px;
+  border-top: 1px solid #eee;
+}
+
+.seller-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: #92400e; /* Nâu cam đậm để dễ đọc */
+  background: #fff7e6; /* Vàng cam nhạt */
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  border: none; /* Bỏ viền */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  user-select: none;
+}
+
+.phone-icon {
+  font-size: 18px;
+  color: #f59e0b; /* Cam hiện đại */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.seller-phone:hover {
+  background: #ffeacc; /* Hover vàng nhạt hơn */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.seller-phone:hover .phone-icon {
+  color: #d97706; /* Cam đậm hơn khi hover */
+  transform: scale(1.1);
+}
+
+.seller-phone:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.description-section {
+  margin-top: -20px; /* Đẩy cao hơn */
+  font-family: 'Inter', 'Roboto', sans-serif; /* Font hiện đại, dễ đọc */
+  line-height: 1.6; /* Tăng độ thoáng */
+  color: #333; /* Màu chữ dễ nhìn */
+}
+
+.description-title {
+  font-size: 14px;           /* Giữ kích thước */
+  font-weight: 700;
+  color: #f59e0b;            /* Cam nhấn mạnh */
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;     /* Giãn chữ nhẹ */
+  font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif; /* font chuyên nghiệp, rõ ràng */
+}
+
+.description-text {
+  font-size: 14px;        /* Giữ kích thước chữ */
+  font-weight: 400;
+  color: #444;
+  line-height: 1.6;
+  word-break: break-word;  /* Xuống dòng tự nhiên nếu dài */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* font đẹp và rõ ràng */
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+/* Mặc định: chỉ hiện 3 dòng */
+.description-text.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;  /* Giới hạn 3 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Khi mở rộng: hiện hết */
+.description-text.expanded {
+  display: block;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+.contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;               /* khoảng cách giữa 2 nút thoáng hơn */
+  margin-top: 14px;
+}
+
+.contact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff7ef;      /* nền nhạt */
+  color: #d2691e;           /* chữ/icon màu cam nâu */
+  font-size: 15px;          /* chữ vừa phải */
+  font-weight: 600;         /* chữ đậm hơn dễ nhìn */
+  padding: 10px 18px;       /* tăng padding cho nút rõ ràng hơn */
+  min-width: 110px;         /* đảm bảo nút không quá nhỏ */
+  border: none;
+  border-radius: 12px;      /* bo tròn mềm mại hơn */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* đổ bóng nhẹ cho nổi */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.contact-btn .btn-icon {
+  font-size: 18px; /* icon to hơn một chút */
+}
+
+.contact-btn:hover {
+  background: #ffe6cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+.contact-actions {
+  display: flex;
+  gap: 10px; /* khoảng cách giữa hai nút */
+  margin: 10px 0;
+}
+/* -------- Carousel styles (VideoDetailsPanel.css) -------- */
+.carousel-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 6px;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+.carousel-inline .carousel-item {
+  width: 90px !important; /* giữ đúng kích thước gốc */
+  height: 90px !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 640px) {
+  .carousel-inline .carousel-item {
+    width: 140px !important;
+    height: 110px !important;
+  }
+}
+
+/* khung tổng */
+.carousel-root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+/* vùng viewport */
+.carousel-viewport {
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 auto;
+  border-radius: 12px;
+}
+
+/* track */
+.carousel-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 10px 6px;
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+
+.carousel-track.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* item */
+.carousel-item {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 90px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.carousel-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+@media (max-width: 640px) {
+  .carousel-item {
+    width: 140px;
+    height: 110px;
+  }
+}
+
+/* image */
+.carousel-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  background-color: #fff;
+  border-radius: 6px;
+}
+
+/* arrows */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.carousel-arrow:hover {
+  background: rgba(0,0,0,0.7);
+}
+.carousel-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.carousel-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.carousel-arrow-left { left: 8px; }
+.carousel-arrow-right { right: 8px; }
+.carousel-arrow.hidden { display: none; }
+
+/* soft edge overlay */
+.carousel-viewport::before,
+.carousel-viewport::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  height: 100%;
+  width: 40px;
+  top: 0;
+  z-index: 20;
+}
+.carousel-viewport::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0));
+}
+.carousel-viewport::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(255,255,255,0.95), rgba(255,255,255,0));
+}
+.carousel-inline .carousel-item,
+.carousel-track .carousel-item {
+  width: 90px !important; /* giống lúc 1 ảnh */
+  height: 90px !important; /* giữ tỷ lệ đồng bộ */
+  max-width: none !important;
+  flex: 0 0 auto !important; /* không co giãn */
+}
+.ic-lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999 ;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease;
+}
+
+.ic-lightbox-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.ic-lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 8px;
+}
+
+.ic-lightbox-close,
+.ic-lightbox-prev,
+.ic-lightbox-next {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.ic-lightbox-close {
+  top: 10px;
+  right: 10px;
+}
+
+.ic-lightbox-prev {
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.ic-lightbox-next {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}

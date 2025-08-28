@@ -1,4 +1,5 @@
-.comment-drawer-overlay {
+/* ========== COMMENT DRAWER OVERLAY & DRAWER ========== */
+.CommentDrawerOverlay {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -9,7 +10,7 @@
   padding: 0 16px 32px 16px;
 }
 
-.comment-drawer {
+.CommentDrawer {
   position: fixed;
   top: 0;
   right: 0; /* Luôn sát bên phải */
@@ -37,8 +38,8 @@
   }
 }
 
-
-.comment-header {
+/* ========== COMMENT DRAWER HEADER ========== */
+.CommentDrawerHeader {
   padding: 12px 16px;
   border-bottom: 1px solid #ddd;
   font-weight: bold;
@@ -47,168 +48,7 @@
   align-items: center;
 }
 
-.comment-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.comment-list {
-  overflow-y: auto;
-  scrollbar-width: thin; /* Firefox: cực mảnh */
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-}
-
-/* Chrome, Edge, Safari */
-.comment-list::-webkit-scrollbar {
-  width: 3px; /* siêu mảnh */
-}
-
-.comment-list::-webkit-scrollbar-track {
-  background: transparent; /* trong suốt */
-}
-
-.comment-list::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15); /* xám rất nhạt */
-  border-radius: 10px; /* bo tròn nhiều để mềm mại */
-  transition: background-color 0.2s ease, width 0.2s ease;
-}
-
-/* Khi hover vào danh sách, thanh trượt rõ hơn */
-.comment-list:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.35); /* đậm hơn chút */
-  width: 5px; /* hơi to hơn khi hover */
-}
-
-
-.comment-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  position: relative;
-}
-
-.comment-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.comment-avatar.small {
-  width: 28px;
-  height: 28px;
-}
-.comment-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.comment-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-.comment-name {
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 1.4;
-}
-.comment-text {
-  font-size: 14px;
-  line-height: 20px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin-top: 2px;
-}
-.comment-row {
-  display: flex;
-  align-items: center;
-}
-.comment-replies {
-  margin-top: 8px;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.comment-reply-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-.reply-to-line {
-  font-size: 12px;
-  color: #888;
-  margin-top: 5px;
-}
-
-.comment-input-area {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-top: 1px solid #ddd;
-  background-color: #fff;
-  gap: 8px;
-}
-
-.comment-input-area input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  outline: none;
-  font-size: 14px;
-}
-
-.comment-input-area button {
-  padding: 8px 10px;
-  width: auto; /* để nút co theo nội dung */
-  min-width: 40px; /* giữ kích thước tối thiểu */
-  
-  background-color: #ffb84d; /* cam nhạt */
-  color: white;
-  border: none;
-  border-radius: 6px; /* bo nhẹ, không quá tròn */
-  font-weight: bold;
-  cursor: pointer;
-  flex-shrink: 0;
-  text-align: center;
-  line-height: 1;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-/* Hiệu ứng hover */
-.comment-input-area button:hover {
-  background-color: #ffa31a; /* cam nhạt đậm hơn khi hover */
-}
-
-/* Nhấn nút */
-.comment-input-area button:active {
-  transform: scale(0.95);
-}
-
-.no-comment {
-  text-align: center;
-  color: #777;
-  margin-top: 16px;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translate(20%, 100%);
-    opacity: 0;
-  }
-  to {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-
-.comment-header button {
+.CommentDrawerCloseButton {
   width: 22px;
   height: 22px;
   background-color: #ffb84d; /* cam nhạt, mềm mắt */
@@ -227,175 +67,463 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* bóng nhẹ */
 }
 
-.comment-header button:hover {
+.CommentDrawerCloseButton:hover {
   background-color: #ffa31a; /* cam nhạt hơn khi hover */
 }
 
-.comment-thread {
-  margin-bottom: 20px;
-}
-.comment-item-vertical {
-  margin-left: 20px;
-}
-.reply-button {
-  background: none;
-  border: none;
-  color: #007bff;
-  cursor: pointer;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 12px;
-  align-self: flex-start;
-  margin-left: -150px;
-}
-
-.reply-button:hover {
-  color: #0056b3;
-  background-color: #f0f0f0;
-}
-.reply-button:focus {
-  outline: none;
-}
-
-.reply-input textarea {
-  width: 80%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
-  font-size: 14px;
-  resize: none;
-  min-height: 40px;
-  word-wrap: break-word;
-  overflow-y: hidden;
-  transition: height 0.3s ease;
-}
-.reply-input {
-  margin-top: 6px;
-  width: 100%;
-}
-
-.reply-actions {
+/* ========== COMMENT LIST ========== */
+.CommentList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 16px;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin; /* Firefox: cực mảnh */
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
-.reply-send,
-.reply-cancel {
-  padding: 6px 12px;
-  font-size: 14px;
-  border: none;
-  border-radius: 6px;
+/* Chrome, Edge, Safari */
+.CommentList::-webkit-scrollbar {
+  width: 3px; /* siêu mảnh */
+}
+
+.CommentList::-webkit-scrollbar-track {
+  background: transparent; /* trong suốt */
+}
+
+.CommentList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15); /* xám rất nhạt */
+  border-radius: 10px; /* bo tròn nhiều để mềm mại */
+  transition: background-color 0.2s ease, width 0.2s ease;
+}
+
+/* Khi hover vào danh sách, thanh trượt rõ hơn */
+.CommentList:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.35); /* đậm hơn chút */
+  width: 5px; /* hơi to hơn khi hover */
+}
+
+.CommentNoComment {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+/* ========== COMMENT THREAD & ITEM ========== */
+.CommentThread {
+  margin-bottom: 16px;
+}
+
+.CommentItem {
+  margin-left: 0;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.CommentOptimistic {
+  opacity: 0.7;
+}
+
+.CommentMainContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.CommentAvatar {
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.reply-send {
-  background-color: #007bff;
-  color: white;
+.CommentReplyAvatarSmall {
+  width: 28px;
+  height: 28px;
 }
 
-.reply-send:hover {
-  background-color: #0056b3;
+/* ========== COMMENT CONTENT ========== */
+.CommentContentWrapper {
+  flex: 1;
+  min-width: 0;
 }
 
-.reply-cancel {
-  background-color: transparent;
-  color: #888;
+.CommentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.CommentUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.CommentUserName {
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.CommentReplyUserName {
+  font-size: 13px;
+}
+
+.CommentReplyToText {
+  color: #007aff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.CommentAuthorBadge {
+  color: #007aff;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.CommentSendingStatus {
+  font-size: 10px;
+  color: #999;
+}
+
+.CommentMenuButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
   font-size: 20px;
   line-height: 1;
 }
 
-.reply-cancel:hover {
-  color: #333;
+.CommentContent {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #000;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 8px;
 }
 
-.optimistic-comment {
-  animation: fadeIn 0.3s ease-in;
+.CommentReplyContent {
+  font-size: 13px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 0.7;
-    transform: translateY(0);
-  }
+/* ========== COMMENT ACTIONS ========== */
+.CommentActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
 }
 
-.optimistic-comment .comment-body {
+.CommentReplyButton {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.CommentReplyButtonActive {
+  color: #007aff;
+}
+
+.CommentReplyButtonDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.CommentTime {
+  font-size: 11px;
+  color: #999;
+}
+
+.CommentToggleRepliesButton {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #007aff;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+/* ========== COMMENT REPLY FORM ========== */
+.CommentReplyForm {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Form trả lời sau comment chính */
+.CommentReplyFormAfterMain {
+  margin-left: 44px; /* Căn lề với nội dung comment (32px avatar + 12px gap) */
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* Form trả lời sau reply */
+.CommentReplyFormAfterReply {
+  margin-left: 0; /* Không cần margin-left vì đã nằm trong CommentRepliesContainer */
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+.CommentReplyFormContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.CommentReplyAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.CommentReplyInputWrapper {
+  flex: 1;
+}
+
+.CommentReplyTextarea {
+  width: 100%;
+  resize: none;
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 18px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  outline: none;
+  background-color: #fff;
+}
+
+.CommentReplyFormFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.CommentReplyCharCount {
+  font-size: 11px;
+  color: #999;
+}
+
+.CommentReplyFormButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.CommentReplyCancelButton {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+}
+
+.CommentReplySubmitButton {
+  background-color: #fc5b5b;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.CommentReplySubmitButtonDisabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* ========== COMMENT DELETE MENU ========== */
+.CommentDeleteMenu {
+  position: absolute;
+  top: 25px;
+  right: 0px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.CommentDeleteMenuItem {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ff3b30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.CommentDeleteMenuItem:hover {
+  background-color: #f5f5f5;
+}
+
+/* ========== COMMENT REPLIES CONTAINER ========== */
+.CommentRepliesContainer {
+  margin-left: 44px; /* Căn lề với nội dung comment (32px avatar + 12px gap) */
+  border-left: 2px solid #e9ecef;
+  padding-left: 20px;
+  margin-top: 12px;
+}
+
+.CommentReplyItem {
+  margin-bottom: 16px;
+}
+
+.CommentReply {
+  margin-left: 0;
   position: relative;
 }
 
-.optimistic-comment .comment-body::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(0,122,255,0.1) 50%, 
-    transparent 100%);
-  animation: shimmer 1.5s infinite;
-  pointer-events: none;
-  border-radius: 4px;
+/* ========== COMMENT INPUT AREA ========== */
+.CommentInputArea {
+  padding: 12px;
+  border-top: 1px solid #eee;
+  background-color: #fff;
 }
 
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+.CommentInputTextarea {
+  resize: none;
+  overflow: hidden;
+  min-height: 40px;
+  line-height: 20px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-bottom: 8px;
+  outline: none;
 }
 
-.new-comment-notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #007aff;
+.CommentInputFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.CommentInputCharCount {
+  font-size: 12px;
+  color: #666;
+}
+
+.CommentInputSubmitButton {
+  padding: 8px 10px;
+  width: auto;
+  min-width: 40px;
+  background-color: #ffb84d;
   color: white;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 1000;
-  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  animation: slideIn 0.3s ease-out;
+  flex-shrink: 0;
+  text-align: center;
+  line-height: 1;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.CommentInputSubmitButton:hover {
+  background-color: #ffa31a;
 }
 
-.comment-polling-indicator {
-  position: absolute;
-  top: 10px;
-  right: 50px;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #007aff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  opacity: 0.6;
+.CommentInputSubmitButton:active {
+  transform: scale(0.95);
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.CommentInputSubmitButtonDisabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* ========== COMMENT LOGIN PROMPT ========== */
+.CommentLoginPrompt {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #eee;
+  color: #666;
+}
+
+/* ========== COMMENT TOAST STYLES ========== */
+.CommentToast {
+  background: #1c1c1e !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  width: fit-content !important;
+  min-width: unset !important;
+  max-width: 90vw !important;
+}
+
+.CommentToastContainer {
+  font-size: 14px;
+  color: white;
+}
+
+.CommentToastMessage {
+  margin-bottom: 12px;
+}
+
+.CommentToastButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.CommentToastCancelBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #ddd;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.CommentToastCancelBtn:hover {
+  background-color: #444;
+}
+
+.CommentToastDeleteBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid #f44;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #f77;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.CommentToastDeleteBtn:hover {
+  background-color: #f44;
+  color: #fff;
 }

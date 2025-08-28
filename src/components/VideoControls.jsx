@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import './VideoControls.css';
-import { IoVolumeHigh, IoVolumeLow, IoVolumeOff } from 'react-icons/io5';
-// 👆 dùng IoVolumeLow thay vì IoVolumeMute
+import { IoVolumeHigh, IoVolumeLow, IoVolumeOff, IoVolumeMute } from 'react-icons/io5';
 import { VideoContext } from "../context/VideoContext";
 
-const VideoControls = ({ videoRef, isVisible = true }) => {
+const VideoControls = ({ videoRef, isVisible = true, onDragStateChange }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const { volume, setVolume, isMuted, setIsMuted } = useContext(VideoContext);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [previousVolume, setPreviousVolume] = useState(0.5); // Lưu volume trước khi mute
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
@@ -17,6 +17,13 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
   const volumeTimeoutRef = useRef(null);
   const progressBarRef = useRef(null);
   const animationFrameRef = useRef(null);
+
+  // Thông báo parent component về trạng thái drag
+  useEffect(() => {
+    if (onDragStateChange) {
+      onDragStateChange(isDragging);
+    }
+  }, [isDragging, onDragStateChange]);
 
   // Tối ưu hóa việc cập nhật thời gian video với requestAnimationFrame
   const updateTime = useCallback(() => {
@@ -32,11 +39,12 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
     setProgress(newProgress);
   }, [videoRef, isDragging]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!videoRef.current) return;
     videoRef.current.volume = volume;
     videoRef.current.muted = isMuted;
   }, [volume, isMuted, videoRef]);
+
   // Sử dụng requestAnimationFrame để smooth update
   useEffect(() => {
     const video = videoRef.current;
@@ -85,14 +93,23 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
     const clamped = Math.max(0, Math.min(1, newVolume));
     setVolume(clamped);
     setIsMuted(clamped === 0);
+    // Lưu volume khi không phải 0
+    if (clamped > 0) {
+      setPreviousVolume(clamped);
+    }
   };
 
-
+  // Logic mới cho nút volume: lần 1 = mute, lần 2 = 100%
   const handleMuteToggle = () => {
-    if (isMuted) {
+    if (isMuted || volume === 0) {
+      // Nếu đang mute hoặc volume = 0, thì set về 100%
+      setVolume(1);
       setIsMuted(false);
-      if (volume === 0) setVolume(0.5);
+      setPreviousVolume(1);
     } else {
+      // Nếu đang có âm, thì mute
+      setPreviousVolume(volume); // Lưu volume hiện tại
+      setVolume(0);
       setIsMuted(true);
     }
   };
@@ -231,10 +248,10 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const getVolumeIcon = () => {
-  if (isMuted || volume <= 0.01) return <IoVolumeOff size={20} />; // 0 hoặc mute
-  if (volume < 0.5) return <IoVolumeLow size={20} />;              // âm lượng nhỏ
-  return <IoVolumeHigh size={20} />;                               // âm lượng lớn
-};
+    if (isMuted || volume === 0) return <IoVolumeMute size={20} />; // Mute hoặc volume 0
+    if (volume < 0.5) return <IoVolumeLow size={20} />;
+    return <IoVolumeHigh size={20} />;
+  };
 
   // Tính progress hiển thị
   const displayProgress = isDragging ? dragProgress : progress;
@@ -244,33 +261,47 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
 
   return (
     <>
-      {/* Volume Control - Góc trái phía trên */}
-      <div
-        className="VideoControls-volume-control"
-        onMouseEnter={handleVolumeHover}
-        onMouseLeave={handleVolumeLeave}
-      >
-        <button
-          className="VideoControls-volume-button"
-          onClick={handleMuteToggle}
-          title={isMuted ? 'Bật tiếng' : 'Tắt tiếng'}
+      {/* Volume Control - Chỉ hiển thị khi không drag */}
+      {!isDragging && (
+        <div
+          className="VideoControls-volume-control"
+          onMouseEnter={handleVolumeHover}
+          onMouseLeave={handleVolumeLeave}
         >
-          {getVolumeIcon()}
-        </button>
+          <button
+            className="VideoControls-volume-button"
+            onClick={handleMuteToggle}
+            title={isMuted || volume === 0 ? 'Bật âm lượng tối đa' : 'Tắt tiếng'}
+          >
+            {getVolumeIcon()}
+          </button>
 
-        {/* Volume Slider */}
-        <div className={`VideoControls-volume-slider-container ${showVolumeSlider ? 'show' : ''}`}>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={isMuted ? 0 : volume}
-            onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-            className="VideoControls-volume-slider"
-          />
+          {/* Volume Slider - Không có percentage display */}
+          <div className={`VideoControls-volume-slider-container ${showVolumeSlider ? 'show' : ''}`}>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={isMuted ? 0 : volume}
+              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+              className="VideoControls-volume-slider"
+              style={{
+                '--volume-percentage': `${(isMuted ? 0 : volume) * 100}%`
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Time Display - Hiển thị ở giữa trên khi drag */}
+      {isDragging && (
+        <div className="VideoControls-center-time-display">
+          <span className="VideoControls-drag-current-time">{formatTime(displayTime)}</span>
+          <span className="VideoControls-drag-time-separator">/</span>
+          <span className="VideoControls-drag-total-time">{formatTime(duration)}</span>
+        </div>
+      )}
 
       {/* Progress Bar & Time - Dưới video */}
       <div className="VideoControls-progress-control">
@@ -298,13 +329,6 @@ const VideoControls = ({ videoRef, isVisible = true }) => {
               }}
             />
           </div>
-        </div>
-
-        {/* Time Display */}
-        <div className="VideoControls-time-display">
-          <span className="VideoControls-current-time">{formatTime(displayTime)}</span>
-          <span className="VideoControls-time-separator">/</span>
-          <span className="VideoControls-total-time">{formatTime(duration)}</span>
         </div>
       </div>
     </>

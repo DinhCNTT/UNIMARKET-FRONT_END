@@ -12,7 +12,9 @@ import { AuthContext } from "../context/AuthContext";
 import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import TopNavbarUniMarket from './TopNavbarUniMarket';
 import { VideoContext } from "../context/VideoContext";
-import VideoControls from './VideoControls'; // Import component mới
+import VideoControls from './VideoControls';
+import { FaInfoCircle } from "react-icons/fa"; 
+import VideoDetailsPanel from "./VideoDetailsPanel";
 
 const VideoDetailViewer = ({ onOpenChat }) => {
   const [videoList, setVideoList] = useState([]);
@@ -34,134 +36,128 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   const [aspectRatios, setAspectRatios] = useState({}); 
   const { reloadFlag, loading } = useContext(VideoContext);
   const [isReloading, setIsReloading] = useState(false);
-  const [showControls, setShowControls] = useState(true); // State để điều khiển hiển thị controls
-  const controlsTimeoutRef = useRef(null); // Ref để quản lý timeout ẩn controls
-
+  const [showControls, setShowControls] = useState(true);
+  const controlsTimeoutRef = useRef(null);
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
+   
   // Thời lượng animation phải khớp với CSS (ms)
-const SLIDE_DURATION = 650;
+  const SLIDE_DURATION = 650;
 
-const containerRef = useRef(null);
-// Mảng ref cho tất cả video để control play/pause
-const videoElsRef = useRef([]);
-// Lock khi đang animate để không nhảy liên tục
-const isAnimatingRef = useRef(false);
+  const containerRef = useRef(null);
+  const videoElsRef = useRef([]);
+  const isAnimatingRef = useRef(false);
+  const [showDetailPanel, setShowDetailPanel] = useState(false);
+  const [detailData, setDetailData] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
-// Điều hướng an toàn + đồng bộ transition
-const goToIndex = (nextIndex) => {
-  if (isAnimatingRef.current) return;
-  if (nextIndex < 0 || nextIndex >= videoList.length) return;
-  if (nextIndex === currentIndex) return;
+const handleShowDetail = async (maTinDang) => {
+  setLoadingDetail(true);
+  setShowDetailPanel(true);
 
-  isAnimatingRef.current = true;
-  document.body.classList.add("video-transitioning");
-
-  setCurrentIndex(nextIndex);
-
-  // Mở khoá sau khi CSS kết thúc
-  setTimeout(() => {
-    isAnimatingRef.current = false;
-    document.body.classList.remove("video-transitioning");
-  }, SLIDE_DURATION + 80); // thêm 80ms buffer
+  try {
+    const res = await axios.get(`http://localhost:5133/api/video/detail/${maTinDang}`);
+    setDetailData(res.data);
+  } catch (error) {
+    console.error("Lỗi tải chi tiết tin:", error);
+  } finally {
+    setLoadingDetail(false);
+  }
 };
+
+const handleCloseDetail = () => {
+  setShowDetailPanel(false);
+  setDetailData(null);
+};
+
+  // Handler để nhận trạng thái drag từ VideoControls
+  const handleDragStateChange = (isDragging) => {
+    setIsDraggingVideo(isDragging);
+  };
+
+  // Điều hướng an toàn + đồng bộ transition
+  const goToIndex = (nextIndex) => {
+    if (isAnimatingRef.current) return;
+    if (nextIndex < 0 || nextIndex >= videoList.length) return;
+    if (nextIndex === currentIndex) return;
+
+    isAnimatingRef.current = true;
+    document.body.classList.add("video-transitioning");
+
+    setCurrentIndex(nextIndex);
+
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+      document.body.classList.remove("video-transitioning");
+    }, SLIDE_DURATION + 80);
+  };
 
   const handleToggleComments = () => {
-  setShowComments(prev => !prev);
-};
+    setShowComments(prev => !prev);
+  };
 
-// Function để show/hide controls
-const handleMouseMove = () => {
-  setShowControls(true);
-  
-  // Clear timeout cũ
-  if (controlsTimeoutRef.current) {
-    clearTimeout(controlsTimeoutRef.current);
-  }
-  
-  // Set timeout mới để ẩn controls sau 3 giây
-  controlsTimeoutRef.current = setTimeout(() => {
-    setShowControls(false);
-  }, 3000);
-};
-
-const handleMouseLeave = () => {
-  // Ẩn controls khi mouse leave khỏi video container
-  controlsTimeoutRef.current = setTimeout(() => {
-    setShowControls(false);
-  }, 1000);
-};
-
-useEffect(() => {
-  // Khi vào trang này → chặn cuộn
-  document.body.style.overflow = "hidden";
-
-  // Khi rời trang → khôi phục cuộn
-  return () => {
-    document.body.style.overflow = "";
-    // Cleanup timeout
+  const handleMouseMove = () => {
+    setShowControls(true);
+    
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
-  };
-}, []);
-
-// Đồng bộ khi videoData thay đổi
-useEffect(() => {
-  if (!videoData?.maTinDang) return;
-
-  const fetchSaveInfo = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      let headers = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const res = await axios.get(
-        `http://localhost:5133/api/video/${videoData.maTinDang}/savedinfo`,
-        { headers }
-      );
-
-      const { isSaved, soNguoiLuu } = res.data;
-
-      setVideoList(prevList =>
-        prevList.map((v, i) =>
-          i === currentIndex
-            ? { ...v, isSaved, soNguoiLuu }
-            : v
-        )
-      );
-
-      setIsSaved(isSaved);
-    } catch (err) {
-      console.error("Lỗi khi lấy thông tin lưu video:", err);
-    }
+    
+    controlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
   };
 
-  fetchSaveInfo();
-}, [videoData?.maTinDang]);
+  const handleMouseLeave = () => {
+    controlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 1000);
+  };
 
-// load video
-useEffect(() => {
-  const fetchVideos = async () => {
-    try {
-      const res = await axios.get("http://localhost:5133/api/video");
-      setVideoList(res.data);
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
 
-      // 👉 chọn video ngẫu nhiên thay vì video cuối
-      if (res.data.length > 0) {
-        const randomIndex = Math.floor(Math.random() * res.data.length);
-        setCurrentIndex(randomIndex);
+    return () => {
+      document.body.style.overflow = "";
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
       }
+    };
+  }, []);
 
-    } catch (err) {
-      console.error("Lỗi load video:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!videoData?.maTinDang) return;
 
-  if (loading) {
-    fetchVideos();
-  }
-}, [reloadFlag, loading]);
+    const fetchSaveInfo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        let headers = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await axios.get(
+          `http://localhost:5133/api/video/${videoData.maTinDang}/savedinfo`,
+          { headers }
+        );
+
+        const { isSaved, soNguoiLuu } = res.data;
+
+        setVideoList(prevList =>
+          prevList.map((v, i) =>
+            i === currentIndex
+              ? { ...v, isSaved, soNguoiLuu }
+              : v
+          )
+        );
+
+        setIsSaved(isSaved);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin lưu video:", err);
+      }
+    };
+
+    fetchSaveInfo();
+  }, [videoData?.maTinDang]);
+
+
 
   useEffect(() => {
     const fetchAllVideos = async () => {
@@ -178,274 +174,218 @@ useEffect(() => {
     fetchAllVideos();
   }, []);
 
-useEffect(() => { 
-  const video = videoRef.current;
-  if (video) {
-    const handleLoadedMetadata = () => {
-      const aspectRatio = video.videoWidth / video.videoHeight;
-      setVideoAspectRatio(aspectRatio);
-      
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.maxWidth = 'none';
-      video.style.maxHeight = 'none';
-      video.style.objectFit = 'cover';
-    };
+  useEffect(() => { 
+    const video = videoRef.current;
+    if (video) {
+      const handleLoadedMetadata = () => {
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        setVideoAspectRatio(aspectRatio);
+        
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.maxWidth = 'none';
+        video.style.maxHeight = 'none';
+        video.style.objectFit = 'cover';
+      };
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    if (video.readyState >= 1) {
-      handleLoadedMetadata();
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      if (video.readyState >= 1) {
+        handleLoadedMetadata();
+      }
+
+      return () => {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
     }
+  }, [currentIndex, videoList]);
 
-    return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    };
-  }
-}, [currentIndex, videoList]);
+  useEffect(() => {
+    const handleWheel = (e) => {
+      e.preventDefault();
+      if (isAnimatingRef.current) return;
 
- useEffect(() => {
-  const handleWheel = (e) => {
-    e.preventDefault();
-    if (isAnimatingRef.current) return;
-
-    if (e.deltaY > 0) {
-      // Cuộn xuống → sang video tiếp theo
-      goToIndex(currentIndex + 1);
-    } else if (e.deltaY < 0) {
-      // Cuộn lên → về video trước
-      goToIndex(currentIndex - 1);
-    }
-  };
-
-  window.addEventListener("wheel", handleWheel, { passive: false });
-  return () => window.removeEventListener("wheel", handleWheel);
-}, [currentIndex, videoList.length]);
-
-useEffect(() => {
-  const el = containerRef.current;
-  if (!el) return;
-
-  let startY = 0;
-  let lastY = 0;
-  const THRESHOLD = 60; // px
-
-  const onTouchStart = (e) => {
-    if (isAnimatingRef.current) return;
-    startY = e.touches[0].clientY;
-    lastY = startY;
-  };
-
-  const onTouchMove = (e) => {
-    if (isAnimatingRef.current) return;
-    lastY = e.touches[0].clientY;
-    // Chặn scroll mặc định để hiệu ứng mượt
-    e.preventDefault();
-  };
-
-  const onTouchEnd = () => {
-    if (isAnimatingRef.current) return;
-    const delta = lastY - startY;
-    if (Math.abs(delta) > THRESHOLD) {
-      if (delta < 0) {
-        // vuốt lên → next
+      if (e.deltaY > 0) {
         goToIndex(currentIndex + 1);
-      } else {
-        // vuốt xuống → prev
+      } else if (e.deltaY < 0) {
         goToIndex(currentIndex - 1);
       }
-    }
-  };
+    };
 
-  el.addEventListener("touchstart", onTouchStart, { passive: false });
-  el.addEventListener("touchmove", onTouchMove, { passive: false });
-  el.addEventListener("touchend", onTouchEnd, { passive: false });
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, [currentIndex, videoList.length]);
 
-  return () => {
-    el.removeEventListener("touchstart", onTouchStart);
-    el.removeEventListener("touchmove", onTouchMove);
-    el.removeEventListener("touchend", onTouchEnd);
-  };
-}, [currentIndex, videoList.length]);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-useEffect(() => {
-  const nodes = videoElsRef.current;
-  nodes.forEach((v, i) => {
-    if (!v) return;
-    if (i === currentIndex) {
-      // Cố gắng play, nếu browser block thì bỏ qua
-      v.play().catch(() => {});
-    } else {
-      v.pause();
-      v.currentTime = 0;
-    }
-  });
-}, [currentIndex]);
+    let startY = 0;
+    let lastY = 0;
+    const THRESHOLD = 60;
 
- const handleLike = async () => {
-  const video = videoList[currentIndex];
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Bạn cần đăng nhập để tym video!");
-    return;
-  }
+    const onTouchStart = (e) => {
+      if (isAnimatingRef.current) return;
+      startY = e.touches[0].clientY;
+      lastY = startY;
+    };
 
-  try {
-    const res = await axios.post(
-      `http://localhost:5133/api/video/${video.maTinDang}/like`, // toggle trạng thái like
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const onTouchMove = (e) => {
+      if (isAnimatingRef.current) return;
+      lastY = e.touches[0].clientY;
+      e.preventDefault();
+    };
 
-    const { isLiked, soTym } = res.data;
+    const onTouchEnd = () => {
+      if (isAnimatingRef.current) return;
+      const delta = lastY - startY;
+      if (Math.abs(delta) > THRESHOLD) {
+        if (delta < 0) {
+          goToIndex(currentIndex + 1);
+        } else {
+          goToIndex(currentIndex - 1);
+        }
+      }
+    };
 
-    setVideoList((prevList) =>
-      prevList.map((v, i) =>
-        i === currentIndex ? { ...v, isLiked, soTym } : v
-      )
-    );
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
 
-    if (isLiked && iconCircleRef.current) {
-      // Hiệu ứng tim khi like
-      const circle = document.createElement("div");
-      circle.className = "vdv-heart-pulse-circle";
-      iconCircleRef.current.appendChild(circle);
-      setTimeout(() => circle.remove(), 600);
-    }
-  } catch (err) {
-    console.error("Lỗi khi gửi yêu cầu tym:", err);
-    if (err.response?.status === 401) {
-      alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-    }
-  }
-};
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [currentIndex, videoList.length]);
 
-  const handleChatWithSeller = async () => {
-    const currentVideo = videoList[currentIndex];
-    
-    if (!user) {
-      alert("Bạn cần đăng nhập để chat với người bán.");
-      return;
-    }
-    
-    if (user.id === currentVideo.nguoiDang?.id) {
-      alert("Bạn không thể chat với chính mình.");
+  useEffect(() => {
+    const nodes = videoElsRef.current;
+    nodes.forEach((v, i) => {
+      if (!v) return;
+      if (i === currentIndex) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+        v.currentTime = 0;
+      }
+    });
+  }, [currentIndex]);
+
+  const handleLike = async () => {
+    const video = videoList[currentIndex];
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Bạn cần đăng nhập để tym video!");
       return;
     }
 
     try {
-      const response = await axios.post("http://localhost:5133/api/chat/start", {
-        MaNguoiDung1: user.id,
-        MaNguoiDung2: currentVideo.nguoiDang?.id,
-        MaTinDang: currentVideo.maTinDang,
-      });
-      
-      const maCuocTroChuyen =
-        response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
-        
-      if (maCuocTroChuyen) {
-        if (typeof onOpenChat === "function") {
-          onOpenChat(maCuocTroChuyen);
-        } else {
-          navigate(`/chat/${maCuocTroChuyen}`);
+      const res = await axios.post(
+        `http://localhost:5133/api/video/${video.maTinDang}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { isLiked, soTym } = res.data;
+
+      setVideoList((prevList) =>
+        prevList.map((v, i) =>
+          i === currentIndex ? { ...v, isLiked, soTym } : v
+        )
+      );
+
+      if (isLiked && iconCircleRef.current) {
+        const circle = document.createElement("div");
+        circle.className = "vdv-heart-pulse-circle";
+        iconCircleRef.current.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+      }
+    } catch (err) {
+      console.error("Lỗi khi gửi yêu cầu tym:", err);
+      if (err.response?.status === 401) {
+        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
+      }
+    }
+  };
+  const handleToggleSave = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!user || !token) {
+      alert("Bạn cần đăng nhập để lưu video!");
+      return;
+    }
+
+    try {
+      const { data } = await axios.post(
+        `http://localhost:5133/api/video/ToggleSave`,
+        { maTinDang: videoData.maTinDang },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
+      );
+
+      const { saved, totalSaves } = data;
+
+      setVideoList(prevList =>
+        prevList.map((v, i) =>
+          i === currentIndex
+            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
+            : v
+        )
+      );
+
+      setIsSaved(saved);
+
+    } catch (err) {
+      console.error("Lỗi khi lưu video:", err);
+
+      if (err.response?.status === 401) {
+        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
       } else {
-        alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+        alert("Lỗi khi lưu video. Vui lòng thử lại.");
       }
-    } catch (error) {
-      console.error("Lỗi tạo cuộc trò chuyện:", error);
-      if (error.response) {
-        console.error("Chi tiết lỗi từ server:", error.response.data);
-      }
-      alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
     }
   };
 
-  // hàm lưu video 
-const handleToggleSave = async () => {
-  const token = localStorage.getItem("token");
+  const handleVideoClick = (e, index) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  // ✅ Check đăng nhập gọn hơn
-  if (!user || !token) {
-    alert("Bạn cần đăng nhập để lưu video!");
-    return;
-  }
+    clickCountRef.current += 1;
 
-  try {
-    // ✅ Chỉ gọi 1 request, backend đã xử lý hết
-    const { data } = await axios.post(
-      `http://localhost:5133/api/video/ToggleSave`,
-      { maTinDang: videoData.maTinDang },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const { saved, totalSaves } = data;
-
-    // ✅ Cập nhật list video
-    setVideoList(prevList =>
-      prevList.map((v, i) =>
-        i === currentIndex
-          ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
-          : v
-      )
-    );
-
-    // (Nếu có state riêng cho icon)
-    setIsSaved(saved);
-
-  } catch (err) {
-    console.error("Lỗi khi lưu video:", err);
-
-    if (err.response?.status === 401) {
-      alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-    } else {
-      alert("Lỗi khi lưu video. Vui lòng thử lại.");
-    }
-  }
-};
-
-const handleVideoClick = (e, index) => {
-  e.preventDefault();
-  e.stopPropagation();
-
-  clickCountRef.current += 1;
-
-  if (clickCountRef.current === 1) {
-    // Single click → play / pause
-    clickTimeoutRef.current = setTimeout(() => {
-      const video = videoElsRef.current[index];
-      if (video) {
-        if (video.paused) {
-          video.play();
-        } else {
-          video.pause();
+    if (clickCountRef.current === 1) {
+      clickTimeoutRef.current = setTimeout(() => {
+        const video = videoElsRef.current[index];
+        if (video) {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
         }
+        clickCountRef.current = 0;
+      }, 250);
+    } else if (clickCountRef.current === 2) {
+      clearTimeout(clickTimeoutRef.current);
+
+      handleLike(videoList[index]);
+
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 700);
+
+      if (iconCircleRef.current) {
+        const circle = document.createElement("div");
+        circle.className = "vdv-heart-pulse-circle";
+        iconCircleRef.current.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
       }
+
       clickCountRef.current = 0;
-    }, 250); // thời gian phân biệt single vs double click
-  } else if (clickCountRef.current === 2) {
-    // Double click → like
-    clearTimeout(clickTimeoutRef.current);
-
-    handleLike(videoList[index]); // Gọi API like
-
-    setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 700);
-
-    if (iconCircleRef.current) {
-      const circle = document.createElement("div");
-      circle.className = "vdv-heart-pulse-circle";
-      iconCircleRef.current.appendChild(circle);
-      setTimeout(() => circle.remove(), 600);
     }
-
-    clickCountRef.current = 0;
-  }
-};
+  };
 
   const formatCount = (num) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -453,215 +393,211 @@ const handleVideoClick = (e, index) => {
     return num.toString();
   };
 
-if (!videoData) {
-  return <div>Đang tải video...</div>;
-}
+  if (!videoData) {
+    return <div>Đang tải video...</div>;
+  }
+
   const token = localStorage.getItem("token");
-return (
-  <div className="vdv-wrapper vdv-full-screen-scroll">
-    {/* Navbar giữ nguyên */}
-    <TopNavbarUniMarket />
 
-    {/* Overlay loading */}
-    {loading && (
-      <div className="loading-overlay">
-        <div className="spinner"></div>
-        <span>Đang tải video...</span>
-      </div>
-    )}
+  return (
+    <div className="vdv-wrapper vdv-full-screen-scroll">
+      <TopNavbarUniMarket />
 
-    {/* Video List */}
-    <div ref={containerRef} className="video-list-container">
-      <div
-        className={`video-list-wrapper ${!loading && isReloading ? "fade-in" : ""}`}
-        style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
-      >
-        {videoList.map((video, index) => {
-          const ratio = aspectRatios[index];
-          const ratioClass =
-            ratio != null
-              ? ratio < 1
-                ? "vdv-portrait"
-                : ratio > 1.5
-                ? "vdv-landscape"
-                : "vdv-square"
-              : "";
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <span>Đang tải video...</span>
+        </div>
+      )}
 
-          return (
-            <div
-              className={`video-item ${!loading && isReloading && index === 0 ? "fade-in" : ""}`}
-              key={video.videoUrl}
-            >
-              {/* Video Container */}
+      <div ref={containerRef} className="video-list-container">
+        <div
+          className={`video-list-wrapper ${!loading && isReloading ? "fade-in" : ""}`}
+          style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+        >
+          {videoList.map((video, index) => {
+            const ratio = aspectRatios[index];
+            const ratioClass =
+              ratio != null
+                ? ratio < 1
+                  ? "vdv-portrait"
+                  : ratio > 1.5
+                  ? "vdv-landscape"
+                  : "vdv-square"
+                : "";
+
+            return (
               <div
-                className={`vdv-container ${ratioClass} ${
-                  showComments ? "comment-open" : ""
-                }`}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
+                className={`video-item ${!loading && isReloading && index === 0 ? "fade-in" : ""}`}
+                key={video.videoUrl}
               >
-                <video
-                  ref={(el) => {
-                    videoElsRef.current[index] = el;
-                    if (index === currentIndex) {
-                      videoRef.current = el; // Set current video ref cho VideoControls
-                    }
-                  }}
-                  src={video.videoUrl}
-                  className="vdv-player"
-                  controls={false}
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
-                  autoPlay={index === currentIndex}
-                  loop
-                  onClick={(e) => handleVideoClick(e, index)}
-                  onDoubleClick={(e) => e.preventDefault()}
-                  onLoadedMetadata={(e) => {
-                    const ratio =
-                      e.target.videoWidth / e.target.videoHeight;
-                    setAspectRatios((prev) => ({
-                      ...prev,
-                      [index]: ratio,
-                    }));
-                  }}
-                />
-
-                {/* Video Controls Component - chỉ hiển thị cho video hiện tại */}
-                {index === currentIndex && (
-                  <VideoControls 
-                    videoRef={videoRef} 
-                    isVisible={showControls}
-                  />
-                )}
-
-                {/* Overlay thông tin - chỉ có username, title, price, address */}
-                <div className="vdv-overlay">
-                  <div className="vdv-info-left">
-                    <div className="vdv-user-name">
-                      @{video.nguoiDang?.fullName}
-                    </div>
-                    <div className="vdv-title">{video.tieuDe}</div>
-
-                    <div className="vdv-price-address">
-                      <div className="vdv-price">
-                        {video.gia?.toLocaleString()} đ
-                      </div>
-                      <div className="vdv-address">
-                        {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* End Overlay */}
-              </div>
-
-              {/* Side Info - nằm ngoài video nhưng trượt cùng video */}
-              <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
-                <img
-                  src={video.nguoiDang?.avatarUrl || defaultAvatar}
-                  alt="avatar"
-                  className="vdv-user-avatar"
-                  onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
-                  style={{ cursor: "pointer" }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = defaultAvatar;
-                  }}
-                />
-
-                {/* Like Button */}
                 <div
-                  className={`vdv-icon-button vdv-like-button ${
-                    video.isLiked ? "liked" : ""
+                  className={`vdv-container ${ratioClass} ${
+                    showComments ? "comment-open" : ""
                   }`}
-                  onClick={() => handleLike(video)}
-                  title={
-                    !token
-                      ? "Bạn cần đăng nhập để tym"
-                      : video.isLiked
-                      ? "Đã tym"
-                      : "Nhấn để tym"
-                  }
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
                 >
-                  {video.isLiked ? (
-                    <IoHeart size={28} color="#ff4d6d" />
-                  ) : (
-                    <IoHeartOutline size={28} color="#ccc" />
+                  <video
+                    ref={(el) => {
+                      videoElsRef.current[index] = el;
+                      if (index === currentIndex) {
+                        videoRef.current = el;
+                      }
+                    }}
+                    src={video.videoUrl}
+                    className="vdv-player"
+                    controls={false}
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                    autoPlay={index === currentIndex}
+                    loop
+                    onClick={(e) => handleVideoClick(e, index)}
+                    onDoubleClick={(e) => e.preventDefault()}
+                    onLoadedMetadata={(e) => {
+                      const ratio =
+                        e.target.videoWidth / e.target.videoHeight;
+                      setAspectRatios((prev) => ({
+                        ...prev,
+                        [index]: ratio,
+                      }));
+                    }}
+                  />
+
+                  {index === currentIndex && (
+                    <VideoControls 
+                      videoRef={videoRef} 
+                      isVisible={showControls}
+                      onDragStateChange={handleDragStateChange}
+                    />
+                  )}
+
+                  {!isDraggingVideo && (
+                    <div className="vdv-overlay">
+                      <div className="vdv-info-left">
+                        <div className="vdv-user-name">
+                          @{video.nguoiDang?.fullName}
+                        </div>
+                        <div className="vdv-title">{video.tieuDe}</div>
+
+                        <div className="vdv-price-address">
+                          <div className="vdv-price">
+                            {video.gia?.toLocaleString()} đ
+                          </div>
+                          <div className="vdv-address">
+                            {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div className="vdv-icon-label">
-                  {formatCount(video.soTym || 0)}
-                </div>
 
-                {/* Save Button */}
-                <div
-                  className="vdv-icon-wrapper"
-                  onClick={() => handleToggleSave(video)}
-                  title={
-                    !user
-                      ? "Bạn cần đăng nhập để lưu video"
-                      : video.isSaved
-                      ? "Đã lưu video"
-                      : "Lưu video"
-                  }
-                  style={{ marginTop: "8px" }}
-                >
-                  <div className="vdv-icon-button vdv-save-button">
-                    {video.isSaved ? (
-                      <IoBookmark size={24} color="gold" />
-                    ) : (
-                      <IoBookmarkOutline size={24} color="gray" />
-                    )}
-                  </div>
-                  <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
-                    {formatCount(video.soNguoiLuu || 0)}
-                  </div>
-                </div>
+                <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
+                  <img
+                    src={video.nguoiDang?.avatarUrl || defaultAvatar}
+                    alt="avatar"
+                    className="vdv-user-avatar"
+                    onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
+                    style={{ cursor: "pointer" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultAvatar;
+                    }}
+                  />
 
-                {/* Comments Button */}
-                <div
-                  className="vdv-icon-button"
-                  onClick={() => handleToggleComments(video)}
-                >
-                  <FaRegCommentDots size={24} color="#ccc" />
-                </div>
-                <div className="vdv-icon-label">{video.soBinhLuan || 0}</div>
-
-                {/* Chat Button */}
-                {user?.id !== video.nguoiDang?.id && (
                   <div
-                    className="vdv-icon-button vdv-chat-button"
-                    onClick={() => handleChatWithSeller(video)}
+                    className={`vdv-icon-button vdv-like-button ${
+                      video.isLiked ? "liked" : ""
+                    }`}
+                    onClick={() => handleLike(video)}
                     title={
-                      !user ? "Bạn cần đăng nhập để chat" : "Chat với người bán"
+                      !token
+                        ? "Bạn cần đăng nhập để tym"
+                        : video.isLiked
+                        ? "Đã tym"
+                        : "Nhấn để tym"
                     }
                   >
-                    <SiMinutemailer size={24} color="#ccc" />
+                    {video.isLiked ? (
+                      <IoHeart size={28} color="#ff4d6d" />
+                    ) : (
+                      <IoHeartOutline size={28} color="#ccc" />
+                    )}
                   </div>
-                )}
+                  <div className="vdv-icon-label">
+                    {formatCount(video.soTym || 0)}
+                  </div>
+
+                  <div
+                    className="vdv-icon-wrapper"
+                    onClick={() => handleToggleSave(video)}
+                    title={
+                      !user
+                        ? "Bạn cần đăng nhập để lưu video"
+                        : video.isSaved
+                        ? "Đã lưu video"
+                        : "Lưu video"
+                    }
+                    style={{ marginTop: "8px" }}
+                  >
+                    <div className="vdv-icon-button vdv-save-button">
+                      {video.isSaved ? (
+                        <IoBookmark size={24} color="gold" />
+                      ) : (
+                        <IoBookmarkOutline size={24} color="gray" />
+                      )}
+                    </div>
+                    <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
+                      {formatCount(video.soNguoiLuu || 0)}
+                    </div>
+                  </div>
+
+                  <div
+                    className="vdv-icon-button"
+                    onClick={() => handleToggleComments(video)}
+                  >
+                    <FaRegCommentDots size={24} color="#ccc" />
+                  </div>
+                  <div className="vdv-icon-label">{video.soBinhLuan || 0}</div>
+
+                   {/* ✅ Icon Xem Chi Tiết */}
+                    <div
+                      className="vdv-icon-button vdv-detail-button"
+                      onClick={() => handleShowDetail(video.maTinDang)}
+                      title="Xem chi tiết tin đăng"
+                      style={{ marginTop: "12px" }}
+                    >
+                      <FaInfoCircle size={24} color="#ccc" />
+                       </div>
+                  </div>
               </div>
-              {/* End Side Info */}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+
+      {showHeart && (
+        <div className="vdv-heart-animation">
+          <IoHeart size={80} color="#ff4d6d" />
+        </div>
+      )}
+
+      {showComments && (
+        <CommentDrawer
+          maTinDang={videoData.maTinDang}
+          onClose={() => setShowComments(false)}
+        />
+      )}
+              <VideoDetailsPanel
+          isOpen={showDetailPanel}
+          onClose={handleCloseDetail}
+          loading={loadingDetail}
+          data={detailData}
+        />
     </div>
-    {/* Heart animation để ngoài global */}
-    {showHeart && (
-      <div className="vdv-heart-animation">
-        <IoHeart size={80} color="#ff4d6d" />
-      </div>
-    )}
-
-    {showComments && (
-      <CommentDrawer
-        maTinDang={videoData.maTinDang}
-        onClose={() => setShowComments(false)}
-      />
-    )}
-  </div>
-);
-
+    
+  );
 };
 
 export default VideoDetailViewer;

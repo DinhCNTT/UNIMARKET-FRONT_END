@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./VideoSearchOverlay.css";
 import { FiSearch, FiClock, FiX } from "react-icons/fi";
+import { AuthContext } from '../context/AuthContext';
 
 export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const [keyword, setKeyword] = useState("");
@@ -9,10 +10,53 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const [suggestions, setSuggestions] = useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  
+  // Lấy thông tin user từ AuthContext
+  const { user, token } = useContext(AuthContext);
 
+  // Load lịch sử tìm kiếm từ server khi có user
+  const loadSearchHistory = async () => {
+    if (!user || !token) {
+      setHistory([]);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5133/api/Video/search-history', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHistory(data.map(item => item.keyword));
+      } else {
+        setHistory([]);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải lịch sử tìm kiếm:', error);
+      setHistory([]);
+    }
+  };
+
+  // Load lịch sử khi component mount hoặc user thay đổi
   useEffect(() => {
-    const stored = localStorage.getItem("videoSearchHistory");
-    if (stored) setHistory(JSON.parse(stored));
+    loadSearchHistory();
+  }, [user, token]);
+
+  // Listen cho clear search history UI event
+  useEffect(() => {
+    const handleClearSearchHistoryUI = () => {
+      setHistory([]);
+    };
+
+    window.addEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
+    
+    return () => {
+      window.removeEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
+    };
   }, []);
 
   useEffect(() => {
@@ -48,23 +92,59 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
     };
   }, [keyword]);
 
-  const saveHistory = (kw) => {
-    if (!kw.trim()) return;
-    let newHistory = [kw, ...history.filter((h) => h !== kw)];
-    if (newHistory.length > 5) newHistory = newHistory.slice(0, 5);
-    setHistory(newHistory);
-    localStorage.setItem("videoSearchHistory", JSON.stringify(newHistory));
+  // Lưu lịch sử tìm kiếm lên server
+  const saveHistory = async (kw) => {
+    if (!kw.trim() || !user || !token) return;
+
+    try {
+      const response = await fetch('http://localhost:5133/api/Video/search-history', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ keyword: kw })
+      });
+
+      if (response.ok) {
+        // Reload lịch sử từ server để đảm bảo đồng bộ
+        await loadSearchHistory();
+      }
+    } catch (error) {
+      console.error('Lỗi khi lưu lịch sử tìm kiếm:', error);
+    }
   };
 
-  const removeHistory = (kw) => {
-    const newHistory = history.filter((h) => h !== kw);
-    setHistory(newHistory);
-    localStorage.setItem("videoSearchHistory", JSON.stringify(newHistory));
+  // Xóa một item khỏi lịch sử
+  const removeHistory = async (kw) => {
+    if (!user || !token) return;
+
+    try {
+      const response = await fetch(`http://localhost:5133/api/Video/search-history?keyword=${encodeURIComponent(kw)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Cập nhật UI ngay lập tức
+        setHistory(prev => prev.filter(h => h !== kw));
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa lịch sử tìm kiếm:', error);
+    }
   };
 
-  const doSearchAndRedirect = (kw) => {
+  const doSearchAndRedirect = async (kw) => {
     if (!kw.trim()) return;
-    saveHistory(kw);
+    
+    // Chỉ lưu lịch sử nếu user đã đăng nhập
+    if (user && token) {
+      await saveHistory(kw);
+    }
+    
     setKeyword("");
     onClose();
     navigate(`/search/${encodeURIComponent(kw)}`);
@@ -86,19 +166,19 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
 
   return (
     <div
-      className={`video-search-panel ${isOpen ? "open" : ""}`}
+      className={`VD-Overlay-video-search-panel ${isOpen ? "open" : ""}`}
       onWheel={stopEventPropagation}
       onTouchMove={stopEventPropagation}
       onScroll={stopEventPropagation}
       onTouchStart={stopEventPropagation}
       onTouchEnd={stopEventPropagation}
     >
-      <form className="search-form" onSubmit={handleSubmit}>
-        <div className="search-wrapper">
-          <label className="search-label">Search</label>
+      <form className="VD-Overlay-search-form" onSubmit={handleSubmit}>
+        <div className="VD-Overlay-search-wrapper">
+          <label className="VD-Overlay-search-label">Search</label>
           <input
             ref={inputRef}
-            className="search-input"
+            className="VD-Overlay-search-input"
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
@@ -109,7 +189,7 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
           {keyword.length > 0 && (
             <button
               type="button"
-              className="clear-btn"
+              className="VD-Overlay-clear-btn"
               onClick={() => setKeyword("")}
               aria-label="Xóa"
             >
@@ -118,50 +198,51 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
           )}
         </div>
       </form>
-    <div className="search-body">
-  {keyword.trim() === "" ? (
-    <ul className="history-list">
-      {history.length === 0 ? (
-        <li className="no-history">Chưa có lịch sử tìm kiếm</li>
-      ) : (
-        history.map((kw, idx) => (
-          <li className="history-item" key={idx}>
-            <button
-              type="button"
-              className="history-key"
-              onClick={() => onSelectKeyword(kw)}
-            >
-              <FiClock size={16} /> {kw}
-            </button>
-            <button
-              type="button"
-              className="history-remove"
-              onClick={() => removeHistory(kw)}
-              aria-label={`Xóa ${kw}`}
-            >
-              <FiX size={14} />
-            </button>
-          </li>
-        ))
-      )}
-    </ul>
-  ) : (
-    suggestions.length > 0 && (
-      <ul className="suggestions-list">
-        {suggestions.map((s, i) => (
-          <li
-            key={i}
-            className="suggestion-item"
-            onClick={() => onSelectKeyword(s)}
-          >
-            <FiSearch size={16} style={{ marginRight: "6px" }} /> {s}
-          </li>
-        ))}
-      </ul>
-    )
-  )}
-</div>
-    
+      <div className="VD-Overlay-search-body">
+        {keyword.trim() === "" ? (
+          <ul className="VD-Overlay-history-list">
+            {!user ? (
+              <li className="VD-Overlay-no-history">Đăng nhập để xem lịch sử tìm kiếm</li>
+            ) : history.length === 0 ? (
+              <li className="VD-Overlay-no-history">Chưa có lịch sử tìm kiếm</li>
+            ) : (
+              history.map((kw, idx) => (
+                <li className="VD-Overlay-history-item" key={idx}>
+                  <button
+                    type="button"
+                    className="VD-Overlay-history-key"
+                    onClick={() => onSelectKeyword(kw)}
+                  >
+                    <FiClock size={16} /> {kw}
+                  </button>
+                  <button
+                    type="button"
+                    className="VD-Overlay-history-remove"
+                    onClick={() => removeHistory(kw)}
+                    aria-label={`Xóa ${kw}`}
+                  >
+                    <FiX size={14} />
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
+          suggestions.length > 0 && (
+            <ul className="VD-Overlay-suggestions-list">
+              {suggestions.map((s, i) => (
+                <li
+                  key={i}
+                  className="VD-Overlay-suggestion-item"
+                  onClick={() => onSelectKeyword(s)}
+                >
+                  <FiSearch size={16} style={{ marginRight: "6px" }} /> {s}
+                </li>
+              ))}
+            </ul>
+          )
+        )}
+      </div>
     </div>
   );
 }

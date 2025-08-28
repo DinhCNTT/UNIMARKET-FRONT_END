@@ -168,58 +168,62 @@ const TopNavbar = () => {
     navigate("/market");
   };
 
-  const checkUserInfo = async () => {
-    try {
-      const token = getStoredToken();
-      
-      if (!token || !user?.id) {
-        console.log("❌ Không có token hoặc user.id");
-        return { valid: false, message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." };
-      }
-
-      console.log("🔍 Checking user info for:", {
-        userId: user.id,
-        hasToken: !!token,
-        tokenPrefix: token.substring(0, 20) + "..."
-      });
-
-      const response = await axios.get(`http://localhost:5133/api/user/profile/${user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const serverUser = response.data;
-      console.log("✅ Server user data:", serverUser);
-      console.log("📋 Current user data:", user);
-      
-      if (!serverUser.emailConfirmed) {
-        return { valid: false, message: "Bạn cần xác minh email để đăng tin." };
-      }
-      
-      const serverPhone = serverUser.phoneNumber?.trim();
-      
-      console.log("📱 Phone check:", {
-        serverPhone,
-        hasServerPhone: !!serverPhone
-      });
-      
-      if (!serverPhone || serverPhone === "") {
-        return { valid: false, message: "Bạn cần cập nhật số điện thoại để đăng tin." };
-      }
-      
-      return { valid: true };
-      
-    } catch (error) {
-      console.error("❌ Lỗi khi kiểm tra thông tin user:", error);
-      
-      if (error.response?.status === 401) {
-        return { valid: false, message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." };
-      }
-      
-      return { valid: false, message: "Không thể xác thực thông tin. Vui lòng thử lại." };
+ const checkUserInfo = async () => {
+  try {
+    const token = getStoredToken();
+    
+    if (!token || !user?.id) {
+      console.log("❌ Không có token hoặc user.id");
+      return { valid: false, message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." };
     }
-  };
+
+    console.log("🔍 Checking user info for:", {
+      userId: user.id,
+      hasToken: !!token,
+      tokenPrefix: token.substring(0, 20) + "..."
+    });
+
+    const response = await axios.get(`http://localhost:5133/api/user/profile/${user.id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const serverUser = response.data;
+    console.log("✅ Server user data:", serverUser);
+    console.log("📋 Current user data:", user);
+    
+    if (!serverUser.emailConfirmed) {
+      return { valid: false, message: "Bạn cần xác minh email để đăng tin." };
+    }
+    
+    // Cập nhật logic kiểm tra số điện thoại
+    let phone = serverUser.phoneNumber ? String(serverUser.phoneNumber).replace(/[^0-9]/g, "").trim() : "";
+    
+    console.log("📱 Phone check:", {
+      originalPhone: serverUser.phoneNumber,
+      cleanedPhone: phone,
+      phoneLength: phone.length,
+      startsWithZero: phone.startsWith("0")
+    });
+    
+    // Chỉ hợp lệ nếu đúng 10 số và bắt đầu bằng số 0
+    if (phone.length !== 10 || !phone.startsWith("0")) {
+      return { valid: false, message: "Số điện thoại phải đủ 10 số và bắt đầu bằng số 0 để đăng tin." };
+    }
+    
+    return { valid: true };
+    
+  } catch (error) {
+    console.error("❌ Lỗi khi kiểm tra thông tin user:", error);
+    
+    if (error.response?.status === 401) {
+      return { valid: false, message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." };
+    }
+    
+    return { valid: false, message: "Không thể xác thực thông tin. Vui lòng thử lại." };
+  }
+};
 
   const handlePostClick = async () => {
   if (!user) {

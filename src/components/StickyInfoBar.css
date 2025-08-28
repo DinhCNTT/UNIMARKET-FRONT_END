@@ -1,0 +1,142 @@
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+
+  /* bỏ border + bỏ shadow */
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  /* Dịch chuyển */
+  transform: translate(0px, -25px);
+  width: calc(90.5% + 20px);
+}
+
+
+/* Ảnh thumb bên trái */
+.sticky-left img.sticky-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  transform: translateY(-10px);
+}
+
+.sticky-center {
+  flex: 1;
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: -40px;   /* đẩy cả khối lên */
+}
+
+.sticky-title {
+  font-weight: 700;
+  font-size: 17px;
+  color: #222;
+  line-height: 1.4;
+  margin-bottom: 2px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  
+  white-space: normal;      /* Cho phép xuống dòng */
+  overflow: visible;        /* Hiển thị đầy đủ */
+  text-overflow: unset;     /* Bỏ dấu ... */
+  word-break: break-word;   /* Tự ngắt từ khi dài quá */
+}
+
+
+.sticky-price {
+  font-weight: 700;             /* in rõ, chuyên nghiệp */
+  font-size: 15px;
+  color: #e53935;               /* đỏ tươi chuyên nghiệp */
+  margin-top: 0;                /* đẩy sát lên gần tiêu đề */
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Khu vực nút bên phải */
+.sticky-right {
+  display: flex;
+  gap: 10px; /* khoảng cách giữa 2 nút */
+}
+
+.sticky-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff7f2;              /* nền nhạt */
+  color: #d96a29;                   /* màu cam tinh tế */
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 16px;
+  border-radius: 12px;              /* bo tròn mềm mại */
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* bóng nhẹ */
+}
+
+.sticky-btn .btn-icon,
+.sticky-btn svg {
+  font-size: 16px;
+}
+
+.sticky-btn:hover {
+  background: #ffece1;  /* hover đổi nền cam nhạt */
+  color: #b8531e;       /* hover cam đậm hơn */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Tab bar dưới sticky */
+.sticky-tab-bar {
+  position: sticky;
+  top: 75px; /* top = sticky-bar height */
+  background: #fff;
+  display: inline-flex;       /* chỉ dài theo nội dung */
+  justify-content: flex-start;
+  gap: 8px;                   /* khoảng cách giữa các nút */
+  border-bottom: 1px solid #ddd;
+  z-index: 998;
+  padding: 0 12px;            /* canh lề bên trong */
+  border-radius: 6px;         /* bo nhẹ cho đẹp */
+  width: auto;                /* thu gọn theo nút */
+  max-width: fit-content;     /* ngắn theo nội dung */
+  margin-left: 20px;          /* đẩy sang phải */
+}
+
+
+/* Nút tab */
+.tab-btn {
+  flex: none;              /* bỏ flex:1 để nút không giãn full */
+  padding: 6px 14px;       /* nhỏ gọn lại */
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  background: none;
+  border: none;
+  border-radius: 6px;      /* bo nhẹ cho đẹp */
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s, background 0.2s;
+}
+
+/* Hover */
+.tab-btn:hover {
+  background: #f9f9f9;
+}
+
+/* Tab active */
+.tab-btn.active {
+  font-weight: 600;
+  color: #f59e0b;
+  border-bottom: 2px solid #f59e0b;
+}

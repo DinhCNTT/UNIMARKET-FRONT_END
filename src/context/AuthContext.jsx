@@ -245,12 +245,18 @@ export const AuthProvider = ({ children }) => {
     setTimeout(() => {
       localStorage.removeItem("logout_signal");
     }, 100);
+    
+    // 🔥 THÊM: Gửi signal để clear search history UI trên tất cả tabs
+    localStorage.setItem("clear_search_history_ui", Date.now().toString());
+    setTimeout(() => {
+      localStorage.removeItem("clear_search_history_ui");
+    }, 100);
   };
 
   // 🔥 THÊM: Listen cho storage events để đồng bộ logout cross-tab
   useEffect(() => {
     const handleStorageChange = (e) => {
-      // Chỉ xử lý logout signal
+      // Xử lý logout signal
       if (e.key === "logout_signal" && e.newValue) {
         console.log(`Tab ${tabId}: Received logout signal from another tab`);
         
@@ -275,9 +281,16 @@ export const AuthProvider = ({ children }) => {
         
         console.log(`Tab ${tabId}: Logged out due to cross-tab logout`);
       }
+      
+      // 🔥 THÊM: Xử lý clear search history UI signal
+      if (e.key === "clear_search_history_ui" && e.newValue) {
+        console.log(`Tab ${tabId}: Received clear search history UI signal`);
+        // Trigger custom event để VideoSearchOverlay có thể listen
+        window.dispatchEvent(new CustomEvent('clearSearchHistoryUI'));
+      }
     };
 
-    // Chỉ listen storage event khi đã mount và có user
+    // Chỉ listen storage event khi đã mount
     window.addEventListener("storage", handleStorageChange);
     
     return () => {

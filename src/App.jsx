@@ -1,18 +1,25 @@
-import { GoogleOAuthProvider } from "@react-oauth/google";
+// App.jsx
+import React from "react";
 import { BrowserRouter } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import { AuthProvider } from "./context/AuthContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CategoryProvider } from "./context/CategoryContext";
 import { LocationProvider } from "./context/LocationContext";
-import { VideoProvider } from "./context/VideoContext"; // ✅ thêm dòng này
+import { VideoProvider } from "./context/VideoContext";
+
 import AppRoutes from "./routes/AppRoutes";
 
-import { ToastContainer } from "react-toastify";
+// --- Toast imports ---
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./styles/CustomToast.css"; // ✅ CSS custom của bạn
 import { Toaster as HotToaster } from "react-hot-toast";
 import { Toaster as SonnerToaster } from "sonner";
 
-const clientId = "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com";
+const clientId =
+  "357043917182-o28soqql0fsdqf1gi8c6glff2knnjktc.apps.googleusercontent.com";
 
 function App() {
   return (
@@ -22,17 +29,37 @@ function App() {
           <SearchProvider>
             <CategoryProvider>
               <LocationProvider>
-                <VideoProvider> {/* ✅ Bọc thêm ở đây */}
+                <VideoProvider>
                   <AppRoutes />
 
-                  {/* ✅ Hot Toast */}
-                  <HotToaster position="top-center" reverseOrder={false} toastOptions={{ duration: 2500 }} />
+                  {/* ✅ Hot Toast (react-hot-toast) */}
+                  <HotToaster
+                    position="top-center"
+                    reverseOrder={false}
+                    toastOptions={{ duration: 2500 }}
+                  />
 
                   {/* ✅ Sonner Toast */}
-                  <SonnerToaster position="top-center" richColors reverseOrder={false} /> 
+                  <SonnerToaster
+                    position="top-center"
+                    richColors
+                    reverseOrder={false}
+                  />
 
-                  {/* ✅ React Toastify */}
-                  <ToastContainer />
+                  {/* ✅ React Toastify với custom class */}
+                  <ToastContainer
+                    position="top-center"
+                    autoClose={2500}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    transition={Slide} // hiệu ứng mượt
+                    className="um-toast-container" // ✅ custom container
+                  />
                 </VideoProvider>
               </LocationProvider>
             </CategoryProvider>
