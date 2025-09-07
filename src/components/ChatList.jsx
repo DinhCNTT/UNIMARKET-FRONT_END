@@ -104,8 +104,11 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   useEffect(() => {
     if (!userId) return;
 
+    const token = localStorage.getItem("token");
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5133/hub/chat")
+      .withUrl("http://localhost:5133/hub/chat", {
+        accessTokenFactory: () => token
+      })
       .withAutomaticReconnect()
       .build();
 

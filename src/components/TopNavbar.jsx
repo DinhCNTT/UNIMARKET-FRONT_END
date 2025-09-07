@@ -103,8 +103,11 @@ const TopNavbar = () => {
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("hiddenChatsChanged", handleHiddenChatsChange);
 
+    const token = getStoredToken ? getStoredToken() : localStorage.getItem("token");
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5133/hub/chat")
+      .withUrl("http://localhost:5133/hub/chat", {
+        accessTokenFactory: () => token
+      })
       .withAutomaticReconnect()
       .build();
 
