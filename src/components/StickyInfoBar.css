@@ -113,8 +113,6 @@
   max-width: fit-content;     /* ngắn theo nội dung */
   margin-left: 20px;          /* đẩy sang phải */
 }
-
-
 /* Nút tab */
 .tab-btn {
   flex: none;              /* bỏ flex:1 để nút không giãn full */

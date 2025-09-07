@@ -2,18 +2,61 @@
   display: flex;
   flex: 1;
   min-height: 0;
-  /* ✅ Giữ bố cục ổn định */
   position: relative;
-  width: 1500px; /* chiều rộng gốc */
-  margin: 0 auto; /* căn giữa toàn bộ */
-  transform-origin: top center;
-  transition: transform 0.2s ease;
+
+  width: 115%;           /* ✅ tự khớp màn hình, không bị dư ngang */
+  max-width: 1900px;     /* ✅ vẫn giữ logic cũ (giới hạn) */
+  margin-left: -230px;   /* giữ như cũ */
+  margin-top: -90px;     /* giữ như cũ */
+  transform-origin: top left;
+  overflow-x: hidden;    /* ✅ tắt scroll ngang */
+
+  /* ✅ thêm animation */
+  animation: slideInFromLeft 0.5s ease-out forwards;
 }
 
-/* ✅ Scale toàn bộ layout khi màn hình nhỏ hơn 1440px */
-@media (width: 1500px) {
+/* ✅ keyframes cho hiệu ứng */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%); /* bắt đầu ngoài màn hình bên trái */
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);     /* chạy vào đúng vị trí */
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1500px) {
   .trang-chat-container {
     transform: scale(calc(100vw / 1440));
+  }
+}
+.IconChat-TrangChat {
+  width: 400px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.95;
+  display: block;
+  transform: translate(-85px, 20px); /* ✅ đẩy sang trái -85px và xuống 20px */
+  margin-bottom: 16px;
+  animation: pulse 2s infinite ease-in-out;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin-left: 180px; 
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-85px, 20px) scale(1);
+  }
+  50% {
+    transform: translate(-85px, 20px) scale(1.03); /* nhún nhẹ to hơn */
+  }
+  100% {
+    transform: translate(-85px, 20px) scale(1);
   }
 }
 
@@ -23,11 +66,36 @@
   border-right: 1px solid #ccc;
   overflow-y: auto;
   background: white;
-  height: calc(100vh - 100px);
   margin-top: 85px;
-  margin-left: 300px; /* Tăng từ 300px lên 320px để dịch sang phải thêm 20px */
+  margin-left: 300px; 
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #c1c1c1 transparent; /* màu thanh cuộn và nền */
+}
+/* Chrome, Edge, Safari */
+.chat-list-container::-webkit-scrollbar {
+  width: 6px; /* nhỏ gọn */
 }
 
+.chat-list-container::-webkit-scrollbar-track {
+  background: transparent; /* nền trong suốt */
+}
+
+.chat-list-container::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1; /* màu thanh cuộn */
+  border-radius: 10px;
+}
+
+.chat-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0; /* khi hover */
+}
+
+/* Ẩn mặc định, chỉ hiện khi hover */
+.chat-list-container::-webkit-scrollbar {
+  display: none;
+}
+.chat-list-container:hover::-webkit-scrollbar {
+  display: block;
+}
 .chat-box-container {
   flex: 1; /* chiếm hết phần còn lại */
   display: flex;
@@ -44,11 +112,13 @@
   font-weight: 500;
   text-align: center;
 }
-.IconChat-TrangChat {
-  font-size: 28px;
-  text-align: center;
-  display: flex;
-  margin-left: 180px; /* Dịch sang phải 8px */
+.empty-chat-placeholder p {
+  font-size: 20px;          /* ✅ to hơn */
+  font-weight: 600;          /* ✅ in đậm hơn */
+  color: #111;               /* ✅ màu đen đậm hơn */
+  line-height: 1.5;          /* ✅ khoảng cách dòng đẹp */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* ✅ phông chữ hiện đại, chuyên nghiệp */
+  margin: 8px 0;             /* ✅ khoảng cách giữa các dòng */
 }
 
 

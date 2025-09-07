@@ -21,21 +21,36 @@ const VideoListCarouselMini = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const res = await axios.get('http://localhost:5133/api/video');
+  const fetchAllVideos = async () => {
+    try {
+      let allVideos = [];
+      let page = 1;
+      const pageSize = 10;
+      let hasMore = true;
+
+      while (hasMore) {
+        const res = await axios.get(
+          `http://localhost:5133/api/video?page=${page}&pageSize=${pageSize}`
+        );
         const data = res.data;
-        if (Array.isArray(data)) {
-          setVideos(data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          allVideos = [...allVideos, ...data];
+          page++;
         } else {
-          console.warn('API không trả về mảng:', data);
+          hasMore = false; // hết video
         }
-      } catch (err) {
-        console.error('Lỗi khi lấy video:', err);
       }
-    };
-    fetchVideos();
-  }, []);
+
+      setVideos(allVideos);
+    } catch (err) {
+      console.error('Lỗi khi lấy video:', err);
+    }
+  };
+
+  fetchAllVideos();
+}, []);
+
 
   const handleMouseEnter = (index) => {
     const video = videoRefs.current[index];

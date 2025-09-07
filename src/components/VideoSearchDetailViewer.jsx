@@ -3,11 +3,9 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaPlay, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import axios from "axios";
 import { toast } from 'react-hot-toast';
-import TopNavbar from "./TopNavbar";
 import defaultAvatar from "../assets/default-avatar.png";
 import { AuthContext } from '../context/AuthContext';
 import "./VideoSearchDetailViewer.css";
-
 export default function VideoSearchDetailViewer() {
   const location = useLocation();
   const navigate = useNavigate();

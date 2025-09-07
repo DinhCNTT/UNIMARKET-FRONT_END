@@ -2,15 +2,12 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
 import { AuthProvider } from "./context/AuthContext";
 import { SearchProvider } from "./context/SearchContext";
 import { CategoryProvider } from "./context/CategoryContext";
 import { LocationProvider } from "./context/LocationContext";
 import { VideoProvider } from "./context/VideoContext";
-
 import AppRoutes from "./routes/AppRoutes";
-
 // --- Toast imports ---
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

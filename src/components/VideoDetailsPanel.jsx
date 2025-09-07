@@ -17,8 +17,6 @@ import StickyInfoBar from "./StickyInfoBar";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
  // thêm icon mũi tên
 
-
-
 const VideoDetailsPanel = ({ isOpen, onClose, loading, data, user, onOpenChat }) => {
   const [showPhone, setShowPhone] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -313,6 +311,8 @@ const getUserId = (u) =>
 const getSellerId = (s) =>
   s?.id ?? s?.maNguoiDung ?? s?.MaNguoiDung ?? s?._id ?? null;
 
+// Cập nhật hàm handleChatWithSeller trong VideoDetailsPanel.jsx
+
 const handleChatWithSeller = async () => {
   let effectiveUser = user;
   if (!effectiveUser) {
@@ -394,9 +394,18 @@ const handleChatWithSeller = async () => {
         toastId: "opening-chat",
       });
 
-      setTimeout(() => {
-        if (typeof onOpenChat === "function") onOpenChat(maCuocTroChuyen);
-        else navigate(`/chat/${maCuocTroChuyen}`);
+      // 🆕 THÊM: Refresh ChatList để cập nhật trạng thái
+      setTimeout(async () => {
+        // Trigger refresh ChatList nếu đang ở trang chat
+        if (window.location.pathname.includes('/chat')) {
+          window.dispatchEvent(new CustomEvent('refreshChatList'));
+        }
+        
+        if (typeof onOpenChat === "function") {
+          onOpenChat(maCuocTroChuyen);
+        } else {
+          navigate(`/chat/${maCuocTroChuyen}`);
+        }
       }, 1000);
     } else {
       toast.error("Không thể tạo cuộc trò chuyện. Vui lòng thử lại.", {

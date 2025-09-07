@@ -29,26 +29,25 @@
   gap: 12px; /* khoảng cách icon - chữ */
   cursor: pointer;
   color: #333;
-  font-size: 16px; /* chữ to hơn */
-  font-weight: 600; /* chữ đậm hơn */
-  font-family: "Poppins", sans-serif; /* font chữ đẹp, chuyên nghiệp */
+  font-size: 16px; 
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
   padding: 10px 14px;
   border-radius: 8px;
   width: 100%;
-  transition: all 0.25s ease;
+  transition: color 0.25s ease;
 }
 
-
 .um-tn-icon-btn svg {
-  font-size: 28px; /* icon to rõ hơn */
+  font-size: 28px; 
   transition: transform 0.25s ease, color 0.25s ease;
   flex-shrink: 0; 
 }
 
+/* ✅ Hover/Active chỉ đổi màu chữ + icon */
 .um-tn-icon-btn:hover,
 .um-tn-icon-btn.active {
   color: orange;
-  background-color: rgba(255, 165, 0, 0.15);
 }
 
 .um-tn-icon-btn:hover svg,
@@ -56,6 +55,7 @@
   color: orange;
   transform: scale(1.1); /* phóng to nhẹ khi hover */
 }
+
 .um-tn-logo {
   display: flex;
   justify-content: flex-start;

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import "./ChiTietTinDang.css";
 import TopNavbar from "../components/TopNavbar";
+import FloatingProductBox from "./FloatingProductBox";
 import { AuthContext } from "../context/AuthContext";
 
 const formatDate = (dateString) => {
@@ -31,6 +32,20 @@ const ChiTietTinDang = ({ onOpenChat }) => {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const scrollRefSeller = useRef(null);
   const scrollRefCategory = useRef(null);
+  const [showFloatingBox, setShowFloatingBox] = useState(false);
+  const imageContainerRef = useRef(null);
+  // Hiện box nổi khi scroll xuống nửa ảnh đầu tiên
+  useEffect(() => {
+  const handleScroll = () => {
+    if (window.scrollY > 250) {
+      setShowFloatingBox(true);
+    } else {
+      setShowFloatingBox(false);
+    }
+  };
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
   const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
   const handleScroll = (direction, ref) =>
@@ -204,7 +219,26 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     <div className="chi-tiet-tin-dang">
       <TopNavbar />
       <div className="tin-dang-header">
-        <div className="image-container">
+  <div className="image-container" ref={imageContainerRef}>
+      {/* Floating Product Box */}
+      {showFloatingBox && post && (
+        <FloatingProductBox
+          image={post.images?.[0]?.startsWith("http") ? post.images[0] : post.images?.[0] ? `http://localhost:5133${post.images[0]}` : ""}
+          title={post.tieuDe}
+          price={formattedPrice}
+          details={<>
+            <span>{post.loaiSanPham || post.tieuDe}</span>
+            {post.dungLuong && <span> | {post.dungLuong}</span>}
+            {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
+          </>}
+          description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
+          onShowPhone={() => setShowPhoneNumber(!showPhoneNumber)}
+          onChat={handleChatWithSeller}
+          showPhone={showPhoneNumber}
+          phoneMasked={showPhoneNumber ? post.phoneNumber : `${post.phoneNumber?.substring(0, 6)}****`}
+        />
+      )}
+
           {post.images && post.images.length > 0 ? (
             <PostImageCarousel images={post.images} />
           ) : (
@@ -245,18 +279,9 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         </div>
       </div>
 
-      <div className="mo-ta-chi-tiet">
-        <p>
-          <strong>Số điện thoại:</strong>{" "}
-          <span
-            onClick={handleShowPhoneNumber}
-            style={{ color: "blue", cursor: "pointer" }}
-          >
-            {showPhoneNumber
-              ? post.phoneNumber
-              : `${post.phoneNumber.substring(0, 6)}****`}
-          </span>
-        </p>
+      <div className="mo-ta-chi-tiet" id="mo-ta-chi-tiet">
+        <div style={{fontWeight:600, fontSize:18, marginBottom:8}}>Mô tả chi tiết</div>
+        
         <div
           className={`mo-ta-nd-cttd-wrapper ${
             showFullDescription ? "mo-ta-nd-cttd-full" : "mo-ta-nd-cttd-clamp"
@@ -274,7 +299,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
       </div>
 
       {similarPostsBySeller.length > 0 && (
-        <div className="tin-dang-tuong-tu tin-dang-nguoi-ban">
+        <div className="tin-dang-tuong-tu tin-dang-nguoi-ban" id="tin-dang-tuong-tu">
           <h2>Các tin đăng khác của {post.nguoiBan}</h2>
           <div className="similar-posts-wrapper">
             <button className="scroll-btn left" onClick={() => handleScroll("left", scrollRefSeller)}>

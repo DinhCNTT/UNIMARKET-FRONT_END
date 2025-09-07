@@ -1,20 +1,16 @@
 .chatlist-container {
   flex-direction: column;
-  height: 100vh;
+  height: 120vh;
   background-color: white;
+  
 }
+
 
 /* Phần tìm kiếm + filter */
 .chatlist-search,
 .chatlist-filter-dropdown {
   padding: 8px 10px;
   border-bottom: 1px solid #ccc;
-}
-
-/* Phần danh sách chat scrollable */
-.chatlist-scrollable {
-  flex: 1 1 auto;
-  overflow-y: auto;
 }
 
 /* Style từng item chat */
@@ -50,19 +46,33 @@
 }
 
 .chatlist-item-title {
-  font-weight: bold;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif; /* ✅ font hiện đại */
+  font-weight: 600;          /* ✅ đậm vừa, không bị thô */
+  font-size: 15px;           /* ✅ vừa phải, cân đối */
+  line-height: 1.4;          /* ✅ thoáng hơn */
+  letter-spacing: 0.2px;     /* ✅ chữ tinh tế hơn */
+  color: inherit;            /* ✅ giữ màu gốc */
 }
 
 .chatlist-item-price {
-  font-size: 14px;
-  color: red;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  font-size: 13.5px;         /* ✅ nhỏ gọn hơn */
+  font-weight: 500;
+  color: red;                /* ✅ giữ nguyên màu đỏ */
+  margin-top: 2px;
 }
 
 .chatlist-item-info {
-  font-size: 12px;
-  color: #777;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  font-size: 12.5px;
+  color: #666;               /* ✅ tinh tế hơn #777 */
   margin-top: 4px;
+  line-height: 1.4;
+  white-space: nowrap;       /* ✅ không tràn dòng */
+  overflow: hidden;
+  text-overflow: ellipsis;   /* ✅ nếu dài sẽ hiện "..." */
 }
+
 
 /* Nút menu ba chấm */
 .chatlist-menu-btn {
@@ -149,10 +159,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+ /* vẫn giữ mờ đen nhẹ */
+  backdrop-filter: blur(6px);  
   z-index: 1000;
 }
 
@@ -164,6 +175,7 @@
   max-width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: modalSlideIn 0.3s ease-out;
+  transform: translateX(90px);
 }
 
 @keyframes modalSlideIn {
@@ -290,49 +302,80 @@
   box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
 }
 
-/* Nút ẩn chat */
-.chatlist-btn-hide-chat {
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-  background-color: #f7941d;
+/* Container để căn góc phải */
+.chatlist-btn-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10; /* đảm bảo luôn nổi */
 }
 
-.chatlist-btn-hide-chat:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+/* Nút ẩn chat */
+.chatlist-btn-hide-chat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-right: auto; 
+  background: linear-gradient(135deg, #f7941d, #e67300);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+
+  border: none;
+  border-radius: 50px; /* tròn gọn */
+  padding: 6px 12px;
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease-in-out;
 }
 
 .chatlist-btn-hide-chat:hover:not(:disabled) {
-  background-color: #e67300;
+  background: linear-gradient(135deg, #ffa733, #cc5c00);
+  transform: scale(1.05);
 }
 
+.chatlist-btn-hide-chat:active {
+  transform: scale(0.95);
+}
+
+.chatlist-btn-hide-chat:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Biến thể confirm */
 .chatlist-btn-hide-chat.chatlist-btn-confirm {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #218838);
 }
-
 .chatlist-btn-hide-chat.chatlist-btn-confirm:hover:not(:disabled) {
-  background-color: #218838;
+  background: linear-gradient(135deg, #34c759, #1e7e34);
 }
 
+/* Biến thể cancel */
 .chatlist-btn-hide-chat.chatlist-btn-cancel {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+.chatlist-btn-hide-chat.chatlist-btn-cancel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e74c3c, #a71d2a);
 }
 
-.chatlist-btn-hide-chat.chatlist-btn-cancel:hover:not(:disabled) {
-  background-color: #c82333;
-}
 
 .chatlist-empty {
-  padding: 10px;
+  padding: 14px;
   text-align: center;
   color: #555;
-  font-style: italic;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif; /* ✅ font hiện đại */
+  font-size: 14px;       /* ✅ vừa phải, dễ đọc */
+  font-weight: 500;      /* ✅ trung bình, không quá mảnh */
+  font-style: italic;    /* ✅ giữ nét tinh tế */
+  letter-spacing: 0.2px; /* ✅ chữ thoáng hơn */
+  line-height: 1.5;
+  opacity: 0.85;         /* ✅ màu dịu hơn */
 }
+
 
 /* Responsive cho mobile */
 @media (max-width: 768px) {

@@ -7,6 +7,7 @@ import "animate.css";
 import "./ChatBox.css";
 import axios from "axios";
 import { FaImage, FaVideo, FaTimes, FaEllipsisV, FaTrash, FaClock, FaBan, FaUnlock } from "react-icons/fa";
+import { MessageSquareText } from "lucide-react";
 
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
 const CLOUDINARY_CLOUD_NAME = "dcwe8drcu";
@@ -625,11 +626,12 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             ) : null}
           </div>
       </div>
-
       <div className="chatbox-messages">
         {danhSachTin.length === 0 ? (
           <div className="chatbox-empty-chat">
-            <div className="chatbox-empty-icon">💬</div>
+            <div className="chatbox-empty-icon">
+              <MessageSquareText size={70} className="text-gray-400" />
+            </div>
             <p>Chưa có tin nhắn nào</p>
             <p>Hãy bắt đầu cuộc trò chuyện!</p>
           </div>

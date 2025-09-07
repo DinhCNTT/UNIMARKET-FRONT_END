@@ -1,18 +1,11 @@
 import React, { useRef, useEffect, useContext, useState } from "react";
 import {
-  FiSearch,
-  FiBell,
-  FiHome,
-  FiCompass,
-  FiUpload,
-  FiMessageSquare,
-  FiUser
+  FiSearch, FiBell, FiHome, FiCompass, FiUpload, FiMessageSquare, FiUser
 } from "react-icons/fi";
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import "./TopNavbarUniMarket.css";
-import { useNavigate, useLocation } from "react-router-dom"; 
+import { useNavigate, useLocation } from "react-router-dom";
 import { VideoContext } from "../context/VideoContext";
-
 
 export default function TopNavbarUniMarket() {
   const navRef = useRef(null);
@@ -21,123 +14,133 @@ export default function TopNavbarUniMarket() {
   const location = useLocation();
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
- // ✅ state profile user
+  // ✅ state profile user
   const [profile, setProfile] = useState(null);
 
-  // ✅ Hàm xử lý avatar URL linh hoạt
+  // ✅ THÊM: Navbar mini khi ở trang chat
+  const isChatRoute = location.pathname.startsWith("/chat");
+  const [isMini, setIsMini] = useState(isChatRoute);
+
+  useEffect(() => {
+    setIsMini(isChatRoute); // tự đồng bộ mini theo route
+  }, [isChatRoute]);
+
   const getAvatarSrc = (url) => {
     if (!url) return null;
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
-// ✅ Giữ For You active chỉ khi đang ở VideoDetailViewer
-useEffect(() => {
-  const path = location.pathname;
-  const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
 
-  if (path.startsWith("/video/")) {
-    // chỉ set lại forYou nếu không mở panel nổi
-    if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
+  // ✅ Giữ For You active chỉ khi đang ở VideoDetailViewer
+  useEffect(() => {
+    const path = location.pathname;
+    const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
+    if (path.startsWith("/video/")) {
+      if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
+        setActiveTab("forYou");
+      }
+    } else {
+      if (activeTab === "forYou") {
+        setActiveTab(null);
+      }
+    }
+  }, [location.pathname, activeTab, setActiveTab]);
+
+  // ✅ fetch profile
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const token = localStorage.getItem("token");
+    if (!user || !token) return;
+
+    fetch(`http://localhost:5133/api/user/profile/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("Không lấy được profile");
+        return r.json();
+      })
+      .then(setProfile)
+      .catch(console.error);
+  }, []);
+
+  const toggleTab = (tab) => {
+    if (tab === "forYou") {
       setActiveTab("forYou");
+      triggerReload();
+      if (!window.location.pathname.startsWith("/video/")) {
+        navigate("/video/1");
+      }
+    } else if (tab === "search") {
+      setActiveTab("search");
+    } else {
+      setActiveTab(tab);
     }
-  } else {
-    // ra khỏi /video thì bỏ activeTab forYou
-    if (activeTab === "forYou") {
-      setActiveTab(null);
+  };
+
+  // ✅ Sync activeTab theo route chat để giữ nút Messages màu vàng
+useEffect(() => {
+  if (location.pathname.startsWith("/chat")) {
+    // 🚀 Không ép về "messages" nếu đang mở search
+    if (activeTab !== "messages" && activeTab !== "search") {
+      setActiveTab("messages");
     }
+  } else if (activeTab === "messages") {
+    setActiveTab(null);
   }
 }, [location.pathname, activeTab, setActiveTab]);
 
 
-  // ✅ fetch profile từ API khi component mount
-useEffect(() => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const token = localStorage.getItem("token"); // 👈 token đã lưu khi login
+  // ✅ Click icon chat
+  const handleChatClick = () => {
+    navigate("/chat");
+    setActiveTab("messages");
+    setIsMini(true); // vào chat -> mini
+  };
 
-  if (!user || !token) return;
-
-  fetch(`http://localhost:5133/api/user/profile/${user.id}`, {
-    headers: {
-      "Authorization": `Bearer ${token}`, // 👈 thêm token
-      "Content-Type": "application/json"
-    }
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Không lấy được profile (Unauthorized)");
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log("Profile API:", data);
-      setProfile(data);
-    })
-    .catch((err) => console.error("Lỗi load profile:", err));
-}, []);
-
-// ✅ toggle tab
-const toggleTab = (tab) => {
-  if (tab === "forYou") {
-    setActiveTab("forYou");
-    triggerReload(); // ✅ có loading hiệu ứng
-
-    // 👉 Nếu không ở trong VideoDetailViewer thì điều hướng về đó
-    if (!window.location.pathname.startsWith("/video/")) {
-      navigate("/video/1"); // tạm thời điều hướng video đầu tiên / video mặc định
-    }
-
-  } else if (tab === "search") {
-    setActiveTab("search");
-  } else {
-    setActiveTab(tab);
-  }
-};
-
-
-// ✅ Click outside để đóng panel
+  // ✅ Click outside: KHÔNG ép về forYou khi đang ở trang chat
 useEffect(() => {
   const handleClickOutside = (e) => {
     const nav = navRef.current;
     const panel = panelRef.current;
-
-    // true nếu click ngoài navbar
     const clickedOutsideNav = nav && !nav.contains(e.target);
-    // true nếu không có panel hoặc click ngoài panel (panel = vùng overlay như search/upload/messages/activity)
     const clickedOutsidePanel = !panel || !panel.contains(e.target);
-
-    // Chỉ xử lý khi click thật sự bên ngoài cả nav lẫn panel
     if (!(clickedOutsideNav && clickedOutsidePanel)) return;
 
-    // Các tab dạng "panel nổi" (click ra ngoài thì đóng)
     const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
 
+    // ⚡ Sửa chỗ này:
+    // Nếu đang ở trang chat mà tab hiện tại KHÔNG phải search thì bỏ qua
+    if (isChatRoute && activeTab !== "search") return;
+
     if (activeTab === "search") {
-      // đang search -> về forYou
-      setActiveTab("forYou");
+      setActiveTab(null); // Đóng search khi click ngoài
       return;
     }
-
     if (floatingTabs.has(activeTab)) {
-      // nếu đang ở 1 panel nổi -> về forYou
-      setActiveTab("forYou");
+      setActiveTab(null);
       return;
     }
-
-    // Còn lại là các tab điều hướng "dính" (forYou, profile, explore)
-    // -> KHÔNG đổi activeTab (giữ nguyên màu vàng của Profile)
   };
 
   document.addEventListener("mousedown", handleClickOutside);
   return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [activeTab, setActiveTab]);
+}, [activeTab, setActiveTab, isChatRoute]);
 
 
 
-  return (
-    <div className="um-tn-root">
-      <nav
-        className={`um-tn-navbar ${activeTab === "search" ? "collapsed" : ""}`}
-        ref={navRef}
-      >
+return (
+  <div className="um-tn-root">
+  <nav
+  className={`um-tn-navbar ${
+    activeTab === "search" || (location.pathname.startsWith("/chat") && activeTab !== "search")
+      ? "collapsed"
+      : ""
+  }`}
+  ref={navRef}
+>
+
         {/* Logo */}
         <div
           className="um-tn-logo"
@@ -147,15 +150,15 @@ useEffect(() => {
           }}
           style={{ cursor: "pointer" }}
         >
-          {activeTab === "search" ? (
-            <div className="um-tn-logo-u">U</div>
-          ) : (
-            <img
-              src="/logoWeb.png"
-              alt="UniMarket Logo"
-              className="um-tn-logo-img"
-            />
-          )}
+          {activeTab === "search" || location.pathname.startsWith("/chat") ? (
+  <div className="um-tn-logo-u">U</div>
+) : (
+  <img
+    src="/logoWeb.png"
+    alt="UniMarket Logo"
+    className="um-tn-logo-img"
+  />
+)}
         </div>
 
         {/* Nút Search */}
@@ -216,15 +219,14 @@ useEffect(() => {
           </button>
 
           {/* Messages */}
-          <button
-            className={`um-tn-icon-btn ${
-              activeTab === "messages" ? "active" : ""
-            }`}
-            onClick={() => toggleTab("messages")}
-          >
-            <FiMessageSquare size={20} />
-            {activeTab !== "search" && <span>Messages</span>}
-          </button>
+        <button
+          className={`um-tn-icon-btn ${activeTab === "messages" ? "active" : ""}`}
+          onClick={handleChatClick}
+        >
+          <FiMessageSquare size={20} />
+          <span>Messages</span>
+        </button>
+
 
           {/* Profile */}
           <button
@@ -252,16 +254,10 @@ useEffect(() => {
       </nav>
 
       {/* Panel */}
-      <div
-        className={`um-tn-panel-wrapper ${activeTab ? "open" : ""}`}
-        aria-hidden={activeTab ? "false" : "true"}
-      >
+<div className={`um-tn-panel-wrapper ${activeTab ? "open" : ""}`} aria-hidden={activeTab ? "false" : "true"}>
         {activeTab === "search" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <VideoSearchOverlay
-              isOpen={activeTab === "search"}
-              onClose={() => setActiveTab(null)}
-            />
+            <VideoSearchOverlay isOpen={activeTab === "search"} onClose={() => setActiveTab(null)} />
           </div>
         )}
 
@@ -279,23 +275,16 @@ useEffect(() => {
           </div>
         )}
 
-        {activeTab === "messages" && (
+        {/* ❌ Không render khi đang ở /chat */}
+        {activeTab === "messages" && !isChatRoute && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <h3>Tin nhắn</h3>
             <p>Danh sách tin nhắn</p>
           </div>
         )}
 
-        {activeTab === "profile" && (
-          <div className="um-tn-tab-content" ref={panelRef}>
-          </div>
-        )}
-
-        {activeTab === "forYou" && ( 
-          <div className="um-tn-tab-content" ref={panelRef}> 
-        </div>
-        )}
-        
+        {activeTab === "profile" && <div className="um-tn-tab-content" ref={panelRef}></div>}
+        {activeTab === "forYou" && <div className="um-tn-tab-content" ref={panelRef}></div>}
         {activeTab === "explore" && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <h3>Explore</h3>

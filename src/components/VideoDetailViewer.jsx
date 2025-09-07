@@ -50,24 +50,164 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-const handleShowDetail = async (maTinDang) => {
-  setLoadingDetail(true);
-  setShowDetailPanel(true);
+  // VIEW TRACKING STATE & REFS
+  const [viewTracking, setViewTracking] = useState({});
+  const viewTrackingTimers = useRef({});
+  const viewStartTimes = useRef({});
+  const hasTracked3Seconds = useRef({});
 
+// ✅ HÀM TÍNH THỜI GIAN XEM CHÍNH XÁC
+  const getCurrentWatchedSeconds = (maTinDang) => {
+  const startTime = viewStartTimes.current[maTinDang];
+  if (!startTime) return 0;
+  
+  return Math.floor((Date.now() - startTime) / 1000);
+};
+
+  // CẬP NHẬT hàm trackView để debug rõ hơn
+  const trackView = async (maTinDang, watchedSeconds, isCompleted = false, rewatchCount = 0, skipViewCount = false) => {
   try {
-    const res = await axios.get(`http://localhost:5133/api/video/detail/${maTinDang}`);
-    setDetailData(res.data);
+      const token = localStorage.getItem("token");
+      
+      // ✅ Đảm bảo watchedSeconds >= 0
+      const actualWatchedSeconds = Math.max(0, watchedSeconds);
+      
+      console.log(`🎥 Tracking view for video ${maTinDang}:`, {
+          watchedSeconds: actualWatchedSeconds,
+          isCompleted: isCompleted,
+          rewatchCount: rewatchCount,
+          skipViewCount: skipViewCount,
+          hasToken: !!token,
+          timestamp: new Date().toISOString()
+      });
+
+      const requestBody = {
+          maTinDang: maTinDang,
+          watchedSeconds: actualWatchedSeconds,
+          isCompleted: isCompleted,
+          rewatchCount: rewatchCount,
+          skipViewCount: skipViewCount
+      };
+
+      const headers = {
+          'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await axios.post('http://localhost:5133/api/video/track-view', requestBody, {
+          headers: headers
+      });
+
+      console.log(`✅ Track response for video ${maTinDang}:`, response.data);
+
+      // Cập nhật số view trong state nếu là view mới
+      if (response.data.isNewView) {
+          setVideoList(prevList => 
+              prevList.map(v => 
+                  v.maTinDang === maTinDang 
+                      ? { ...v, soLuotXem: response.data.totalViews }
+                      : v
+              )
+          );
+      }
+
+      return response.data;
+
   } catch (error) {
-    console.error("Lỗi tải chi tiết tin:", error);
-  } finally {
-    setLoadingDetail(false);
+      console.error(`❌ Error tracking view for video ${maTinDang}:`, error);
+      return null;
   }
 };
 
-const handleCloseDetail = () => {
-  setShowDetailPanel(false);
-  setDetailData(null);
+  // START VIEW TRACKING FOR A VIDEO
+  const startViewTracking = (maTinDang, videoElement) => {
+  if (!videoElement || viewTrackingTimers.current[maTinDang]) return;
+
+  console.log(`🎬 Starting view tracking for video ${maTinDang}`);
+  
+  viewStartTimes.current[maTinDang] = Date.now();
+  hasTracked3Seconds.current[maTinDang] = false;
+
+  // Timer để track view mỗi giây
+  viewTrackingTimers.current[maTinDang] = setInterval(() => {
+    if (videoElement.paused) return;
+
+    // ✅ SỬ DỤNG HÀM TÍNH CHÍNH XÁC
+    const elapsed = getCurrentWatchedSeconds(maTinDang);
+    
+    console.log(`⏱️ Video ${maTinDang} watched for ${elapsed} seconds`);
+
+    // ✅ Cập nhật state với thời gian thực
+    setViewTracking(prev => ({
+      ...prev,
+      [maTinDang]: {
+        ...prev[maTinDang],
+        watchedSeconds: elapsed,
+        lastUpdateTime: Date.now()
+      }
+    }));
+
+    // Track view đầu tiên khi đạt 3 giây - CHỈ LẦN NÀY MỚI TĂNG VIEW COUNT
+    if (elapsed >= 3 && !hasTracked3Seconds.current[maTinDang]) {
+      hasTracked3Seconds.current[maTinDang] = true;
+      trackView(maTinDang, elapsed, false, 0, false); // false = cho phép tăng view count
+      console.log(`🎯 First 3-second view tracked for video ${maTinDang}`);
+    }
+
+    // Track view mỗi 10 giây - KHÔNG TĂNG VIEW COUNT
+    if (elapsed > 3 && elapsed % 10 === 0) {
+      trackView(maTinDang, elapsed, false, 0, true); // true = skip view count
+    }
+
+  }, 1000);
 };
+
+  // STOP VIEW TRACKING FOR A VIDEO
+  const stopViewTracking = (maTinDang) => {
+  if (viewTrackingTimers.current[maTinDang]) {
+    clearInterval(viewTrackingTimers.current[maTinDang]);
+    delete viewTrackingTimers.current[maTinDang];
+
+    // ✅ Tính thời gian xem chính xác khi dừng
+    const finalWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
+    
+    // Gửi track cuối cùng nếu đã xem >=3 giây
+    if (finalWatchedSeconds >= 3) {
+      const tracking = viewTracking[maTinDang] || {};
+      trackView(maTinDang, finalWatchedSeconds, false, tracking.loopCount || 0, true);
+      console.log(`🏁 Final view tracking sent for video ${maTinDang}: ${finalWatchedSeconds}s`);
+    }
+
+    // ✅ Xóa thời gian bắt đầu
+    delete viewStartTimes.current[maTinDang];
+    delete hasTracked3Seconds.current[maTinDang];
+    
+    console.log(`🛑 Stopped view tracking for video ${maTinDang}`);
+  }
+};
+
+
+  const handleShowDetail = async (maTinDang) => {
+    setLoadingDetail(true);
+    setShowDetailPanel(true);
+
+    try {
+      const res = await axios.get(`http://localhost:5133/api/video/detail/${maTinDang}`);
+      setDetailData(res.data);
+    } catch (error) {
+      console.error("Lỗi tải chi tiết tin:", error);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetailPanel(false);
+    setDetailData(null);
+  };
 
   // Handler để nhận trạng thái drag từ VideoControls
   const handleDragStateChange = (isDragging) => {
@@ -82,6 +222,11 @@ const handleCloseDetail = () => {
 
     isAnimatingRef.current = true;
     document.body.classList.add("video-transitioning");
+
+    // Stop tracking cho video hiện tại
+    if (videoData) {
+      stopViewTracking(videoData.maTinDang);
+    }
 
     setCurrentIndex(nextIndex);
 
@@ -121,58 +266,245 @@ const handleCloseDetail = () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
+      // Cleanup tất cả view tracking timers
+      Object.keys(viewTrackingTimers.current).forEach(maTinDang => {
+        stopViewTracking(parseInt(maTinDang));
+      });
     };
   }, []);
 
-  useEffect(() => {
-    if (!videoData?.maTinDang) return;
-
-    const fetchSaveInfo = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        let headers = {};
-        if (token) headers.Authorization = `Bearer ${token}`;
-
-        const res = await axios.get(
-          `http://localhost:5133/api/video/${videoData.maTinDang}/savedinfo`,
-          { headers }
-        );
-
-        const { isSaved, soNguoiLuu } = res.data;
-
-        setVideoList(prevList =>
-          prevList.map((v, i) =>
-            i === currentIndex
-              ? { ...v, isSaved, soNguoiLuu }
-              : v
-          )
-        );
-
-        setIsSaved(isSaved);
-      } catch (err) {
-        console.error("Lỗi khi lấy thông tin lưu video:", err);
-      }
-    };
-
-    fetchSaveInfo();
-  }, [videoData?.maTinDang]);
-
-
-
+  // Fetch all videos
   useEffect(() => {
     const fetchAllVideos = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5133/api/video", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setVideoList(res.data);
+        let allVideos = [];
+        let page = 1;
+        const pageSize = 10;
+        let hasMore = true;
+
+        // Lấy tất cả video
+        while (hasMore) {
+          const res = await axios.get(
+            `http://localhost:5133/api/video?page=${page}&pageSize=${pageSize}`,
+            {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            }
+          );
+          const data = res.data;
+
+          if (Array.isArray(data) && data.length > 0) {
+            allVideos = [...allVideos, ...data];
+            page++;
+          } else {
+            hasMore = false;
+          }
+        }
+
+        setVideoList(allVideos);
+        console.log(`📋 Loaded ${allVideos.length} videos for tracking`);
       } catch (err) {
         console.error("Lỗi khi lấy danh sách video:", err);
       }
     };
+
     fetchAllVideos();
   }, []);
+
+  // MAIN VIEW TRACKING EFFECT - Khi chuyển video
+  useEffect(() => {
+    if (!videoData) return;
+
+    const maTinDang = videoData.maTinDang;
+    const videoElement = videoElsRef.current[currentIndex];
+
+    if (!videoElement) return;
+
+    console.log(`🔄 Switched to video ${maTinDang} (index: ${currentIndex})`);
+    
+    // Khởi tạo tracking state cho video mới
+    setViewTracking(prev => ({
+      ...prev,
+      [maTinDang]: {
+        startTime: Date.now(),
+        watchedSeconds: 0,
+        hasTracked3Seconds: false,
+        hasCompleted: false,
+        loopCount: 0,
+        hasCountedView: false
+      }
+    }));
+
+    const handlePlay = () => {
+      console.log(`▶️ Video ${maTinDang} started playing`);
+      startViewTracking(maTinDang, videoElement);
+    };
+
+    const handlePause = () => {
+  console.log(`⏸️ Video ${maTinDang} paused`);
+  
+  // ✅ Tính thời gian thực khi pause
+  const currentWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
+  
+  if (currentWatchedSeconds >= 3) {
+    const tracking = viewTracking[maTinDang] || {};
+    trackView(maTinDang, currentWatchedSeconds, false, tracking.loopCount || 0, true);
+  }
+};
+
+    // FIX: handleEnded để đúng cách detect completion và rewatch
+    const handleEnded = () => {
+  console.log(`🏁 Video ${maTinDang} ended (backup - rarely happens with loop)`);
+  
+  const currentWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
+  
+  setViewTracking(prev => {
+      const currentTracking = prev[maTinDang] || {};
+      
+      if (!currentTracking.hasCompleted) {
+          // ✅ Dùng thời gian thực thay vì state
+          trackView(maTinDang, currentWatchedSeconds, true, 0, true);
+          
+          return {
+              ...prev,
+              [maTinDang]: {
+                  ...currentTracking,
+                  hasCompleted: true
+              }
+          };
+      } else {
+          // Nếu đã completed mà vẫn trigger ended -> rewatch
+          const newLoopCount = (currentTracking.loopCount || 0) + 1;
+          trackView(maTinDang, currentWatchedSeconds, false, newLoopCount, true);
+          
+          return {
+              ...prev,
+              [maTinDang]: {
+                  ...currentTracking,
+                  loopCount: newLoopCount
+              }
+          };
+      }
+  });
+};
+    // handleTimeUpdate để track progress
+    const handleTimeUpdate = () => {
+  const currentTime = videoElement.currentTime;
+  const duration = videoElement.duration;
+  
+  if (duration > 0) {
+      const progress = (currentTime / duration) * 100;
+      // ✅ Lấy thời gian thực để backup
+      const realTimeWatched = getCurrentWatchedSeconds(maTinDang);
+      
+      setViewTracking(prev => {
+          const currentTracking = prev[maTinDang] || {};
+          
+          // LOGIC DETECT REWATCH: currentTime nhảy từ cuối về đầu
+          const wasNearEnd = currentTracking.lastProgress && currentTracking.lastProgress > 95;
+          const isRestarting = currentTime < 5 && wasNearEnd && currentTracking.hasCompleted;
+          
+          if (isRestarting) {
+              const newLoopCount = (currentTracking.loopCount || 0) + 1;
+              console.log(`🔄 LOOP DETECTED! Video ${maTinDang} restarted. Count: ${currentTracking.loopCount || 0} -> ${newLoopCount}`);
+              
+              // ✅ Gửi track với thời gian thực
+              trackView(maTinDang, realTimeWatched, false, newLoopCount, true);
+              
+              return {
+                  ...prev,
+                  [maTinDang]: {
+                      ...currentTracking,
+                      loopCount: newLoopCount,
+                      lastProgress: progress,
+                      hasCompleted: true
+                  }
+              };
+          }
+          
+          // DETECT COMPLETION lần đầu
+          if (progress >= 95 && !currentTracking.hasCompleted) {
+              console.log(`✅ Video ${maTinDang} completed for first time at ${progress.toFixed(1)}%`);
+              
+              // ✅ Track completion với thời gian thực
+              trackView(maTinDang, realTimeWatched, true, 0, true);
+              
+              return {
+                  ...prev,
+                  [maTinDang]: {
+                      ...currentTracking,
+                      hasCompleted: true,
+                      lastProgress: progress
+                  }
+              };
+          }
+          
+          // Cập nhật progress bình thường
+          return {
+              ...prev,
+              [maTinDang]: {
+                  ...currentTracking,
+                  lastProgress: progress,
+                  // ✅ Backup thời gian thực vào state
+                  watchedSeconds: realTimeWatched
+              }
+          };
+      });
+  }
+};
+
+    // Add event listeners
+    videoElement.addEventListener('play', handlePlay);
+    videoElement.addEventListener('pause', handlePause);
+    videoElement.addEventListener('ended', handleEnded);
+    videoElement.addEventListener('timeupdate', handleTimeUpdate);
+
+    // Bắt đầu tracking nếu video đang phát
+    if (!videoElement.paused) {
+      handlePlay();
+    }
+
+    // Cleanup khi chuyển video
+    return () => {
+      videoElement.removeEventListener('play', handlePlay);
+      videoElement.removeEventListener('pause', handlePause);
+      videoElement.removeEventListener('ended', handleEnded);
+      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+      stopViewTracking(maTinDang);
+    };
+  }, [currentIndex, videoData]);
+
+  // TRACK VIEW KHI ĐÓNG TRANG
+ useEffect(() => {
+  const handleBeforeUnload = () => {
+    if (videoData) {
+      // ✅ Tính thời gian thực khi đóng trang
+      const finalWatchedSeconds = getCurrentWatchedSeconds(videoData.maTinDang);
+      
+      if (finalWatchedSeconds >= 3) {
+        // Sử dụng navigator.sendBeacon để gửi dữ liệu khi trang đóng
+        const tracking = viewTracking[videoData.maTinDang] || {};
+        const data = JSON.stringify({
+          maTinDang: videoData.maTinDang,
+          watchedSeconds: finalWatchedSeconds,
+          isCompleted: false,
+          rewatchCount: tracking.loopCount || 0,
+          skipViewCount: true
+        });
+        
+        const blob = new Blob([data], { type: 'application/json' });
+        navigator.sendBeacon('http://localhost:5133/api/video/track-view', blob);
+        console.log(`📤 Sent final view tracking for video ${videoData.maTinDang} via beacon: ${finalWatchedSeconds}s`);
+      }
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+}, [videoData]);
 
   useEffect(() => { 
     const video = videoRef.current;
@@ -307,6 +639,7 @@ const handleCloseDetail = () => {
       }
     }
   };
+
   const handleToggleSave = async () => {
     const token = localStorage.getItem("token");
 
@@ -488,6 +821,15 @@ const handleCloseDetail = () => {
                             {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
                           </div>
                         </div>
+
+                        {/* HIỂN THỊ SỐ VIEW */}
+                        <div className="vdv-view-count" style={{
+                          fontSize: '12px',
+                          color: '#ccc',
+                          marginTop: '8px'
+                        }}>
+                          👁️ {formatCount(video.soLuotXem || 0)} lượt xem
+                        </div>
                       </div>
                     </div>
                   )}
@@ -561,16 +903,16 @@ const handleCloseDetail = () => {
                   </div>
                   <div className="vdv-icon-label">{video.soBinhLuan || 0}</div>
 
-                   {/* ✅ Icon Xem Chi Tiết */}
-                    <div
-                      className="vdv-icon-button vdv-detail-button"
-                      onClick={() => handleShowDetail(video.maTinDang)}
-                      title="Xem chi tiết tin đăng"
-                      style={{ marginTop: "12px" }}
-                    >
-                      <FaInfoCircle size={24} color="#ccc" />
-                       </div>
+                  {/* Icon Xem Chi Tiết */}
+                  <div
+                    className="vdv-icon-button vdv-detail-button"
+                    onClick={() => handleShowDetail(video.maTinDang)}
+                    title="Xem chi tiết tin đăng"
+                    style={{ marginTop: "12px" }}
+                  >
+                    <FaInfoCircle size={24} color="#ccc" />
                   </div>
+                </div>
               </div>
             );
           })}
@@ -589,14 +931,14 @@ const handleCloseDetail = () => {
           onClose={() => setShowComments(false)}
         />
       )}
-              <VideoDetailsPanel
-          isOpen={showDetailPanel}
-          onClose={handleCloseDetail}
-          loading={loadingDetail}
-          data={detailData}
-        />
+
+      <VideoDetailsPanel
+        isOpen={showDetailPanel}
+        onClose={handleCloseDetail}
+        loading={loadingDetail}
+        data={detailData}
+      />
     </div>
-    
   );
 };
 

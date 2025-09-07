@@ -1,6 +1,6 @@
 .chatbox-container {
-  width: 600px;
-  max-width: 700px;
+  width: 1600px;
+  max-width: 1120px;
   height: 700px;
   background: #fff;
   border-radius: 16px;
@@ -11,17 +11,24 @@
   position: relative;
 
   margin-top: 86px;
-  margin-left: calc(50% - 300px + -154px);
+  margin-left: 8px;  /* ✅ đẩy sang phải 250px */
 }
 
 /* Header của ChatBox */
 .chatbox-header {
-  color: white;
-  padding: 16px 20px;
+  background: #f8fafc;             /* nền xám sáng, đồng bộ */
+  color: #333;                     /* chữ tối dễ đọc */
+  padding: 8px 12px;               /* nhỏ gọn hơn */
+  
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  border-bottom: 1px solid #e2e8f0; /* viền dưới nhẹ nhàng */
+  font-size: 14px;                 /* chữ vừa phải */
+  font-weight: 600;                /* nổi bật nhưng không quá đậm */
+
+  box-shadow: none;                /* bỏ shadow nặng, giữ sạch */
 }
 
 .chatbox-seller-info {
@@ -45,23 +52,32 @@
 
 .chatbox-seller-avatar img {
   width: 100%;
-  height: 100%;
+  height: 98%;
   object-fit: cover;
   background: #ddd;
 }
 
 .chatbox-seller-details h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #000; /* Màu chữ đen */
+  margin: 4px 0 0 0;            /* Thêm khoảng cách trên */
+  font-size: 18px;              /* To hơn một chút */
+  font-weight: 700;             /* Đậm, chuyên nghiệp hơn */
+  color: #1e293b;               /* Màu chữ xám đen tinh tế */
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0.3px;        /* Giãn chữ nhẹ, dễ đọc hơn */
+  position: relative;
+  top: 8px;                     /* Đẩy chữ xuống thấp hơn */
 }
 
 .chatbox-status {
-  font-size: 12px;
-  opacity: 1;
-  color: red;
+  font-size: 18px;               /* To hơn */
+  font-weight: 600;
+  color: #e63946;                /* Đỏ đẹp, chuyên nghiệp */
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  position: relative;
+  top: -5px;                     /* Đẩy chữ lên một chút */
 }
+
+
 
 .chatbox-status.online {
   color: #4ade80;
@@ -110,13 +126,28 @@
 }
 
 .chatbox-empty-icon {
-  font-size: 70px;
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;              /* vừa phải, không quá to */
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 16px auto;     /* căn giữa và cách dưới */
+  border-radius: 50%;           /* bo tròn icon */
+  background: rgba(255, 165, 0, 0.15); /* nền vàng cam nhạt trong suốt */
+  color: #ff9800;               /* icon màu vàng cam */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* đổ bóng nhẹ */
+  transition: transform 0.2s ease;
 }
 
 .empty-chat p {
-  margin: 4px 0;
+  margin: 6px 0; 
   font-size: 14px;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif; /* ✅ font hiện đại, phổ biến */
+  font-weight: 500;  /* ✅ chữ rõ ràng, không quá mảnh */
+  color: #666;       /* ✅ màu trung tính, dễ đọc */
+  letter-spacing: 0.2px; /* ✅ chữ thoáng hơn */
+  line-height: 1.6;      /* ✅ cân đối, dễ nhìn */
 }
 
 /* Message styles */
@@ -362,20 +393,28 @@
 
 /* Input của người dùng */
 .chatbox-input-container {
-  background: white;
+  background: #fff;
   border-top: 1px solid #e2e8f0;
-  padding: 16px 20px;
+  padding: 6px 10px;   /* giảm mạnh padding trên dưới */
 }
 
 .chatbox-input {
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  background: #f8fafc;
-  border-radius: 24px;
-  padding: 8px;
+  align-items: center;
+  gap: 6px;
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 2px 8px;   /* giảm tối đa padding */
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
+  font-size: 13px;    /* chữ nhỏ gọn */
+  min-height: 28px;   /* thấp gọn */
+}
+
+.chatbox-input:focus-within {
+  border-color: #f7941d;
+  box-shadow: 0 0 3px rgba(247, 148, 29, 0.2);
+  background: #fff;
 }
 
 .chatbox-media-upload-group {
@@ -1101,4 +1140,54 @@ body.modal-open {
     padding: 4px 8px;
     top: -30px;
   }
+}
+.chatlist-delete-expanded {
+  width: 100%;
+  padding: 0;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 50px;
+    padding: 6px 0;
+  }
+}
+
+.chatlist-delete-btn-expanded {
+  width: auto;                     /* không chiếm hết ngang */
+  padding: 6px 12px;               /* nhỏ gọn hơn */
+  background-color: #fef2f2;       /* nền đỏ nhạt */
+  color: #dc2626;                  /* chữ đỏ chuẩn */
+  border: none;
+  cursor: pointer;
+  font-size: 13px;                 /* chữ vừa phải */
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;            /* chỉ chiếm đúng nội dung */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  border-radius: 6px;
+  margin: 4px 12px;                /* đẩy qua trái */
+}
+
+.chatlist-delete-btn-expanded:hover {
+  background-color: #fee2e2;       /* hover đỏ nhạt hơn */
+  color: #b91c1c;
+  transform: translateX(2px);      /* hiệu ứng trượt nhẹ sang phải */
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2);
+}
+
+.chatlist-delete-btn-expanded:active {
+  transform: translateX(0);
+  box-shadow: none;
 }
