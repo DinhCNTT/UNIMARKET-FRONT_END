@@ -6,39 +6,60 @@ class SignalRService {
   constructor() {
     this.connection = null;
     this.connected = false;
-    this.startPromise = null; // Đảm bảo start không chạy song song
+    this.startPromise = null;
+    this._lastToken = localStorage.getItem("token") || "";
+    this._eventQueue = []; // lưu event khi chưa có connection
+
+    // Theo dõi token thay đổi
+    window.addEventListener("storage", (e) => {
+      if (e.key === "token" && e.newValue !== this._lastToken) {
+        this._lastToken = e.newValue;
+        this._reconnectWithNewToken();
+      }
+    });
+  }
+
+  async _reconnectWithNewToken() {
+    await this.stop();
+    await this.start();
   }
 
   async start() {
-    // Nếu đã có kết nối và đang connected thì không start lại
-    if (this.connection && this.connected) {
-      return;
-    }
+    if (this.connection && this.connected) return;
+    if (this.startPromise) return this.startPromise;
 
-    // Nếu đang trong quá trình start, chờ kết thúc
-    if (this.startPromise) {
-      return this.startPromise;
-    }
+    this._lastToken = localStorage.getItem("token");
 
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl)
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => localStorage.getItem("token"),
+      })
       .withAutomaticReconnect()
       .build();
 
     this.connection.onclose(() => {
       this.connected = false;
-      console.log("SignalR connection closed");
+      console.log("❌ SignalR connection closed");
     });
 
-    this.startPromise = this.connection.start()
+    // gắn lại tất cả event handler từ queue
+    this._eventQueue.forEach(({ eventName, callback }) => {
+      this.connection.on(eventName, callback);
+    });
+
+    this.startPromise = this.connection
+      .start()
       .then(() => {
         this.connected = true;
         console.log("✅ SignalR connected");
       })
-      .catch(error => {
+      .catch((error) => {
         this.connected = false;
         this.connection = null;
         console.error("❌ SignalR connection failed", error);
+
+        // thử reconnect sau 3s
+        setTimeout(() => this.start(), 3000);
       })
       .finally(() => {
         this.startPromise = null;
@@ -48,10 +69,10 @@ class SignalRService {
   }
 
   async stop() {
-    if (this.connection && this.connected) {
+    if (this.connection) {
       try {
         await this.connection.stop();
-        console.log("SignalR connection stopped");
+        console.log("🛑 SignalR stopped");
       } catch (error) {
         console.error("Error stopping SignalR connection:", error);
       }
@@ -62,58 +83,56 @@ class SignalRService {
   }
 
   on(eventName, callback) {
-    if (!this.connection) return;
-    this.connection.on(eventName, callback);
+    if (this.connection) {
+      this.connection.on(eventName, callback);
+    }
+    // luôn lưu event vào queue để dùng lại khi reconnect
+    this._eventQueue.push({ eventName, callback });
   }
 
   off(eventName, callback) {
-    if (!this.connection) return;
-    this.connection.off(eventName, callback);
+    if (this.connection) {
+      this.connection.off(eventName, callback);
+    }
+    // xóa trong queue
+    this._eventQueue = this._eventQueue.filter(
+      (e) => e.eventName !== eventName || e.callback !== callback
+    );
   }
+
   async invoke(methodName, ...args) {
-  if (!this.connection) {
-    console.warn("SignalR connection does not exist");
-    return;
+    if (!this.connection) {
+      console.warn("⚠️ No SignalR connection to invoke");
+      return;
+    }
+
+    if (this.startPromise) await this.startPromise;
+
+    const waitConnected = () =>
+      new Promise((resolve, reject) => {
+        const maxWait = 5000;
+        const interval = 50;
+        let waited = 0;
+
+        const check = () => {
+          if (this.connected) resolve();
+          else {
+            waited += interval;
+            if (waited >= maxWait) reject(new Error("Timeout waiting for SignalR connect"));
+            else setTimeout(check, interval);
+          }
+        };
+        check();
+      });
+
+    try {
+      await waitConnected();
+      return await this.connection.invoke(methodName, ...args);
+    } catch (error) {
+      console.error(`❌ Error invoking ${methodName}:`, error);
+    }
   }
-
-  if (this.startPromise) {
-    await this.startPromise;
-  }
-
-  // Chờ thực sự connected (khoảng 5s timeout nếu không thành công)
-  const waitConnected = () => new Promise((resolve, reject) => {
-    const maxWait = 5000; // 5 giây
-    const interval = 50;
-    let waited = 0;
-
-    const check = () => {
-      if (this.connected) {
-        resolve();
-      } else {
-        waited += interval;
-        if (waited >= maxWait) reject(new Error("Timeout waiting for SignalR connected state"));
-        else setTimeout(check, interval);
-      }
-    };
-    check();
-  });
-
-  try {
-    await waitConnected();
-  } catch (err) {
-    console.error("SignalR not connected, cannot invoke:", err);
-    return;
-  }
-
-  try {
-    await this.connection.invoke(methodName, ...args);
-  } catch (error) {
-    console.error(`Error invoking ${methodName}:`, error);
-  }
-}
-  
 }
 
 const signalRService = new SignalRService();
-
 export default signalRService;

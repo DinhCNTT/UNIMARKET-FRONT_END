@@ -41,6 +41,23 @@ const TopNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // API function để lấy danh sách chat ẩn và đã xóa từ database
+  const getHiddenAndDeletedChatIds = async () => {
+    try {
+      const response = await fetch(`http://localhost:5133/api/chat/user-chat-states/${user.id}`);
+      const chatStates = await response.json();
+      
+      const hiddenChatIds = chatStates
+        .filter(cs => cs.isHidden || cs.isDeleted)
+        .map(cs => cs.chatId);
+        
+      return hiddenChatIds;
+    } catch (error) {
+      console.error("Lỗi lấy danh sách chat ẩn:", error);
+      return [];
+    }
+  };
+
   // Hàm cắt bớt tên người dùng nếu dài hơn 13 ký tự
   const truncateName = (name, maxLength) => {
     if (name.length > maxLength) {
@@ -75,9 +92,10 @@ const TopNavbar = () => {
 
     const fetchUnreadCount = async () => {
       try {
-        const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
+        // Lấy danh sách chat ẩn và đã xóa từ database thay vì localStorage
+        const hiddenChatIds = await getHiddenAndDeletedChatIds();
         const params = new URLSearchParams();
-        hiddenChats.forEach(id => params.append("hiddenChatIds", id));
+        hiddenChatIds.forEach(id => params.append("hiddenChatIds", id));
 
         const res = await axios.get(
           `http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`
@@ -90,21 +108,17 @@ const TopNavbar = () => {
 
     fetchUnreadCount();
 
-    const handleStorageChange = (e) => {
-      if (e.key === "hiddenChats") {
-        fetchUnreadCount();
-      }
-    };
-
-    const handleHiddenChatsChange = () => {
+    // Lắng nghe event refresh từ ChatList
+    const handleRefreshUnreadCount = () => {
       fetchUnreadCount();
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("hiddenChatsChanged", handleHiddenChatsChange);
-
+    window.addEventListener('refreshChatList', handleRefreshUnreadCount);
+    const token = getStoredToken ? getStoredToken() : localStorage.getItem("token");
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5133/hub/chat")
+      .withUrl("http://localhost:5133/hub/chat", {
+        accessTokenFactory: () => token
+      })
       .withAutomaticReconnect()
       .build();
 
@@ -118,8 +132,20 @@ const TopNavbar = () => {
           fetchUnreadCount();
         });
 
-        connection.on("CapNhatCuocTroChuyen", () => {
-          fetchUnreadCount();
+        connection.on("CapNhatCuocTroChuyen", async (chat) => {
+          // Kiểm tra xem cuộc trò chuyện có bị ẩn hoặc xóa không trước khi cập nhật unread count
+          try {
+            const hiddenChatIds = await getHiddenAndDeletedChatIds();
+            const chatId = chat.maCuocTroChuyen || chat.MaCuocTroChuyen;
+            
+            // Nếu chat không bị ẩn/xóa thì mới cập nhật unread count
+            if (!hiddenChatIds.includes(chatId)) {
+              fetchUnreadCount();
+            }
+          } catch (error) {
+            console.error("Lỗi kiểm tra trạng thái chat:", error);
+            fetchUnreadCount(); // Fallback: vẫn cập nhật nếu có lỗi
+          }
         });
       })
       .catch((err) => {
@@ -127,8 +153,7 @@ const TopNavbar = () => {
       });
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("hiddenChatsChanged", handleHiddenChatsChange);
+      window.removeEventListener('refreshChatList', handleRefreshUnreadCount);
       if (connectionRef.current) {
         connectionRef.current.stop();
         connectionRef.current = null;

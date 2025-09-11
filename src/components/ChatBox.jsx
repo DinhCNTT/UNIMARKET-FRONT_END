@@ -754,6 +754,12 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               onChange={(e) => setTinNhan(e.target.value)}
               placeholder={(isBlockedByMe || isBlockedByOther) ? "Không thể gửi tin nhắn" : "Nhập tin nhắn..."}
               disabled={isBlockedByMe || isBlockedByOther}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault(); // chặn xuống dòng
+                  handleSend();       // gọi hàm gửi tin nhắn
+                }
+              }}
             />
           </div>
           <button
