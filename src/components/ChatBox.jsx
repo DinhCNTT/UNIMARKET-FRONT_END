@@ -19,7 +19,26 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [tinNhan, setTinNhan] = useState("");
   const [danhSachTin, setDanhSachTin] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [infoTinDang, setInfoTinDang] = useState({ tieuDe: "", gia: 0, anh: "", maTinDang: null });
+  const [infoTinDang, setInfoTinDang] = useState({
+    tieuDe: "",
+    gia: 0,
+    anh: "",
+    maTinDang: null,
+    avatarChuSanPham: "",
+    tenChuSanPham: "",
+    isOnline: false,
+    lastOnlineTime: null,
+    formattedLastSeen: null,
+    maChuSanPham: null,
+  });
+  const [infoNguoiConLai, setInfoNguoiConLai] = useState({
+    id: "",
+    avatar: "",
+    ten: "",
+    isOnline: false,
+    lastOnlineTime: null,
+    formattedLastSeen: null,
+  });
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [imagePreviewList, setImagePreviewList] = useState([]);
   const [videoPreviewList, setVideoPreviewList] = useState([]);
@@ -28,9 +47,97 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [isBlockedByMe, setIsBlockedByMe] = useState(false);
   const [isBlockedByOther, setIsBlockedByOther] = useState(false);
   const [maNguoiConLai, setMaNguoiConLai] = useState(null);
+  const [, forceUpdate] = useState(0);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const connectionRef = useRef(null);
+
+  // Logic xác định hiển thị header: nếu là chủ sản phẩm thì show info khách, ngược lại show chủ sản phẩm
+  const isChuSanPham = infoTinDang && user && user.id === infoTinDang.maChuSanPham;
+
+  // Luôn hiển thị trạng thái của đối phương (khách thấy chủ, chủ thấy khách)
+  const displayAvatar = isChuSanPham ? infoNguoiConLai.avatar : infoTinDang.avatarChuSanPham;
+  const displayTen = isChuSanPham ? infoNguoiConLai.ten : infoTinDang.tenChuSanPham;
+  const displayIsOnline = isChuSanPham ? infoNguoiConLai.isOnline : infoTinDang.isOnline;
+  const displayLastOnline = isChuSanPham ? infoNguoiConLai.lastOnlineTime : infoTinDang.lastOnlineTime;
+
+  // Chỉ hiển thị trạng thái nếu có thông tin đối phương (id và tên)
+  const shouldShowStatus = !!(isChuSanPham
+    ? infoNguoiConLai.id && infoNguoiConLai.ten
+    : infoTinDang.maChuSanPham && infoTinDang.tenChuSanPham);
+
+  // Enhanced status fetching function
+  const fetchUserStatus = async (userId) => {
+    if (!userId) return null;
+    try {
+      const response = await fetch(`http://localhost:5133/api/User/status/${userId}`);
+      if (!response.ok) return null;
+      const data = await response.json();
+      return {
+        isOnline: data.isOnline,
+        lastActive: data.lastActive,
+        formattedLastSeen: data.formattedLastSeen,
+      };
+    } catch (error) {
+      console.error("Error fetching user status:", error);
+      return null;
+    }
+  };
+
+  // Simplified and more robust getLastOnlineText function
+  const getLastOnlineText = () => {
+    if (!shouldShowStatus) return "";
+    if (displayIsOnline) return "Đang hoạt động";
+    if (!displayLastOnline) return "";
+
+    // Get formatted status from backend
+    const displayFormattedStatus = isChuSanPham ? infoNguoiConLai.formattedLastSeen : infoTinDang.formattedLastSeen;
+
+    // If backend provides formatted status, use it
+    if (displayFormattedStatus) {
+      // Nếu backend trả về "vừa mới" thì đổi thành "Mới hoạt động gần đây"
+      if (displayFormattedStatus.toLowerCase().includes("vừa mới")) {
+        return "Mới hoạt động gần đây";
+      }
+      // Nếu backend trả về "1 phút/giờ/ngày trước" thì thêm chữ "Hoạt động từ ... trước"
+      const regex = /^(\d+)\s*(phút|giờ|ngày) trước$/;
+      const match = displayFormattedStatus.match(regex);
+      if (match) {
+        return `Hoạt động từ ${match[1]} ${match[2]} trước`;
+      }
+      return displayFormattedStatus;
+    }
+
+    // Fallback to manual calculation
+    let last;
+    try {
+      if (typeof displayLastOnline === "string") {
+        let normalized = displayLastOnline.trim();
+        if (!normalized.includes("T")) normalized = normalized.replace(" ", "T");
+        if (!normalized.endsWith("Z")) normalized += "Z";
+        last = new Date(normalized);
+      } else {
+        last = new Date(displayLastOnline);
+      }
+      if (isNaN(last.getTime())) throw new Error();
+    } catch {
+      return "";
+    }
+
+    const now = new Date();
+    const diffMs = now - last;
+    if (diffMs < 0) return "";
+
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "Mới hoạt động gần đây";
+    if (diffMin < 60) return `Hoạt động từ ${diffMin} phút trước`;
+
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `Hoạt động từ ${diffH} giờ trước`;
+
+    const diffD = Math.floor(diffH / 24);
+    return `Hoạt động từ ${diffD} ngày trước`;
+  };
 
   const getFullImageUrl = (url) => {
     if (!url) return "/default-image.png";
@@ -310,35 +417,58 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     };
   }, [modalImage]);
 
+  // Updated fetchChatInfo function
   useEffect(() => {
     if (!maCuocTroChuyen) return;
 
     const fetchChatInfo = async () => {
       try {
+        // Lấy info tin đăng và chủ sản phẩm từ enhanced endpoint
         const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
         if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
         const data = await res.json();
+
+        // Set info tin đăng với enhanced status data
         setInfoTinDang({
           tieuDe: data.tieuDeTinDang,
           gia: data.giaTinDang,
           anh: data.anhDaiDienTinDang,
           maTinDang: data.maTinDang,
+          avatarChuSanPham: data.avatarChuSanPham || "",
+          tenChuSanPham: data.tenChuSanPham || "",
+          // Use enhanced status from backend
+          isOnline: data.trangThaiChuSanPham?.isOnline || false,
+          lastOnlineTime: data.trangThaiChuSanPham?.lastActive || null,
+          formattedLastSeen: data.trangThaiChuSanPham?.formattedLastSeen || null,
+          maChuSanPham: data.maChuSanPham || null,
         });
 
-        const resParticipants = await fetch(`http://localhost:5133/api/chat/user/${user.id}`);
-        const chats = await resParticipants.json();
-        const currentChat = chats.find(c => c.maCuocTroChuyen === maCuocTroChuyen);
-        if (currentChat) {
-          setMaNguoiConLai(currentChat.maNguoiConLai);
+        // Set info người còn lại với enhanced status
+        if (data.maNguoiConLai) {
+          setMaNguoiConLai(data.maNguoiConLai);
+          setInfoNguoiConLai({
+            id: data.maNguoiConLai,
+            avatar: data.avatarNguoiConLai || "",
+            ten: data.tenNguoiConLai || "",
+            // Use enhanced status from backend
+            isOnline: data.trangThaiNguoiConLai?.isOnline || false,
+            lastOnlineTime: data.trangThaiNguoiConLai?.lastActive || null,
+            formattedLastSeen: data.trangThaiNguoiConLai?.formattedLastSeen || null,
+          });
         }
 
-        const resBlockMe = await fetch(`http://localhost:5133/api/chat/check-block/${user.id}/${currentChat.maNguoiConLai}`);
-        const dataBlockMe = await resBlockMe.json();
-        setIsBlockedByMe(dataBlockMe.isBlocked);
+        // Kiểm tra block status (keep existing logic)
+        if (data.maNguoiConLai) {
+          const resBlockMe = await fetch(`http://localhost:5133/api/chat/check-block/${user.id}/${data.maNguoiConLai}`);
+          const dataBlockMe = await resBlockMe.json();
+          setIsBlockedByMe(dataBlockMe.IsBlocked);
 
-        const resBlockOther = await fetch(`http://localhost:5133/api/chat/check-block/${currentChat.maNguoiConLai}/${user.id}`);
-        const dataBlockOther = await resBlockOther.json();
-        setIsBlockedByOther(dataBlockOther.isBlocked);
+          const resBlockOther = await fetch(
+            `http://localhost:5133/api/chat/check-block/${data.maNguoiConLai}/${user.id}`,
+          );
+          const dataBlockOther = await resBlockOther.json();
+          setIsBlockedByOther(dataBlockOther.IsBlocked);
+        }
       } catch (error) {
         console.error("Lỗi lấy thông tin cuộc trò chuyện:", error);
       }
@@ -381,6 +511,65 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   useEffect(() => {
     console.log("Danh sách tin hiện tại:", danhSachTin);
   }, [danhSachTin]);
+
+  // Enhanced periodic status refresh - refreshes every 30 seconds
+  useEffect(() => {
+    if (!isConnected || !user?.id) return;
+
+    const refreshStatus = async () => {
+      try {
+        // Refresh status for người còn lại if available
+        if (infoNguoiConLai.id) {
+          const status = await fetchUserStatus(infoNguoiConLai.id);
+          if (status) {
+            setInfoNguoiConLai((prev) => ({
+              ...prev,
+              isOnline: status.isOnline,
+              lastOnlineTime: status.lastActive,
+              formattedLastSeen: status.formattedLastSeen,
+            }));
+          }
+        }
+
+        // Refresh status for chủ sản phẩm if available
+        if (infoTinDang.maChuSanPham) {
+          const status = await fetchUserStatus(infoTinDang.maChuSanPham);
+          if (status) {
+            setInfoTinDang((prev) => ({
+              ...prev,
+              isOnline: status.isOnline,
+              lastOnlineTime: status.lastActive,
+              formattedLastSeen: status.formattedLastSeen,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing user status:", error);
+      }
+    };
+
+    // Refresh immediately on mount
+    refreshStatus();
+
+    // Then refresh every 30 seconds
+    const statusInterval = setInterval(refreshStatus, 30000);
+
+    return () => clearInterval(statusInterval);
+  }, [isConnected, user?.id, infoNguoiConLai.id, infoTinDang.maChuSanPham]);
+
+  // Force update for status text every minute when offline
+  useEffect(() => {
+    if (!shouldShowStatus || displayIsOnline || !displayLastOnline) return;
+
+    // Update immediately
+    forceUpdate((v) => v + 1);
+
+    const updateInterval = setInterval(() => {
+      forceUpdate((v) => v + 1);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(updateInterval);
+  }, [shouldShowStatus, displayIsOnline, displayLastOnline]);
 
   useEffect(() => {
     if (!maCuocTroChuyen) return;
@@ -593,24 +782,31 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   return (
     <div className="chatbox-container">
       <div className="chatbox-header">
-        <div className="chatbox-seller-info" onClick={handleImageClick}>
-          <div className="chatbox-seller-avatar">
-            <img src={getFullImageUrl(infoTinDang.anh)} alt="Ảnh tin đăng" />
+        {/* Khung 1: Avatar chủ sản phẩm, trạng thái online, thời gian lần cuối online */}
+        <div className="chatbox-seller-frame">
+          <div className="chatbox-avatar-status-group">
+            <div className="chatbox-avatar-wrapper">
+              <img
+                src={displayAvatar || "/src/assets/default-avatar.png"}
+                alt="avatar"
+                className="chatbox-seller-avatar"
+              />
+              {/* Chỉ hiển thị chấm trạng thái nếu có info đối phương */}
+              {shouldShowStatus && (
+                <span className={displayIsOnline ? "chatbox-status-dot online" : "chatbox-status-dot offline"}></span>
+              )}
+            </div>
+            <div className="chatbox-seller-meta">
+              <span className="chatbox-seller-name">{displayTen || "Chủ sản phẩm"}</span>
+              {/* Chỉ hiển thị dòng trạng thái nếu có trạng thái hợp lệ */}
+              {shouldShowStatus && getLastOnlineText() && (
+                <span className="chatbox-last-online">{getLastOnlineText()}</span>
+              )}
+            </div>
           </div>
-          <div className="chatbox-seller-details">
-            <h3>{infoTinDang.tieuDe}</h3>
-            <p className="chatbox-status">
-              {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-            </p>
-          </div>
-        </div>
           <div className="chatbox-header-menu">
             {!isBlockedByMe && !isBlockedByOther ? (
-              <button
-                className="chatbox-header-menu-button"
-                onClick={handleBlockUser}
-                data-tooltip="Chặn người dùng này"
-              >
+              <button className="chatbox-header-menu-button" onClick={handleBlockUser} data-tooltip="Chặn người dùng này">
                 <FaBan size={20} />
                 <span>Chặn</span>
               </button>
@@ -625,6 +821,20 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               </button>
             ) : null}
           </div>
+        </div>
+
+        {/* Khung 2: Ảnh tin đăng, giá, tên sản phẩm (giữ nguyên như cũ) */}
+        <div className="chatbox-product-frame" onClick={handleImageClick}>
+          <div className="chatbox-product-info">
+            <img src={getFullImageUrl(infoTinDang.anh)} alt="Ảnh tin đăng" className="chatbox-product-img" />
+            <div className="chatbox-product-meta">
+              <span className="chatbox-product-name">{infoTinDang.tieuDe}</span>
+              <span className="chatbox-product-price">
+                {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="chatbox-messages">
         {danhSachTin.length === 0 ? (
