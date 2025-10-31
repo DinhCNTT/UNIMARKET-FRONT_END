@@ -406,3 +406,10 @@ body.video-transitioning .video-item {
     gap: 20px;
   }
 }
+.vdv-eye-icon {
+  font-size: 13px;      /* kích thước icon */
+  position: relative;
+  top: 3px;             /* dịch xuống chút */
+  margin-right: 4px;
+}
+

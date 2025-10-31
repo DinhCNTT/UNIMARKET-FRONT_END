@@ -30,6 +30,7 @@ import TinDangDaLuu from "../components/TinDangDaLuu";
 import VideoLikedPage from "../components/VideoLikedPage";
 import LikedVideoDetailViewer from "../components/LikedVideoDetailViewer";
 import ErrorBoundary from "../components/ErrorBoundary";
+import VideoPage from "../pages/VideoPage";
 
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
@@ -75,6 +76,14 @@ function AppRoutes() {
       <Route path="/market" element={<MarketPage />} />
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
       <Route path="/loc-tin-dang" element={<LocTinDang />} />
+      <Route
+        path="/market/video"
+        element={
+          <ErrorBoundary>
+            <VideoPage />
+          </ErrorBoundary>
+        }
+      />
 
       {/* Bảo vệ trang Admin */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

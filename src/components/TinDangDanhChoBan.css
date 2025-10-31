@@ -18,20 +18,20 @@
 
 /* Fix gạch chân cho tất cả link trong component */
 .tin-dang-danh-cho-ban a {
-  text-decoration: none !important;
+  text-decoration: none ;
   color: inherit;
 }
 
 .tin-dang-danh-cho-ban a:hover {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 .tin-dang-danh-cho-ban a:visited {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 .tin-dang-danh-cho-ban a:active {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 /* Lưới tin đăng */
@@ -266,4 +266,12 @@
   font-size: 13px;
   color: #999;
   text-decoration: none !important;
+}
+/* Thêm vào file TinDangDanhChoBan.css */
+.tindangdanhchoban-nav-container {
+  margin-bottom: 24px;
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }

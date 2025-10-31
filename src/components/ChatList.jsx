@@ -156,103 +156,114 @@ const sortChatsLikeMessenger = (chats) => {
 
     connectionRef.current = connection;
 
-    connection.on("CapNhatCuocTroChuyen", async (chat) => {
-      let newChat = {
-        maCuocTroChuyen: chat.maCuocTroChuyen || chat.MaCuocTroChuyen,
-        isEmpty: chat.isEmpty ?? chat.IsEmpty,
-        maTinDang: chat.maTinDang ?? chat.MaTinDang,
-        tieuDeTinDang: chat.tieuDeTinDang ?? chat.TieuDeTinDang ?? "Tin đăng",
-        giaTinDang: chat.giaTinDang ?? chat.GiaTinDang ?? 0,
-        tenNguoiConLai: chat.tenNguoiConLai ?? chat.TenNguoiConLai ?? "Người dùng",
-        tinNhanCuoi: chat.tinNhanCuoi ?? chat.TinNhanCuoi ?? "",
-        maNguoiGuiCuoi: chat.maNguoiGui || null,
-        loaiTinNhanCuoi: chat.loaiTinNhan || null,
-        anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
-        thoiGianTao: chat.thoiGianTao ?? new Date().toISOString(),
-        // ✅ FIX: Sử dung thời gian từ SignalR thay vì tự tạo
-        thoiGianCapNhat: chat.thoiGianCapNhat || chat.ThoiGianCapNhat || new Date().toISOString(),
-        ThoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat || new Date().toISOString(),
-        hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
-        isBlocked: chat.isBlocked ?? false,
-        isHidden: chat.isHidden ?? false,
-        isDeleted: chat.isDeleted ?? false,
-      };
+    // Trong ChatList.jsx, tìm đoạn SignalR handler "CapNhatCuocTroChuyen"
+// Thay thế toàn bộ đoạn xử lý chat ẩn này:
 
-      // Lấy trạng thái chat từ database
-      const chatStates = await getUserChatStates();
-      const chatState = chatStates.find(cs => cs.chatId === newChat.maCuocTroChuyen);
-      const isHidden = chatState?.isHidden ?? false;
-      const isDeleted = chatState?.isDeleted ?? false;
+connection.on("CapNhatCuocTroChuyen", async (chat) => {
+  let newChat = {
+    maCuocTroChuyen: chat.maCuocTroChuyen || chat.MaCuocTroChuyen,
+    isEmpty: chat.isEmpty ?? chat.IsEmpty,
+    maTinDang: chat.maTinDang ?? chat.MaTinDang,
+    tieuDeTinDang: chat.tieuDeTinDang ?? chat.TieuDeTinDang ?? "Tin đăng",
+    giaTinDang: chat.giaTinDang ?? chat.GiaTinDang ?? 0,
+    tenNguoiConLai: chat.tenNguoiConLai ?? chat.TenNguoiConLai ?? "Người dùng",
+    tinNhanCuoi: chat.tinNhanCuoi ?? chat.TinNhanCuoi ?? "",
+    maNguoiGuiCuoi: chat.maNguoiGui || null,
+    loaiTinNhanCuoi: chat.loaiTinNhan || null,
+    anhDaiDienTinDang: chat.anhDaiDienTinDang ?? chat.AnhDaiDienTinDang ?? "",
+    thoiGianTao: chat.thoiGianTao ?? new Date().toISOString(),
+    thoiGianCapNhat: chat.thoiGianCapNhat || chat.ThoiGianCapNhat || new Date().toISOString(),
+    ThoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat || new Date().toISOString(),
+    hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
+    isBlocked: chat.isBlocked ?? false,
+    isHidden: chat.isHidden ?? false,
+    isDeleted: chat.isDeleted ?? false,
+  };
 
-      // Nếu cuộc trò chuyện bị xóa hoàn toàn và có tin nhắn mới từ đối phương
-      if (isDeleted && newChat.maNguoiGuiCuoi !== userId) {
-        // Gỡ trạng thái xóa từ server
-        await setChatState(newChat.maCuocTroChuyen, false, false);
-        
-        // Cập nhật local state để phản ánh thay đổi ngay lập tức
-        newChat.isDeleted = false;
-        newChat.isHidden = false;
-        
-        // Hiển thị lại trong danh sách chat chính
-        setChatList((prev) => {
-          const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
-          let updatedList;
-          if (exists) {
-            updatedList = prev.map((c) =>
-              c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
-            );
-          } else {
-            updatedList = [...prev, newChat];
-          }
-          return sortChatsLikeMessenger(updatedList);
-        });
-        
-        // Xóa khỏi danh sách ẩn nếu có
-        setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== newChat.maCuocTroChuyen));
-        return;
+  // Lấy trạng thái chat từ database
+  const chatStates = await getUserChatStates();
+  const chatState = chatStates.find(cs => cs.chatId === newChat.maCuocTroChuyen);
+  const isHidden = chatState?.isHidden ?? false;
+  const isDeleted = chatState?.isDeleted ?? false;
+
+  // Nếu cuộc trò chuyện bị xóa hoàn toàn và có tin nhắn mới từ đối phương
+  if (isDeleted && newChat.maNguoiGuiCuoi !== userId) {
+    // Gỡ trạng thái xóa từ server
+    await setChatState(newChat.maCuocTroChuyen, false, false);
+    
+    // Cập nhật local state để phản ánh thay đổi ngay lập tức
+    newChat.isDeleted = false;
+    newChat.isHidden = false;
+    
+    // Hiển thị lại trong danh sách chat chính
+    setChatList((prev) => {
+      const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+      let updatedList;
+      if (exists) {
+        updatedList = prev.map((c) =>
+          c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
+        );
+      } else {
+        updatedList = [...prev, newChat];
       }
-
-      // Nếu cuộc trò chuyện bị xóa hoàn toàn, bỏ qua cập nhật
-      if (isDeleted) {
-        return;
-      }
-
-      // Nếu cuộc trò chuyện bị ẩn
-      if (isHidden) {
-        setHiddenChatList((prev) => {
-          const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
-          let updatedList;
-          if (exists) {
-            updatedList = prev.map((c) =>
-              c.maCuocTroChuyen === newChat.maCuocTroChuyen 
-                ? { ...newChat, hasUnreadMessages: false }
-                : c
-            );
-          } else {
-            updatedList = [...prev, { ...newChat, hasUnreadMessages: false }];
-          }
-          return sortChatsLikeMessenger(updatedList);
-        });
-        return;
-      }
-
-      // Cập nhật danh sách chat chính (không bị ẩn)
-      setChatList((prev) => {
-        const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
-        let updatedList;
-        if (exists) {
-          updatedList = prev.map((c) =>
-            c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
-          );
-        } else {
-          updatedList = [...prev, newChat];
-        }
-        return sortChatsLikeMessenger(updatedList);
-      });
-      
-      // Đảm bảo xóa khỏi danh sách ẩn nếu chat này xuất hiện trong danh sách chính
-      setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== newChat.maCuocTroChuyen));
+      return sortChatsLikeMessenger(updatedList);
     });
+    
+    // Xóa khỏi danh sách ẩn nếu có
+    setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== newChat.maCuocTroChuyen));
+    return;
+  }
+
+  // Nếu cuộc trò chuyện bị xóa hoàn toàn, bỏ qua cập nhật
+  if (isDeleted) {
+    return;
+  }
+
+  // ✅ FIX: Nếu cuộc trò chuyện bị ẩn - GIỮ NGUYÊN TRONG TAB ẨN
+  if (isHidden) {
+    setHiddenChatList((prev) => {
+      const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+      let updatedList;
+      if (exists) {
+        updatedList = prev.map((c) =>
+          c.maCuocTroChuyen === newChat.maCuocTroChuyen 
+            ? { 
+                ...newChat, 
+                // ✅ GIỮ UNREAD STATUS CHO TIN NHẮN MỚI TỪ NGƯỜI KHÁC
+                hasUnreadMessages: newChat.maNguoiGuiCuoi !== userId ? newChat.hasUnreadMessages : false 
+              }
+            : c
+        );
+      } else {
+        updatedList = [...prev, { 
+          ...newChat, 
+          hasUnreadMessages: newChat.maNguoiGuiCuoi !== userId ? newChat.hasUnreadMessages : false 
+        }];
+      }
+      return sortChatsLikeMessenger(updatedList);
+    });
+    
+    // ✅ QUAN TRỌNG: Không xóa khỏi danh sách ẩn và không thêm vào danh sách chính
+    return;
+  }
+
+  // Cập nhật danh sách chat chính (không bị ẩn)
+  setChatList((prev) => {
+    const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+    let updatedList;
+    if (exists) {
+      updatedList = prev.map((c) =>
+        c.maCuocTroChuyen === newChat.maCuocTroChuyen ? newChat : c
+      );
+    } else {
+      updatedList = [...prev, newChat];
+    }
+    return sortChatsLikeMessenger(updatedList);
+  });
+  
+  // Đảm bảo xóa khỏi danh sách ẩn nếu chat này xuất hiện trong danh sách chính
+  setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== newChat.maCuocTroChuyen));
+});
 
     connection.on("CapNhatTrangThaiTinNhan", async (data) => {
       // Lấy trạng thái chat từ server
@@ -290,6 +301,77 @@ const sortChatsLikeMessenger = (chats) => {
         console.error("Lỗi lấy trạng thái chat:", error);
       }
     });
+
+    // 1️⃣ Handler cho sự kiện block/unblock user
+connection.on("UserBlocked", async (data) => {
+  const { blockedUserId, isBlocked, actionType } = data;
+  
+  console.log(`[ChatList] Received UserBlocked event: ${actionType}, blockedUserId: ${blockedUserId}`);
+  
+  // Refresh lại chat list để cập nhật trạng thái block/unblock
+  try {
+    const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
+    const chatData = await res.json();
+    
+    const visibleChats = [];
+    const hiddenChats = [];
+    
+    chatData.forEach((chat) => {
+      const processedChat = {
+        ...chat,
+        maCuocTroChuyen: chat.MaCuocTroChuyen || chat.maCuocTroChuyen,
+        thoiGianTao: chat.ThoiGianTao || chat.thoiGianTao,
+        thoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat,
+        ThoiGianCapNhat: chat.ThoiGianCapNhat,
+        tinNhanCuoi: chat.TinNhanCuoi?.NoiDung || chat.tinNhanCuoi?.noiDung || "",
+        maNguoiGuiCuoi: chat.TinNhanCuoi?.MaNguoiGui || chat.tinNhanCuoi?.maNguoiGui || null,
+        loaiTinNhanCuoi: chat.TinNhanCuoi?.LoaiTinNhan || chat.tinNhanCuoi?.loaiTinNhan || null,
+        hasUnreadMessages: chat.HasUnreadMessages ?? chat.hasUnreadMessages ?? false,
+        isBlocked: chat.IsBlocked ?? chat.isBlocked ?? false,
+        isHidden: chat.IsHidden ?? chat.isHidden ?? false,
+        isDeleted: chat.IsDeleted ?? chat.isDeleted ?? false,
+      };
+      
+      if (processedChat.isDeleted) return;
+      
+      if (processedChat.isHidden) {
+        hiddenChats.push({ ...processedChat, hasUnreadMessages: false });
+      } else {
+        visibleChats.push(processedChat);
+      }
+    });
+    
+    setChatList(sortChatsLikeMessenger(visibleChats));
+    setHiddenChatList(sortChatsLikeMessenger(hiddenChats));
+    
+  } catch (error) {
+    console.error("Error refreshing chat list after block event:", error);
+  }
+});
+
+// 2️⃣ Handler cho sự kiện thay đổi trạng thái chat
+connection.on("ChatStatusChanged", (data) => {
+  const { chatId, isBlocked } = data;
+  
+  console.log(`[ChatList] Chat ${chatId} status changed: isBlocked=${isBlocked}`);
+  
+  // Cập nhật trạng thái isBlocked cho chat cụ thể
+  setChatList((prev) => 
+    prev.map((chat) => 
+      chat.maCuocTroChuyen === chatId 
+        ? { ...chat, isBlocked: isBlocked }
+        : chat
+    )
+  );
+  
+  setHiddenChatList((prev) => 
+    prev.map((chat) => 
+      chat.maCuocTroChuyen === chatId 
+        ? { ...chat, isBlocked: isBlocked }
+        : chat
+    )
+  );
+});
 
     connection.on("CapNhatTinDang", async (updatedPost) => {
       // Lấy trạng thái chat từ server để kiểm tra
@@ -463,20 +545,21 @@ const sortChatsLikeMessenger = (chats) => {
   }, [userId]);
 
   // Lọc danh sách chat theo tiêu chí
-  const filteredChats = (() => {
-    let chatsToFilter = [];
-    
-    if (filterMode === "all") {
-      chatsToFilter = chatList.filter((chat) => !chat.isBlocked);
-    } else if (filterMode === "hidden") {
-      chatsToFilter = hiddenChatList;
-    }
-    
-    return chatsToFilter.filter((chat) =>
-      chat.tieuDeTinDang?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  })();
-
+const filteredChats = (() => {
+  let chatsToFilter = [];
+  
+  if (filterMode === "all") {
+    // ✅ FIXED: Không loại bỏ chat bị chặn, chỉ hiển thị tất cả
+    chatsToFilter = chatList; // Bỏ filter !chat.isBlocked
+  } else if (filterMode === "hidden") {
+    chatsToFilter = hiddenChatList;
+  }
+  
+  return chatsToFilter.filter((chat) =>
+    chat.tieuDeTinDang?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+})();
+ 
   // Hiển thị chế độ ẩn/hiện cuộc trò chuyện - cập nhật với database
   const toggleHideMode = () => {
     if (isHideMode) {

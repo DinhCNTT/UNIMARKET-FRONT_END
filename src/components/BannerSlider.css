@@ -1,15 +1,14 @@
 .banner-container {
-  width: 100%;
-  max-width: 1002px;
-  margin: 0 auto;
   position: absolute;
   top: 90px;
-  left: 50%;
-  transform: translateX(-50.4%); /* ✅ Dịch trái nhẹ */
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none; /* allow full-bleed banner like the top navbar */
   z-index: 10;
 
   background-color: #fff;
-  border-radius: 12px;
+  border-radius: 0; /* full-width banner typically has no rounded corners */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }

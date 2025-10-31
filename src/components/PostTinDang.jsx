@@ -3,14 +3,13 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
-import "./PostTinDang.css";
+import styles from "./PostTinDang.module.css";
 
 const PostTinDang = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const location = useLocation();
 
-  // Thêm ref cho input file
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
@@ -29,13 +28,13 @@ const PostTinDang = () => {
   const [quanHuyenList, setQuanHuyenList] = useState([]);
   const [previewData, setPreviewData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [activePreviewMedia, setActivePreviewMedia] = useState(0);
 
   const TITLE_MAX_LENGTH = 80;
   const DESCRIPTION_MAX_LENGTH = 900;
   const MAX_IMAGES = 7;
   const MAX_VIDEOS = 1;
 
-  // Tách riêng ảnh và video
   const [imageFiles, setImageFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
@@ -52,7 +51,6 @@ const PostTinDang = () => {
     DaSuDung: "Đã sử dụng",
   };
 
-  // Function để cập nhật FileList của input
   const updateInputFiles = (inputRef, files) => {
     if (inputRef.current) {
       const dt = new DataTransfer();
@@ -61,14 +59,12 @@ const PostTinDang = () => {
     }
   };
 
-  // Lấy categoryId và categoryName từ URL
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     setCategoryId(queryParams.get("categoryId"));
     setCategoryName(queryParams.get("categoryName"));
   }, [location]);
 
-  // Load tỉnh thành
   useEffect(() => {
     const fetchTinhThanh = async () => {
       try {
@@ -83,7 +79,6 @@ const PostTinDang = () => {
     fetchTinhThanh();
   }, []);
 
-  // Load quận huyện khi tỉnh/thành thay đổi
   useEffect(() => {
     if (province) {
       const fetchQuanHuyen = async () => {
@@ -100,17 +95,14 @@ const PostTinDang = () => {
     }
   }, [province]);
 
-  // Cập nhật input files khi imageFiles thay đổi
   useEffect(() => {
     updateInputFiles(imageInputRef, imageFiles);
   }, [imageFiles]);
 
-  // Cập nhật input files khi videoFiles thay đổi
   useEffect(() => {
     updateInputFiles(videoInputRef, videoFiles);
   }, [videoFiles]);
 
-  // Định dạng giá với dấu chấm phân cách nghìn
   const formatPrice = (value) =>
     value.replace(/[^\d]/g, "").replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
 
@@ -126,7 +118,6 @@ const PostTinDang = () => {
     setPrice(formatPrice(e.target.value));
   };
 
-  // Xử lý chọn ảnh (tối đa 7)
   const handleImageChange = (e) => {
     const newImages = Array.from(e.target.files);
     const totalImages = [...imageFiles, ...newImages].slice(0, MAX_IMAGES);
@@ -140,38 +131,34 @@ const PostTinDang = () => {
     setPreviewImages(previews);
   };
 
- // Xử lý chọn video (tối đa 1)
-const handleVideoChange = (e) => {
-  const file = e.target.files[0]; // Chỉ chọn 1 video
-  if (!file) return;
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const sizeMB = file.size / 1024 / 1024;
-  if (sizeMB > 60) {
-    alert(`❌ File quá nặng (${Math.round(sizeMB)}MB)! Vui lòng chọn video dưới 60MB.`);
-    return;
-  }
-
-  const videoUrl = URL.createObjectURL(file);
-  const video = document.createElement("video");
-
-  video.preload = "metadata";
-  video.src = videoUrl;
-
-  video.onloadedmetadata = () => {
-    if (video.duration > 60) {
-      URL.revokeObjectURL(videoUrl); // Chỉ huỷ nếu không dùng
-      alert("❌ Video không được dài quá 60 giây!");
+    const sizeMB = file.size / 1024 / 1024;
+    if (sizeMB > 60) {
+      alert(`❌ File quá nặng (${Math.round(sizeMB)}MB)! Vui lòng chọn video dưới 60MB.`);
       return;
     }
 
-    // Nếu hợp lệ → set
-    setVideoFiles([file]);
-    setPreviewVideos([{ url: videoUrl, type: file.type }]);
+    const videoUrl = URL.createObjectURL(file);
+    const video = document.createElement("video");
+
+    video.preload = "metadata";
+    video.src = videoUrl;
+
+    video.onloadedmetadata = () => {
+      if (video.duration > 60) {
+        URL.revokeObjectURL(videoUrl);
+        alert("❌ Video không được dài quá 60 giây!");
+        return;
+      }
+
+      setVideoFiles([file]);
+      setPreviewVideos([{ url: videoUrl, type: file.type }]);
+    };
   };
-};
 
-
-  // Xóa ảnh khỏi danh sách - CẢI TIẾN
   const removeImage = (index) => {
     const newImageFiles = imageFiles.filter((_, i) => i !== index);
     const newPreviews = previewImages.filter((_, i) => i !== index);
@@ -180,20 +167,17 @@ const handleVideoChange = (e) => {
     setPreviewImages(newPreviews);
   };
 
-  // Xóa video khỏi danh sách - CẢI TIẾN
   const removeVideo = (index) => {
-  const urlToRevoke = previewVideos[index]?.url;
-  if (urlToRevoke) URL.revokeObjectURL(urlToRevoke); // ✅ huỷ blob đúng lúc
+    const urlToRevoke = previewVideos[index]?.url;
+    if (urlToRevoke) URL.revokeObjectURL(urlToRevoke);
 
-  const newVideoFiles = videoFiles.filter((_, i) => i !== index);
-  const newPreviews = previewVideos.filter((_, i) => i !== index);
+    const newVideoFiles = videoFiles.filter((_, i) => i !== index);
+    const newPreviews = previewVideos.filter((_, i) => i !== index);
 
-  setVideoFiles(newVideoFiles);
-  setPreviewVideos(newPreviews);
-};
+    setVideoFiles(newVideoFiles);
+    setPreviewVideos(newPreviews);
+  };
 
-
-  // Xử lý xem trước
   const handlePreview = () => {
     if (showPreview) {
       setShowPreview(false);
@@ -217,105 +201,104 @@ const handleVideoChange = (e) => {
       district: getDistrictName(district),
       canNegotiate,
       categoryName,
-      images: allMedia,
+      images: allMedia, // 'images' bây giờ chứa cả ảnh và video
     });
 
+    setActivePreviewMedia(0); // <-- THÊM DÒNG NÀY
     setShowPreview(true);
   };
 
-  // Gửi form lên backend
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!user || !user.id) {
-    alert("Vui lòng đăng nhập!");
-    return;
-  }
+    if (!user || !user.id) {
+      alert("Vui lòng đăng nhập!");
+      return;
+    }
 
-  if (imageFiles.length === 0) {
-    alert("Vui lòng chọn ít nhất 1 hình ảnh!");
-    return;
-  }
+    if (imageFiles.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 hình ảnh!");
+      return;
+    }
 
-  const rawPrice = price.replace(/[^\d]/g, "");
+    const rawPrice = price.replace(/[^\d]/g, "");
 
-  const formData = new FormData();
-  formData.append("title", title);
-  formData.append("description", description);
-  formData.append("price", rawPrice);
-  formData.append("contactInfo", contactInfo);
-  formData.append("condition", condition);
-  formData.append("province", province);
-  formData.append("district", district);
-  formData.append("userId", user.id);
-  formData.append("categoryId", categoryId);
-  formData.append("categoryName", categoryName);
-  formData.append("canNegotiate", canNegotiate);
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price", rawPrice);
+    formData.append("contactInfo", contactInfo);
+    formData.append("condition", condition);
+    formData.append("province", province);
+    formData.append("district", district);
+    formData.append("userId", user.id);
+    formData.append("categoryId", categoryId);
+    formData.append("categoryName", categoryName);
+    formData.append("canNegotiate", canNegotiate);
 
-  [...imageFiles, ...videoFiles].forEach((file) => formData.append("images", file));
+    [...imageFiles, ...videoFiles].forEach((file) => formData.append("images", file));
 
-  try {
-    await axios.post("http://localhost:5133/api/tindang/add-post", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    try {
+      await axios.post("http://localhost:5133/api/tindang/add-post", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    setStatusMessage("✅ Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
-    alert("Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
-    setTimeout(() => {
-      navigate("/quan-ly-tin");
-    }, 800);
-  } catch (error) {
-    console.error("Lỗi khi đăng tin:", error);
-    setStatusMessage("❌ Đăng tin thất bại!");
-    alert("Đăng tin thất bại!");
-  }
-};
-
+      setStatusMessage("✅ Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
+      alert("Tin bạn đã được gửi đi, vui lòng đợi duyệt!");
+      setTimeout(() => {
+        navigate("/quan-ly-tin");
+      }, 800);
+    } catch (error) {
+      console.error("Lỗi khi đăng tin:", error);
+      setStatusMessage("❌ Đăng tin thất bại!");
+      alert("Đăng tin thất bại!");
+    }
+  };
 
   return (
-    <div className="post-tindang-container">
+    <div className={styles.container}>
       <TopNavbar />
       {statusMessage && (
-        <p className={`post-tindang-status ${statusMessage.includes("thất bại") ? "error" : ""}`}>
+        <p className={`${styles.status} ${statusMessage.includes("thất bại") ? styles.error : ""}`}>
           {statusMessage}
         </p>
       )}
 
-      <form className="post-tindang-form" onSubmit={handleSubmit}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         {categoryName && (
-          <div className="post-tindang-group">
+          <div className={styles.formGroup}>
             <label>Danh mục con đã chọn</label>
             <textarea value={`Danh mục con đã chọn: ${categoryName}`} readOnly rows="4" cols="50" />
           </div>
         )}
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Tiêu đề (tối đa {TITLE_MAX_LENGTH} ký tự)</label>
           <input type="text" value={title} onChange={handleTitleChange} maxLength={TITLE_MAX_LENGTH} required />
-          <div className="char-counter">
+          <div className={styles.charCounter}>
             {title.length}/{TITLE_MAX_LENGTH}
           </div>
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Mô tả (tối đa {DESCRIPTION_MAX_LENGTH} ký tự)</label>
           <textarea value={description} onChange={handleDescriptionChange} maxLength={DESCRIPTION_MAX_LENGTH} required />
-          <div className="char-counter">
+          <div className={styles.charCounter}>
             {description.length}/{DESCRIPTION_MAX_LENGTH}
           </div>
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Giá</label>
           <input type="text" value={price} onChange={handlePriceChange} required />
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Địa chỉ cụ thể</label>
           <input type="text" value={contactInfo} onChange={(e) => setContactInfo(e.target.value)} required />
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Tình trạng sản phẩm</label>
           <select value={condition} onChange={(e) => setCondition(e.target.value)} required>
             <option value="Moi">{conditionMap.Moi}</option>
@@ -323,14 +306,14 @@ const handleVideoChange = (e) => {
           </select>
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>
             <input type="checkbox" checked={canNegotiate} onChange={(e) => setCanNegotiate(e.target.checked)} />
             Có thể thương lượng
           </label>
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Tỉnh/Thành</label>
           <select value={province} onChange={(e) => setProvince(e.target.value)} required>
             <option value="">Chọn tỉnh thành</option>
@@ -342,7 +325,7 @@ const handleVideoChange = (e) => {
           </select>
         </div>
 
-        <div className="post-tindang-group">
+        <div className={styles.formGroup}>
           <label>Quận/Huyện</label>
           <select value={district} onChange={(e) => setDistrict(e.target.value)} required>
             <option value="">Chọn quận huyện</option>
@@ -354,78 +337,75 @@ const handleVideoChange = (e) => {
           </select>
         </div>
 
-        {/* Section upload ảnh */}
-        <div className="post-tindang-group-image-video">
-  <div className="post-tindang-media-box">
-    {/* Upload ảnh */}
-    <label className="media-upload-box custom-file-upload">
-      <div className="media-box-header">
-        <i className="info-icon">ℹ️</i>
-        <span className="media-title">Hình ảnh hợp lệ</span>
-      </div>
-      <div className="media-icon-container">
-        <div className="media-camera-icon" />
-      </div>
-      <p className="upload-text">ĐĂNG TỪ 01 ĐẾN 07 HÌNH</p>
-      <input
-        type="file"
-        ref={imageInputRef}
-        onChange={handleImageChange}
-        multiple
-        accept="image/*"
-        disabled={imageFiles.length >= MAX_IMAGES}
-      />
-    </label>
-    {imageFiles.length >= MAX_IMAGES && (
-      <p className="error-text">Đã đạt giới hạn tối đa {MAX_IMAGES} ảnh</p>
-    )}
-    <div className="media-preview-list">
-      {previewImages.map((image, idx) => (
-        <div key={idx} className="media-preview-item">
-          <img src={image.url} alt={`preview ${idx}`} />
-          <button type="button" onClick={() => removeImage(idx)}>×</button>
-        </div>
-      ))}
-    </div>
+        <div className={styles.mediaSection}>
+          <div className={styles.mediaBox}>
+            <label className={styles.uploadBox}>
+              <div className={styles.boxHeader}>
+                <i className={styles.infoIcon}>ℹ️</i>
+                <span className={styles.mediaTitle}>Hình ảnh hợp lệ</span>
+              </div>
+              <div className={styles.iconContainer}>
+                <div className={styles.cameraIcon} />
+              </div>
+              <p className={styles.uploadText}>ĐĂNG TỪ 01 ĐẾN 07 HÌNH</p>
+              <input
+                type="file"
+                ref={imageInputRef}
+                onChange={handleImageChange}
+                multiple
+                accept="image/*"
+                disabled={imageFiles.length >= MAX_IMAGES}
+              />
+            </label>
+            {imageFiles.length >= MAX_IMAGES && (
+              <p className={styles.errorText}>Đã đạt giới hạn tối đa {MAX_IMAGES} ảnh</p>
+            )}
+            <div className={styles.previewList}>
+              {previewImages.map((image, idx) => (
+                <div key={idx} className={styles.previewItem}>
+                  <img src={image.url} alt={`preview ${idx}`} />
+                  <button type="button" onClick={() => removeImage(idx)}>×</button>
+                </div>
+              ))}
+            </div>
 
-    {/* Upload video */}
-    <label className="media-upload-box custom-file-upload">
-      <div className="media-box-header">
-        <i className="info-icon">ℹ️</i>
-        <span className="media-title">Bán nhanh hơn với <span className="highlight">Unimarket Video</span></span>
-      </div>
-      <div className="media-icon-container">
-        <div className="media-video-icon" />
-      </div>
-      <p className="sub-note">Video sẽ xuất hiện <span className="highlight">MIỄN PHÍ</span> trên Unimarket Video</p>
-      <p className="sub-note">Chỉ được đăng <span className="highlight">1 VIDEO DƯỚI 60 GIÂY</span></p>
-      <input
-        type="file"
-        ref={videoInputRef}
-        onChange={handleVideoChange}
-        accept="video/*"
-        disabled={videoFiles.length >= MAX_VIDEOS}
-      />
-    </label>
-    {videoFiles.length >= MAX_VIDEOS && (
-      <p className="error-text">Chỉ cho phép 1 video</p>
-    )}
-    <div className="media-preview-list">
-      {previewVideos.map((video, idx) => (
-        <div key={idx} className="media-preview-item">
-          <video src={video.url} controls />
-          <button type="button" onClick={() => removeVideo(idx)}>×</button>
+            <label className={styles.uploadBox}>
+              <div className={styles.boxHeader}>
+                <i className={styles.infoIcon}>ℹ️</i>
+                <span className={styles.mediaTitle}>Bán nhanh hơn với <span className={styles.highlight}>Unimarket Video</span></span>
+              </div>
+              <div className={styles.iconContainer}>
+                <div className={styles.videoIcon} />
+              </div>
+              <p className={styles.subNote}>Video sẽ xuất hiện <span className={styles.highlight}>MIỄN PHÍ</span> trên Unimarket Video</p>
+              <p className={styles.subNote}>Chỉ được đăng <span className={styles.highlight}>1 VIDEO DƯỚI 60 GIÂY</span></p>
+              <input
+                type="file"
+                ref={videoInputRef}
+                onChange={handleVideoChange}
+                accept="video/*"
+                disabled={videoFiles.length >= MAX_VIDEOS}
+              />
+            </label>
+            {videoFiles.length >= MAX_VIDEOS && (
+              <p className={styles.errorText}>Chỉ cho phép 1 video</p>
+            )}
+            <div className={styles.previewList}>
+              {previewVideos.map((video, idx) => (
+                <div key={idx} className={styles.previewItem}>
+                  <video src={video.url} controls />
+                  <button type="button" onClick={() => removeVideo(idx)}>×</button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
 
-        <div className="post-tindang-button-group">
+        <div className={styles.btnGroup}>
           <button
             type="button"
             onClick={handlePreview}
-            className={`preview-btn ${showPreview ? "active" : ""}`}
+            className={showPreview ? styles.active : ""}
           >
             {showPreview ? "Đóng Xem trước" : "Xem Trước"}
           </button>
@@ -433,82 +413,98 @@ const handleVideoChange = (e) => {
         </div>
 
         {showPreview && previewData && (
-          <div className="post-tindang-preview" style={{ textAlign: "left" }}>
-            <h3>Xem Trước Bài Đăng</h3>
-            <table className="post-tindang-preview-table">
-              <tbody>
-                <tr>
-                  <td>Tiêu đề</td>
-                  <td>{previewData.title}</td>
-                </tr>
-                <tr>
-                  <td>Mô tả</td>
-                  <td>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: previewData.description.replace(/\n/g, "<br>"),
-                      }}
+        <div className={styles.previewBackdrop} onClick={handlePreview}>
+          <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
+            {/* Nút đóng modal */}
+            <button type="button" className={styles.previewCloseBtn} onClick={handlePreview}>
+              &times;
+            </button>
+
+            {/* Layout 2 cột */}
+            <div className={styles.previewLayout}>
+              
+              {/* Cột 1: Media (Ảnh/Video) */}
+              <div className={styles.previewMedia}>
+                <div className={styles.previewHeroContainer}>
+                  {previewData.images[activePreviewMedia]?.type.startsWith("video") ? (
+                    <video
+                      src={previewData.images[activePreviewMedia].url}
+                      controls
+                      autoPlay
+                      muted
+                      className={styles.previewHeroMedia}
                     />
-                  </td>
-                </tr>
-                <tr>
-                  <td>Giá</td>
-                  <td>{previewData.price}</td>
-                </tr>
-                <tr>
-                  <td>Liên hệ</td>
-                  <td>{previewData.contactInfo}</td>
-                </tr>
-                <tr>
-                  <td>Tình trạng</td>
-                  <td>{previewData.condition}</td>
-                </tr>
-                <tr>
-                  <td>Tỉnh/Thành</td>
-                  <td>{previewData.province}</td>
-                </tr>
-                <tr>
-                  <td>Quận/Huyện</td>
-                  <td>{previewData.district}</td>
-                </tr>
-                <tr>
-                  <td>Danh mục</td>
-                  <td>{previewData.categoryName}</td>
-                </tr>
-                <tr>
-                  <td>Thương lượng</td>
-                  <td>{previewData.canNegotiate ? "Có" : "Không"}</td>
-                </tr>
-                <tr>
-                  <td>Media</td>
-                  <td>
-                    {previewData.images && previewData.images.length > 0 ? (
-                      previewData.images.map((media, idx) =>
-                        media.type.startsWith("video") ? (
-                          <video
-                            key={idx}
-                            src={media.url}
-                            controls
-                            style={{ maxWidth: "120px", maxHeight: "120px", marginRight: 8 }}
-                          />
+                  ) : (
+                    <img
+                      src={previewData.images[activePreviewMedia]?.url || 'https://via.placeholder.com/600x400?text=No+Image'}
+                      alt="Preview chính"
+                      className={styles.previewHeroMedia}
+                    />
+                  )}
+                </div>
+                {/* Danh sách thumbnail */}
+                {previewData.images.length > 1 && (
+                  <div className={styles.previewThumbnailList}>
+                    {previewData.images.map((media, idx) => (
+                      <div
+                        key={idx}
+                        className={`${styles.previewThumbnailWrapper} ${idx === activePreviewMedia ? styles.active : ''}`}
+                        onClick={() => setActivePreviewMedia(idx)}
+                      >
+                        {media.type.startsWith("video") ? (
+                          <video src={media.url} className={styles.previewThumbnail} />
                         ) : (
-                          <img
-                            key={idx}
-                            src={media.url}
-                            alt={`Preview ${idx + 1}`}
-                            style={{ maxWidth: "120px", maxHeight: "120px", marginRight: 8 }}
-                          />
-                        )
-                      )
-                    ) : (
-                      <span>Không có media</span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                          <img src={media.url} alt={`thumbnail ${idx}`} className={styles.previewThumbnail} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Cột 2: Thông tin chi tiết */}
+              <div className={styles.previewMainInfo}>
+                <h2 className={styles.previewTitle}>{previewData.title}</h2>
+                
+                <p className={styles.previewPrice}>
+                  {previewData.price} VNĐ
+                  {previewData.canNegotiate && <span className={styles.negotiateTag}> (Có thương lượng)</span>}
+                </p>
+                
+                <h3 className={styles.previewSectionTitle}>Mô tả chi tiết</h3>
+                <div
+                  className={styles.previewDescription}
+                  dangerouslySetInnerHTML={{
+                    __html: previewData.description.replace(/\n/g, "<br>"),
+                  }}
+                />
+
+                <h3 className={styles.previewSectionTitle}>Thông tin thêm</h3>
+                <div className={styles.previewDetailGrid}>
+                  <div className={styles.previewDetailItem}>
+                    <span className={styles.previewDetailKey}>Danh mục:</span>
+                    <span className={styles.previewDetailValue}>{previewData.categoryName}</span>
+                  </div>
+                  <div className={styles.previewDetailItem}>
+                    <span className={styles.previewDetailKey}>Tình trạng:</span>
+                    <span className={styles.previewDetailValue}>{previewData.condition}</span>
+                  </div>
+                  <div className={styles.previewDetailItem}>
+                    <span className={styles.previewDetailKey}>Khu vực:</span>
+                    <span className={styles.previewDetailValue}>{`${previewData.district}, ${previewData.province}`}</span>
+                  </div>
+                </div>
+
+                <div className={styles.previewContactInfo}>
+                  <h3 className={styles.previewSectionTitle}>Thông tin liên hệ</h3>
+                  <p>{previewData.contactInfo}</p>
+                </div>
+              </div>
+
+            </div>
           </div>
-        )}
+        </div>
+      )}
       </form>
     </div>
   );

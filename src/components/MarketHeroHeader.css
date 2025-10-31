@@ -1,0 +1,256 @@
+.mp-hero-wrapper {
+  position: relative;
+  width: 100%;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+/* Instead of removing the hero from the layout (display:none) we hide it visually
+   to prevent layout shifts that can change scroll position and cause flicker.
+   Keep it in the DOM but invisible and non-interactive when not active. */
+body:not(.mp-hero-active) .mp-hero-wrapper {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+}
+body.mp-hero-active .mp-hero-wrapper {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+}
+.mp-top-info{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 24px;
+  background: linear-gradient(90deg,#ff9900,#fc8e28);
+  color:#fff;
+  position: fixed; /* keep top info like TopNavbar */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1202; /* above other hero elements */
+}
+.mp-logo{font-weight:800;font-size:20px}
+.mp-main-menu{display:flex;gap:16px}
+.mp-link{color:#fff;text-decoration:none}
+.mp-right{display:flex;gap:10px}
+
+.mp-search-row{
+  /* make the search row visually overlap the banner below it
+     --mp-search-offset is the vertical offset (negative moves the search up)
+     You can tune this variable when needed (e.g. --mp-search-offset: -40px). */
+  /* Place the search row slightly below the fixed header by default so it's visible
+    (previously negative values pulled it under the header). Set to 8px to sit
+    just below the header; increase to push further down. */
+  --mp-search-offset: 390px; /* tuned value so search bar sits nicely below the top header */
+  background: transparent; /* let the banner show through */
+  padding: 0 24px 0 24px;
+  /* position the row so its inner content can be pulled up over the banner */
+  margin-top: 64px; /* sits below the fixed top header */
+  position: relative;
+  z-index: 1200; /* ensure search sits above banner */
+}
+.mp-search-inner{max-width:1200px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.mp-search-input{flex:1}
+.mp-search-input .SearchBarContainer{box-shadow:0 12px 36px rgba(0,0,0,0.12);border-radius:10px;overflow:hidden}
+.mp-search-inner{
+  /* pull the search inner up so it overlaps the banner below. Uses CSS var for easy tuning */
+  position: relative;
+  top: var(--mp-search-offset);
+  z-index: 1300;
+}
+
+/* ===== Chotot-like prefixed styles (aw__*) for hero search visual ===== */
+.mp-search-inner .aw__i12y333q {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(15, 15, 15, 0.12);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.mp-search-inner .aw__c2ebkom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-right: 1px solid rgba(0,0,0,0.04);
+  color: #333;
+  font-weight: 600;
+  font-size: 13px;
+  background: transparent;
+  border-radius: 8px;
+}
+
+/* Target the actual button element inside the category wrapper so the visible
+   control gets the dark background and white text like the top navbar style. */
+.mp-search-inner .aw__c2ebkom > button.aw__ss0v7ub,
+.mp-search-inner .aw__c2ebkom > button.aw__c1deuj6q {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #ffffff !important; /* white background */
+  color: #111 !important; /* black text */
+  border: 1px solid #ffffff !important; /* white frame */
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mp-search-inner .aw__c2ebkom > button.aw__ss0v7ub:hover,
+.mp-search-inner .aw__c2ebkom > button.aw__c1deuj6q:hover {
+  background: #f7f7f7 !important;
+}
+
+.mp-search-inner .aw__ss0v7ub {
+  line-height: 1;
+}
+
+.mp-search-inner .aw__cf5h6c0 {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  color: #888;
+}
+
+.mp-search-inner .aw__tknn46t {
+  flex: 1;
+  display: block;
+}
+
+/* When SearchBar is rendered inside the hero we WANT the location selector and search button
+   to be visible and functional (they reuse SearchBar's existing logic). So ensure they are shown.
+   We will still hide the decorative duplicate buttons provided in the aw__ wrapper. */
+.mp-search-inner .aw__tknn46t .SearchBarLocation {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  position: relative; /* so its dropdown anchors correctly */
+}
+.mp-search-inner .aw__tknn46t .SearchBarBtn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+/* Expand the input inside SearchBar to take available space within our aw__ wrapper */
+.mp-search-inner .aw__tknn46t .SearchBarContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.mp-search-inner .aw__tknn46t .SearchBarContainer input {
+  font-size: 15px;
+  padding: 8px 10px;
+  color: #222;
+}
+
+.mp-search-inner .aw__tknn46t .SearchBarSuggestionsDropdown {
+  left: 0 !important;
+  right: 0 !important;
+  margin-top: 10px;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(20,20,20,0.14);
+}
+
+.mp-search-inner .aw__a6j9p2u { display: none; /* decorative duplicate controls in wrapper - hidden visually */ }
+
+/* primary search button on right (decorative wrapper) kept hidden because SearchBar.Btn exists */
+.mp-search-inner .aw__s1vpqu7q { display: none; }
+
+/* small responsive tweaks */
+@media (max-width:900px){
+  .mp-search-inner .aw__i12y333q{padding:8px}
+  .mp-search-inner .aw__c2ebkom{display:none}
+}
+/* ===== end prefixed styles ===== */
+.mp-location-btn{padding:10px 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:#fff}
+.mp-search-btn{padding:12px 18px;border-radius:8px;background:#ff9900;color:#fff;border:none;font-weight:700}
+/* small visual lift to make the search row clearly visible */
+.mp-search-row .mp-search-inner{background:transparent}
+
+/* When hero mode is active, keep the original TopNavbar mounted and interactive
+   (so SignalR, unread counts and account logic keep running). Instead of hiding
+   the whole navbar, hide only category + search + the TopNavbar's logo to avoid
+   duplicate visuals. */
+/* Ensure TopNavbar remains visible and on top so its logic (SignalR, unread count,
+   account dropdown, handlers) is usable. We still hide only the duplicated parts
+   (category dropdown, inline nav-search and original logo) so the hero's visuals
+   take their place, but the rest of TopNavbar stays interactive. */
+body.mp-hero-active .top-navbar {
+  /* keep it fully visible and above hero/search overlays */
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 1400 !important;
+}
+
+/* hide only the duplicated pieces from the original TopNavbar (keep logo visible) */
+body.mp-hero-active .top-navbar .dropdown,
+body.mp-hero-active .top-navbar .nav-search {
+  display: none !important;
+}
+
+.mp-hero-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 24px;
+  background: linear-gradient(90deg,#ff9900,#fc8e28);
+  color:#fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1202;
+}
+.mp-hero-top .nav-left{display:flex;align-items:center;gap:16px}
+.mp-hero-top .logo-link{display:inline-flex;align-items:center}
+.mp-hero-top .logo-img{height:44px;width:auto;display:block}
+.mp-hero-top .nav-left{align-items:center;gap:18px}
+
+/* Ensure the top navbar area has space for a visible logo on the left */
+.mp-hero-top .logo-link{display:inline-flex;align-items:center}
+.mp-hero-top .logo{font-weight:800;font-size:20px}
+.mp-hero-top .main-menu{display:flex;gap:12px}
+.mp-hero-top .menu-link{color:#fff;text-decoration:none}
+.mp-hero-top .nav-right{display:flex;align-items:center;gap:10px}
+
+/* ensure banner (slideshow) starts after search-row when header is fixed */
+.mp-search-row + .banner-container,
+.mp-search-row + .banner-slider,
+.mp-search-row + .banner {
+  /* push the banner down slightly so it doesn't sit too close to the search row */
+  margin-top: -100px; /* adjust this value if you want more/less spacing */
+}
+
+/* when user scrolls down, body.mp-hero-active removed and TopNavbar (existing) will re-appear with its scrolled styles */
+
+@media (max-width:900px){
+  .mp-search-inner{flex-direction:column;align-items:stretch}
+  .mp-category,.mp-location-btn{width:100%}
+}
+
+/* Responsive adjustments: reduce overlap on smaller screens */
+@media (max-width:600px){
+  .mp-search-row{--mp-search-offset: -32px}
+}
+
+@media (max-width:400px){
+  .mp-search-row{--mp-search-offset: -18px}
+  .mp-search-inner .SearchBarContainer{box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+}

@@ -4,11 +4,13 @@ import "./TinDangDanhChoBan.css";
 import { Link } from "react-router-dom";
 import { FaHeart } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
+import TrangChuNav from "./TrangChuNav"; // Import component TrangChuNav
 
-const TinDangDanhChoBan = () => {
+const TinDangDanhChoBan = ({ showNavigation = true }) => {
   const [posts, setPosts] = useState([]); 
   const [visiblePosts, setVisiblePosts] = useState(25);
   const [savedIds, setSavedIds] = useState([]);
+  const [activeTab, setActiveTab] = useState('danhchoban');
   const { user, token } = useContext(AuthContext);
 
   // ✅ Hàm lấy token (đơn giản hóa)
@@ -73,6 +75,12 @@ const TinDangDanhChoBan = () => {
 
   const handleShowMore = () => {
     setVisiblePosts((prev) => prev + 25); 
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Reset visible posts when switching tabs
+    setVisiblePosts(25);
   };
 
   const handleToggleSave = async (postId, isSaved) => {
@@ -143,84 +151,105 @@ const TinDangDanhChoBan = () => {
     return null; 
   };
 
+  // ✅ Hàm sắp xếp posts theo tab
+  const getSortedPosts = () => {
+    if (activeTab === 'moinhat') {
+      // Sắp xếp theo ngày đăng từ mới nhất đến cũ nhất
+      return [...posts].sort((a, b) => new Date(b.ngayDang) - new Date(a.ngayDang));
+    }
+    // Tab "danhchoban" giữ nguyên thứ tự
+    return posts;
+  };
+
   return (
     <div className="tin-dang-danh-cho-ban">
-      <h2 className="tieu-de">Tin Đăng Dành Cho Bạn</h2>
-      <div className="post-list">
-        {renderNoPostsMessage() ? (
-          <p>{renderNoPostsMessage()}</p> 
-        ) : (
-          posts.slice(0, visiblePosts).map((post) => (
-            <div key={post.maTinDang} className="post-item" style={{ position: 'relative' }}>
-              {/* ✅ Tính năng tin HOT từ code 1 */}
-              {post.savedCount >= 2 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: 10,
-                  zIndex: 3,
-                  background: 'linear-gradient(90deg, #ff9800, #ff3d00)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  borderRadius: 8,
-                  padding: '2px 10px',
-                  boxShadow: '0 2px 8px rgba(255,152,0,0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  animation: 'hot-fire 1s infinite alternate',
-                  letterSpacing: 1
-                }}>
-                  <span role="img" aria-label="fire" style={{ fontSize: 18, marginRight: 4, filter: 'drop-shadow(0 0 4px #ff9800)' }}>🔥</span>
-                  HOT
-                </div>
-              )}
+      {/* Navigation component được thêm vào đây - chỉ hiển thị khi showNavigation = true */}
+      {showNavigation && (
+        <div className="tindangdanhchoban-nav-container">
+          <TrangChuNav onTabChange={handleTabChange} activeTab={activeTab} />
+        </div>
+      )}
 
-              {/* ✅ Nút lưu tin - kiểm tra điều kiện rõ ràng */}
-              {isLoggedIn() && (
-                <div 
-                  style={{ position: "absolute", top: 10, right: 10, zIndex: 2, cursor: "pointer" }}
-                  onClick={e => { 
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                    handleToggleSave(post.maTinDang, savedIds.includes(post.maTinDang)); 
-                  }}
-                  title={savedIds.includes(post.maTinDang) ? "Bỏ lưu tin này" : "Lưu tin này"}
-                >
-                  <FaHeart style={{ color: savedIds.includes(post.maTinDang) ? "#e74c3c" : "#ccc", fontSize: 20 }} />
-                </div>
-              )}
-
-              <Link to={`/tin-dang/${post.maTinDang}`} className="post-link">
-                <div className="post-images-tin-dang-danh-cho-ban">
-                  {post.images && post.images.length > 0 ? (
-                    <img
-                      src={post.images[0].startsWith("http") ? post.images[0] : `http://localhost:5133${post.images[0]}`}
-                      alt="Ảnh đại diện"
-                      className="post-image"
-                    />
-                  ) : (
-                    <p>Không có ảnh.</p> 
+      {/* Hiển thị posts cho cả 2 tab */}
+      {((activeTab === 'danhchoban' || activeTab === 'moinhat') || !showNavigation) && (
+        <>
+          <div className="post-list">
+            {renderNoPostsMessage() ? (
+              <p>{renderNoPostsMessage()}</p> 
+            ) : (
+              getSortedPosts().slice(0, visiblePosts).map((post) => (
+                <div key={post.maTinDang} className="post-item" style={{ position: 'relative' }}>
+                  {/* ✅ Tính năng tin HOT từ code 1 */}
+                  {post.savedCount >= 2 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 10,
+                      left: 10,
+                      zIndex: 3,
+                      background: 'linear-gradient(90deg, #ff9800, #ff3d00)',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 15,
+                      borderRadius: 8,
+                      padding: '2px 10px',
+                      boxShadow: '0 2px 8px rgba(255,152,0,0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      animation: 'hot-fire 1s infinite alternate',
+                      letterSpacing: 1
+                    }}>
+                      <span role="img" aria-label="fire" style={{ fontSize: 18, marginRight: 4, filter: 'drop-shadow(0 0 4px #ff9800)' }}>🔥</span>
+                      HOT
+                    </div>
                   )}
-                </div>
-                <div className="post-info">
-                  <h3>{post.tieuDe}</h3> 
-                  <p className="price">{formatCurrency(post.gia)}</p> 
-                  <p className="post-description">
-                    {post.tinhThanh} - {post.quanHuyen} 
-                  </p>
-                  <p className="post-time">{formatRelativeTime(post.ngayDang)}</p>
-                </div>      
-              </Link>
-            </div>
-          ))
-        )}
-      </div>
 
-      {visiblePosts < posts.length && (
-        <button className="xem-them-btn" onClick={handleShowMore}>
-          Xem thêm
-        </button>
+                  {/* ✅ Nút lưu tin - kiểm tra điều kiện rõ ràng */}
+                  {isLoggedIn() && (
+                    <div 
+                      style={{ position: "absolute", top: 10, right: 10, zIndex: 2, cursor: "pointer" }}
+                      onClick={e => { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        handleToggleSave(post.maTinDang, savedIds.includes(post.maTinDang)); 
+                      }}
+                      title={savedIds.includes(post.maTinDang) ? "Bỏ lưu tin này" : "Lưu tin này"}
+                    >
+                      <FaHeart style={{ color: savedIds.includes(post.maTinDang) ? "#e74c3c" : "#ccc", fontSize: 20 }} />
+                    </div>
+                  )}
+
+                  <Link to={`/tin-dang/${post.maTinDang}`} className="post-link">
+                    <div className="post-images-tin-dang-danh-cho-ban">
+                      {post.images && post.images.length > 0 ? (
+                        <img
+                          src={post.images[0].startsWith("http") ? post.images[0] : `http://localhost:5133${post.images[0]}`}
+                          alt="Ảnh đại diện"
+                          className="post-image"
+                        />
+                      ) : (
+                        <p>Không có ảnh.</p> 
+                      )}
+                    </div>
+                    <div className="post-info">
+                      <h3>{post.tieuDe}</h3> 
+                      <p className="price">{formatCurrency(post.gia)}</p> 
+                      <p className="post-description">
+                        {post.tinhThanh} - {post.quanHuyen} 
+                      </p>
+                      <p className="post-time">{formatRelativeTime(post.ngayDang)}</p>
+                    </div>      
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+
+          {visiblePosts < getSortedPosts().length && (
+            <button className="xem-them-btn" onClick={handleShowMore}>
+              Xem thêm
+            </button>
+          )}
+        </>
       )}
     </div>
   );

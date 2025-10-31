@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import "./ChiTietTinDang.css";
+import styles from "./ChiTietTinDang.module.css";
 import TopNavbar from "../components/TopNavbar";
 import FloatingProductBox from "./FloatingProductBox";
 import { AuthContext } from "../context/AuthContext";
+import Swal from "sweetalert2";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -34,18 +35,19 @@ const ChiTietTinDang = ({ onOpenChat }) => {
   const scrollRefCategory = useRef(null);
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const imageContainerRef = useRef(null);
+  
   // Hiện box nổi khi scroll xuống nửa ảnh đầu tiên
   useEffect(() => {
-  const handleScroll = () => {
-    if (window.scrollY > 250) {
-      setShowFloatingBox(true);
-    } else {
-      setShowFloatingBox(false);
-    }
-  };
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
+    const handleScroll = () => {
+      if (window.scrollY > 250) {
+        setShowFloatingBox(true);
+      } else {
+        setShowFloatingBox(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
   const handleScroll = (direction, ref) =>
@@ -81,38 +83,58 @@ const ChiTietTinDang = ({ onOpenChat }) => {
 
   // Bấm nút chat với người bán
   const handleChatWithSeller = async () => {
-    if (!user) {
-      alert("Bạn cần đăng nhập để chat với người bán.");
-      return;
-    }
-    if (user.id === post.maNguoiBan) {
-      alert("Bạn không thể chat với chính mình.");
-      return;
-    }
-
     try {
-      const response = await axios.post("http://localhost:5133/api/chat/start", {
+      const res = await axios.post("http://localhost:5133/api/chat/start", {
         MaNguoiDung1: user.id,
         MaNguoiDung2: post.maNguoiBan,
         MaTinDang: post.maTinDang,
       });
-      const maCuocTroChuyen =
-        response.data.maCuocTroChuyen || response.data.MaCuocTroChuyen || null;
+
+      const maCuocTroChuyen = res.data?.maCuocTroChuyen || res.data?.MaCuocTroChuyen;
       if (maCuocTroChuyen) {
-        if (typeof onOpenChat === "function") {
-          onOpenChat(maCuocTroChuyen);
-        } else {
-          navigate(`/chat/${maCuocTroChuyen}`);
-        }
+        if (typeof onOpenChat === "function") onOpenChat(maCuocTroChuyen);
+        else navigate(`/chat/${maCuocTroChuyen}`);
       } else {
-        alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+        Swal.fire({ icon: "error", title: "Thông báo", text: "Không thể tạo cuộc trò chuyện. Vui lòng thử lại." });
       }
-    } catch (error) {
-      console.error("Lỗi tạo cuộc trò chuyện:", error);
-      if (error.response) {
-        console.error("Chi tiết lỗi từ server:", error.response.data);
+    } catch (err) {
+      console.error("StartChat error:", err);
+
+      // Nếu có response từ server
+      if (err.response) {
+        const { status, data } = err.response;
+        // data có thể là object, ProblemDetails, hoặc string
+        let serverMessage = null;
+
+        if (typeof data === "string") {
+          // Có thể server trả plain text
+          serverMessage = data;
+        } else if (data) {
+          // Thử nhiều property phổ biến
+          serverMessage = data.message || data.Message || data.detail || data.title || data.error;
+        }
+
+        // Nếu vẫn chưa có message, hiển thị theo status
+        if (serverMessage) {
+          Swal.fire({ icon: "error", title: "Thông báo", text: serverMessage });
+        } else if (status === 403) {
+          Swal.fire({ icon: "error", title: "Bị chặn", text: "Bạn không thể nhắn tin với người này (bị chặn)." });
+        } else if (status === 400) {
+          Swal.fire({ icon: "error", title: "Lỗi", text: "Yêu cầu không hợp lệ." });
+        } else {
+          Swal.fire({ icon: "error", title: "Lỗi", text: "Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại." });
+        }
+
+        // optional: log response body cho debug
+        console.log("Server response body:", data);
+      } else if (err.request) {
+        // request đã gửi nhưng không có response
+        Swal.fire({ icon: "error", title: "Lỗi kết nối", text: "Không nhận được phản hồi từ máy chủ." });
+        console.log("No response:", err.request);
+      } else {
+        // lỗi khác
+        Swal.fire({ icon: "error", title: "Lỗi", text: err.message || "Có lỗi xảy ra." });
       }
-      alert("Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại.");
     }
   };
 
@@ -136,13 +158,13 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     const isVideo = (url) => url.match(/\.(mp4|mov|avi|webm|ogg)$/i);
 
     return (
-      <div className="carousel-cttd-wrapper">
-        <div className="carousel-cttd-imgbox">
+      <div className={styles.carouselWrapper}>
+        <div className={styles.carouselImgbox}>
           {isVideo(validMedia[current]) ? (
             <video
               src={getMediaUrl(validMedia[current])}
               controls
-              className="carousel-cttd-img"
+              className={styles.carouselImg}
               style={{ cursor: "zoom-in" }}
               onClick={() => {
                 setShowLightbox(true);
@@ -153,7 +175,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             <img
               src={getMediaUrl(validMedia[current])}
               alt={`Media ${current + 1}`}
-              className="carousel-cttd-img"
+              className={styles.carouselImg}
               style={{ cursor: "zoom-in" }}
               onClick={() => {
                 setShowLightbox(true);
@@ -161,20 +183,20 @@ const ChiTietTinDang = ({ onOpenChat }) => {
               }}
             />
           )}
-          <div className="carousel-cttd-index">
+          <div className={styles.carouselIndex}>
             {current + 1} / {validMedia.length}
           </div>
           {validMedia.length > 1 && (
             <>
               <button
                 onClick={prevMedia}
-                className="carousel-cttd-btn carousel-cttd-btn-left"
+                className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`}
               >
                 ←
               </button>
               <button
                 onClick={nextMedia}
-                className="carousel-cttd-btn carousel-cttd-btn-right"
+                className={`${styles.carouselBtn} ${styles.carouselBtnRight}`}
               >
                 →
               </button>
@@ -182,13 +204,13 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           )}
         </div>
         {validMedia.length > 1 && (
-          <div className="multi-image-gallery">
+          <div className={styles.multiImageGallery}>
             {validMedia.map((media, idx) =>
               isVideo(media) ? (
                 <video
                   key={idx}
                   src={getMediaUrl(media)}
-                  className="carousel-cttd-thumb"
+                  className={styles.carouselThumb}
                   onClick={() => setCurrent(idx)}
                   style={{
                     border: current === idx ? "2px solid #f80" : "1px solid #ddd",
@@ -200,7 +222,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                   key={idx}
                   src={getMediaUrl(media)}
                   alt={`Thumb ${idx + 1}`}
-                  className="carousel-cttd-thumb"
+                  className={styles.carouselThumb}
                   onClick={() => setCurrent(idx)}
                   style={{
                     border: current === idx ? "2px solid #f80" : "1px solid #ddd",
@@ -216,28 +238,28 @@ const ChiTietTinDang = ({ onOpenChat }) => {
   };
 
   return (
-    <div className="chi-tiet-tin-dang">
+    <div className={styles.chiTietTinDang}>
       <TopNavbar />
-      <div className="tin-dang-header">
-  <div className="image-container" ref={imageContainerRef}>
-      {/* Floating Product Box */}
-      {showFloatingBox && post && (
-        <FloatingProductBox
-          image={post.images?.[0]?.startsWith("http") ? post.images[0] : post.images?.[0] ? `http://localhost:5133${post.images[0]}` : ""}
-          title={post.tieuDe}
-          price={formattedPrice}
-          details={<>
-            <span>{post.loaiSanPham || post.tieuDe}</span>
-            {post.dungLuong && <span> | {post.dungLuong}</span>}
-            {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
-          </>}
-          description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
-          onShowPhone={() => setShowPhoneNumber(!showPhoneNumber)}
-          onChat={handleChatWithSeller}
-          showPhone={showPhoneNumber}
-          phoneMasked={showPhoneNumber ? post.phoneNumber : `${post.phoneNumber?.substring(0, 6)}****`}
-        />
-      )}
+      <div className={styles.tinDangHeader}>
+        <div className={styles.imageContainer} ref={imageContainerRef}>
+          {/* Floating Product Box */}
+          {showFloatingBox && post && (
+            <FloatingProductBox
+              image={post.images?.[0]?.startsWith("http") ? post.images[0] : post.images?.[0] ? `http://localhost:5133${post.images[0]}` : ""}
+              title={post.tieuDe}
+              price={formattedPrice}
+              details={<>
+                <span>{post.loaiSanPham || post.tieuDe}</span>
+                {post.dungLuong && <span> | {post.dungLuong}</span>}
+                {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
+              </>}
+              description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
+              onShowPhone={() => setShowPhoneNumber(!showPhoneNumber)}
+              onChat={handleChatWithSeller}
+              showPhone={showPhoneNumber}
+              phoneMasked={showPhoneNumber ? post.phoneNumber : `${post.phoneNumber?.substring(0, 6)}****`}
+            />
+          )}
 
           {post.images && post.images.length > 0 ? (
             <PostImageCarousel images={post.images} />
@@ -246,11 +268,11 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           )}
         </div>
 
-        <div className="chi-tiet-tin-dang-info">
+        <div className={styles.chiTietTinDangInfo}>
           <h1>{post.tieuDe}</h1>
           <p>
             <strong>Giá:</strong>{" "}
-            <span className="price">{formattedPrice}</span>
+            <span className={styles.price}>{formattedPrice}</span>
           </p>
           <p>
             <strong>Địa chỉ:</strong> {post.diaChi}
@@ -259,38 +281,38 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             <strong>Ngày đăng:</strong> {formatDate(post.ngayDang)}
           </p>
 
-          <div className="sdt-chat">
-            <button className="sdt" onClick={handleShowPhoneNumber}>
+          <div className={styles.sdtChat}>
+            <button className={styles.sdt} onClick={handleShowPhoneNumber}>
               {showPhoneNumber
                 ? post.phoneNumber
                 : `Hiện số ${post.phoneNumber.substring(0, 6)}****`}
             </button>
 
             {user?.id !== post.maNguoiBan && (
-              <button className="sdt sdt-chat-btn" onClick={handleChatWithSeller}>
+              <button className={`${styles.sdt} ${styles.sdtChatBtn}`} onClick={handleChatWithSeller}>
                 💬 Chat với người bán
               </button>
             )}
           </div>
 
-          <div className="seller-info">
-            <div className="seller-name">Người bán: {post.nguoiBan}</div>
+          <div className={styles.sellerInfo}>
+            <div className={styles.sellerName}>Người bán: {post.nguoiBan}</div>
           </div>
         </div>
       </div>
 
-      <div className="mo-ta-chi-tiet" id="mo-ta-chi-tiet">
+      <div className={styles.moTaChiTiet} id="mo-ta-chi-tiet">
         <div style={{fontWeight:600, fontSize:18, marginBottom:8}}>Mô tả chi tiết</div>
         
         <div
-          className={`mo-ta-nd-cttd-wrapper ${
-            showFullDescription ? "mo-ta-nd-cttd-full" : "mo-ta-nd-cttd-clamp"
+          className={`${styles.moTaNdWrapper} ${
+            showFullDescription ? styles.moTaNdFull : styles.moTaNdClamp
           }`}
           dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }}
         />
         {post.moTa?.split("\n").length > 8 && (
           <button
-            className="mo-ta-nd-cttd-toggle"
+            className={styles.moTaNdToggle}
             onClick={() => setShowFullDescription(!showFullDescription)}
           >
             {showFullDescription ? "Thu gọn" : "Xem thêm"}
@@ -299,20 +321,20 @@ const ChiTietTinDang = ({ onOpenChat }) => {
       </div>
 
       {similarPostsBySeller.length > 0 && (
-        <div className="tin-dang-tuong-tu tin-dang-nguoi-ban" id="tin-dang-tuong-tu">
+        <div className={`${styles.tinDangTuongTu} ${styles.tinDangNguoiBan}`} id="tin-dang-tuong-tu">
           <h2>Các tin đăng khác của {post.nguoiBan}</h2>
-          <div className="similar-posts-wrapper">
-            <button className="scroll-btn left" onClick={() => handleScroll("left", scrollRefSeller)}>
+          <div className={styles.similarPostsWrapper}>
+            <button className={`${styles.scrollBtn} ${styles.left}`} onClick={() => handleScroll("left", scrollRefSeller)}>
               &lt;
             </button>
-            <div className="similar-posts-container" ref={scrollRefSeller}>
+            <div className={styles.similarPostsContainer} ref={scrollRefSeller}>
               {similarPostsBySeller.map((post) => (
                 <div
                   key={post.maTinDang}
-                  className="similar-post-card"
+                  className={styles.similarPostCard}
                   onClick={() => handleSimilarPostClick(post.maTinDang)}
                 >
-                  <div className="image-wrapper">
+                  <div className={styles.imageWrapper}>
                     <img
                       src={
                         post.images?.[0]?.startsWith("http")
@@ -323,35 +345,35 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                     />
                   </div>
                   <h3>{post.tieuDe}</h3>
-                  <p className="gia">
+                  <p className={styles.gia}>
                     {post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}
                   </p>
                   <p>{post.diaChi}</p>
-                  <p className="nho">{formatDate(post.ngayDang)}</p>
+                  <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
                 </div>
               ))}
             </div>
-            <button className="scroll-btn right" onClick={() => handleScroll("right", scrollRefSeller)}>
+            <button className={`${styles.scrollBtn} ${styles.right}`} onClick={() => handleScroll("right", scrollRefSeller)}>
               &gt;
             </button>
           </div>
         </div>
       )}
 
-      <div className="tin-dang-tuong-tu">
+      <div className={styles.tinDangTuongTu}>
         <h2>Tin đăng tương tự</h2>
-        <div className="similar-posts-wrapper">
-          <button className="scroll-btn left" onClick={() => handleScroll("left", scrollRefCategory)}>
+        <div className={styles.similarPostsWrapper}>
+          <button className={`${styles.scrollBtn} ${styles.left}`} onClick={() => handleScroll("left", scrollRefCategory)}>
             &lt;
           </button>
-          <div className="similar-posts-container" ref={scrollRefCategory}>
+          <div className={styles.similarPostsContainer} ref={scrollRefCategory}>
             {similarPostsByCategory.map((post) => (
               <div
                 key={post.maTinDang}
-                className="similar-post-card"
+                className={styles.similarPostCard}
                 onClick={() => handleSimilarPostClick(post.maTinDang)}
               >
-                <div className="image-wrapper">
+                <div className={styles.imageWrapper}>
                   <img
                     src={
                       post.images?.[0]?.startsWith("http")
@@ -362,22 +384,22 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                   />
                 </div>
                 <h3>{post.tieuDe}</h3>
-                <p className="gia">
+                <p className={styles.gia}>
                   {post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}
                 </p>
                 <p>{post.diaChi}</p>
-                <p className="nho">{formatDate(post.ngayDang)}</p>
+                <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
               </div>
             ))}
           </div>
-          <button className="scroll-btn right" onClick={() => handleScroll("right", scrollRefCategory)}>
+          <button className={`${styles.scrollBtn} ${styles.right}`} onClick={() => handleScroll("right", scrollRefCategory)}>
             &gt;
           </button>
         </div>
       </div>
 
       {showLightbox && (
-        <div className="lightbox-overlay" onClick={() => setShowLightbox(false)}>
+        <div className={styles.lightboxOverlay} onClick={() => setShowLightbox(false)}>
           {post.images[lightboxIndex].match(/\.(mp4|mov|avi|webm|ogg)$/i) ? (
             <video
               src={
@@ -385,7 +407,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                   ? post.images[lightboxIndex]
                   : `http://localhost:5133${post.images[lightboxIndex]}`
               }
-              className="lightbox-img"
+              className={styles.lightboxImg}
               controls
               autoPlay
               onClick={(e) => e.stopPropagation()}
@@ -398,12 +420,12 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                   : `http://localhost:5133${post.images[lightboxIndex]}`
               }
               alt={`Full ${lightboxIndex + 1}`}
-              className="lightbox-img"
+              className={styles.lightboxImg}
               onClick={(e) => e.stopPropagation()}
             />
           )}
           <button
-            className="lightbox-nav left"
+            className={`${styles.lightboxNav} ${styles.left}`}
             onClick={(e) => {
               e.stopPropagation();
               setLightboxIndex((prev) =>
@@ -414,7 +436,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             ←
           </button>
           <button
-            className="lightbox-nav right"
+            className={`${styles.lightboxNav} ${styles.right}`}
             onClick={(e) => {
               e.stopPropagation();
               setLightboxIndex((prev) =>
@@ -424,10 +446,10 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           >
             →
           </button>
-          <span className="lightbox-close" onClick={() => setShowLightbox(false)}>
+          <span className={styles.lightboxClose} onClick={() => setShowLightbox(false)}>
             ×
           </span>
-          <div className="lightbox-counter">
+          <div className={styles.lightboxCounter}>
             {lightboxIndex + 1} / {post.images.length}
           </div>
         </div>
@@ -435,4 +457,5 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     </div>
   );
 };
+
 export default ChiTietTinDang;

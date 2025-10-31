@@ -30,6 +30,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     lastOnlineTime: null,
     formattedLastSeen: null,
     maChuSanPham: null,
+    isPostDeleted: false,  // ✅ Thêm flag
   });
   const [infoNguoiConLai, setInfoNguoiConLai] = useState({
     id: "",
@@ -52,21 +53,15 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const inputRef = useRef(null);
   const connectionRef = useRef(null);
 
-  // Logic xác định hiển thị header: nếu là chủ sản phẩm thì show info khách, ngược lại show chủ sản phẩm
   const isChuSanPham = infoTinDang && user && user.id === infoTinDang.maChuSanPham;
-
-  // Luôn hiển thị trạng thái của đối phương (khách thấy chủ, chủ thấy khách)
   const displayAvatar = isChuSanPham ? infoNguoiConLai.avatar : infoTinDang.avatarChuSanPham;
   const displayTen = isChuSanPham ? infoNguoiConLai.ten : infoTinDang.tenChuSanPham;
   const displayIsOnline = isChuSanPham ? infoNguoiConLai.isOnline : infoTinDang.isOnline;
   const displayLastOnline = isChuSanPham ? infoNguoiConLai.lastOnlineTime : infoTinDang.lastOnlineTime;
-
-  // Chỉ hiển thị trạng thái nếu có thông tin đối phương (id và tên)
   const shouldShowStatus = !!(isChuSanPham
     ? infoNguoiConLai.id && infoNguoiConLai.ten
     : infoTinDang.maChuSanPham && infoTinDang.tenChuSanPham);
 
-  // Enhanced status fetching function
   const fetchUserStatus = async (userId) => {
     if (!userId) return null;
     try {
@@ -84,22 +79,16 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     }
   };
 
-  // Simplified and more robust getLastOnlineText function
   const getLastOnlineText = () => {
     if (!shouldShowStatus) return "";
     if (displayIsOnline) return "Đang hoạt động";
     if (!displayLastOnline) return "";
 
-    // Get formatted status from backend
     const displayFormattedStatus = isChuSanPham ? infoNguoiConLai.formattedLastSeen : infoTinDang.formattedLastSeen;
-
-    // If backend provides formatted status, use it
     if (displayFormattedStatus) {
-      // Nếu backend trả về "vừa mới" thì đổi thành "Mới hoạt động gần đây"
       if (displayFormattedStatus.toLowerCase().includes("vừa mới")) {
         return "Mới hoạt động gần đây";
       }
-      // Nếu backend trả về "1 phút/giờ/ngày trước" thì thêm chữ "Hoạt động từ ... trước"
       const regex = /^(\d+)\s*(phút|giờ|ngày) trước$/;
       const match = displayFormattedStatus.match(regex);
       if (match) {
@@ -108,7 +97,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       return displayFormattedStatus;
     }
 
-    // Fallback to manual calculation
     let last;
     try {
       if (typeof displayLastOnline === "string") {
@@ -181,83 +169,73 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     setMessageMenus({});
   };
 
-  const handleBlockUser = async () => {
-    const result = await Swal.fire({
-      title: "Chặn người dùng?",
-      text: "Người này sẽ không thể gửi tin nhắn cho bạn nữa.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Chặn",
-      cancelButtonText: "Hủy",
-    });
+  // Cập nhật hàm handleBlockUser để không cần Swal notification (vì đã có realtime)
+const handleBlockUser = async () => {
+  const result = await Swal.fire({
+    title: "Chặn người dùng?",
+    text: "Người này sẽ không thể gửi tin nhắn cho bạn nữa.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Chặn",
+    cancelButtonText: "Hủy",
+  });
 
-    if (result.isConfirmed) {
-      try {
-        const response = await axios.post("http://localhost:5133/api/chat/block-user", {
-          BlockerId: user.id,
-          BlockedId: maNguoiConLai,
-        });
-        if (response.status === 200) {
-          setIsBlockedByMe(true);
-          Swal.fire({
-            icon: "success",
-            title: "Đã chặn",
-            text: "Bạn đã chặn người dùng này.",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Lỗi",
-          text: "Không thể chặn người dùng. Vui lòng thử lại.",
-          confirmButtonColor: "#d33",
-        });
-      }
+  if (result.isConfirmed) {
+    try {
+      const response = await axios.post("http://localhost:5133/api/chat/block-user", {
+        BlockerId: user.id,
+        BlockedId: maNguoiConLai,
+      });
+      
+      // ✅ Không cần update state ở đây nữa vì sẽ nhận realtime event
+      // setIsBlockedByMe(true); // <-- Xóa dòng này
+      
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Không thể chặn người dùng. Vui lòng thử lại.",
+        confirmButtonColor: "#d33",
+      });
     }
-  };
+  }
+};
 
-  const handleUnblockUser = async () => {
-    const result = await Swal.fire({
-      title: "Gỡ chặn người dùng?",
-      text: "Bạn sẽ có thể nhận tin nhắn từ người này.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Gỡ chặn",
-      cancelButtonText: "Hủy",
-    });
+  // Cập nhật hàm handleUnblockUser tương tự
+const handleUnblockUser = async () => {
+  const result = await Swal.fire({
+    title: "Gỡ chặn người dùng?",
+    text: "Bạn sẽ có thể nhận tin nhắn từ người này.",
+    icon: "question", 
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Gỡ chặn",
+    cancelButtonText: "Hủy",
+  });
 
-    if (result.isConfirmed) {
-      try {
-        const response = await axios.post("http://localhost:5133/api/chat/unblock-user", {
-          BlockerId: user.id,
-          BlockedId: maNguoiConLai,
-        });
-        if (response.status === 200) {
-          setIsBlockedByMe(false);
-          Swal.fire({
-            icon: "success",
-            title: "Đã gỡ chặn",
-            text: "Bạn đã gỡ chặn người dùng này.",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Lỗi",
-          text: "Không thể gỡ chặn người dùng. Vui lòng thử lại.",
-          confirmButtonColor: "#d33",
-        });
-      }
+  if (result.isConfirmed) {
+    try {
+      const response = await axios.post("http://localhost:5133/api/chat/unblock-user", {
+        BlockerId: user.id,
+        BlockedId: maNguoiConLai,
+      });
+      
+      // ✅ Không cần update state ở đây nữa vì sẽ nhận realtime event  
+      // setIsBlockedByMe(false); // <-- Xóa dòng này
+      
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi", 
+        text: "Không thể gỡ chặn người dùng. Vui lòng thử lại.",
+        confirmButtonColor: "#d33",
+      });
     }
-  };
+  }
+};
 
   const handleRecallTextMessage = async (maTinNhan, thoiGianGui) => {
     if (!canRecallMessage(thoiGianGui)) {
@@ -391,6 +369,101 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     setModalImage(null);
   };
 
+  // Thêm useEffect này để lắng nghe sự kiện block/unblock realtime
+useEffect(() => {
+  if (!connectionRef.current || !user?.id) return;
+
+  const connection = connectionRef.current;
+
+  // Lắng nghe sự kiện block/unblock realtime
+  connection.on("UserBlocked", (data) => {
+    const { blockedUserId, isBlocked, actionType } = data;
+    
+    console.log(`Received UserBlocked event: ${actionType}, blockedUserId: ${blockedUserId}`);
+
+    if (actionType === "block" && blockedUserId === maNguoiConLai) {
+      // Tôi vừa chặn người kia
+      setIsBlockedByMe(true);
+      closeAllMessageMenus();
+      
+      Swal.fire({
+        icon: "success",
+        title: "Đã chặn",
+        text: "Bạn đã chặn người dùng này.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      
+    } else if (actionType === "unblock" && blockedUserId === maNguoiConLai) {
+      // Tôi vừa gỡ chặn người kia
+      setIsBlockedByMe(false);
+      
+      Swal.fire({
+        icon: "success", 
+        title: "Đã gỡ chặn",
+        text: "Bạn đã gỡ chặn người dùng này.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      
+    } else if (actionType === "blocked_by" && blockedUserId === user.id) {
+      // Tôi vừa bị người kia chặn
+      setIsBlockedByOther(true);
+      closeAllMessageMenus();
+      
+      Swal.fire({
+        icon: "warning",
+        title: "Bạn đã bị chặn",
+        text: "Bạn không thể gửi tin nhắn cho người này nữa.",
+        confirmButtonColor: "#d33",
+      });
+      
+    } else if (actionType === "unblocked_by" && blockedUserId === user.id) {
+      // Tôi vừa được người kia gỡ chặn
+      setIsBlockedByOther(false);
+      
+      Swal.fire({
+        icon: "info",
+        title: "Đã được gỡ chặn", 
+        text: "Bạn có thể gửi tin nhắn cho người này.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
+  });
+
+  // Lắng nghe sự kiện cập nhật trạng thái chat
+  connection.on("ChatStatusChanged", (data) => {
+    const { chatId, isBlocked, blockedByMe } = data;
+    
+    if (chatId === maCuocTroChuyen) {
+      console.log(`Chat ${chatId} status changed: isBlocked=${isBlocked}, blockedByMe=${blockedByMe}`);
+      
+      // Cập nhật trạng thái dựa trên dữ liệu từ server
+      if (isBlocked) {
+        if (blockedByMe) {
+          setIsBlockedByMe(true);
+          setIsBlockedByOther(false);
+        } else {
+          setIsBlockedByMe(false); 
+          setIsBlockedByOther(true);
+        }
+      } else {
+        setIsBlockedByMe(false);
+        setIsBlockedByOther(false);
+      }
+    }
+  });
+
+  // Cleanup function sẽ được gọi khi component unmount hoặc dependencies thay đổi
+  return () => {
+    if (connection) {
+      connection.off("UserBlocked");
+      connection.off("ChatStatusChanged");
+    }
+  };
+}, [connectionRef.current, user?.id, maNguoiConLai, maCuocTroChuyen]);
+
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
@@ -417,18 +490,15 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     };
   }, [modalImage]);
 
-  // Updated fetchChatInfo function
   useEffect(() => {
     if (!maCuocTroChuyen) return;
 
     const fetchChatInfo = async () => {
       try {
-        // Lấy info tin đăng và chủ sản phẩm từ enhanced endpoint
         const res = await fetch(`http://localhost:5133/api/chat/info/${maCuocTroChuyen}`);
         if (!res.ok) throw new Error("Lỗi lấy thông tin cuộc trò chuyện");
         const data = await res.json();
 
-        // Set info tin đăng với enhanced status data
         setInfoTinDang({
           tieuDe: data.tieuDeTinDang,
           gia: data.giaTinDang,
@@ -436,18 +506,24 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           maTinDang: data.maTinDang,
           avatarChuSanPham: data.avatarChuSanPham || "",
           tenChuSanPham: data.tenChuSanPham || "",
-          // Use enhanced status from backend
           isOnline: data.trangThaiChuSanPham?.isOnline || false,
           lastOnlineTime: data.trangThaiChuSanPham?.lastActive || null,
           formattedLastSeen: data.trangThaiChuSanPham?.formattedLastSeen || null,
           maChuSanPham: data.maChuSanPham || null,
+          isPostDeleted: data.isPostDeleted || false,  // ✅ Set flag
         });
 
-        // Set info người còn lại với enhanced status
-        if (data.maNguoiConLai) {
-          setMaNguoiConLai(data.maNguoiConLai);
+        const resParticipants = await fetch(`http://localhost:5133/api/chat/user/${user.id}`);
+        const chats = await resParticipants.json();
+        const currentChat = chats.find(c => c.maCuocTroChuyen === maCuocTroChuyen);
+        
+        if (currentChat) {
+          const otherUserId = currentChat.maNguoiConLai;
+          setMaNguoiConLai(otherUserId);
+          
+          // Set info người còn lại từ data trả về
           setInfoNguoiConLai({
-            id: data.maNguoiConLai,
+            id: otherUserId,
             avatar: data.avatarNguoiConLai || "",
             ten: data.tenNguoiConLai || "",
             // Use enhanced status from backend
@@ -455,19 +531,17 @@ const ChatBox = ({ maCuocTroChuyen }) => {
             lastOnlineTime: data.trangThaiNguoiConLai?.lastActive || null,
             formattedLastSeen: data.trangThaiNguoiConLai?.formattedLastSeen || null,
           });
-        }
 
-        // Kiểm tra block status (keep existing logic)
-        if (data.maNguoiConLai) {
-          const resBlockMe = await fetch(`http://localhost:5133/api/chat/check-block/${user.id}/${data.maNguoiConLai}`);
+          // Kiểm tra block status với maNguoiConLai từ participants (giống code cũ)
+          const resBlockMe = await fetch(`http://localhost:5133/api/chat/check-block/${user.id}/${otherUserId}`);
           const dataBlockMe = await resBlockMe.json();
-          setIsBlockedByMe(dataBlockMe.IsBlocked);
+          // Fix: Sử dụng đúng property name từ response
+          setIsBlockedByMe(dataBlockMe.isBlocked || dataBlockMe.IsBlocked);
 
-          const resBlockOther = await fetch(
-            `http://localhost:5133/api/chat/check-block/${data.maNguoiConLai}/${user.id}`,
-          );
+          const resBlockOther = await fetch(`http://localhost:5133/api/chat/check-block/${otherUserId}/${user.id}`);
           const dataBlockOther = await resBlockOther.json();
-          setIsBlockedByOther(dataBlockOther.IsBlocked);
+          // Fix: Sử dụng đúng property name từ response
+          setIsBlockedByOther(dataBlockOther.isBlocked || dataBlockOther.IsBlocked);
         }
       } catch (error) {
         console.error("Lỗi lấy thông tin cuộc trò chuyện:", error);
@@ -557,16 +631,17 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     return () => clearInterval(statusInterval);
   }, [isConnected, user?.id, infoNguoiConLai.id, infoTinDang.maChuSanPham]);
 
-  // Force update for status text every minute when offline
+  // Force update for status text every second when offline (realtime)
   useEffect(() => {
     if (!shouldShowStatus || displayIsOnline || !displayLastOnline) return;
 
     // Update immediately
     forceUpdate((v) => v + 1);
 
+    // Cập nhật mỗi giây để "Hoạt động từ X phút trước" realtime
     const updateInterval = setInterval(() => {
       forceUpdate((v) => v + 1);
-    }, 60000); // Update every minute
+    }, 1000); // Update every second
 
     return () => clearInterval(updateInterval);
   }, [shouldShowStatus, displayIsOnline, displayLastOnline]);
@@ -579,20 +654,46 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
           let timeStr = msg.thoiGianGui;
           if (!timeStr.endsWith("Z")) timeStr += "Z";
-
           const newMsg = {
             ...msg,
             thoiGian: new Date(timeStr).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
             thoiGianGui: timeStr,
             daXem: msg.daXem || false,
           };
-
           const hiddenChats = JSON.parse(localStorage.getItem("hiddenChats")) || [];
           const isHidden = hiddenChats.includes(maCuocTroChuyen);
           const isOwnMessage = msg.maNguoiGui === user?.id;
-
           if (!isHidden || isOwnMessage) {
             setDanhSachTin((prev) => [...prev, newMsg]);
+          }
+        });
+
+        // Lắng nghe sự kiện UserStatusChanged từ SignalR để cập nhật trạng thái online/offline real-time
+        connection.on("UserStatusChanged", (data) => {
+          try {
+            const userId = data.userId || data.userid || data.UserId;
+            const isOnline = data.isOnline ?? data.IsOnline ?? false;
+            const lastActive = data.lastSeen || data.lastActive || data.LastActive || null;
+            const formattedLastSeen = data.formattedLastSeen || null;
+            // Cập nhật nếu là đối phương
+            if (userId === infoNguoiConLai.id) {
+              setInfoNguoiConLai((prev) => ({
+                ...prev,
+                isOnline,
+                lastOnlineTime: isOnline ? null : lastActive,
+                formattedLastSeen: isOnline ? null : formattedLastSeen,
+              }));
+            }
+            if (userId === infoTinDang.maChuSanPham) {
+              setInfoTinDang((prev) => ({
+                ...prev,
+                isOnline,
+                lastOnlineTime: isOnline ? null : lastActive,
+                formattedLastSeen: isOnline ? null : formattedLastSeen,
+              }));
+            }
+          } catch (err) {
+            console.error("Lỗi xử lý UserStatusChanged:", err);
           }
         });
 
@@ -613,6 +714,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               gia: updatedPost.Gia || updatedPost.gia || prev.gia,
               anh: updatedPost.AnhDaiDien || updatedPost.anhDaiDien || prev.anh,
               maTinDang: updatedPost.MaTinDang || prev.maTinDang,
+              isPostDeleted: updatedPost.IsDeleted || false,  // ✅ Update flag
             }));
           }
         });
@@ -755,6 +857,17 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   };
 
   const handleImageClick = async () => {
+    if (infoTinDang.isPostDeleted) {
+      Swal.fire({
+        icon: "info",
+        title: "Tin đăng đã bị xóa",
+        text: "Người bán đã gỡ tin này. Cuộc trò chuyện vẫn tiếp tục.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
     try {
       const res = await fetch(`http://localhost:5133/api/TinDang/get-post/${infoTinDang.maTinDang}`);
       if (!res.ok) {
@@ -782,7 +895,6 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   return (
     <div className="chatbox-container">
       <div className="chatbox-header">
-        {/* Khung 1: Avatar chủ sản phẩm, trạng thái online, thời gian lần cuối online */}
         <div className="chatbox-seller-frame">
           <div className="chatbox-avatar-status-group">
             <div className="chatbox-avatar-wrapper">
@@ -791,14 +903,12 @@ const ChatBox = ({ maCuocTroChuyen }) => {
                 alt="avatar"
                 className="chatbox-seller-avatar"
               />
-              {/* Chỉ hiển thị chấm trạng thái nếu có info đối phương */}
               {shouldShowStatus && (
                 <span className={displayIsOnline ? "chatbox-status-dot online" : "chatbox-status-dot offline"}></span>
               )}
             </div>
             <div className="chatbox-seller-meta">
               <span className="chatbox-seller-name">{displayTen || "Chủ sản phẩm"}</span>
-              {/* Chỉ hiển thị dòng trạng thái nếu có trạng thái hợp lệ */}
               {shouldShowStatus && getLastOnlineText() && (
                 <span className="chatbox-last-online">{getLastOnlineText()}</span>
               )}
@@ -806,16 +916,12 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           </div>
           <div className="chatbox-header-menu">
             {!isBlockedByMe && !isBlockedByOther ? (
-              <button className="chatbox-header-menu-button" onClick={handleBlockUser} data-tooltip="Chặn người dùng này">
+              <button className="chatbox-header-menu-button" onClick={handleBlockUser}>
                 <FaBan size={20} />
                 <span>Chặn</span>
               </button>
             ) : isBlockedByMe ? (
-              <button
-                className="chatbox-header-menu-button unblock"
-                onClick={handleUnblockUser}
-                data-tooltip="Gỡ chặn người dùng"
-              >
+              <button className="chatbox-header-menu-button unblock" onClick={handleUnblockUser}>
                 <FaUnlock size={20} />
                 <span>Gỡ chặn</span>
               </button>
@@ -823,16 +929,22 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           </div>
         </div>
 
-        {/* Khung 2: Ảnh tin đăng, giá, tên sản phẩm (giữ nguyên như cũ) */}
-        <div className="chatbox-product-frame" onClick={handleImageClick}>
+        <div className="chatbox-product-frame" onClick={handleImageClick} style={{ opacity: infoTinDang.isPostDeleted ? 0.6 : 1 }}>
           <div className="chatbox-product-info">
             <img src={getFullImageUrl(infoTinDang.anh)} alt="Ảnh tin đăng" className="chatbox-product-img" />
             <div className="chatbox-product-meta">
-              <span className="chatbox-product-name">{infoTinDang.tieuDe}</span>
+              <span className="chatbox-product-name">
+                {infoTinDang.isPostDeleted ? `${infoTinDang.tieuDe} ` : infoTinDang.tieuDe}
+              </span>
               <span className="chatbox-product-price">
                 {infoTinDang.gia.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
               </span>
             </div>
+            {infoTinDang.isPostDeleted && (
+              <span className="post-deleted-badge" style={{ color: '#ff6b6b', fontSize: '12px', marginLeft: '5px' }}>
+                Tin đã xóa
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -966,8 +1078,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
               disabled={isBlockedByMe || isBlockedByOther}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault(); // chặn xuống dòng
-                  handleSend();       // gọi hàm gửi tin nhắn
+                  e.preventDefault();
+                  handleSend();
                 }
               }}
             />

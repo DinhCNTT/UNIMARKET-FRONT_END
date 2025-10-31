@@ -312,7 +312,6 @@ const getSellerId = (s) =>
   s?.id ?? s?.maNguoiDung ?? s?.MaNguoiDung ?? s?._id ?? null;
 
 // Cập nhật hàm handleChatWithSeller trong VideoDetailsPanel.jsx
-
 const handleChatWithSeller = async () => {
   let effectiveUser = user;
   if (!effectiveUser) {
@@ -394,13 +393,12 @@ const handleChatWithSeller = async () => {
         toastId: "opening-chat",
       });
 
-      // 🆕 THÊM: Refresh ChatList để cập nhật trạng thái
       setTimeout(async () => {
-        // Trigger refresh ChatList nếu đang ở trang chat
-        if (window.location.pathname.includes('/chat')) {
-          window.dispatchEvent(new CustomEvent('refreshChatList'));
+        // Refresh ChatList nếu đang ở trang chat
+        if (window.location.pathname.includes("/chat")) {
+          window.dispatchEvent(new CustomEvent("refreshChatList"));
         }
-        
+
         if (typeof onOpenChat === "function") {
           onOpenChat(maCuocTroChuyen);
         } else {
@@ -418,26 +416,70 @@ const handleChatWithSeller = async () => {
     }
   } catch (error) {
     console.error("Lỗi tạo cuộc trò chuyện:", error);
-    if (error?.response?.status === 401) {
-      toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
-        icon: <Lock size={20} />,
-        className: "um-toast um-toast--error",
-        bodyClassName: "um-toast-body",
-        progressClassName: "um-toast-progress",
-        toastId: "expired-session",
-      });
-    } else {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại sau.", {
-        icon: <XCircle size={20} />,
-        className: "um-toast um-toast--error",
-        bodyClassName: "um-toast-body",
-        progressClassName: "um-toast-progress",
-        toastId: "unknown-error",
-      });
+
+    if (error?.response) {
+      const { status, data } = error.response;
+
+      // ---- CASE: Token hết hạn ----
+      if (status === 401) {
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
+          icon: <Lock size={20} />,
+          className: "um-toast um-toast--error",
+          bodyClassName: "um-toast-body",
+          progressClassName: "um-toast-progress",
+          toastId: "expired-session",
+        });
+        return;
+      }
+
+      // ---- CASE: Bị chặn ----
+      if (status === 403) {
+        let blocker = null;
+        let blocked = null;
+
+        if (typeof data === "object" && data !== null) {
+          blocker = data.blockerName || data.BlockerName || null;
+          blocked = data.blockedName || data.BlockedName || null;
+        }
+
+        const msg =
+          blocker && blocked
+            ? `${blocker} đã chặn ${blocked}.`
+            : "Bạn không thể nhắn tin với người này (đã bị chặn).";
+
+        toast.error(msg, {
+          icon: <XCircle size={20} />,
+          className: "um-toast um-toast--error",
+          bodyClassName: "um-toast-body",
+          progressClassName: "um-toast-progress",
+          toastId: "blocked-chat",
+        });
+        return;
+      }
+
+      // ---- CASE: Bad Request ----
+      if (status === 400) {
+        toast.error("Yêu cầu không hợp lệ.", {
+          icon: <AlertTriangle size={20} />,
+          className: "um-toast um-toast--error",
+          bodyClassName: "um-toast-body",
+          progressClassName: "um-toast-progress",
+          toastId: "bad-request",
+        });
+        return;
+      }
     }
+
+    // ---- CASE: Unknown Error ----
+    toast.error("Có lỗi xảy ra. Vui lòng thử lại sau.", {
+      icon: <XCircle size={20} />,
+      className: "um-toast um-toast--error",
+      bodyClassName: "um-toast-body",
+      progressClassName: "um-toast-progress",
+      toastId: "unknown-error",
+    });
   }
 };
-
 
   return (
     <div className="video-detail-overlay" onClick={onClose}>

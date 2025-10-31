@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
+import MarketHeroHeader from "../components/MarketHeroHeader";
+// BannerSlider kept for content below hero if needed
 import BannerSlider from "../components/BannerSlider";
 import CategoryList from "../components/CategoryList";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import UniMarketIntro from "../components/UniMarketIntro";
 import "./MarketPage.css";
-import VideoListCarousel from "../components/VideoCarousel";
 import Footer from "../components/Footer";
 
 const MarketplacePage = () => {
@@ -14,18 +15,18 @@ const MarketplacePage = () => {
 
   return (
     <div className="marketplace-page">
-      {/* Thanh menu đầu trang */}
-      <TopNavbar />
+  {/* Keep TopNavbar mounted (logic like SignalR/unread counts runs) */}
+  <TopNavbar />
 
-      {/* Banner chạy tự động */}
-      <BannerSlider />
+  {/* Market hero visual (two-line) shown on homepage; it will add body.mp-hero-active while at top */}
+  <MarketHeroHeader />
+
+  {/* Banner (slideshow) rendered after hero header; hero top-info is fixed so banner starts visually below it */}
+  <BannerSlider />
 
       <div className="main-content">
         {/* Danh sách danh mục */}
         <CategoryList />
-
-        {/* Danh sách video */}
-        <VideoListCarousel />
 
         {/* Tin đăng dành cho bạn */}
         <div className="section-wrapper">

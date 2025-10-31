@@ -1,0 +1,28 @@
+.TrangChuNav {
+  display: flex;
+  gap: 20px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.TrangChuNav__tab {
+  color: #9CA3AF; /* màu xám mờ mặc định */
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  transition: color 0.2s ease;
+}
+
+.TrangChuNav__tab:hover {
+  color: #6B7280; /* màu xám đậm hơn khi hover */
+}
+
+.TrangChuNav__tab--active {
+  color: #000000; /* màu đen đậm khi active */
+  font-weight: 600;
+}

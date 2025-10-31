@@ -79,7 +79,7 @@
 
 .fpb-price {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 650;
   color: #e5193b;
   white-space: nowrap;
 }
@@ -166,7 +166,6 @@
   margin: 0 auto;
   display: flex;
   gap: 0;
-  font-weight: 600;
   font-size: 16px;
 }
 .fpb-tab {
@@ -174,13 +173,15 @@
   background: none;
   padding: 16px 24px;
   cursor: pointer;
-  color: #222;
+  color: #666;         /* <-- ĐỔI THÀNH XÁM NHẠT */
+  font-weight: 400;   /* <-- THÊM NÉT MỎNG (NORMAL) */
   position: relative;
   outline: none;
   transition: color 0.2s;
 }
 .fpb-tab.active {
-  color: #e5193b;
+  color: #000000; /* <-- Màu đen đậm khi active */
+  font-weight: 600;   /* <-- THÊM NÉT ĐẬM (BOLD) */
 }
 .fpb-tab.active::after {
   content: '';
@@ -189,9 +190,9 @@
   left: 16px;
   right: 16px;
   bottom: 6px;
-  height: 3px;
+  height: 2px;
   border-radius: 2px;
-  background: #ffaf3e;
+  background: #222222;
   animation: tab-underline 0.3s cubic-bezier(.4,0,.2,1);
 }
 @keyframes tab-underline {

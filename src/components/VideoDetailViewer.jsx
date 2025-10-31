@@ -15,6 +15,7 @@ import { VideoContext } from "../context/VideoContext";
 import VideoControls from './VideoControls';
 import { FaInfoCircle } from "react-icons/fa";
 import VideoDetailsPanel from "./VideoDetailsPanel";
+import { FaRegEye } from "react-icons/fa";
 const VideoDetailViewer = ({ onOpenChat }) => {
   const [videoList, setVideoList] = useState([]);
   const [searchParams] = useSearchParams();
@@ -724,7 +725,7 @@ const VideoDetailViewer = ({ onOpenChat }) => {
                           color: '#ccc',
                           marginTop: '8px'
                         }}>
-                          👁️ {formatCount(video.soLuotXem || 0)} lượt xem
+                          <FaRegEye  className="vdv-eye-icon" /> {formatCount(video.soLuotXem || 0)} lượt xem
                         </div>
                       </div>
                     </div>

@@ -210,10 +210,17 @@ const SearchBar = () => {
     // Save search history
     await saveSearchHistory(queryToSearch);
 
+    // Build query params and include selected location if present
+    const params = new URLSearchParams();
+    params.set('search', queryToSearch);
+    if (selectedLocation && selectedLocation.trim()) {
+      params.set('location', selectedLocation.trim());
+    }
+
     if (location.pathname !== "/loc-tin-dang") {
-      navigate(`/loc-tin-dang?search=${encodeURIComponent(queryToSearch)}`);
+      navigate(`/loc-tin-dang?${params.toString()}`);
     } else {
-      navigate(`?search=${encodeURIComponent(queryToSearch)}`);
+      navigate(`?${params.toString()}`);
     }
   };
 

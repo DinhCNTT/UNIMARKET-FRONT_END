@@ -1,33 +1,173 @@
+.top-navbar.scrolled .manage-post-btn {
+  color: #111 !important;
+}
+/* Hiệu ứng đổi màu TopNavbar khi scroll */
+.top-navbar {
+  background: linear-gradient(90deg, #d89a3c, #ffb36c);
+  transition: background 0.3s, color 0.3s;
+}
+.top-navbar.scrolled {
+  background: #fff;
+}
+
+.top-navbar .logo {
+  color: #fff;
+  transition: color 0.3s;
+}
+.top-navbar.scrolled .logo {
+  color: #ff9900;
+}
+
+.top-navbar.scrolled .dropdown-title {
+  color: #222 !important;
+  background: #fff !important;
+}
+
+.top-navbar.scrolled .manage-post-btn {
+  color: #222 !important;
+  background: #fff !important;
+  border: 1px solid #ff9900 !important;
+}
+
+.top-navbar.scrolled .account-name {
+  color: #222 !important;
+}
+
+.main-menu a {
+  color: #fff;
+  transition: color 0.3s;
+}
+.top-navbar.scrolled .main-menu a {
+  color: #ff9900;
+}
+
+.nav-icon,
+.nav-icon-chat {
+  color: #fff;
+  transition: color 0.3s;
+}
+.top-navbar.scrolled .nav-icon,
+.top-navbar.scrolled .nav-icon-chat {
+  color: #ff9900;
+}
+
+.post-btn-highlight {
+  background: #ff5722;
+  color: #fff;
+  transition: background 0.3s, color 0.3s;
+}
+.top-navbar.scrolled .post-btn-highlight {
+  background: #ff9900;
+  color: #fff;
+}
+
+.manage-post-btn {
+  background: #fbbc04;
+  color: #202124;
+  border: 1px solid #d6a100;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+.top-navbar.scrolled .manage-post-btn {
+  background: #fff;
+  color: #ff9900;
+  border: 1px solid #ff9900;
+}
+
+.account-name {
+  color: #fff;
+  transition: color 0.3s;
+}
+.top-navbar.scrolled .account-name {
+  color: #ff9900;
+}
+
+.dropdown-title {
+  color: #fff;
+  background: #ff9900;
+  transition: color 0.3s, background 0.3s;
+}
+.top-navbar.scrolled .dropdown-title {
+  color: #ff9900;
+  background: #fff;
+}
+
+.dropdown-icon {
+  color: #fff;
+  transition: color 0.3s;
+}
+.top-navbar.scrolled .dropdown-icon {
+  color: #ff9900;
+}
+/* Hiệu ứng đổi màu khi scroll */
+.top-navbar.scrolled {
+  background: #fff !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: background 0.3s, color 0.3s;
+}
+
+.top-navbar.scrolled .logo,
+.top-navbar.scrolled .main-menu a,
+.top-navbar.scrolled .dropdown-title,
+.top-navbar.scrolled .account-name,
+.top-navbar.scrolled .manage-post-btn,
+.top-navbar.scrolled .post-btn-highlight,
+.top-navbar.scrolled .nav-icon,
+.top-navbar.scrolled .nav-icon-chat,
+.top-navbar.scrolled .dropdown-icon {
+  color: #111 !important;
+  transition: color 0.3s;
+}
+
+.top-navbar.scrolled .main-menu a:hover,
+.top-navbar.scrolled .dropdown-content .parent-category:hover {
+  background: #fff7ed;
+  color: #ff9900 !important;
+}
+
+.top-navbar.scrolled .post-btn-highlight {
+  background: #ff9900 !important;
+  color: #fff !important;
+}
+
+.top-navbar.scrolled .manage-post-btn {
+  background: #fff7ed;
+  color: #111 !important;
+  border-color: #ff9900;
+}
 /* Updated styles for TopNavbar */
 .top-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 32px;
-    background: linear-gradient(90deg, #ff9900, #fc8e28);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* increase padding to make navbar taller/more prominent */
+  padding: 20px 40px;
+  background: linear-gradient(90deg, #ff9900, #fc8e28);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2100; /* ensure navbar and its dropdowns sit above hero/banner */
 }
 
 .nav-left {
-    display: flex;
-    align-items: center; /* Đảm bảo chữ nằm giữa theo chiều dọc */
-    gap: 15px; /* Khoảng cách giữa các chữ */
-    height: 100%; /* Giúp toàn bộ phần tử trong .nav-left chiếm đủ chiều cao */
+  display: flex;
+  align-items: center; /* Đảm bảo chữ nằm giữa theo chiều dọc */
+  gap: 20px; /* Khoảng cách giữa các chữ */
+  height: 100%; /* Giúp toàn bộ phần tử trong .nav-left chiếm đủ chiều cao */
 }
 
+.nav-left .logo-link{display:inline-flex;align-items:center}
+.nav-left .logo-img{height:44px;width:auto;display:block}
+
 .nav-left .logo {
-    font-size: 26px;
-    font-weight: bold;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    cursor: pointer;
-    transition: color 0.3s ease;
+  font-size: 34px;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .nav-left .logo:hover {
@@ -41,12 +181,12 @@
 }
 
 .main-menu a {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .main-menu a:hover {
@@ -55,23 +195,45 @@
 }
 
 .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 20px; /* Giảm khoảng cách giữa các mục bên phải */
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Khoảng cách giữa các icon */
 }
 
+/* Icon buttons - Tim, Bình luận, Chuông */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
 .nav-right .post-btn {
-    background: #ff5722; /* Màu cam đậm nổi bật hơn */
-    color: #ffffff;
-    padding: 8px 16px; /* Tăng padding để làm nút nổi bật hơn */
-    border: none;
-    border-radius: 20px;
-    font-size: 14px; /* Làm chữ lớn hơn một chút */
-    font-weight: bold;
-    cursor: pointer;
-    white-space: nowrap; /* Ngăn xuống dòng */
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    align-self: center; /* Đảm bảo nút nằm cùng dòng */
+  background: #ff5722; /* Màu cam đậm nổi bật hơn */
+  color: #ffffff;
+  padding: 10px 20px; /* Tăng padding để làm nút nổi bật hơn */
+  border: none;
+  border-radius: 24px;
+  font-size: 15px; /* Làm chữ lớn hơn */
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap; /* Ngăn xuống dòng */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  align-self: center; /* Đảm bảo nút nằm cùng dòng */
 }
 
 .nav-right .post-btn:hover {
@@ -80,18 +242,17 @@
 }
 
 .nav-right .logout-btn {
-    background: transparent;
-    color: #ffffff;
-    border: 2px solid #ffffff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-    align-self: center;
-    margin-top: 20px; /* Thêm khoảng cách phía trên */
+  background: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  padding: 8px 14px;
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  align-self: center;
 }
 
 .nav-right .logout-btn:hover {
@@ -118,15 +279,15 @@
 
 /* Updated styles for TopNavbar with dropdown for user actions */
 .nav-right .user-dropdown {
-    position: relative;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-size: 14px; /* Làm nhỏ chữ */
-    font-weight: bold;
-    color: #000000; /* Màu đen */
-    text-decoration: none;
-    transition: color 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000000;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .nav-right .user-dropdown:hover {
@@ -168,12 +329,12 @@
     flex: 1; /* Chiếm phần còn lại của navbar */
     display: flex;
     justify-content: center;
-    max-width: 500px; /* Giới hạn chiều rộng */
+  max-width: 700px; /* Giới hạn chiều rộng */
 }
 
 /* Thu nhỏ kích thước chữ trong navbar */
 .top-navbar {
-    font-size: 14px; /* Giảm kích thước chữ chung */
+  font-size: 16px; /* Tăng kích thước chữ chung */
 }
 
 /* Phần chứa dropdown */
@@ -211,9 +372,9 @@
 }
 
 .category-item img.category-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
+  width: 28px;
+  height: 28px;
+  margin-right: 12px;
 }
 
 .subcategory-list {
@@ -228,19 +389,20 @@
 
 /* Nội dung danh mục chính */
 .dropdown-content {
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 10px;
-    transition: opacity 0.3s ease;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    display: none;
-    width: 250px;
-    max-height: 500px; /* Tăng chiều cao để chứa nhiều danh mục hơn */
-    overflow: visible; /* Hiển thị đầy đủ nội dung thay vì bị ẩn */
-    z-index: 1000;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  /* give a small gap so the dropdown doesn't overlap the banner/header when it appears */
+  top: calc(100% + 6px);
+  left: 0;
+  display: none;
+  width: 260px;
+  max-height: 500px; /* Tăng chiều cao để chứa nhiều danh mục hơn */
+  overflow: visible; /* Hiển thị đầy đủ nội dung thay vì bị ẩn */
+  z-index: 2000; /* ensure it sits above banner and other elements */
 }
 
 /* Hiển thị danh mục cha khi hover */
@@ -268,16 +430,16 @@
 
 /* Danh mục con (sub-menu) */
 .sub-menu {
-    position: absolute;
-    top: 0;
-    left: 100%; /* Hiển thị bên phải danh mục cha */
-    background: white;
-    width: 200px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: none; /* Ẩn mặc định */
-    z-index: 1001;
-    border-radius: 5px;
-    white-space: nowrap; /* Ngăn chữ bị xuống dòng */
+  position: absolute;
+  top: 0;
+  left: 100%; /* Hiển thị bên phải danh mục cha */
+  background: white;
+  width: 220px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  display: none; /* Ẩn mặc định */
+  z-index: 2001;
+  border-radius: 6px;
+  white-space: nowrap; /* Ngăn chữ bị xuống dòng */
 }
 
 /* Hiển thị danh mục con khi hover vào danh mục cha */
@@ -585,21 +747,21 @@
 
 .unread-count-badge {
   position: absolute;
-  top: -3px;
-  right: -3px;
+  top: -5px;               /* nhích lên 1 tí cho cân với icon */
+  right: -5px;             /* nhích sang phải */
   background: red;
   color: white;
-  font-size: 7px;
+  font-size: 9px;          /* tăng từ 7px -> 9px */
   font-weight: bold;
-  padding: 0 2px;
+  padding: 0 4px;          /* tăng từ 2px -> 4px */
   border-radius: 999px;
-  min-width: 10px;
-  height: 10px;
-  line-height: 10px;
+  min-width: 16px;         /* tăng từ 10px -> 16px */
+  height: 16px;            /* tăng từ 10px -> 16px */
+  line-height: 16px;
   text-align: center;
   user-select: none;
   z-index: 2;
-  box-shadow: 0 0 0 1px #fff;
+  box-shadow: 0 0 0 2px #fff; /* tăng viền trắng cho nổi */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -639,6 +801,7 @@
 .account-name {
   font-weight: 500;
   font-size: 15px;
+  color: #111 !important;
 }
 .account-avatar {
   width: 28px;

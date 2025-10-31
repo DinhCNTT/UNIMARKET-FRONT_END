@@ -66,7 +66,11 @@ const FloatingProductBox = ({ image, title, price, details, description, onShowP
         <div className="fpb-info">
           <span className="fpb-title">{title}</span>
           <div className="fpb-price-details">
-            <span className="fpb-price">{price}</span>
+            <span className="fpb-price">
+              {typeof price === 'string' 
+                ? price.replace(/,/g, '.').replace('VND', 'đ') 
+                : price}
+            </span>
           </div>
         </div>
         <div className="fpb-actions">

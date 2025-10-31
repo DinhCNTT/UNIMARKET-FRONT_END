@@ -23,11 +23,32 @@ import {
 import { MdTableRows } from "react-icons/md";
 import { toast } from "sonner";
 
+
 const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const connectionRef = useRef(null);
+  // Use a small hysteresis window to avoid flicker when the hero is hidden/reshown
+  // ENTER threshold: when scrolling up below this, hero mode should activate
+  // EXIT threshold: when scrolling down past this, navbar scrolled state becomes active
+  const HERO_SCROLL_ENTER = 400;
+  const HERO_SCROLL_EXIT = 440;
+
+  // Lắng nghe scroll để đổi màu navbar (with hysteresis)
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setScrolled((prev) => {
+        if (y >= HERO_SCROLL_EXIT && !prev) return true;
+        if (y <= HERO_SCROLL_ENTER && prev) return false;
+        return prev; // keep previous state when between thresholds
+      });
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const {
     setSelectedCategory,
@@ -315,11 +336,19 @@ const TopNavbar = () => {
 
 
   return (
-    <header className="top-navbar">
+    <header className={`top-navbar${scrolled ? " scrolled" : ""}`}>
       <div className="nav-left">
-        <span className="logo" onClick={handleLogoClick} style={{ cursor: "pointer" }}>
-          Unimarket
-        </span>
+        <a
+          href="/"
+          className="logo-link"
+          onClick={(e) => {
+            e.preventDefault();
+            handleLogoClick();
+          }}
+          aria-label="Unimarket home"
+        >
+          <img src="/logoWeb.png" alt="Unimarket" className="logo-img" />
+        </a>
 
         <nav className="main-menu">
           <div className="dropdown">
@@ -361,16 +390,28 @@ const TopNavbar = () => {
       </div>
 
       <div className="nav-right">
-        <FaBell className="nav-icon" title="Thông báo" />
-        <div className="nav-icon-chat" onClick={() => navigate("/chat")} style={{ position: "relative" }} title="Tin nhắn">
-          <FaComments />
+        <button className="icon-btn" title="Thông báo" aria-label="Thông báo">
+          <FaBell size={18} color="#333" />
+        </button>
+
+        <button
+          className="icon-btn"
+          title="Tin nhắn"
+          aria-label="Tin nhắn"
+          onClick={() => navigate("/chat")}
+          style={{ position: "relative" }}
+        >
+          <FaComments size={18} color="#333" />
           {unreadCount > 0 && (
             <span className="unread-count-badge">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
-        </div>
-        <FaShoppingBag className="nav-icon" title="Giỏ hàng" />
+        </button>
+
+        <button className="icon-btn" title="Giỏ hàng" aria-label="Giỏ hàng">
+          <FaShoppingBag size={18} color="#333" />
+        </button>
 
         {user && (
           <button className="manage-post-btn" onClick={() => navigate("/quan-ly-tin")}> 
