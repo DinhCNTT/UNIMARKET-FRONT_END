@@ -116,6 +116,9 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa icon và chữ */
 }
 
 .sdtChatBtn:hover {
@@ -342,9 +345,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.7);
+  background: transparent; /* 🔸 Ban đầu trong suốt */
   border: none;
-  color: #333;
+  color: #fff; /* Tùy background video, bạn có thể đổi sang #333 nếu nền sáng */
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -355,11 +358,14 @@
   align-items: center;
   justify-content: center;
   z-index: 5;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease, color 0.3s ease; /* Hiệu ứng mượt */
+  box-shadow: none; /* 🔸 Không đổ bóng khi chưa hover */
 }
 
 .carouselBtn:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.9); /* 🔸 Khi hover mới có nền trắng mờ */
+  color: #333; /* Đổi màu chữ để tương phản */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); /* Thêm bóng nhẹ khi hover */
 }
 
 .carouselBtnLeft {
@@ -422,7 +428,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.9);
-  z-index: 1000;
+  z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -583,4 +589,18 @@
   .multiImageGallery {
     gap: 3px;
   }
+}
+.infoLine {
+  display: flex;
+  align-items: center; /* Căn icon và chữ thẳng hàng theo chiều dọc */
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 14px; /* Khoảng cách giữa các dòng */
+}
+
+.icon {
+  margin-right: 10px; /* Khoảng cách giữa icon và chữ */
+  font-size: 20px; /* Kích thước icon */
+  color: #555; /* Màu icon (hơi nhạt hơn chữ) */
+  flex-shrink: 0; /* Đảm bảo icon không bị co lại nếu dòng quá dài */
 }

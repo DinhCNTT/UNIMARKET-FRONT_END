@@ -6,6 +6,7 @@ import TopNavbar from "../components/TopNavbar";
 import FloatingProductBox from "./FloatingProductBox";
 import { AuthContext } from "../context/AuthContext";
 import Swal from "sweetalert2";
+import { MdOutlineSell, MdOutlineLocationOn, MdOutlineCalendarToday,MdOutlineChat } from "react-icons/md";
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -192,13 +193,13 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                 onClick={prevMedia}
                 className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`}
               >
-                ←
+                 {'<'}
               </button>
               <button
                 onClick={nextMedia}
                 className={`${styles.carouselBtn} ${styles.carouselBtnRight}`}
               >
-                →
+                {'>'}
               </button>
             </>
           )}
@@ -270,17 +271,19 @@ const ChiTietTinDang = ({ onOpenChat }) => {
 
         <div className={styles.chiTietTinDangInfo}>
           <h1>{post.tieuDe}</h1>
-          <p>
+          <p className={styles.infoLine}>
+            <MdOutlineSell className={styles.icon} />
             <strong>Giá:</strong>{" "}
             <span className={styles.price}>{formattedPrice}</span>
           </p>
-          <p>
+          <p className={styles.infoLine}>
+            <MdOutlineLocationOn className={styles.icon} />
             <strong>Địa chỉ:</strong> {post.diaChi}
           </p>
-          <p>
+          <p className={styles.infoLine}>
+            <MdOutlineCalendarToday className={styles.icon} />
             <strong>Ngày đăng:</strong> {formatDate(post.ngayDang)}
           </p>
-
           <div className={styles.sdtChat}>
             <button className={styles.sdt} onClick={handleShowPhoneNumber}>
               {showPhoneNumber
@@ -289,10 +292,13 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             </button>
 
             {user?.id !== post.maNguoiBan && (
-              <button className={`${styles.sdt} ${styles.sdtChatBtn}`} onClick={handleChatWithSeller}>
-                💬 Chat với người bán
-              </button>
-            )}
+            <button
+              className={`${styles.sdt} ${styles.sdtChatBtn}`}
+              onClick={handleChatWithSeller}
+            >
+              <MdOutlineChat /> Chat với người bán
+            </button>
+          )}
           </div>
 
           <div className={styles.sellerInfo}>

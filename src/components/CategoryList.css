@@ -24,10 +24,9 @@
     transition: color 0.3s ease; /* Chỉ áp dụng chuyển đổi màu */
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
     position: relative;
-    top: -20px; /* Đẩy tiêu đề lên trên (bớt mạnh để toàn bộ phần khám phá xuống dưới) */
+    top: -70px; /* Đẩy tiêu đề lên trên (bớt mạnh để toàn bộ phần khám phá xuống dưới) */
     left: 0; /* Đẩy tiêu đề về phía trái */
 }
-
 
 .category-grid {  
     display: flex;
@@ -39,7 +38,7 @@
     max-width: 1200px;
     margin: 0 auto;
     gap: 0px; /* Tăng khoảng cách giữa các ảnh */
-    margin-top: -10px; /* Đẩy lên ít để phần khám phá nằm thấp hơn */
+    margin-top: -60px; /* Đẩy lên ít để phần khám phá nằm thấp hơn */
 }
 
 .category-item {

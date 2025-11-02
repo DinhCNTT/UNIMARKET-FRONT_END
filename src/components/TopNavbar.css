@@ -713,10 +713,9 @@
 .nav-right {
   display: flex;
   align-items: center;
-  justify-content: center;  /* căn giữa tổng thể nếu nằm trong không gian lớn */
-  gap: 30px;                /* cách đều giữa các icon */
-  padding: 0 20px;          /* thêm chút đệm 2 bên */
-
+  justify-content: center;
+  gap: 15px; /* ↓ từ 30px còn 10px cho sát hơn */
+  padding: 0 20px;
 }
 
 .nav-icon {

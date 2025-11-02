@@ -146,7 +146,6 @@
   letter-spacing: 0.5px;
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  animation: fadeInScale 0.2s ease-out;
 }
 
 @keyframes fadeInScale {

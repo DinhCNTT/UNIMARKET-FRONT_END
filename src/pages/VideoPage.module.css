@@ -18,11 +18,11 @@
 }
 
 .header {
-  margin-bottom: 40px;
   padding: 30px 20px;
   background: transparent;
   border-radius: 0;
   box-shadow: none;
+  margin-left: -10px; /* Dịch sang trái 10px */
 }
 
 .title {
@@ -361,4 +361,9 @@
 .paginationPrev:hover,
 .paginationNext:hover {
   background: #f8f9fa;
+}
+.filterContainer {
+ margin-bottom: 10px;
+ background: transparent; /* Đổi nền thành trong suốt */
+ box-shadow: none; /* Xóa bóng đổ (viền) */
 }

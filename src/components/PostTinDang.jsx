@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import styles from "./PostTinDang.module.css";
-
+import PreviewModal from "./PreviewModal";  // 👈 THÊM DÒNG NÀY
 const PostTinDang = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -412,99 +412,13 @@ const PostTinDang = () => {
           <button type="submit">Đăng Tin</button>
         </div>
 
-        {showPreview && previewData && (
-        <div className={styles.previewBackdrop} onClick={handlePreview}>
-          <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
-            {/* Nút đóng modal */}
-            <button type="button" className={styles.previewCloseBtn} onClick={handlePreview}>
-              &times;
-            </button>
-
-            {/* Layout 2 cột */}
-            <div className={styles.previewLayout}>
-              
-              {/* Cột 1: Media (Ảnh/Video) */}
-              <div className={styles.previewMedia}>
-                <div className={styles.previewHeroContainer}>
-                  {previewData.images[activePreviewMedia]?.type.startsWith("video") ? (
-                    <video
-                      src={previewData.images[activePreviewMedia].url}
-                      controls
-                      autoPlay
-                      muted
-                      className={styles.previewHeroMedia}
-                    />
-                  ) : (
-                    <img
-                      src={previewData.images[activePreviewMedia]?.url || 'https://via.placeholder.com/600x400?text=No+Image'}
-                      alt="Preview chính"
-                      className={styles.previewHeroMedia}
-                    />
-                  )}
-                </div>
-                {/* Danh sách thumbnail */}
-                {previewData.images.length > 1 && (
-                  <div className={styles.previewThumbnailList}>
-                    {previewData.images.map((media, idx) => (
-                      <div
-                        key={idx}
-                        className={`${styles.previewThumbnailWrapper} ${idx === activePreviewMedia ? styles.active : ''}`}
-                        onClick={() => setActivePreviewMedia(idx)}
-                      >
-                        {media.type.startsWith("video") ? (
-                          <video src={media.url} className={styles.previewThumbnail} />
-                        ) : (
-                          <img src={media.url} alt={`thumbnail ${idx}`} className={styles.previewThumbnail} />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Cột 2: Thông tin chi tiết */}
-              <div className={styles.previewMainInfo}>
-                <h2 className={styles.previewTitle}>{previewData.title}</h2>
-                
-                <p className={styles.previewPrice}>
-                  {previewData.price} VNĐ
-                  {previewData.canNegotiate && <span className={styles.negotiateTag}> (Có thương lượng)</span>}
-                </p>
-                
-                <h3 className={styles.previewSectionTitle}>Mô tả chi tiết</h3>
-                <div
-                  className={styles.previewDescription}
-                  dangerouslySetInnerHTML={{
-                    __html: previewData.description.replace(/\n/g, "<br>"),
-                  }}
-                />
-
-                <h3 className={styles.previewSectionTitle}>Thông tin thêm</h3>
-                <div className={styles.previewDetailGrid}>
-                  <div className={styles.previewDetailItem}>
-                    <span className={styles.previewDetailKey}>Danh mục:</span>
-                    <span className={styles.previewDetailValue}>{previewData.categoryName}</span>
-                  </div>
-                  <div className={styles.previewDetailItem}>
-                    <span className={styles.previewDetailKey}>Tình trạng:</span>
-                    <span className={styles.previewDetailValue}>{previewData.condition}</span>
-                  </div>
-                  <div className={styles.previewDetailItem}>
-                    <span className={styles.previewDetailKey}>Khu vực:</span>
-                    <span className={styles.previewDetailValue}>{`${previewData.district}, ${previewData.province}`}</span>
-                  </div>
-                </div>
-
-                <div className={styles.previewContactInfo}>
-                  <h3 className={styles.previewSectionTitle}>Thông tin liên hệ</h3>
-                  <p>{previewData.contactInfo}</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
+        <PreviewModal 
+  showPreview={showPreview}
+  previewData={previewData}
+  activePreviewMedia={activePreviewMedia}
+  setActivePreviewMedia={setActivePreviewMedia}
+  onClose={handlePreview}
+/>
       </form>
     </div>
   );

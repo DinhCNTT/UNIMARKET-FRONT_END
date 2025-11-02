@@ -8,8 +8,7 @@ import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
 import { AuthContext } from "../context/AuthContext";
 import {
-  FaBell,
-  FaComments,
+  FaRegBell,
   FaShoppingBag,
   FaUserCircle,
   FaChevronDown,
@@ -22,7 +21,7 @@ import {
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
 import { toast } from "sonner";
-
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 
 const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
@@ -391,9 +390,8 @@ const TopNavbar = () => {
 
       <div className="nav-right">
         <button className="icon-btn" title="Thông báo" aria-label="Thông báo">
-          <FaBell size={18} color="#333" />
+          <FaRegBell size={18} />
         </button>
-
         <button
           className="icon-btn"
           title="Tin nhắn"
@@ -401,7 +399,7 @@ const TopNavbar = () => {
           onClick={() => navigate("/chat")}
           style={{ position: "relative" }}
         >
-          <FaComments size={18} color="#333" />
+          <IoChatbubbleEllipsesOutline size={20} color="#333" />
           {unreadCount > 0 && (
             <span className="unread-count-badge">
               {unreadCount > 99 ? "99+" : unreadCount}
@@ -475,7 +473,7 @@ const TopNavbar = () => {
           </>
         )}
 
-        <button className="post-btn-highlight" onClick={handlePostClick}>📝 ĐĂNG TIN</button>
+        <button className="post-btn-highlight" onClick={handlePostClick}> ĐĂNG TIN</button>
       </div>
     </header>
   );
