@@ -1,106 +1,23 @@
-.top-navbar.scrolled .manage-post-btn {
-  color: #111 !important;
-}
-/* Hiệu ứng đổi màu TopNavbar khi scroll */
-.top-navbar {
-  background: linear-gradient(90deg, #d89a3c, #ffb36c);
-  transition: background 0.3s, color 0.3s;
-}
-.top-navbar.scrolled {
-  background: #fff;
-}
-
 .top-navbar .logo {
   color: #fff;
   transition: color 0.3s;
 }
-.top-navbar.scrolled .logo {
-  color: #ff9900;
-}
-
-.top-navbar.scrolled .dropdown-title {
-  color: #222 !important;
-  background: #fff !important;
-}
-
-.top-navbar.scrolled .manage-post-btn {
-  color: #222 !important;
-  background: #fff !important;
-  border: 1px solid #ff9900 !important;
-}
-
-.top-navbar.scrolled .account-name {
-  color: #222 !important;
-}
-
-.main-menu a {
-  color: #fff;
-  transition: color 0.3s;
-}
-.top-navbar.scrolled .main-menu a {
-  color: #ff9900;
-}
-
-.nav-icon,
-.nav-icon-chat {
-  color: #fff;
-  transition: color 0.3s;
-}
-.top-navbar.scrolled .nav-icon,
-.top-navbar.scrolled .nav-icon-chat {
-  color: #ff9900;
-}
-
-.post-btn-highlight {
-  background: #ff5722;
-  color: #fff;
-  transition: background 0.3s, color 0.3s;
-}
-.top-navbar.scrolled .post-btn-highlight {
-  background: #ff9900;
-  color: #fff;
-}
-
 .manage-post-btn {
-  background: #fbbc04;
-  color: #202124;
-  border: 1px solid #d6a100;
-  transition: background 0.3s, color 0.3s, border 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;                      /* Khoảng cách icon & chữ */
+  background: #fff;              /* 🌟 Nền trắng */
+  color: #202124;                /* 🖤 Chữ đen */
+  padding: 8px 14px;
+  border: none;                  /* ❌ Bỏ viền */
+  border-radius: 30px;           /* 💫 Bo tròn */
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
-.top-navbar.scrolled .manage-post-btn {
-  background: #fff;
-  color: #ff9900;
-  border: 1px solid #ff9900;
-}
-
-.account-name {
-  color: #fff;
-  transition: color 0.3s;
-}
-.top-navbar.scrolled .account-name {
-  color: #ff9900;
-}
-
-.dropdown-title {
-  color: #fff;
-  background: #ff9900;
-  transition: color 0.3s, background 0.3s;
-}
-.top-navbar.scrolled .dropdown-title {
-  color: #ff9900;
-  background: #fff;
-}
-
-.dropdown-icon {
-  color: #fff;
-  transition: color 0.3s;
-}
-.top-navbar.scrolled .dropdown-icon {
-  color: #ff9900;
-}
-/* Hiệu ứng đổi màu khi scroll */
 .top-navbar.scrolled {
-  background: #fff !important;
+  background: #fff;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   transition: background 0.3s, color 0.3s;
 }
@@ -110,28 +27,27 @@
 .top-navbar.scrolled .dropdown-title,
 .top-navbar.scrolled .account-name,
 .top-navbar.scrolled .manage-post-btn,
-.top-navbar.scrolled .post-btn-highlight,
 .top-navbar.scrolled .nav-icon,
 .top-navbar.scrolled .nav-icon-chat,
 .top-navbar.scrolled .dropdown-icon {
-  color: #111 !important;
+  color: #111;
   transition: color 0.3s;
+}
+
+.top-navbar.scrolled .post-btn-highlight {
+  background: #ffd400;
+  color: #fff;
 }
 
 .top-navbar.scrolled .main-menu a:hover,
 .top-navbar.scrolled .dropdown-content .parent-category:hover {
   background: #fff7ed;
-  color: #ff9900 !important;
-}
-
-.top-navbar.scrolled .post-btn-highlight {
-  background: #ff9900 !important;
-  color: #fff !important;
+  color: #ff9900;
 }
 
 .top-navbar.scrolled .manage-post-btn {
   background: #fff7ed;
-  color: #111 !important;
+  color: #111;
   border-color: #ff9900;
 }
 /* Updated styles for TopNavbar */
@@ -140,8 +56,9 @@
   justify-content: space-between;
   align-items: center;
   /* increase padding to make navbar taller/more prominent */
+  background: #ffcc21;
+  transition: background 0.3s, color 0.3s;
   padding: 20px 40px;
-  background: linear-gradient(90deg, #ff9900, #fc8e28);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   position: fixed;
   top: 0;
@@ -194,11 +111,7 @@
     color: #333333;
 }
 
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 16px; /* Khoảng cách giữa các icon */
-}
+/* Đã xóa .nav-right */
 
 /* Icon buttons - Tim, Bình luận, Chuông */
 .icon-btn {
@@ -396,7 +309,7 @@
   transition: opacity 0.3s ease;
   position: absolute;
   /* give a small gap so the dropdown doesn't overlap the banner/header when it appears */
-  top: calc(100% + 6px);
+  top: 100%;
   left: 0;
   display: none;
   width: 260px;
@@ -463,16 +376,17 @@
 
 /* Tiêu đề danh mục */
 .dropdown-title {
-    font-size: 18px; /* Làm chữ to hơn */
-    font-weight: bold;
-    color: white; /* Đổi màu chữ thành trắng */
-    padding: 12px 20px;
-    background: #ff9900; /* Màu nền (tùy chỉnh) */
-    border-radius: 5px;
-    cursor: pointer;
-    display: inline-block;
-    white-space: nowrap; /* Ngăn chữ xuống dòng */
-    text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffba00;             /* 💛 Chữ vàng */
+  padding: 12px 28px;
+  background: #fff;           /* Nền trắng */
+  border-radius: 30px;        /* Bo tròn mạnh hơn */
+  cursor: pointer;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 /* Icon trong danh mục cha */
@@ -508,11 +422,6 @@
     border-radius: 5px;
 }
 
-/* Dropdown cho tài khoản */
-.account-dropdown {
-    position: relative;
-}
-
 .account-btn {
     background: none;
     color: white;
@@ -539,10 +448,6 @@
 
 .account-dropdown:hover .account-dropdown-menu {
     display: flex;
-}
-
-.dropdown-icon {
-    font-size: 12px;
 }
 
 .manage-user-btn {
@@ -583,23 +488,25 @@
     color: #ffffff; /* Màu trắng */
     transform: scale(1.05);
 }
-
-
-.account-info {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.nav-right .register-btn {
+background: #ffffff; /* Nền trắng */
+color: #4caf50; /* Màu xanh lá */
+padding: 6px 12px;
+border: 2px solid #4caf50; /* Viền xanh lá */
+border-radius: 20px;
+font-size: 12px;
+font-weight: bold;
+cursor: pointer;
+white-space: nowrap;
+transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-.account-avatar {
-  font-size: 20px;
+.nav-right .register-btn:hover {
+background: #4caf50; /* Nền xanh lá khi hover */
+color: #ffffff; /* Chữ trắng */
+transform: scale(1.05);
 }
 
-.account-name {
-  font-weight: 500;
-}
-
-/* Icon mở dropdown - to hơn, rõ hơn, có chuyển động */
 .dropdown-icon {
   font-size: 18px;
   color: #333;
@@ -659,7 +566,7 @@
   cursor: pointer;
 }
 
-.dropdown-icon {
+.dropdown-item .dropdown-icon {
   font-size: 16px;
 }
 
@@ -698,16 +605,15 @@
   }
 }
 
-
-
 .post-btn-highlight {
-  background-color: orange;
-  color: white;
-  padding: 6px 12px;
+  background-color: #000;  /* 🖤 Nền đen */
+  color: #fff;             /* 🤍 Chữ trắng */
+  padding: 10px 20px;      /* 🧤 Tăng kích thước nút */
   margin-left: 10px;
-  border: none;
-  border-radius: 4px;
+  border: none;            /* ❌ Không viền */
+  border-radius: 40px;     /* 💫 Bo tròn mạnh hơn (viên thuốc to) */
   font-weight: bold;
+  font-size: 13px;         /* 📏 Tăng nhẹ chữ cho cân */
   cursor: pointer;
 }
 .nav-right {
@@ -746,7 +652,7 @@
 
 .unread-count-badge {
   position: absolute;
-  top: -5px;               /* nhích lên 1 tí cho cân với icon */
+  top: -5px;       B      /* nhích lên 1 tí cho cân với icon */
   right: -5px;             /* nhích sang phải */
   background: red;
   color: white;
@@ -764,21 +670,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.manage-post-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;                          /* 👈 Giảm khoảng cách giữa icon & chữ */
-  background: #fbbc04;
-  color: #202124;
-  padding: 6px 8px;                 /* 👈 Giảm chiều dài ngang (từ 12px → 8px) */
-  border: 1px solid #d6a100;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .manage-post-btn:hover {
@@ -800,7 +691,7 @@
 .account-name {
   font-weight: 500;
   font-size: 15px;
-  color: #111 !important;
+  color: #111;
 }
 .account-avatar {
   width: 28px;
@@ -811,32 +702,32 @@
 }
 /* Thông báo yêu cầu xác minh email */
 .topnnavbar-toast-verify-email {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  background-color: #eff6ff !important;  /* Xanh nhạt */
-  color: #1d4ed8 !important;             /* Xanh đậm */
-  border: 1px solid #60a5fa !important;
-  border-radius: 12px !important;
-  padding: 14px 18px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  max-width: 420px !important;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #eff6ff;  /* Xanh nhạt */
+  color: #1d4ed8;             /* Xanh đậm */
+  border: 1px solid #60a5fa;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
 }
 
 /* Thông báo yêu cầu cập nhật số điện thoại */
 .topnnavbar-toast-update-phone {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  background-color: #fff7ed !important;  /* Cam nhạt */
-  color: #b45309 !important;             /* Cam đậm */
-  border: 1px solid #fdba74 !important;
-  border-radius: 12px !important;
-  padding: 14px 18px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  max-width: 420px !important;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #fff7ed;  /* Cam nhạt */
+  color: #b45309;             /* Cam đậm */
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
 }
 
 .topnnavbar-toast-verify-email svg,
 .topnnavbar-toast-update-phone svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 22px;
+  height: 22px;
 }

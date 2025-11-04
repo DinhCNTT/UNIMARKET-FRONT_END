@@ -24,7 +24,7 @@ body.mp-hero-active .mp-hero-wrapper {
   justify-content:space-between;
   align-items:center;
   padding:12px 24px;
-  background: linear-gradient(90deg,#ff9900,#fc8e28);
+  background: #e02749;
   color:#fff;
   position: fixed; /* keep top info like TopNavbar */
   top: 0;
@@ -39,16 +39,9 @@ body.mp-hero-active .mp-hero-wrapper {
 .mp-right{display:flex;gap:10px}
 
 .mp-search-row{
-  /* make the search row visually overlap the banner below it
-     --mp-search-offset is the vertical offset (negative moves the search up)
-     You can tune this variable when needed (e.g. --mp-search-offset: -40px). */
-  /* Place the search row slightly below the fixed header by default so it's visible
-    (previously negative values pulled it under the header). Set to 8px to sit
-    just below the header; increase to push further down. */
-  --mp-search-offset: 390px; /* tuned value so search bar sits nicely below the top header */
+  --mp-search-offset: 340px; /* tuned value so search bar sits nicely below the top header */
   background: transparent; /* let the banner show through */
   padding: 0 24px 0 24px;
-  /* position the row so its inner content can be pulled up over the banner */
   margin-top: 64px; /* sits below the fixed top header */
   position: relative;
   z-index: 1200; /* ensure search sits above banner */
@@ -97,16 +90,16 @@ body.mp-hero-active .mp-hero-wrapper {
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: #ffffff !important; /* white background */
-  color: #111 !important; /* black text */
-  border: 1px solid #ffffff !important; /* white frame */
+  background: #ffffff ; /* white background */
+  color: #111 ; /* black text */
+  border: 1px solid #ffffff ; /* white frame */
   border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
 }
 .mp-search-inner .aw__c2ebkom > button.aw__ss0v7ub:hover,
 .mp-search-inner .aw__c2ebkom > button.aw__c1deuj6q:hover {
-  background: #f7f7f7 !important;
+  background: #f7f7f7 ;
 }
 
 .mp-search-inner .aw__ss0v7ub {
@@ -129,13 +122,13 @@ body.mp-hero-active .mp-hero-wrapper {
    to be visible and functional (they reuse SearchBar's existing logic). So ensure they are shown.
    We will still hide the decorative duplicate buttons provided in the aw__ wrapper. */
 .mp-search-inner .aw__tknn46t .SearchBarLocation {
-  display: flex !important;
+  display: flex ;
   align-items: center;
   gap: 6px;
   position: relative; /* so its dropdown anchors correctly */
 }
 .mp-search-inner .aw__tknn46t .SearchBarBtn {
-  display: flex !important;
+  display: flex ;
   align-items: center;
   justify-content: center;
   min-width: 44px;
@@ -160,8 +153,8 @@ body.mp-hero-active .mp-hero-wrapper {
 }
 
 .mp-search-inner .aw__tknn46t .SearchBarSuggestionsDropdown {
-  left: 0 !important;
-  right: 0 !important;
+  left: 0 ;
+  right: 0 ;
   margin-top: 10px;
   border-radius: 8px;
   box-shadow: 0 12px 40px rgba(20,20,20,0.14);
@@ -183,25 +176,16 @@ body.mp-hero-active .mp-hero-wrapper {
 /* small visual lift to make the search row clearly visible */
 .mp-search-row .mp-search-inner{background:transparent}
 
-/* When hero mode is active, keep the original TopNavbar mounted and interactive
-   (so SignalR, unread counts and account logic keep running). Instead of hiding
-   the whole navbar, hide only category + search + the TopNavbar's logo to avoid
-   duplicate visuals. */
-/* Ensure TopNavbar remains visible and on top so its logic (SignalR, unread count,
-   account dropdown, handlers) is usable. We still hide only the duplicated parts
-   (category dropdown, inline nav-search and original logo) so the hero's visuals
-   take their place, but the rest of TopNavbar stays interactive. */
 body.mp-hero-active .top-navbar {
-  /* keep it fully visible and above hero/search overlays */
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  z-index: 1400 !important;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1400;
+  padding-bottom: 26px;
 }
 
-/* hide only the duplicated pieces from the original TopNavbar (keep logo visible) */
 body.mp-hero-active .top-navbar .dropdown,
 body.mp-hero-active .top-navbar .nav-search {
-  display: none !important;
+  display: none ;
 }
 
 .mp-hero-top{
@@ -209,7 +193,6 @@ body.mp-hero-active .top-navbar .nav-search {
   justify-content:space-between;
   align-items:center;
   padding:12px 24px;
-  background: linear-gradient(90deg,#ff9900,#fc8e28);
   color:#fff;
   position: fixed;
   top: 0;

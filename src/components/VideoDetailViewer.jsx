@@ -1,21 +1,35 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
-import axios from 'axios';
-import './VideoDetailViewer.css';
-import { IoHeart, IoHeartOutline } from "react-icons/io5";
-import { FaRegCommentDots } from 'react-icons/fa';
+import React, { useEffect, useState, useRef, useContext } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FiEye } from "react-icons/fi";
+// 🔥 Icons
+import { 
+  IoHeart, 
+  IoHeartOutline, 
+  IoBookmark, 
+  IoBookmarkOutline, 
+  IoAdd,
+  IoAddCircleOutline   // ✅ thêm icon này
+} from "react-icons/io5";
+import { FaRegCommentDots, FaCheck } from "react-icons/fa6";   // fa6
+import { FaInfoCircle } from "react-icons/fa";                 // fa (chứa FaInfoCircle)
 import { SiMinutemailer } from "react-icons/si";
-import CommentDrawer from './CommentDrawer';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { FaShareAlt } from "react-icons/fa";
+import { IoCheckmarkCircleOutline } from "react-icons/io5";
+// 🔥 Components & Context
+import TopNavbarUniMarket from "./TopNavbarUniMarket";
+import CommentDrawer from "./CommentDrawer";
 import VideoSearchOverlay from "./VideoSearchOverlay";
-import defaultAvatar from '../assets/default-avatar.png';
-import { AuthContext } from "../context/AuthContext";
-import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
-import TopNavbarUniMarket from './TopNavbarUniMarket';
-import { VideoContext } from "../context/VideoContext";
-import VideoControls from './VideoControls';
-import { FaInfoCircle } from "react-icons/fa";
+import VideoControls from "./VideoControls";
 import VideoDetailsPanel from "./VideoDetailsPanel";
-import { FaRegEye } from "react-icons/fa";
+import { AuthContext } from "../context/AuthContext";
+import { VideoContext } from "../context/VideoContext";
+// 🔥 Assets & CSS
+import defaultAvatar from "../assets/default-avatar.png";
+import "./VideoDetailViewer.css";
+import SharePanel from "./SharePanel";
+import { useLocation } from "react-router-dom";
+
 const VideoDetailViewer = ({ onOpenChat }) => {
   const [videoList, setVideoList] = useState([]);
   const [searchParams] = useSearchParams();
@@ -30,6 +44,7 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   const clickTimeoutRef = useRef(null);
   const [videoAspectRatio, setVideoAspectRatio] = useState(null);
   const { user } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
   const [isSaved, setIsSaved] = useState(false);
   const videoData = videoList.length > 0 ? videoList[currentIndex] : null;
   const [showComments, setShowComments] = useState(false);
@@ -38,8 +53,52 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   const [isReloading, setIsReloading] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const controlsTimeoutRef = useRef(null);
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const initialIndex = parseInt(query.get("index")) || 0;
+  const [showSharePanel, setShowSharePanel] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
-  
+  // fllow
+  const [isFollowing, setIsFollowing] = useState(false);
+  const API_BASE = "http://localhost:5133";
+
+  // Kiểm tra trạng thái follow khi load video
+useEffect(() => {
+  if (videoData?.nguoiDang?.id && token) {
+    axios
+      .get(`${API_BASE}/api/follow/is-following/${videoData.nguoiDang.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then((res) => setIsFollowing(res.data.isFollowing))
+      .catch(() => setIsFollowing(false));
+  }
+}, [videoData?.nguoiDang?.id, token]);
+
+const handleToggleFollow = async () => {
+  if (!token) {
+    alert("Bạn cần đăng nhập để follow!");
+    return;
+  }
+  try {
+    if (isFollowing) {
+      await axios.post(
+        `${API_BASE}/api/follow/unfollow?followingId=${videoData.nguoiDang.id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsFollowing(false);
+    } else {
+      await axios.post(
+        `${API_BASE}/api/follow/follow?followingId=${videoData.nguoiDang.id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsFollowing(true);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
   // Thời lượng animation phải khớp với CSS (ms)
   const SLIDE_DURATION = 650;
   const containerRef = useRef(null);
@@ -635,7 +694,6 @@ const VideoDetailViewer = ({ onOpenChat }) => {
   if (!videoData) {
     return <div>Đang tải video...</div>;
   }
-  const token = localStorage.getItem("token");
   return (
     <div className="vdv-wrapper vdv-full-screen-scroll">
       <TopNavbarUniMarket />
@@ -719,30 +777,43 @@ const VideoDetailViewer = ({ onOpenChat }) => {
                             {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
                           </div>
                         </div>
-                        {/* HIỂN THỊ SỐ VIEW */}
-                        <div className="vdv-view-count" style={{
-                          fontSize: '12px',
-                          color: '#ccc',
-                          marginTop: '8px'
-                        }}>
-                          <FaRegEye  className="vdv-eye-icon" /> {formatCount(video.soLuotXem || 0)} lượt xem
+                        {/* ✅ HIỂN THỊ SỐ VIEW */}
+                        <div className="vdv-view-count">
+                          <FiEye className="vdv-view-icon" />
+                          {formatCount(video.soLuotXem || 0)} lượt xem
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
                 <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
-                  <img
-                    src={video.nguoiDang?.avatarUrl || defaultAvatar}
-                    alt="avatar"
-                    className="vdv-user-avatar"
-                    onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
-                    style={{ cursor: "pointer" }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = defaultAvatar;
-                    }}
-                  />
+                  <div className="vdv-user-avatar-container">
+                    <img
+                      src={video.nguoiDang?.avatarUrl || defaultAvatar}
+                      alt="avatar"
+                      className="vdv-user-avatar"
+                      onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
+                      style={{ cursor: "pointer" }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = defaultAvatar;
+                      }}
+                    />
+                    {/* ✅ Nút Follow/Unfollow dính liền avatar */}
+                    {video.nguoiDang?.id && (
+                      <div
+                        className="vdv-follow-button"
+                        onClick={handleToggleFollow}
+                        title={isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
+                      >
+                        {isFollowing ? (
+                          <IoCheckmarkCircleOutline size={24}  />
+                        ) : (
+                          <IoAddCircleOutline size={24}  />
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <div
                     className={`vdv-icon-button vdv-like-button ${
                       video.isLiked ? "liked" : ""
@@ -804,6 +875,15 @@ const VideoDetailViewer = ({ onOpenChat }) => {
                   >
                     <FaInfoCircle size={24} color="#ccc" />
                   </div>
+                  {/* Icon Share */}
+                  <div
+                    className="vdv-icon-button vdv-share-button"
+                    onClick={() => setShowSharePanel(true)}
+                    title="Chia sẻ tin đăng"
+                    style={{ marginTop: "12px" }}
+                  >
+                    <FaShareAlt size={24} color="#ccc" />
+                  </div>
                 </div>
               </div>
             );
@@ -827,6 +907,17 @@ const VideoDetailViewer = ({ onOpenChat }) => {
         loading={loadingDetail}
         data={detailData}
       />
+      <SharePanel 
+      key={videoData.maTinDang + currentIndex}
+      isOpen={showSharePanel}
+      onClose={() => setShowSharePanel(false)}
+      tinDangId={videoData.maTinDang}
+      displayMode="Video"
+      index={currentIndex}
+      previewTitle={videoData.tieuDe}
+      previewImage={videoData.hinhAnh}
+      previewVideo={videoData.videoUrl}
+  />
     </div>
   );
 };

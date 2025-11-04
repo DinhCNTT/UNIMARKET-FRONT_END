@@ -1,0 +1,82 @@
+/* File: src/components/ChatListItemMenu.css */
+
+.chatlist-item-menu {
+  position: relative;
+}
+
+.menu-toggle-btn {
+  /* 1. SỬA: Đổi 'none' thành 'transparent' để nhận màu nền của cha */
+  background: transparent;
+  
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #65676b; /* Màu icon */
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, background-color 0.2s ease, visibility 0.2s ease;
+}
+
+/* 2. SỬA: Thêm .active-chat để nút hiện lên khi item được chọn (màu xanh) */
+.chatlist-item-wrapper:hover .menu-toggle-btn,
+.chatlist-item-wrapper.active-chat .menu-toggle-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 3. XÓA: Bỏ hover riêng của nút 3 chấm để đồng bộ màu */
+/* .menu-toggle-btn:hover {
+  background-color: #f0f2f5; 
+} 
+*/
+
+
+/* === PHẦN MENU DROPDOWN (Giữ nguyên) === */
+.menu-dropdown {
+  position: absolute;
+  top: 40px; 
+  right: 15px; 
+  background-color: #fff; 
+  border: 1px solid #ddd; 
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  width: auto; 
+  min-width: 160px;
+  padding: 4px; 
+  overflow: hidden;
+  background-clip: padding-box; 
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #050505; 
+  transition: background-color 0.2s ease;
+  white-space: nowrap; 
+}
+
+.menu-item:hover {
+  background-color: #f0f2f5; 
+}
+
+.menu-item.delete {
+  color: #d93025; 
+}
+
+.menu-item.delete:hover {
+  background-color: #fdefed; 
+}

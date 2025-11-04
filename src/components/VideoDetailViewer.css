@@ -139,19 +139,45 @@ body.video-transitioning .video-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 13px;
   margin-left: 20px;
   z-index: 5;
   margin-top: 100px;
 }
 
+.vdv-user-avatar-container {
+  position: relative;
+  display: inline-block;
+  width: 60px;  
+  height: 60px;
+}
+
 .vdv-user-avatar {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #fff;
 }
+
+.vdv-follow-button {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(30%);
+  background-color: #ffae42; /* vàng cam */
+  color: #fff; /* icon màu trắng */
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #fff;
+  font-size: 14px;
+}
+
 
 .vdv-icon-button {
   display: flex;
@@ -406,10 +432,18 @@ body.video-transitioning .video-item {
     gap: 20px;
   }
 }
-.vdv-eye-icon {
-  font-size: 13px;      /* kích thước icon */
-  position: relative;
-  top: 3px;             /* dịch xuống chút */
-  margin-right: 4px;
+.vdv-view-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #aaa;
+  margin-top: 8px;
+  font-weight: 500;
 }
 
+.vdv-view-icon {
+  font-size: 14px;
+  color: #aaa;
+  transition: color 0.2s ease;
+}

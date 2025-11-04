@@ -473,7 +473,7 @@ const TopNavbar = () => {
           </>
         )}
 
-        <button className="post-btn-highlight" onClick={handlePostClick}> ĐĂNG TIN</button>
+        <button className="post-btn-highlight" onClick={handlePostClick}> Đăng tin</button>
       </div>
     </header>
   );

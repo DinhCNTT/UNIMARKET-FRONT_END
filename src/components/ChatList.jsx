@@ -1,7 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import "./ChatList.css";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react"; // ← Cái này từ lucide-react (khác lib)
+import FriendChatList from "./FriendChatList";
+
+// ✅ Thêm FiTrash2 vô đây:
+import { 
+  FiUsers as Users, 
+  FiArrowLeft as ArrowLeft, 
+  FiCamera as Camera, 
+  FiVideo as Video, 
+  FiMoreVertical, 
+  FiTrash2               // 👈 thêm dòng này
+} from "react-icons/fi";
+
+
 
 const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [chatList, setChatList] = useState([]);
@@ -13,6 +26,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [expandedChatId, setExpandedChatId] = useState(null);
   const connectionRef = useRef(null);
+  const [showFriendList, setShowFriendList] = useState(false);
 
   // API functions để tương tác với database
   const setChatState = async (chatId, isHidden, isDeleted) => {
@@ -302,77 +316,6 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
       }
     });
 
-    // 1️⃣ Handler cho sự kiện block/unblock user
-connection.on("UserBlocked", async (data) => {
-  const { blockedUserId, isBlocked, actionType } = data;
-  
-  console.log(`[ChatList] Received UserBlocked event: ${actionType}, blockedUserId: ${blockedUserId}`);
-  
-  // Refresh lại chat list để cập nhật trạng thái block/unblock
-  try {
-    const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
-    const chatData = await res.json();
-    
-    const visibleChats = [];
-    const hiddenChats = [];
-    
-    chatData.forEach((chat) => {
-      const processedChat = {
-        ...chat,
-        maCuocTroChuyen: chat.MaCuocTroChuyen || chat.maCuocTroChuyen,
-        thoiGianTao: chat.ThoiGianTao || chat.thoiGianTao,
-        thoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat,
-        ThoiGianCapNhat: chat.ThoiGianCapNhat,
-        tinNhanCuoi: chat.TinNhanCuoi?.NoiDung || chat.tinNhanCuoi?.noiDung || "",
-        maNguoiGuiCuoi: chat.TinNhanCuoi?.MaNguoiGui || chat.tinNhanCuoi?.maNguoiGui || null,
-        loaiTinNhanCuoi: chat.TinNhanCuoi?.LoaiTinNhan || chat.tinNhanCuoi?.loaiTinNhan || null,
-        hasUnreadMessages: chat.HasUnreadMessages ?? chat.hasUnreadMessages ?? false,
-        isBlocked: chat.IsBlocked ?? chat.isBlocked ?? false,
-        isHidden: chat.IsHidden ?? chat.isHidden ?? false,
-        isDeleted: chat.IsDeleted ?? chat.isDeleted ?? false,
-      };
-      
-      if (processedChat.isDeleted) return;
-      
-      if (processedChat.isHidden) {
-        hiddenChats.push({ ...processedChat, hasUnreadMessages: false });
-      } else {
-        visibleChats.push(processedChat);
-      }
-    });
-    
-    setChatList(sortChatsLikeMessenger(visibleChats));
-    setHiddenChatList(sortChatsLikeMessenger(hiddenChats));
-    
-  } catch (error) {
-    console.error("Error refreshing chat list after block event:", error);
-  }
-});
-
-// 2️⃣ Handler cho sự kiện thay đổi trạng thái chat
-connection.on("ChatStatusChanged", (data) => {
-  const { chatId, isBlocked } = data;
-  
-  console.log(`[ChatList] Chat ${chatId} status changed: isBlocked=${isBlocked}`);
-  
-  // Cập nhật trạng thái isBlocked cho chat cụ thể
-  setChatList((prev) => 
-    prev.map((chat) => 
-      chat.maCuocTroChuyen === chatId 
-        ? { ...chat, isBlocked: isBlocked }
-        : chat
-    )
-  );
-  
-  setHiddenChatList((prev) => 
-    prev.map((chat) => 
-      chat.maCuocTroChuyen === chatId 
-        ? { ...chat, isBlocked: isBlocked }
-        : chat
-    )
-  );
-});
-
     connection.on("CapNhatTinDang", async (updatedPost) => {
       // Lấy trạng thái chat từ server để kiểm tra
       try {
@@ -415,6 +358,77 @@ connection.on("ChatStatusChanged", (data) => {
         console.error("Lỗi lấy trạng thái chat khi cập nhật tin đăng:", error);
       }
     });
+
+    // 1️⃣ Handler cho sự kiện block/unblock user
+connection.on("UserBlocked", async (data) => {
+  const { blockedUserId, isBlocked, actionType } = data;
+
+  console.log(`[ChatList] Received UserBlocked event: ${actionType}, blockedUserId: ${blockedUserId}`);
+
+  // Refresh lại chat list để cập nhật trạng thái block/unblock
+  try {
+    const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
+    const chatData = await res.json();
+
+    const visibleChats = [];
+    const hiddenChats = [];
+
+    chatData.forEach((chat) => {
+      const processedChat = {
+        ...chat,
+        maCuocTroChuyen: chat.MaCuocTroChuyen || chat.maCuocTroChuyen,
+        thoiGianTao: chat.ThoiGianTao || chat.thoiGianTao,
+        thoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat,
+        ThoiGianCapNhat: chat.ThoiGianCapNhat,
+        tinNhanCuoi: chat.TinNhanCuoi?.NoiDung || chat.tinNhanCuoi?.noiDung || "",
+        maNguoiGuiCuoi: chat.TinNhanCuoi?.MaNguoiGui || chat.tinNhanCuoi?.maNguoiGui || null,
+        loaiTinNhanCuoi: chat.TinNhanCuoi?.LoaiTinNhan || chat.tinNhanCuoi?.loaiTinNhan || null,
+        hasUnreadMessages: chat.HasUnreadMessages ?? chat.hasUnreadMessages ?? false,
+        isBlocked: chat.IsBlocked ?? chat.isBlocked ?? false,
+        isHidden: chat.IsHidden ?? chat.isHidden ?? false,
+        isDeleted: chat.IsDeleted ?? chat.isDeleted ?? false,
+      };
+
+      if (processedChat.isDeleted) return;
+
+      if (processedChat.isHidden) {
+        hiddenChats.push({ ...processedChat, hasUnreadMessages: false });
+      } else {
+        visibleChats.push(processedChat);
+      }
+    });
+
+    setChatList(sortChatsLikeMessenger(visibleChats));
+    setHiddenChatList(sortChatsLikeMessenger(hiddenChats));
+
+  } catch (error) {
+    console.error("Error refreshing chat list after block event:", error);
+  }
+});
+
+// 2️⃣ Handler cho sự kiện thay đổi trạng thái chat
+connection.on("ChatStatusChanged", (data) => {
+  const { chatId, isBlocked } = data;
+
+  console.log(`[ChatList] Chat ${chatId} status changed: isBlocked=${isBlocked}`);
+
+  // Cập nhật trạng thái isBlocked cho chat cụ thể
+  setChatList((prev) => 
+    prev.map((chat) => 
+      chat.maCuocTroChuyen === chatId 
+        ? { ...chat, isBlocked: isBlocked }
+        : chat
+    )
+  );
+
+  setHiddenChatList((prev) => 
+    prev.map((chat) => 
+      chat.maCuocTroChuyen === chatId 
+        ? { ...chat, isBlocked: isBlocked }
+        : chat
+    )
+  );
+});
 
     connection
       .start()
@@ -545,21 +559,20 @@ connection.on("ChatStatusChanged", (data) => {
   }, [userId]);
 
   // Lọc danh sách chat theo tiêu chí
-const filteredChats = (() => {
-  let chatsToFilter = [];
-  
-  if (filterMode === "all") {
-    // ✅ FIXED: Không loại bỏ chat bị chặn, chỉ hiển thị tất cả
-    chatsToFilter = chatList; // Bỏ filter !chat.isBlocked
-  } else if (filterMode === "hidden") {
-    chatsToFilter = hiddenChatList;
-  }
-  
-  return chatsToFilter.filter((chat) =>
-    chat.tieuDeTinDang?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-})();
- 
+  const filteredChats = (() => {
+    let chatsToFilter = [];
+    
+    if (filterMode === "all") {
+      chatsToFilter = chatList;
+    } else if (filterMode === "hidden") {
+      chatsToFilter = hiddenChatList;
+    }
+    
+    return chatsToFilter.filter((chat) =>
+      chat.tieuDeTinDang?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  })();
+
   // Hiển thị chế độ ẩn/hiện cuộc trò chuyện - cập nhật với database
   const toggleHideMode = () => {
     if (isHideMode) {
@@ -645,155 +658,191 @@ const filteredChats = (() => {
   };
 
   return (
-    <div className="chatlist-container">
-      <div className="chatlist-search">
-        <input
-          type="text"
-          placeholder="Tìm kiếm theo tiêu đề sản phẩm..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          spellCheck={false}
+  <div className="chatlist-container">
+    {/* ==================================================================== */}
+    {/* PHẦN HEADER THAY ĐỔI THEO ĐIỀU KIỆN */}
+    {/* ==================================================================== */}
+    {showFriendList ? (
+      // A. Header khi đang ở màn hình Bạn bè: CHỈ CÓ NÚT QUAY LẠI
+      <div className="chatlist-back-header" onClick={() => setShowFriendList(false)}>
+        <ArrowLeft  size={20} className="icon" />
+        <h3>Bạn bè</h3>
+      </div>
+    ) : (
+      // B. Header gốc cho màn hình Mua bán (hiển thị mặc định)
+      <>
+        <div className="chatlist-search">
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tiêu đề sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            spellCheck={false}
+          />
+        </div>
+        <div className="chatlist-filter-dropdown">
+          <select
+            value={filterMode}
+            onChange={(e) => setFilterMode(e.target.value)}
+            className="chatlist-filter-select"
+            disabled={isHideMode}
+            title="Lọc cuộc trò chuyện"
+          >
+            <option value="all">Tất cả</option>
+            <option value="hidden">Tin đã ẩn</option>
+          </select>
+        </div>
+      </>
+    )}
+
+    {/* ==================================================================== */}
+    {/* PHẦN DANH SÁCH THAY ĐỔI THEO ĐIỀU KIỆN */}
+    {/* ==================================================================== */}
+    <div className="chatlist-scrollable">
+      {showFriendList ? (
+        // A. Nếu đang xem bạn bè => CHỈ HIỂN THỊ DANH SÁCH BẠN BÈ
+        <FriendChatList
+          userId={userId}
+          onSelectChat={onSelectChat}
+          selectedChatId={selectedChatId}
         />
-      </div>
-
-      <div className="chatlist-filter-dropdown">
-        <select
-          value={filterMode}
-          onChange={(e) => setFilterMode(e.target.value)}
-          className="chatlist-filter-select"
-          disabled={isHideMode}
-          title="Lọc cuộc trò chuyện"
-        >
-          <option value="all">Tất cả</option>
-          <option value="hidden">Tin đã ẩn</option>
-        </select>
-      </div>
-
-      <div className="chatlist-scrollable">
-        {filteredChats.length === 0 ? (
-          <p className="chatlist-empty">Không có cuộc trò chuyện nào</p>
-        ) : (
-          filteredChats.map((chat, idx) => (
-            <div key={chat.maCuocTroChuyen || idx}>
-              <div
-                className={`chatlist-item ${chat.isBlocked ? "blocked" : ""} ${
-                  chat.maCuocTroChuyen === selectedChatId
-                    ? "chatlist-item-selected"
-                    : ""
-                }`}
-                onClick={() => {
-                  if (!isHideMode) onSelectChat(chat.maCuocTroChuyen);
-                }}
-              >
-                {(isHideMode &&
-                  (filterMode === "all" || filterMode === "hidden")) && (
-                  <input
-                    type="checkbox"
-                    checked={selectedToHide.includes(chat.maCuocTroChuyen)}
-                    onChange={(e) =>
-                      onCheckboxChange(chat.maCuocTroChuyen, e.target.checked)
-                    }
-                    onClick={(e) => e.stopPropagation()}
-                    className="chatlist-hide-checkbox"
-                    title={
-                      filterMode === "all" ? "Chọn để ẩn" : "Chọn để gỡ ẩn"
-                    }
-                    style={{ pointerEvents: "auto" }}
-                  />
-                )}
-
-                <img
-                  src={getFullImageUrl(chat.anhDaiDienTinDang)}
-                  alt="Ảnh tin đăng"
-                  className="chatlist-item-image"
-                />
-                <div className="chatlist-item-content">
-                  <div className="chatlist-item-title">{chat.tieuDeTinDang}</div>
-                  <div className="chatlist-item-price">
-                    Giá:{" "}
-                    {chat.giaTinDang?.toLocaleString("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    })}
-                  </div>
-                  <div
-                    className="chatlist-item-info"
-                    style={{
-                      fontWeight: chat.hasUnreadMessages ? "bold" : "normal",
-                    }}
-                  >
-                    {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai}{" "}
-                    -{" "}
-                    {chat.isEmpty
-                      ? "Chưa có tin nhắn"
-                      : chat.loaiTinNhanCuoi === "image"
-                      ? "📷 Ảnh"
-                      : chat.loaiTinNhanCuoi === "video"
-                      ? "🎥 Video"
-                      : chat.tinNhanCuoi}
-                  </div>
-                </div>
-
-                {!chat.isBlocked && !isHideMode && (
-                  <button
-                    className="chatlist-menu-btn"
-                    onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)}
-                    title="Tùy chọn"
-                  >
-                    <MoreVertical size={20} />
-                  </button>
-                )}
+      ) : (
+        // B. Nếu ở màn hình mua bán => HIỂN THỊ CẢ NÚT "BẠN BÈ" VÀ DANH SÁCH MUA BÁN
+        <>
+          {/* Item đặc biệt UniMarket Bạn bè */}
+          <div
+            className={`chatlist-item special-item`}
+            onClick={() => {
+              setShowFriendList(true); // Bật chế độ FriendList
+              onSelectChat(null);      // Ẩn ChatBox đang mở
+            }}
+          >
+            <div className="chatlist-item-content">
+              <div className="chatlist-item-title">
+                <Users size={20} className="icon" />
+                UniMarket Bạn bè
               </div>
-
-              {expandedChatId === chat.maCuocTroChuyen && (
-                <div className="chatlist-delete-expanded">
-                  <button
-                    className="chatlist-delete-btn-expanded"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleShowDeleteConfirm(chat.maCuocTroChuyen);
-                    }}
-                  >
-                    <Trash2 size={18} className="mr-1" />
-                    Xóa cuộc trò chuyện
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-      
-      {showDeleteConfirm && (
-        <div className="chatlist-delete-confirm-overlay">
-          <div className="chatlist-delete-confirm-modal">
-            <div className="chatlist-delete-confirm-content">
-              <h3>Xác nhận xóa</h3>
-              <p>Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?</p>
-              <p className="chatlist-delete-note">Lưu ý: Cuộc trò chuyện chỉ bị xóa ở phía bạn.</p>
-            </div>
-            <div className="chatlist-delete-confirm-buttons">
-              <button
-                className="chatlist-btn-delete-confirm"
-                onClick={handleConfirmDelete}
-              >
-                Xóa
-              </button>
-              <button
-                className="chatlist-btn-delete-cancel"
-                onClick={handleCancelDelete}
-              >
-                Hủy
-              </button>
+              <div className="chatlist-item-last">Xem danh sách bạn bè của bạn</div>
             </div>
           </div>
-        </div>
-      )}
+          
+          {/* Danh sách chat mua bán */}
+          {filteredChats.length === 0 ? (
+            <p className="chatlist-empty">Không có cuộc trò chuyện nào</p>
+          ) : (
+            filteredChats.map((chat, idx) => (
+              <div key={chat.maCuocTroChuyen || idx}>
+                <div
+                  className={`chatlist-item ${chat.isBlocked ? "blocked" : ""} ${
+                    chat.maCuocTroChuyen === selectedChatId ? "chatlist-item-selected" : ""
+                  }`}
+                  onClick={() => {
+                    if (!isHideMode) {
+                      setShowFriendList(false);
+                      onSelectChat(chat.maCuocTroChuyen);
+                    }
+                  }}
+                >
+                  {/* Checkbox khi chế độ ẩn hiện */}
+                  {(isHideMode && (filterMode === "all" || filterMode === "hidden")) && (
+                      <input
+                        type="checkbox"
+                        checked={selectedToHide.includes(chat.maCuocTroChuyen)}
+                        onChange={(e) => onCheckboxChange(chat.maCuocTroChuyen, e.target.checked)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="chatlist-hide-checkbox"
+                        title={filterMode === "all" ? "Chọn để ẩn" : "Chọn để gỡ ẩn"}
+                        style={{ pointerEvents: "auto" }}
+                      />
+                  )}
 
+                  {/* Avatar tin đăng */}
+                  <img src={getFullImageUrl(chat.anhDaiDienTinDang)} alt="Ảnh tin đăng" className="chatlist-item-image" />
+
+                  {/* Nội dung hội thoại */}
+                  <div className="chatlist-item-content">
+                    <div className="chatlist-item-title">{chat.tieuDeTinDang}</div>
+                    <div className="chatlist-item-price">
+                      Giá:{" "}
+                      {chat.giaTinDang?.toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </div>
+                    <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}>
+                      {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai}{" "} - {" "}
+                      {chat.isEmpty ? "Chưa có tin nhắn"
+                        : chat.loaiTinNhanCuoi === "image" ? ( <span className="icon-indicator"><Camera  size={14} /> Ảnh</span> ) 
+                        : chat.loaiTinNhanCuoi === "video" ? ( <span className="icon-indicator"><Video  size={14} /> Video</span> ) 
+                        : ( chat.tinNhanCuoi )
+                      }
+                    </div>
+                  </div>
+
+                  {/* Menu tuỳ chọn */}
+                  {!chat.isBlocked && !isHideMode && (
+                    <button className="chatlist-menu-btn" onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)} title="Tùy chọn">
+                      <FiMoreVertical size={20} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Menu mở rộng (xóa hội thoại) */}
+                {expandedChatId === chat.maCuocTroChuyen && (
+                  <div className="chatlist-delete-expanded">
+                    <button className="chatlist-delete-btn-expanded" onClick={(e) => { e.stopPropagation(); handleShowDeleteConfirm(chat.maCuocTroChuyen); }}>
+                      <FiTrash2 size={18} />
+                      Xóa cuộc trò chuyện
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </>
+      )}
+    </div>
+
+    {/* Modal xác nhận xoá (giữ nguyên) */}
+    {showDeleteConfirm && (
+      <div className="chatlist-delete-confirm-overlay">
+        <div className="chatlist-delete-confirm-modal">
+          <div className="chatlist-delete-confirm-content">
+            <h3>Xác nhận xóa</h3>
+            <p>Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?</p>
+            <p className="chatlist-delete-note">
+              Lưu ý: Cuộc trò chuyện chỉ bị xóa ở phía bạn.
+            </p>
+          </div>
+          <div className="chatlist-delete-confirm-buttons">
+            <button
+              className="chatlist-btn-delete-confirm"
+              onClick={handleConfirmDelete}
+            >
+              Xóa
+            </button>
+            <button
+              className="chatlist-btn-delete-cancel"
+              onClick={handleCancelDelete}
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ==================================================================== */}
+    {/* ✨ NÚT ẨN HỘI THOẠI CHỈ HIỂN THỊ KHI KHÔNG Ở TRONG DANH SÁCH BẠN BÈ ✨ */}
+    {/* ==================================================================== */}
+    {!showFriendList && (
       <div className="chatlist-hide-button-container">
         {filterMode === "all" ? (
           !isHideMode ? (
-            <button onClick={toggleHideMode} className="chatlist-btn-hide-chat">
+            <button
+              onClick={toggleHideMode}
+              className="chatlist-btn-hide-chat"
+            >
               Ẩn hội thoại
             </button>
           ) : (
@@ -805,13 +854,19 @@ const filteredChats = (() => {
               >
                 Xác nhận ẩn ({selectedToHide.length})
               </button>
-              <button onClick={cancelHideChats} className="chatlist-btn-hide-chat chatlist-btn-cancel">
+              <button
+                onClick={cancelHideChats}
+                className="chatlist-btn-hide-chat chatlist-btn-cancel"
+              >
                 Hủy
               </button>
             </>
           )
         ) : !isHideMode ? (
-          <button onClick={toggleHideMode} className="chatlist-btn-hide-chat">
+          <button
+            onClick={toggleHideMode}
+            className="chatlist-btn-hide-chat"
+          >
             Gỡ ẩn hội thoại
           </button>
         ) : (
@@ -823,14 +878,18 @@ const filteredChats = (() => {
             >
               Xác nhận gỡ ẩn ({selectedToHide.length})
             </button>
-            <button onClick={cancelHideChats} className="chatlist-btn-hide-chat chatlist-btn-cancel">
+            <button
+              onClick={cancelHideChats}
+              className="chatlist-btn-hide-chat chatlist-btn-cancel"
+            >
               Hủy
             </button>
           </>
         )}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 };
 
 export default ChatList;

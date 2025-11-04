@@ -1,0 +1,188 @@
+/* ========== FriendChatList Gốc ========== */
+.friend-chatlist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: #fff;
+}
+
+/* Trạng thái trống */
+.friend-chatlist .chatlist-empty {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* ✨ CSS cho wrapper */
+.chatlist-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  margin: 4px 8px;
+}
+
+/* Hiệu ứng hover cho toàn bộ hàng */
+.chatlist-item-wrapper:hover {
+  background-color: #f0f2f5;
+}
+
+/* Highlight màu active cho wrapper */
+.chatlist-item-wrapper.active-chat {
+  background-color: #e7f3ff;
+}
+
+/* ========== ITEM CHAT ========== */
+.friend-chatlist .chatlist-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  flex-grow: 1;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Trạng thái chưa đọc (chỉ áp dụng khi không active) */
+.friend-chatlist .chatlist-item.unread-chat {
+  background: #fff;
+}
+
+/* * === 💅 FIX LỖI ĐỒNG BỘ MÀU (THÊM MỚI) ===
+ * Ép item (con) phải trong suốt khi wrapper (cha) được hover hoặc active
+ */
+.chatlist-item-wrapper:hover .chatlist-item,
+.chatlist-item-wrapper.active-chat .chatlist-item {
+  background-color: transparent;
+}
+/* === HẾT PHẦN SỬA === */
+
+
+/* ========== AVATAR ========== */
+.friend-chatlist .chatlist-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid #f5f5f5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== NỘI DUNG ========== */
+.friend-chatlist .chatlist-item-content {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.friend-chatlist .chatlist-item-title .online-dot {
+  display: inline-block;
+  vertical-align: middle;
+  width: 10px;
+  height: 10px;
+  background: #00c853;
+  border-radius: 50%;
+  margin-left: 6px;
+}
+
+/* ========== Tin nhắn cuối ========== */
+.friend-chatlist .chatlist-item-last {
+  font-size: 13px;
+  color: #666;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+/* Chữ đậm và nghiêng */
+.friend-chatlist .bold {
+  font-weight: 700;
+  color: #050505;
+}
+
+.friend-chatlist .italic {
+  font-style: italic;
+}
+
+/* Thời gian gửi */
+.friend-chatlist .last-time {
+  color: #999;
+  margin-left: 4px;
+  font-size: 0.8rem;
+}
+
+/* ========== BADGE CHƯA ĐỌC ========== */
+.friend-chatlist .unread-badge {
+  position: absolute;
+  top: 4px;
+  right: 14px;
+  background: linear-gradient(135deg, #ff8a00, #ff5e00);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.2px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.friend-chatlist .unread-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Header quay lại khi ở màn hình Bạn bè --- */
+.chatlist-back-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.chatlist-back-header:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+}
+
+.chatlist-back-header .icon {
+  color: #2563eb;
+  font-size: 20px;
+  transition: color 0.2s ease;
+}
+
+.chatlist-back-header:hover .icon {
+  color: #1e40af;
+}
+
+.chatlist-back-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.chatlist-back-header:hover h3 {
+  color: #0f172a;
+}
+

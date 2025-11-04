@@ -407,3 +407,64 @@
   -ms-user-select: none;
   user-select: none;
 }
+/* --- Header quay lại khi ở màn hình Bạn bè --- */
+.chatlist-back-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.chatlist-back-header:hover {
+  background-color: #f8f9fa; /* nhẹ hơn, không chói */
+  transform: translateY(-1px);
+}
+
+.chatlist-back-header .icon {
+  color: #2563eb; /* xanh dương tinh tế */
+  font-size: 20px;
+  transition: color 0.2s ease;
+}
+
+.chatlist-back-header:hover .icon {
+  color: #1e40af; /* đậm hơn khi hover */
+}
+
+.chatlist-back-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.chatlist-back-header:hover h3 {
+  color: #0f172a;
+}
+
+/* --- Icon “Bạn bè” trong danh sách --- */
+.special-item .chatlist-item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1d4ed8; /* màu xanh hiện đại */
+}
+
+.special-item .chatlist-item-title .icon {
+  font-size: 18px;
+  color: #1d4ed8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.special-item:hover .chatlist-item-title .icon {
+  transform: scale(1.1);
+  color: #1e3a8a;
+}
