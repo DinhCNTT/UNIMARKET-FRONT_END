@@ -829,10 +829,10 @@
 }
 
 .message.recalled .message-content {
-  background: #f1f5f9;
+  background: transparent; /* 🔹 Trong suốt */
   color: #64748b;
   font-style: italic;
-  border: 1px dashed #cbd5e1;
+  border: none; /* 🔹 Xóa viền */
 }
 
 /* Input của người dùng */
@@ -1329,4 +1329,19 @@
 .chatbox-blocked-notice:active {
   transform: translateX(0);
   box-shadow: none;
+}
+.message.recalled {
+  opacity: 0.7;
+}
+
+.recalled-message {
+  font-style: italic;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.recalled-preview {
+  font-style: italic;
+  color: #888;
 }

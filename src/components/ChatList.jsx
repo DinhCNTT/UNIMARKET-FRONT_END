@@ -190,6 +190,7 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
     ThoiGianCapNhat: chat.ThoiGianCapNhat || chat.thoiGianCapNhat || new Date().toISOString(),
     hasUnreadMessages: chat.hasUnreadMessages ?? chat.HasUnreadMessages ?? false,
     isBlocked: chat.isBlocked ?? false,
+    isRecalled: chat.isRecalled ?? chat.IsRecalled ?? false,
     isHidden: chat.isHidden ?? false,
     isDeleted: chat.isDeleted ?? false,
   };
@@ -383,6 +384,7 @@ connection.on("UserBlocked", async (data) => {
         tinNhanCuoi: chat.TinNhanCuoi?.NoiDung || chat.tinNhanCuoi?.noiDung || "",
         maNguoiGuiCuoi: chat.TinNhanCuoi?.MaNguoiGui || chat.tinNhanCuoi?.maNguoiGui || null,
         loaiTinNhanCuoi: chat.TinNhanCuoi?.LoaiTinNhan || chat.tinNhanCuoi?.loaiTinNhan || null,
+        isRecalled: chat.TinNhanCuoi?.IsRecalled ?? chat.tinNhanCuoi?.isRecalled ?? false,
         hasUnreadMessages: chat.HasUnreadMessages ?? chat.hasUnreadMessages ?? false,
         isBlocked: chat.IsBlocked ?? chat.isBlocked ?? false,
         isHidden: chat.IsHidden ?? chat.isHidden ?? false,
@@ -463,6 +465,7 @@ connection.on("ChatStatusChanged", (data) => {
             loaiTinNhanCuoi: chat.TinNhanCuoi?.LoaiTinNhan || chat.tinNhanCuoi?.loaiTinNhan || null,
             hasUnreadMessages: chat.HasUnreadMessages ?? chat.hasUnreadMessages ?? false,
             isBlocked: chat.IsBlocked ?? chat.isBlocked ?? false,
+            isRecalled: chat.TinNhanCuoi?.IsRecalled ?? chat.tinNhanCuoi?.isRecalled ?? false,
             isHidden: chat.IsHidden ?? chat.isHidden ?? false,
             isDeleted: chat.IsDeleted ?? chat.isDeleted ?? false,
           };
@@ -769,14 +772,28 @@ connection.on("ChatStatusChanged", (data) => {
                         currency: "VND",
                       })}
                     </div>
-                    <div className="chatlist-item-info" style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}>
-                      {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai}{" "} - {" "}
-                      {chat.isEmpty ? "Chưa có tin nhắn"
-                        : chat.loaiTinNhanCuoi === "image" ? ( <span className="icon-indicator"><Camera  size={14} /> Ảnh</span> ) 
-                        : chat.loaiTinNhanCuoi === "video" ? ( <span className="icon-indicator"><Video  size={14} /> Video</span> ) 
-                        : ( chat.tinNhanCuoi )
-                      }
-                    </div>
+                      <div
+  className="chatlist-item-info"
+  style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}
+>
+  {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai}{" "} - {" "}
+  {chat.isEmpty
+    ? "Chưa có tin nhắn"
+    : chat.isRecalled ? (
+        <span className="recalled-preview">Đã thu hồi tin nhắn</span>
+      )
+    : chat.loaiTinNhanCuoi === "image" ? (
+        <span className="icon-indicator">
+          <Camera size={14} /> Ảnh
+        </span>
+      )
+    : chat.loaiTinNhanCuoi === "video" ? (
+        <span className="icon-indicator">
+          <Video size={14} /> Video
+        </span>
+      )
+    : chat.tinNhanCuoi}
+</div>
                   </div>
 
                   {/* Menu tuỳ chọn */}

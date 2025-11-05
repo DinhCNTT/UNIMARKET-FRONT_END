@@ -670,40 +670,62 @@ useEffect(() => {
 
         // Lắng nghe sự kiện UserStatusChanged từ SignalR để cập nhật trạng thái online/offline real-time
         connection.on("UserStatusChanged", (data) => {
-          try {
-            const userId = data.userId || data.userid || data.UserId;
-            const isOnline = data.isOnline ?? data.IsOnline ?? false;
-            const lastActive = data.lastSeen || data.lastActive || data.LastActive || null;
-            const formattedLastSeen = data.formattedLastSeen || null;
-            // Cập nhật nếu là đối phương
-            if (userId === infoNguoiConLai.id) {
-              setInfoNguoiConLai((prev) => ({
-                ...prev,
-                isOnline,
-                lastOnlineTime: isOnline ? null : lastActive,
-                formattedLastSeen: isOnline ? null : formattedLastSeen,
-              }));
-            }
-            if (userId === infoTinDang.maChuSanPham) {
-              setInfoTinDang((prev) => ({
-                ...prev,
-                isOnline,
-                lastOnlineTime: isOnline ? null : lastActive,
-                formattedLastSeen: isOnline ? null : formattedLastSeen,
-              }));
-            }
-          } catch (err) {
-            console.error("Lỗi xử lý UserStatusChanged:", err);
-          }
-        });
+  try {
+    const userId = data.userId || data.userid || data.UserId;
+    const isOnline = data.isOnline ?? data.IsOnline ?? false;
+    const lastActive = data.lastSeen || data.lastActive || data.LastActive || null;
+    const formattedLastSeen = data.formattedLastSeen || null;
+
+    // ✅ SỬA LỖI: Dùng functional update (prev)
+    // Bằng cách này, chúng ta so sánh với state MỚI NHẤT
+    setInfoNguoiConLai((prev) => {
+      // So sánh ID bên trong hàm
+      if (prev.id === userId) {
+        // Nếu khớp, trả về state mới
+        return {
+          ...prev,
+          isOnline,
+          lastOnlineTime: isOnline ? null : lastActive,
+          formattedLastSeen: formattedLastSeen, // Nhận `formattedLastSeen` từ backend (sẽ sửa ở bước 2)
+        };
+      }
+      // Nếu không, trả về state cũ
+      return prev;
+    });
+
+    setInfoTinDang((prev) => {
+      // Tương tự cho infoTinDang
+      if (prev.maChuSanPham === userId) {
+        return {
+          ...prev,
+          isOnline,
+          lastOnlineTime: isOnline ? null : lastActive,
+          formattedLastSeen: formattedLastSeen, // Nhận `formattedLastSeen` từ backend
+        };
+      }
+      return prev;
+    });
+    
+  } catch (err) {
+    console.error("Lỗi xử lý UserStatusChanged:", err);
+  }
+});
 
         connection.on("TinNhanDaThuHoi", (data) => {
-          const { maTinNhan, loaiTinNhan } = data;
-          setDanhSachTin((prev) => prev.filter((msg) => msg.maTinNhan !== maTinNhan));
-          closeAllMessageMenus();
-          const messageType = loaiTinNhan === "text" ? "tin nhắn" : loaiTinNhan === "image" ? "ảnh" : "video";
-          console.log(`Recalled ${messageType} with ID ${maTinNhan}`);
-        });
+  const { maTinNhan, isRecalled } = data;
+  
+  // ✅ Cập nhật tin nhắn thành đã thu hồi thay vì xóa
+  setDanhSachTin((prev) => 
+    prev.map((msg) => 
+      msg.maTinNhan === maTinNhan 
+        ? { ...msg, isRecalled: true }
+        : msg
+    )
+  );
+  
+  closeAllMessageMenus();
+  console.log(`Message ${maTinNhan} marked as recalled`);
+});
 
         connection.on("CapNhatTinDang", (updatedPost) => {
           const maTinDangHT = maCuocTroChuyen.split("-").pop();
@@ -949,100 +971,107 @@ useEffect(() => {
         </div>
       </div>
       <div className="chatbox-messages">
-        {danhSachTin.length === 0 ? (
-          <div className="chatbox-empty-chat">
-            <div className="chatbox-empty-icon">
-              <MessageSquareText size={70} className="text-gray-400" />
-            </div>
-            <p>Chưa có tin nhắn nào</p>
-            <p>Hãy bắt đầu cuộc trò chuyện!</p>
+  {danhSachTin.length === 0 ? (
+    <div className="chatbox-empty-chat">
+      <div className="chatbox-empty-icon">
+        <MessageSquareText size={70} className="text-gray-400" />
+      </div>
+      <p>Chưa có tin nhắn nào</p>
+      <p>Hãy bắt đầu cuộc trò chuyện!</p>
+    </div>
+  ) : (
+    danhSachTin.map((msg, idx) => (
+      <div key={idx} className="message-wrapper">
+        <div className={`message ${msg.maNguoiGui === user?.id ? "sent" : "received"} ${msg.isRecalled ? "recalled" : ""}`}>
+          <div className="message-content">
+            {msg.isRecalled ? (
+              // ✅ Hiển thị tin nhắn đã thu hồi
+              <p className="recalled-message">
+                <FaBan size={14} style={{ color: '#ff6b6b' }} />
+                Tin nhắn đã được thu hồi
+              </p>
+            ) : msg.loaiTinNhan === "image" ? (
+              <img
+                src={msg.noiDung}
+                alt="img-chat"
+                className="message-image clickable-media"
+                onClick={() => openImageModal(msg.noiDung)}
+              />
+            ) : msg.loaiTinNhan === "video" ? (
+              <video src={msg.noiDung} controls className="message-video" />
+            ) : (
+              <p>{msg.noiDung}</p>
+            )}
           </div>
-        ) : (
-          danhSachTin.map((msg, idx) => (
-            <div key={idx} className="message-wrapper">
-              <div className={`message ${msg.maNguoiGui === user?.id ? "sent" : "received"}`}>
-                <div className="message-content">
-                  {msg.loaiTinNhan === "image" ? (
-                    <img
-                      src={msg.noiDung}
-                      alt="img-chat"
-                      className="message-image clickable-media"
-                      onClick={() => openImageModal(msg.noiDung)}
-                    />
-                  ) : msg.loaiTinNhan === "video" ? (
-                    <video src={msg.noiDung} controls className="message-video" />
-                  ) : (
-                    <p>{msg.noiDung}</p>
-                  )}
-                </div>
-                <div className="message-info">
-                  <div className="message-time">{formatTime(msg.thoiGian)}</div>
-                  {msg.maNguoiGui === user?.id && msg.maTinNhan === lastSeenMsgId && (
-                    <div className="message-status">Đã xem</div>
-                  )}
-                </div>
+          <div className="message-info">
+            <div className="message-time">{formatTime(msg.thoiGian)}</div>
+            {msg.maNguoiGui === user?.id && msg.maTinNhan === lastSeenMsgId && !msg.isRecalled && (
+              <div className="message-status">Đã xem</div>
+            )}
+          </div>
 
-                {msg.maNguoiGui === user?.id && (
-                  <div className="message-menu-container">
+          {/* ✅ CHỈ hiển thị menu nếu tin nhắn CHƯA bị thu hồi */}
+          {msg.maNguoiGui === user?.id && !msg.isRecalled && (
+            <div className="message-menu-container">
+              <button
+                className="message-menu-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMessageMenu(msg.maTinNhan);
+                }}
+              >
+                <FaEllipsisV size={12} />
+              </button>
+
+              {messageMenus[msg.maTinNhan] && (
+                <div className="message-menu">
+                  {canRecallMessage(msg.thoiGianGui) ? (
                     <button
-                      className="message-menu-trigger"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleMessageMenu(msg.maTinNhan);
+                      className="message-menu-item recall-available"
+                      onClick={() => {
+                        if (msg.loaiTinNhan === "image" || msg.loaiTinNhan === "video") {
+                          handleRecallMediaMessage(msg.maTinNhan, msg.thoiGianGui, msg.loaiTinNhan);
+                        } else {
+                          handleRecallTextMessage(msg.maTinNhan, msg.thoiGianGui);
+                        }
                       }}
                     >
-                      <FaEllipsisV size={12} />
-                    </button>
-
-                    {messageMenus[msg.maTinNhan] && (
-                      <div className="message-menu">
-                        {canRecallMessage(msg.thoiGianGui) ? (
-                          <button
-                            className="message-menu-item recall-available"
-                            onClick={() => {
-                              if (msg.loaiTinNhan === "image" || msg.loaiTinNhan === "video") {
-                                handleRecallMediaMessage(msg.maTinNhan, msg.thoiGianGui, msg.loaiTinNhan);
-                              } else {
-                                handleRecallTextMessage(msg.maTinNhan, msg.thoiGianGui);
-                              }
-                            }}
-                          >
-                            <FaTrash size={12} />
-                            <span>Thu hồi</span>
-                            <div className="recall-timer">
-                              <FaClock size={10} />
-                              {Math.floor(getRecallTimeRemaining(msg.thoiGianGui))}:
-                              {Math.floor((getRecallTimeRemaining(msg.thoiGianGui) % 1) * 60)
-                                .toString()
-                                .padStart(2, "0")}
-                            </div>
-                          </button>
-                        ) : (
-                          <button className="message-menu-item recall-disabled" disabled>
-                            <FaTrash size={12} />
-                            <span>Hết hạn thu hồi</span>
-                          </button>
-                        )}
+                      <FaTrash size={12} />
+                      <span>Thu hồi</span>
+                      <div className="recall-timer">
+                        <FaClock size={10} />
+                        {Math.floor(getRecallTimeRemaining(msg.thoiGianGui))}:
+                        {Math.floor((getRecallTimeRemaining(msg.thoiGianGui) % 1) * 60)
+                          .toString()
+                          .padStart(2, "0")}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </button>
+                  ) : (
+                    <button className="message-menu-item recall-disabled" disabled>
+                      <FaTrash size={12} />
+                      <span>Hết hạn thu hồi</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          ))
-        )}
-        {(isBlockedByMe || isBlockedByOther) && (
-          <div className="chatbox-blocked-notice">
-            <FaBan size={24} />
-            <p>
-              {isBlockedByMe
-                ? "Bạn đã chặn người dùng này."
-                : "Bạn đã bị chặn bởi người dùng này."}
-            </p>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+        </div>
       </div>
+    ))
+  )}
+  {(isBlockedByMe || isBlockedByOther) && (
+    <div className="chatbox-blocked-notice">
+      <FaBan size={24} />
+      <p>
+        {isBlockedByMe
+          ? "Bạn đã chặn người dùng này."
+          : "Bạn đã bị chặn bởi người dùng này."}
+      </p>
+    </div>
+  )}
+  <div ref={messagesEndRef} />
+</div>
 
       <div className="chatbox-input-container">
         {!isConnected && <div className="connection-warning">⚠️ Mất kết nối. Đang thử kết nối lại...</div>}
