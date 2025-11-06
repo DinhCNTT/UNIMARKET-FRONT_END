@@ -5,7 +5,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbarUniMarket from "../components/TopNavbarUniMarket";
 import ChatList from "../components/ChatList";
-import ChatBox from "../components/ChatBox";
+import ChatBox from "../components/ChatBanHang/ChatBox";
 import SocialChatViewer from "../components/SocialChatViewer/SocialChatViewer"; // <-- ĐÃ IMPORT
 import "./TrangChat.css";
 import chatBanner from "../assets/chat_banner_01.png";

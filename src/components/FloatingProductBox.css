@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   width: 100%;
-  background: #ffaf3e;
+  background: white;
   box-shadow: 0 4px 20px rgba(255, 152, 0, 0.15);
   z-index: 3000;
   animation: slideDown 0.4s ease-out;
@@ -30,9 +30,11 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px 20px;
-  background: #ffaf3e;
-  border-radius: 0 0 16px 16px;
-  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.15);
+  background: transparent; /* <-- Đã đổi thành trong suốt */
+  border-radius: 0; /* <-- Bỏ bo góc để viền dưới thẳng */
+  box-shadow: none; /* <-- Đã bỏ đổ bóng */
+  border: none; /* <-- Xóa các viền khác (nếu có) */
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .fpb-image {
@@ -143,7 +145,7 @@
 }
 
 .fpb-btn-chat {
-  background: white;
+  background: #ffcc21;
   color: rgba(0, 0, 0, 0.882);
   box-shadow: 0 2px 12px rgba(215, 50, 17, 0.3);
   font-weight: 600;
@@ -319,7 +321,7 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .fpb-content {
-    background: #ffaf3e;
+    background: white;
     backdrop-filter: none;
   }
 

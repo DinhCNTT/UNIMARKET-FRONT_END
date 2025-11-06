@@ -18,6 +18,12 @@ const formatDate = (dateString) => {
   return `${day}-${month}-${year}`;
 };
 
+const formatPrice = (price) => {
+  if (price === null || price === undefined) return "";
+  // Dùng dấu chấm "." làm phân cách
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND";
+};
+
 // Nhận prop onOpenChat để callback mở chatbox nếu có
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
@@ -142,8 +148,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
   if (loading) return <div>Đang tải thông tin...</div>;
   if (!post) return <div>Không tìm thấy tin đăng.</div>;
 
-  const formattedPrice =
-    post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND";
+  const formattedPrice = formatPrice(post.gia);
 
   const PostImageCarousel = ({ images }) => {
     const [current, setCurrent] = useState(0);
@@ -259,6 +264,8 @@ const ChiTietTinDang = ({ onOpenChat }) => {
               onChat={handleChatWithSeller}
               showPhone={showPhoneNumber}
               phoneMasked={showPhoneNumber ? post.phoneNumber : `${post.phoneNumber?.substring(0, 6)}****`}
+              currentUserId={user?.id}
+               sellerId={post.maNguoiBan}
             />
           )}
 
@@ -352,8 +359,8 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                   </div>
                   <h3>{post.tieuDe}</h3>
                   <p className={styles.gia}>
-                    {post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}
-                  </p>
+  {formatPrice(post.gia)}
+</p>
                   <p>{post.diaChi}</p>
                   <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
                 </div>
@@ -391,8 +398,8 @@ const ChiTietTinDang = ({ onOpenChat }) => {
                 </div>
                 <h3>{post.tieuDe}</h3>
                 <p className={styles.gia}>
-                  {post.gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND"}
-                </p>
+  {formatPrice(post.gia)}
+</p>
                 <p>{post.diaChi}</p>
                 <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
               </div>
