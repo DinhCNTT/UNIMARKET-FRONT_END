@@ -12,18 +12,18 @@
 }
 
 .lvv-bg-blur {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;            /* ✅ Cố định giữa màn hình */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* ✅ Đặt tâm đúng giữa */
+  width: 100vw;
+  height: 100vh;
   object-fit: cover;
   filter: blur(25px) brightness(0.35);
   z-index: 0;
-  border-radius: 0; /* ✅ Không bo góc để không bị hở */
+  border-radius: 0;
 }
+
 
 
 .lvv-video-wrapper {
@@ -165,7 +165,7 @@
   margin-bottom: -7px; /* ✅ Giảm từ 6px xuống 2px */
 
   word-wrap: break-word;
-  white-space: normal;
+  white-space: pre-line;
 
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -184,6 +184,7 @@
   font-size: 14px;
   line-height: 1.5;
   text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+  white-space: pre-line;
 }
 
 .lvv-read-more {
@@ -211,42 +212,52 @@
 .lvv-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0px;
+  gap: 14px;
 }
-
 .lvv-actions button {
+  all: unset; /* Reset toàn bộ mặc định */
   display: flex;
   align-items: center;
-  padding: 2px 6px;
-  margin: 0;
-  background: transparent;
-  border: none;
-  gap: 4px;
-  font-size: 15px;
-  width: auto;
-  flex: 0 0 auto;
-  transition: transform 0.2s ease;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e5e5;
+  transition: transform 0.25s ease, color 0.25s ease;
 }
 
 .lvv-actions button:hover {
-  transform: scale(1.08);
+  transform: translateY(-2px);
+  color: #fff;
 }
+
 
 .lvv-actions .icon-circle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 1px solid #ffd98e;
-  background: #27272a;
-  position: relative;
-  overflow: visible;
-  transition: background 0.3s ease, transform 0.2s ease;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
 }
-
+.lvv-actions button:hover .icon-circle {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+/* Số đếm */
+.lvv-actions .count,
+.lvv-actions .lvv-comment-count {
+  color: #f8f8f8;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
 .lvv-actions .lvv-like-btn .icon-circle svg {
   fill: #ccc;
   transition: fill 0.3s ease;
@@ -502,11 +513,11 @@
 
 /* Reply list */
 .lvv-reply-input-wrapper {
-  position: relative;
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-end;
   gap: 8px;
-  width: 29%; /* hoặc 60%, 400px, v.v. tùy bạn */
+  width: 100%;
 }
 
 .lvv-replies {
@@ -537,36 +548,38 @@
   border: 1px dashed red;
 }
 .lvv-reply-input {
-  flex: 1;
+  flex: 0 1 55%;        /* ✅ Chỉ chiếm 55% chiều ngang cha (bớt rộng hơn) */
+  max-width: 240px;     /* ✅ Giới hạn tối đa, giúp gọn gàng */
+  min-width: 160px;     /* ✅ Giữ tối thiểu để không quá nhỏ */
   resize: none;
   border-radius: 8px;
   border: 1px solid #333;
   background-color: #2a2a2a;
   color: white;
-  padding: 10px 12px;
+  padding: 8px 10px;
   font-size: 14px;
 }
+
+
 .lvv-reply-cancel-btn {
-  background: rgba(255, 255, 255, 0.1); /* nền bán trong suốt */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* viền nhẹ */
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 6px;
-  padding: 6px;
+  font-size: 15px;
   width: 32px;
   height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
 }
-
 .lvv-reply-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   transform: scale(1.05);
 }
+
 
 
 .lvv-reply-close-btn:hover {
@@ -575,21 +588,27 @@
 .lvv-reply-footer {
   display: flex;
   align-items: center;
+  display: contents; 
   margin-left: 4px;
 }
 
 .lvv-char-count {
-  margin-left: 0;        /* đẩy sát trái */
-  margin-top: 4px;
+  width: 100%;           /* Giữ nguyên chiều rộng */
+  text-align: left;      /* ✅ Căn về bên trái */
   font-size: 12px;
-  color: white;
+  color: #888;
+  padding-left: 4px;     /* ✅ Cách nhẹ lề trái một chút */
+  margin-top: 4px;       /* ✅ Giãn cách nhẹ với ô nhập */
 }
 
-
-/* Ô nhập trả lời nổi */
 .lvv-reply-input-inline {
-  margin-top: 8px;
-  padding-left: 3px; /* từ 40px → 28px (tuỳ chỉnh) */
+ display: flex;
+ flex-direction: column; 
+ align-items: stretch;
+ gap: 4px; 
+ margin-top: 8px;
+ padding-left: 3px;
+ width: 100%;
 }
 
 .lvv-reply-input-inline input {
@@ -602,38 +621,35 @@
 }
 
 .lvv-reply-submit-btn {
-  background: linear-gradient(135deg, #ff7a00, #ff3c00); /* gradient cam-đỏ nổi bật */
+  background: linear-gradient(135deg, #ff7a00, #ff3c00);
   color: white;
   border: none;
-  padding: 8px 20px;
+  padding: 7px 16px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.4);
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .lvv-reply-submit-btn:hover {
   background: linear-gradient(135deg, #ff5400, #ff0000);
-  transform: scale(1.04);
-  box-shadow: 0 6px 16px rgba(255, 83, 0, 0.5);
+  transform: scale(1.05);
 }
-
 .lvv-reply-submit-btn:disabled {
-  background: #555;  /* màu xám khi không được nhấn */
+  background: #555;
   color: #aaa;
   cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
 }
-
-
 .lvv-reply-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+ display: flex;
+ align-items: center;
+ justify-content: flex-start;
+ gap: 6px;
+ margin-left: 0; /* Giữ nguyên */
+ flex-shrink: 0; /* Không cho các nút bị co lại */
 }
+
 .lvv-comment-input-fixed {
   position: fixed;
   bottom: 15vh;
@@ -939,51 +955,83 @@
   transition: opacity 0.3s ease;
 }
 
-.lvv-volume-btn {
-  position: fixed;
-  bottom: 20px; /* giảm từ 100px xuống 40px để nút sát đáy hơn */
-  left: 980px;
-
-  background: rgba(0, 0, 0, 0.5);
-  border: none;
-  border-radius: 50%;
-  padding: 6px;
-  width: 36px;
-  height: 36px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  z-index: 999;
-  backdrop-filter: blur(2px);
-  transition: background 0.3s ease, transform 0.2s ease;
-}
 
 .lvv-volume-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   transform: scale(1.1);
 }
-.lvv-volume-slider {
-  writing-mode: bt-lr; /* Dọc từ trên xuống */
-  -webkit-appearance: slider-vertical;
-  width: 30px;
-  height: 100px;
-  position: absolute;
-  bottom: -45px;
-  left: -550px;
-  background: transparent;
-  z-index: 101;
-  accent-color: white;
 
-  /* Làm đẹp thumb (nút kéo) với hỗ trợ cơ bản */
-  border-radius: 10px;
-  outline: none;
-  cursor: pointer;
-}
 /* Nếu bạn muốn style toast thêm đẹp */
 .react-hot-toast button {
   font-weight: 500;
   transition: background 0.2s ease;
+}
+
+/* === CỤM ÂM LƯỢNG (ĐÃ CHUYỂN SANG GÓC TRÁI DƯỚI) === */
+.lvv-volume-control-wrapper {
+  position: absolute;   /* ✅ vẫn là absolute để bám theo video */
+  bottom: 20px;         /* vẫn nằm ở đáy */
+  right: 530px;  
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* === Nút bật/tắt tiếng (đẹp và trong suốt hơn) === */
+.lvv-volume-btn {
+  background: rgba(255, 255, 255, 0.08); /* nhẹ nhàng hơn, sáng hơn */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  backdrop-filter: blur(6px) brightness(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease-in-out;
+  order: 2;
+}
+
+.lvv-volume-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Khi đang tắt tiếng, nút sáng đỏ nhẹ */
+.lvv-volume-btn.muted {
+  background: rgba(255, 0, 50, 0.15);
+  border-color: rgba(255, 0, 80, 0.3);
+  box-shadow: 0 0 10px rgba(255, 0, 80, 0.25);
+}
+
+/* === Thanh chỉnh âm lượng (đẹp và hiện đại hơn) === */
+.lvv-volume-slider {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  width: 32px;
+  height: 110px;
+  background: transparent;
+  accent-color: #fff;
+  cursor: pointer;
+  order: 1;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  transition: opacity 0.3s ease;
+}
+
+.lvv-volume-slider:hover {
+  opacity: 1;
+}
+
+/* Khi ẩn slider (nếu bạn toggle hiển thị) */
+.lvv-volume-slider.hidden {
+  opacity: 0;
+  pointer-events: none;
 }

@@ -211,15 +211,19 @@
 
 /* icon tick khi chọn (giữ nguyên) */
 .friend-item .checkmark {
+  display: flex; /* Dùng flex để căn giữa icon */
+  align-items: center;
+  justify-content: center;
   position: absolute;
-  top: 5px;
-  right: 12px;
-  background: #4caf50;
+  top: 5px; /* Điều chỉnh vị trí */
+  right: 5px; /* Điều chỉnh vị trí */
+  width: 18px;
+  height: 18px;
+  background-color: #007bff; /* Màu xanh dương */
   color: white;
   border-radius: 50%;
-  font-size: 14px;          /* icon tick to hơn */
-  padding: 3px;
-  line-height: 1;
+  font-size: 10px; /* Kích thước icon bên trong */
+  border: 2px solid white; /* Viền trắng cho nổi bật */
 }
 
 /* ✅ BƯỚC 3: Thêm CSS cho mũi tên mới */
@@ -311,4 +315,49 @@
   border-radius: 8px;
   border: 1px solid #ccc;
   outline: none;
+}
+/* Wrapper cho nút icon, căn ra giữa */
+.send-section.icon-only {
+  position: relative;       /* Đảm bảo có thể định vị linh hoạt */
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-start; /* ✅ Căn nút sang trái */
+  align-items: center;
+}
+
+/* Nút icon tròn chuyên nghiệp */
+.send-btn.professional.icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;  /* Kích thước nút */
+  height: 50px; /* Kích thước nút */
+  font-size: 20px; /* Kích thước icon */
+  color: #fff;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border: none;
+  border-radius: 50%; /* Bo tròn thành hình tròn */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+  padding: 0; /* Reset padding */
+}
+
+/* Di chuyển icon vào giữa (nếu cần) */
+.send-btn.professional.icon-only .send-icon {
+  margin: 0; /* Reset margin */
+}
+
+.send-btn.professional.icon-only:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+  transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+}
+
+.send-btn.professional.icon-only:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }

@@ -28,7 +28,8 @@ import VideoSearchDetailViewer from "../components/VideoSearchDetailViewer";
 import UserProfilePage from "../pages/UserProfilePage";
 import TinDangDaLuu from "../components/TinDangDaLuu";
 import VideoLikedPage from "../components/VideoLikedPage";
-import LikedVideoDetailViewer from "../components/LikedVideoDetailViewer";
+// Sửa thành đường dẫn mới
+import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
 import ErrorBoundary from "../components/ErrorBoundary";
 import VideoPage from "../pages/VideoPage";
 

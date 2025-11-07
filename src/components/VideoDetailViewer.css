@@ -139,10 +139,10 @@ body.video-transitioning .video-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 13px;
+  gap: 8.5px;
   margin-left: 20px;
   z-index: 5;
-  margin-top: 100px;
+  margin-top: 220px;
 }
 
 .vdv-user-avatar-container {

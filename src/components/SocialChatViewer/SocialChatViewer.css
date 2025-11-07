@@ -3,16 +3,19 @@
 /* ========================================= */
 .social-chat-panel {
   width: 100%;
-  height: 100%;
+  /* height: 100%; */ /* <--- XÓA DÒNG NÀY */
+  flex: 1;            /* <--- THAY BẰNG DÒNG NÀY */
+  min-height: 0;      /* <--- THÊM DÒNG NÀY ĐỂ CO GIÃN TỐT HƠN */
+
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
-  /* Sử dụng font chữ hệ thống để có giao diện hiện đại, dễ đọc */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  /* Làm mềm đường viền */
   border-left: 1px solid #ebebeb;
 }
+
 
 /* ========================================= */
 /* --- HEADER (ĐÃ CẬP NHẬT) --- */
@@ -681,3 +684,53 @@
 .modal-btn.confirm-delete:hover {
   background-color: #c92a2e;
 }
+/* ====== VÙNG THÔNG BÁO BỊ CHẶN ====== */
+/* 🌙 KHU VỰC THÔNG BÁO BỊ CHẶN */
+.chat-input-blocked-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  min-height: 72px;
+  background: linear-gradient(135deg, #fafbfc, #f3f4f6);
+  border-top: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.chat-input-blocked-wrapper:hover {
+  background: linear-gradient(135deg, #f8fafc, #eef1f4);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 💬 NỘI DUNG THÔNG BÁO */
+.chat-input-blocked-text {
+  max-width: 80%;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4b5563;
+  text-align: center;
+  font-style: italic;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  letter-spacing: 0.2px;
+  animation: fadeIn 0.35s ease-out;
+}
+
+/* ✨ HIỆU ỨNG XUẤT HIỆN MƯỢT MÀ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+

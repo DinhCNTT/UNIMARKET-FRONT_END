@@ -694,220 +694,241 @@ const handleToggleFollow = async () => {
   if (!videoData) {
     return <div>Đang tải video...</div>;
   }
-  return (
-    <div className="vdv-wrapper vdv-full-screen-scroll">
-      <TopNavbarUniMarket />
-      {loading && (
-        <div className="loading-overlay">
-          <div className="spinner"></div>
-          <span>Đang tải video...</span>
-        </div>
-      )}
-      <div ref={containerRef} className="video-list-container">
-        <div
-          className={`video-list-wrapper ${!loading && isReloading ? "fade-in" : ""}`}
-          style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
-        >
-          {videoList.map((video, index) => {
-            const ratio = aspectRatios[index];
-            const ratioClass =
-              ratio != null
-                ? ratio < 1
-                  ? "vdv-portrait"
-                  : ratio > 1.5
-                  ? "vdv-landscape"
-                  : "vdv-square"
-                : "";
-            return (
+return ( 
+  <div className="vdv-wrapper vdv-full-screen-scroll">
+    <TopNavbarUniMarket />
+
+    {loading && (
+      <div className="loading-overlay">
+        <div className="spinner"></div>
+        <span>Đang tải video...</span>
+      </div>
+    )}
+
+    <div ref={containerRef} className="video-list-container">
+      <div
+        className={`video-list-wrapper ${!loading && isReloading ? "fade-in" : ""}`}
+        style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+      >
+        {videoList.map((video, index) => {
+          const ratio = aspectRatios[index];
+          const ratioClass =
+            ratio != null
+              ? ratio < 1
+                ? "vdv-portrait"
+                : ratio > 1.5
+                ? "vdv-landscape"
+                : "vdv-square"
+              : "";
+
+          return (
+            <div
+              className={`video-item ${!loading && isReloading && index === 0 ? "fade-in" : ""}`}
+              key={video.videoUrl}
+            >
               <div
-                className={`video-item ${!loading && isReloading && index === 0 ? "fade-in" : ""}`}
-                key={video.videoUrl}
+                className={`vdv-container ${ratioClass} ${
+                  showComments ? "comment-open" : ""
+                }`}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
-                <div
-                  className={`vdv-container ${ratioClass} ${
-                    showComments ? "comment-open" : ""
-                  }`}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <video
-                    ref={(el) => {
-                      videoElsRef.current[index] = el;
-                      if (index === currentIndex) {
-                        videoRef.current = el;
-                      }
-                    }}
-                    src={video.videoUrl}
-                    className="vdv-player"
-                    controls={false}
-                    controlsList="nodownload"
-                    onContextMenu={(e) => e.preventDefault()}
-                    autoPlay={index === currentIndex}
-                    loop
-                    onClick={(e) => handleVideoClick(e, index)}
-                    onDoubleClick={(e) => e.preventDefault()}
-                    onLoadedMetadata={(e) => {
-                      const ratio =
-                        e.target.videoWidth / e.target.videoHeight;
-                      setAspectRatios((prev) => ({
-                        ...prev,
-                        [index]: ratio,
-                      }));
+                <video
+                  ref={(el) => {
+                    videoElsRef.current[index] = el;
+                    if (index === currentIndex) videoRef.current = el;
+                  }}
+                  src={video.videoUrl}
+                  className="vdv-player"
+                  controls={false}
+                  controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
+                  autoPlay={index === currentIndex}
+                  loop
+                  onClick={(e) => handleVideoClick(e, index)}
+                  onDoubleClick={(e) => e.preventDefault()}
+                  onLoadedMetadata={(e) => {
+                    const ratio = e.target.videoWidth / e.target.videoHeight;
+                    setAspectRatios((prev) => ({
+                      ...prev,
+                      [index]: ratio,
+                    }));
+                  }}
+                />
+
+                {index === currentIndex && (
+                  <VideoControls
+                    videoRef={videoRef}
+                    isVisible={showControls}
+                    onDragStateChange={handleDragStateChange}
+                  />
+                )}
+
+                {!isDraggingVideo && (
+                  <div className="vdv-overlay">
+                    <div className="vdv-info-left">
+                      <div className="vdv-user-name">@{video.nguoiDang?.fullName}</div>
+                      <div className="vdv-title">{video.tieuDe}</div>
+                      <div className="vdv-price-address">
+                        <div className="vdv-price">{video.gia?.toLocaleString()} đ</div>
+                        <div className="vdv-address">
+                          {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
+                        </div>
+                      </div>
+                      {/* ✅ HIỂN THỊ SỐ VIEW */}
+                      <div className="vdv-view-count">
+                        <FiEye className="vdv-view-icon" />
+                        {formatCount(video.soLuotXem || 0)} lượt xem
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ✅ Cột bên phải */}
+              <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
+                {/* Avatar + Follow */}
+                <div className="vdv-user-avatar-container">
+                  <img
+                    src={video.nguoiDang?.avatarUrl || defaultAvatar}
+                    alt="avatar"
+                    className="vdv-user-avatar"
+                    onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
+                    style={{ cursor: "pointer" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultAvatar;
                     }}
                   />
-                  {index === currentIndex && (
-                    <VideoControls
-                      videoRef={videoRef}
-                      isVisible={showControls}
-                      onDragStateChange={handleDragStateChange}
-                    />
-                  )}
-                  {!isDraggingVideo && (
-                    <div className="vdv-overlay">
-                      <div className="vdv-info-left">
-                        <div className="vdv-user-name">
-                          @{video.nguoiDang?.fullName}
-                        </div>
-                        <div className="vdv-title">{video.tieuDe}</div>
-                        <div className="vdv-price-address">
-                          <div className="vdv-price">
-                            {video.gia?.toLocaleString()} đ
-                          </div>
-                          <div className="vdv-address">
-                            {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
-                          </div>
-                        </div>
-                        {/* ✅ HIỂN THỊ SỐ VIEW */}
-                        <div className="vdv-view-count">
-                          <FiEye className="vdv-view-icon" />
-                          {formatCount(video.soLuotXem || 0)} lượt xem
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
-                  <div className="vdv-user-avatar-container">
-                    <img
-                      src={video.nguoiDang?.avatarUrl || defaultAvatar}
-                      alt="avatar"
-                      className="vdv-user-avatar"
-                      onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
-                      style={{ cursor: "pointer" }}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = defaultAvatar;
-                      }}
-                    />
-                    {/* ✅ Nút Follow/Unfollow dính liền avatar */}
-                    {video.nguoiDang?.id && (
-                      <div
-                        className="vdv-follow-button"
-                        onClick={handleToggleFollow}
-                        title={isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
-                      >
-                        {isFollowing ? (
-                          <IoCheckmarkCircleOutline size={24}  />
-                        ) : (
-                          <IoAddCircleOutline size={24}  />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div
-                    className={`vdv-icon-button vdv-like-button ${
-                      video.isLiked ? "liked" : ""
-                    }`}
-                    onClick={() => handleLike(video)}
-                    title={
-                      !token
-                        ? "Bạn cần đăng nhập để tym"
-                        : video.isLiked
-                        ? "Đã tym"
-                        : "Nhấn để tym"
-                    }
-                  >
-                    {video.isLiked ? (
-                      <IoHeart size={28} color="#ff4d6d" />
-                    ) : (
-                      <IoHeartOutline size={28} color="#ccc" />
-                    )}
-                  </div>
-                  <div className="vdv-icon-label">
-                    {formatCount(video.soTym || 0)}
-                  </div>
-                  <div
-                    className="vdv-icon-wrapper"
-                    onClick={() => handleToggleSave(video)}
-                    title={
-                      !user
-                        ? "Bạn cần đăng nhập để lưu video"
-                        : video.isSaved
-                        ? "Đã lưu video"
-                        : "Lưu video"
-                    }
-                    style={{ marginTop: "8px" }}
-                  >
-                    <div className="vdv-icon-button vdv-save-button">
-                      {video.isSaved ? (
-                        <IoBookmark size={24} color="gold" />
+                  {video.nguoiDang?.id && (
+                    <div
+                      className="vdv-follow-button"
+                      onClick={handleToggleFollow}
+                      title={isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
+                    >
+                      {isFollowing ? (
+                        <IoCheckmarkCircleOutline size={24} />
                       ) : (
-                        <IoBookmarkOutline size={24} color="gray" />
+                        <IoAddCircleOutline size={24} />
                       )}
                     </div>
-                    <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
-                      {formatCount(video.soNguoiLuu || 0)}
-                    </div>
+                  )}
+                </div>
+
+                {/* ❤️ Like */}
+                <div
+                  className={`vdv-icon-button vdv-like-button ${
+                    video.isLiked ? "liked" : ""
+                  }`}
+                  onClick={() => handleLike(video)}
+                  title={
+                    !token
+                      ? "Bạn cần đăng nhập để tym"
+                      : video.isLiked
+                      ? "Đã tym"
+                      : "Nhấn để tym"
+                  }
+                >
+                  {video.isLiked ? (
+                    <IoHeart size={28} color="#ff4d6d" />
+                  ) : (
+                    <IoHeartOutline size={28} color="#ccc" />
+                  )}
+                </div>
+                <div className="vdv-icon-label">
+                  {formatCount(video.soTym || 0)}
+                </div>
+
+                {/* 🔖 Save */}
+                <div
+                  className="vdv-icon-wrapper"
+                  onClick={() => handleToggleSave(video)}
+                  title={
+                    !user
+                      ? "Bạn cần đăng nhập để lưu video"
+                      : video.isSaved
+                      ? "Đã lưu video"
+                      : "Lưu video"
+                  }
+                  style={{ marginTop: "8px" }}
+                >
+                  <div className="vdv-icon-button vdv-save-button">
+                    {video.isSaved ? (
+                      <IoBookmark size={24} color="gold" />
+                    ) : (
+                      <IoBookmarkOutline size={24} color="gray" />
+                    )}
                   </div>
-                  <div
-                    className="vdv-icon-button"
-                    onClick={() => handleToggleComments(video)}
-                  >
-                    <FaRegCommentDots size={24} color="#ccc" />
-                  </div>
-                  <div className="vdv-icon-label">{video.soBinhLuan || 0}</div>
-                  {/* Icon Xem Chi Tiết */}
-                  <div
-                    className="vdv-icon-button vdv-detail-button"
-                    onClick={() => handleShowDetail(video.maTinDang)}
-                    title="Xem chi tiết tin đăng"
-                    style={{ marginTop: "12px" }}
-                  >
-                    <FaInfoCircle size={24} color="#ccc" />
-                  </div>
-                  {/* Icon Share */}
-                  <div
-                    className="vdv-icon-button vdv-share-button"
-                    onClick={() => setShowSharePanel(true)}
-                    title="Chia sẻ tin đăng"
-                    style={{ marginTop: "12px" }}
-                  >
-                    <FaShareAlt size={24} color="#ccc" />
+                  <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
+                    {formatCount(video.soNguoiLuu || 0)}
                   </div>
                 </div>
+
+                {/* 💬 Comment */}
+                <div
+                  className="vdv-icon-button"
+                  onClick={() => handleToggleComments(video)}
+                >
+                  <FaRegCommentDots size={24} color="#ccc" />
+                </div>
+                <div className="vdv-icon-label">
+                  {video.soBinhLuan || 0}
+                </div>
+
+                {/* 📤 Share (mới cập nhật — nằm TRÊN detail + có số lượng share) */}
+                <div
+                  className="vdv-icon-button vdv-share-button"
+                  onClick={() => setShowSharePanel(true)}
+                  title="Chia sẻ tin đăng"
+                  style={{ marginTop: "16px" }}
+                >
+                  <FaShareAlt size={24} color="#fff" />
+                </div>
+                <div className="vdv-icon-label">
+                  {formatCount(video.soLuotChiaSe || 0)}
+                </div>
+
+                {/* ℹ️ Detail (bị đẩy xuống sau share) */}
+                <div
+                  className="vdv-icon-button vdv-detail-button"
+                  onClick={() => handleShowDetail(video.maTinDang)}
+                  title="Xem chi tiết tin đăng"
+                  style={{ marginTop: "16px" }}
+                >
+                  <FaInfoCircle size={24} color="#ccc" />
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-      {showHeart && (
-        <div className="vdv-heart-animation">
-          <IoHeart size={80} color="#ff4d6d" />
-        </div>
-      )}
-      {showComments && (
-        <CommentDrawer
-          maTinDang={videoData.maTinDang}
-          onClose={() => setShowComments(false)}
-        />
-      )}
-      <VideoDetailsPanel
-        isOpen={showDetailPanel}
-        onClose={handleCloseDetail}
-        loading={loadingDetail}
-        data={detailData}
+    </div>
+
+    {/* ❤️ Hiệu ứng tym */}
+    {showHeart && (
+      <div className="vdv-heart-animation">
+        <IoHeart size={80} color="#ff4d6d" />
+      </div>
+    )}
+
+    {/* 💬 Drawer bình luận */}
+    {showComments && (
+      <CommentDrawer
+        maTinDang={videoData.maTinDang}
+        onClose={() => setShowComments(false)}
       />
-      <SharePanel 
+    )}
+
+    {/* 📄 Panel chi tiết */}
+    <VideoDetailsPanel
+      isOpen={showDetailPanel}
+      onClose={handleCloseDetail}
+      loading={loadingDetail}
+      data={detailData}
+    />
+
+    {/* 📤 Panel chia sẻ */}
+    <SharePanel 
       key={videoData.maTinDang + currentIndex}
       isOpen={showSharePanel}
       onClose={() => setShowSharePanel(false)}
@@ -917,8 +938,9 @@ const handleToggleFollow = async () => {
       previewTitle={videoData.tieuDe}
       previewImage={videoData.hinhAnh}
       previewVideo={videoData.videoUrl}
-  />
-    </div>
-  );
+    />
+  </div>
+);
+
 };
 export default VideoDetailViewer;

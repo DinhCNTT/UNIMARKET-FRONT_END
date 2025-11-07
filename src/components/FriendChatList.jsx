@@ -5,14 +5,18 @@ import {
   registerChatEventHandler,
   unregisterChatEventHandler,
   markAsSeen,
-  deleteConversation, 
+  deleteConversation,
 } from "../services/chatSocialService";
-import ChatListItemMenu from "./ChatListItemMenu"; 
+import ChatListItemMenu from "./ChatListItemMenu";
 
 const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   const [friendChats, setFriendChats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); 
+  const [error, setError] = useState(null);
+
+  // ===================================================
+  // 🕒 Format thời gian tin nhắn
+  // ===================================================
   const formatMessageTime = (utcDateString) => {
     if (!utcDateString) return "";
     const messageDate = new Date(utcDateString);
@@ -20,6 +24,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     const options = { timeZone: "Asia/Ho_Chi_Minh" };
     const messageDateVN = new Date(messageDate.toLocaleString("en-US", options));
     const nowVN = new Date(now.toLocaleString("en-US", options));
+
     const messageDayStart = new Date(
       messageDateVN.getFullYear(),
       messageDateVN.getMonth(),
@@ -30,14 +35,17 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
       nowVN.getMonth(),
       nowVN.getDate()
     );
+
     const timeString = messageDateVN.toLocaleTimeString("vi-VN", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
+
     if (messageDayStart.getTime() === todayStart.getTime()) {
       return timeString;
     }
+
     return messageDateVN.toLocaleDateString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
@@ -45,85 +53,101 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     });
   };
 
-  // --- Realtime: Cập nhật cuộc trò chuyện ---
+  // ===================================================
+  // 🔄 Realtime: Cập nhật cuộc trò chuyện
+  // ===================================================
   const handleUpdateConversation = useCallback(
     (data) => {
-      if (!data || !data.MaCuocTroChuyen) {
-        return;
-      }
+      if (!data || !data.maCuocTroChuyen) return;
 
       setFriendChats((prevChats) => {
         const chatIndex = prevChats.findIndex(
-          (c) => c.maCuocTroChuyen === data.MaCuocTroChuyen
+          (c) => c.maCuocTroChuyen === data.maCuocTroChuyen
         );
 
-        // ===================================================
-        // TRƯỜNG HỢP 1: CẬP NHẬT CUỘC TRÒ CHUYỆN ĐÃ CÓ
-        // ===================================================
+        // 🧩 Cập nhật hội thoại đã tồn tại
         if (chatIndex > -1) {
           const existingChat = prevChats[chatIndex];
-          const isActiveChat = existingChat.maCuocTroChuyen === selectedChatId;
-          const isFromOtherUser = data.NguoiGuiId !== userId;
+          const isActiveChat =
+            existingChat.maCuocTroChuyen === selectedChatId;
+          const isFromOtherUser = data.nguoiGuiId !== userId;
 
           let newUnreadCount = existingChat.unreadCount || 0;
+
           if (isActiveChat) {
             newUnreadCount = 0;
-          } else if (isFromOtherUser) {
+          } else if (
+            isFromOtherUser &&
+            !(data.tinNhanCuoi || "").includes("[Tin nhắn đã thu hồi]")
+          ) {
             newUnreadCount += 1;
           }
 
           const updatedChat = {
             ...existingChat,
             lastMessage: {
-              noiDung: data.TinNhanCuoi,
-              thoiGianGui: data.ThoiGianCapNhat,
+              noiDung: data.tinNhanCuoi,
+              thoiGianGui: data.thoiGianCapNhat,
               sender: {
-                id: data.NguoiGuiId,
-                fullName: data.TenNguoiGui,
-                avatarUrl: data.AvatarNguoiGui,
+                id: data.nguoiGuiId,
+                fullName: data.tenNguoiGui,
+                avatarUrl: data.avatarNguoiGui,
               },
-              messageType: data.LastMessage?.messageType || data.MessageType || "text",
+              messageType:
+                data.lastMessage?.messageType || data.messageType || "text",
             },
             unreadCount: newUnreadCount,
           };
+
           const newChats = prevChats.filter(
-            (c) => c.maCuocTroChuyen !== data.MaCuocTroChuyen
+            (c) => c.maCuocTroChuyen !== data.maCuocTroChuyen
           );
           return [updatedChat, ...newChats];
         }
-          const partnerInfo = data.Partner || {
-            id: data.NguoiGuiId,
-            fullName: data.TenNguoiGui,
-            avatarUrl: data.AvatarNguoiGui,
-            isOnline: true,
-          };
-          if (partnerInfo && partnerInfo.id) {
-            const newChat = {
-              maCuocTroChuyen: data.MaCuocTroChuyen,
-              thoiGianTao: data.ThoiGianTao || data.ThoiGianCapNhat,
-              lastMessage: {
-                noiDung: data.TinNhanCuoi,
-                thoiGianGui: data.ThoiGianCapNhat,
-                sender: {
-                  id: data.NguoiGuiId,
-                  fullName: data.TenNguoiGui,
-                  avatarUrl: data.AvatarNguoiGui,
-                },
-                messageType: data.LastMessage?.messageType || data.MessageType || "text",
+
+        // 🆕 Tạo hội thoại mới
+        const partnerInfo = data.partner || {
+          id: data.nguoiGuiId,
+          fullName: data.tenNguoiGui,
+          avatarUrl: data.avatarNguoiGui,
+          isOnline: true,
+        };
+
+        if (partnerInfo && partnerInfo.id) {
+          const newChat = {
+            maCuocTroChuyen: data.maCuocTroChuyen,
+            thoiGianTao: data.thoiGianTao || data.thoiGianCapNhat,
+            lastMessage: {
+              noiDung: data.tinNhanCuoi,
+              thoiGianGui: data.thoiGianCapNhat,
+              sender: {
+                id: data.nguoiGuiId,
+                fullName: data.tenNguoiGui,
+                avatarUrl: data.avatarNguoiGui,
               },
-              partner: partnerInfo, 
-              unreadCount: 1,
-            };
-            joinGroup(data.MaCuocTroChuyen);
-            return [newChat, ...prevChats];
-          }
+              messageType:
+                data.lastMessage?.messageType || data.messageType || "text",
+            },
+            partner: partnerInfo,
+            unreadCount: (data.tinNhanCuoi || "").includes(
+              "[Tin nhắn đã thu hồi]"
+            )
+              ? 0
+              : 1,
+          };
+          joinGroup(data.maCuocTroChuyen);
+          return [newChat, ...prevChats];
+        }
+
         return prevChats;
       });
     },
-    [userId, selectedChatId] 
+    [userId, selectedChatId]
   );
 
-  // --- Realtime: Cập nhật trạng thái online/offline ---
+  // ===================================================
+  // 🟢 Realtime: Cập nhật trạng thái online/offline
+  // ===================================================
   const handlePresenceUpdate = useCallback((presence) => {
     setFriendChats((prev) =>
       prev.map((chat) =>
@@ -140,7 +164,26 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     );
   }, []);
 
-  // --- Fetch danh sách bạn bè ---
+  // ===================================================
+  // ✨ [MỚI] Realtime: Cập nhật trạng thái chặn / gỡ chặn
+  // ===================================================
+  const handleBlockStatusChanged = useCallback((data) => {
+    setFriendChats((prevChats) =>
+      prevChats.map((chat) =>
+        chat.maCuocTroChuyen === data.maCuocTroChuyen
+          ? {
+              ...chat,
+              isBlocked: data.isBlocked,
+              maNguoiChan: data.maNguoiChan,
+            }
+          : chat
+      )
+    );
+  }, []);
+
+  // ===================================================
+  // 📦 Lấy danh sách cuộc trò chuyện
+  // ===================================================
   const fetchFriendChats = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -188,7 +231,9 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     }
   }, [userId]);
 
-  // --- Xử lý xóa cuộc trò chuyện ---
+  // ===================================================
+  // 🗑️ Xử lý xóa cuộc trò chuyện
+  // ===================================================
   const handleDeleteConversation = async (maCuocTroChuyen) => {
     setError(null);
 
@@ -198,39 +243,50 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     const wasUnread = chatToDelete && chatToDelete.unreadCount > 0;
 
     try {
-      if (wasUnread) {
-        await markAsSeen(maCuocTroChuyen);
-      }
+      if (wasUnread) await markAsSeen(maCuocTroChuyen);
       await deleteConversation(maCuocTroChuyen);
+
       setFriendChats((prevChats) =>
         prevChats.filter((chat) => chat.maCuocTroChuyen !== maCuocTroChuyen)
       );
-      if (selectedChatId === maCuocTroChuyen) {
-        onSelectChat(null, null);
-      }
+
+      if (selectedChatId === maCuocTroChuyen) onSelectChat(null, null);
     } catch (err) {
       console.error("Lỗi khi xóa chat:", err);
       setError(err.message || "Không thể xóa. Vui lòng thử lại.");
     }
   };
 
-  // --- Đăng ký và hủy đăng ký realtime event ---
+  // ===================================================
+  // ⚡ Đăng ký / Hủy đăng ký realtime event
+  // ===================================================
   useEffect(() => {
     if (!userId) return;
 
     fetchFriendChats();
     registerChatEventHandler("CapNhatCuocTroChuyen", handleUpdateConversation);
     registerChatEventHandler("PresenceUpdated", handlePresenceUpdate);
+    registerChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
 
     return () => {
       unregisterChatEventHandler("CapNhatCuocTroChuyen", handleUpdateConversation);
       unregisterChatEventHandler("PresenceUpdated", handlePresenceUpdate);
+      unregisterChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
     };
-  }, [userId, fetchFriendChats, handleUpdateConversation, handlePresenceUpdate]);
+  }, [
+    userId,
+    fetchFriendChats,
+    handleUpdateConversation,
+    handlePresenceUpdate,
+    handleBlockStatusChanged,
+  ]);
 
-  // --- Click chọn chat ---
+  // ===================================================
+  // 🖱️ Chọn cuộc trò chuyện
+  // ===================================================
   const handleSelectChat = (chat) => {
     const wasUnread = chat.unreadCount > 0;
+
     setFriendChats((prev) =>
       prev.map((c) =>
         c.maCuocTroChuyen === chat.maCuocTroChuyen
@@ -238,47 +294,19 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
           : c
       )
     );
+
     onSelectChat(chat, "social");
-    if (wasUnread) {
-      markAsSeen(chat.maCuocTroChuyen);
-    }
+    if (wasUnread) markAsSeen(chat.maCuocTroChuyen);
   };
 
-  // --- Render tin nhắn cuối ---
+  // ===================================================
+  // 💬 Render dòng tin nhắn cuối
+  // ===================================================
   const renderLastMessageLine = (chat, isUnread) => {
     const lastMessage = chat.lastMessage;
     const formattedTime = formatMessageTime(lastMessage.thoiGianGui);
-    const messageType = lastMessage.messageType || "text";
     const isActiveChat = chat.maCuocTroChuyen === selectedChatId;
     const textClass = isUnread && !isActiveChat ? "last-text bold" : "last-text";
-
-    let content = lastMessage.noiDung || "";
-    content = content.replace(/\[ShareId:.*?\]\s*/g, "").trim();
-
-
-    if (messageType === "video") {
-        // Nếu không có nội dung đi kèm, hiển thị "đã gửi 1 video"
-        if (!content) {
-             return (
-                <>
-                  <span className={`${textClass} italic`}>đã gửi 1 video</span>
-                  <span className="last-time"> • {formattedTime}</span>
-                </>
-              );
-        }
-        // Nếu có nội dung, ưu tiên hiển thị nó
-    }
-
-    if (messageType === "image") {
-       if (!content) {
-            return (
-                <>
-                  <span className={`${textClass} italic`}>đã gửi 1 ảnh</span>
-                  <span className="last-time"> • {formattedTime}</span>
-                </>
-            );
-       }
-    }
 
     const senderId = lastMessage.sender?.Id || lastMessage.sender?.id;
     const senderName =
@@ -287,43 +315,56 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
         : lastMessage.sender?.FullName ||
           lastMessage.sender?.fullName ||
           "Ai đó";
-
     const senderClass =
       isUnread && !isActiveChat ? "last-sender bold" : "last-sender";
 
-    // Nếu sau khi xóa tag mà không còn nội dung, hiển thị thông báo mặc định
-    if (!content) {
-        if (messageType === 'video') {
-            content = 'đã chia sẻ 1 video';
-        } else if (messageType === 'share') {
-            content = 'đã chia sẻ 1 bài viết';
-        } else {
-             content = 'đã gửi 1 tin nhắn';
-        }
-        return (
-            <>
-              <span className={senderClass}>{senderName}:</span>{' '}
-              <span className={`${textClass} italic`}>{content}</span>
-              <span className="last-time"> • {formattedTime}</span>
-            </>
-          );
+    const content = (lastMessage.noiDung || "").trim();
+
+    if (content.includes("[Tin nhắn đã thu hồi]")) {
+      const recallText =
+        senderId === userId
+          ? "Bạn đã thu hồi một tin nhắn"
+          : `${senderName} đã thu hồi một tin nhắn`;
+
+      return (
+        <>
+          <span className={`${textClass} italic`}>{recallText}</span>
+          <span className="last-time"> • {formattedTime}</span>
+        </>
+      );
     }
+
+    const messageType = lastMessage.messageType || "text";
+    let cleanContent = content.replace(/\[ShareId:.*?\]\s*/g, "").trim();
+
+    if (messageType === "video" && !cleanContent)
+      cleanContent = "đã gửi 1 video";
+    if (messageType === "image" && !cleanContent)
+      cleanContent = "đã gửi 1 ảnh";
+
+    if (!cleanContent) {
+      if (messageType === "video") cleanContent = "đã chia sẻ 1 video";
+      else if (messageType === "share") cleanContent = "đã chia sẻ 1 bài viết";
+      else cleanContent = "đã gửi 1 tin nhắn";
+    }
+
     return (
       <>
         <span className={senderClass}>{senderName}:</span>{" "}
-        <span className={textClass}>{content}</span>
+        <span className={textClass}>{cleanContent}</span>
         <span className="last-time"> • {formattedTime}</span>
       </>
     );
   };
 
-
-
+  // ===================================================
+  // 🧩 Render danh sách chat
+  // ===================================================
   if (loading) return <p className="chatlist-empty">Đang tải...</p>;
 
   return (
     <div className="friend-chatlist">
-      {error && <p className="chatlist-empty" style={{ color: "red" }}>{error}</p>}
+      {error && <p className="chatlist-empty error-text">{error}</p>}
 
       {friendChats.length === 0 ? (
         <p className="chatlist-empty">Không có cuộc trò chuyện nào</p>
@@ -338,7 +379,9 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
               className={`chatlist-item-wrapper ${isActive ? "active-chat" : ""}`}
             >
               <div
-                className={`chatlist-item ${isUnread && !isActive ? "unread-chat" : ""}`}
+                className={`chatlist-item ${
+                  isUnread && !isActive ? "unread-chat" : ""
+                }`}
                 onClick={() => handleSelectChat(chat)}
               >
                 <img
@@ -364,7 +407,11 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
                   <div className="unread-badge">{chat.unreadCount}</div>
                 )}
               </div>
+
+              {/* ✨ Truyền chat + currentUserId cho menu */}
               <ChatListItemMenu
+                chat={chat}
+                currentUserId={userId}
                 onDelete={() => handleDeleteConversation(chat.maCuocTroChuyen)}
               />
             </div>
