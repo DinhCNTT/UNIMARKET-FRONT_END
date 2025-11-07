@@ -76,6 +76,9 @@
 }
 
 .price {
+  margin-left: 8px;
+  font-size: 18px;
+  font-weight: bold;
   color: #e74c3c;
 }
 
@@ -192,7 +195,6 @@
 /* Địa chỉ + ngày đăng */
 .similarPostCard p {
   font-size: 14px;
-  color: #555;
   margin: 0 0 4px 0;
 }
 

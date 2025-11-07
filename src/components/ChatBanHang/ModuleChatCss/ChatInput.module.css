@@ -1,0 +1,193 @@
+/* Container chính */
+.chatInput {
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+/* Wrapper thanh input */
+.inputWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-end; 
+  gap: 8px;
+  background: transparent; 
+  border-radius: 0;
+  padding: 0;
+  min-height: auto;
+  transition: all 0.3s ease;
+}
+/* Class chứa textarea, hình "viên thuốc" */
+.textWrap {
+  flex: 1;
+  min-width: 0;
+  background: #f3f4f6;
+  border-radius: 20px; 
+  padding: 8px 14px;
+  display: flex; 
+  transition: all 0.3s ease;
+}
+/* Thêm :focus-within cho .textWrap */
+.textWrap:focus-within {
+  background: #e5e7eb;
+  box-shadow: 0 0 0 2px #3b82f6; 
+}
+/* Textarea */
+.textWrap textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  max-height: 100px;
+  padding: 0; 
+  margin: 0;
+  color: #000;
+}
+.textWrap textarea:focus {
+  outline: none;
+}
+.textWrap textarea::placeholder {
+  color: #9ca3af;
+}
+/* Nút Gửi */
+.sendBtn {
+  background: #3b82f6;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.sendBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+.sendBtn:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+/* Cảnh báo kết nối */
+.warning {
+  position: relative; 
+  top: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  margin-bottom: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+/* Group nút upload */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px; 
+}
+/* Nút upload (icon) */
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+.actionBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #2563eb;
+}
+/* KHU VỰC PREVIEW (ĐÃ DỜI LÊN TRÊN) */
+.previews {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px; 
+  padding-left: 0; /* BỎ PADDING BÊN TRÁI */
+}
+.thumb {
+  position: relative;
+  width: 72px; 
+  height: 72px;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.thumb img,
+.thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.thumbRemove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.thumbRemove:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .previews {
+    padding-left: 0;
+  }
+}
+@media (max-width: 480px) {
+  .chatInput {
+    padding: 8px;
+  }
+  .inputWrap {
+    gap: 4px;
+  }
+  .actionBtn {
+    width: 32px;
+    height: 32px;
+  }
+  .sendBtn {
+    width: 36px;
+    height: 36px;
+  }
+  .previews {
+    padding-left: 0;
+  }
+}
