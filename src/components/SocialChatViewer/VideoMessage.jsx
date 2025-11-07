@@ -1,6 +1,6 @@
-// File: src/components/SocialChatViewer/VideoMessage.jsx
 import React, { forwardRef } from 'react';
 import { PlayCircle } from 'lucide-react';
+import { Link } from 'react-router-dom'; // ✅ Thêm Link
 import ParentMessagePreview from './ParentMessagePreview';
 import MessageActions from './MessageActions';
 
@@ -12,7 +12,7 @@ const VideoMessage = forwardRef(
       currentUserId,
       onStartReply,
       onOpenDeleteModal,
-      onJumpToMessage, // ✅ Thêm prop để click reply có thể nhảy đến tin gốc
+      onJumpToMessage, // ✅ Dùng để nhảy đến tin gốc
     },
     ref
   ) => {
@@ -71,7 +71,18 @@ const VideoMessage = forwardRef(
 
     const parts = message.noiDung.match(/\[ShareId:\d+.*?\]\s*(.*)/);
     const extraText = parts ? parts[1].trim() : '';
-    const videoLink = shareInfo.shareLink || shareInfo.previewVideo;
+
+    // ✅ Lấy thông tin quan trọng từ shareInfo
+    const tinDangId = shareInfo.tinDangId || shareInfo.shareId;
+    const videoUrl = shareInfo.previewVideo;
+
+    // ✅ Tạo "shallow video" gửi qua state
+    const shallowVideoData = {
+      maTinDang: tinDangId,
+      tieuDe: shareInfo.previewTitle,
+      thumbnail: shareInfo.previewImage,
+      videoUrl: videoUrl,
+    };
 
     // =========================
     // 3️⃣ Giao diện chính
@@ -96,18 +107,23 @@ const VideoMessage = forwardRef(
             <div className="text-message-bubble parent-in-video">
               <ParentMessagePreview
                 message={message.parentMessage}
-                onJump={onJumpToMessage} // ✅ Truyền hàm click "nhảy tới tin gốc"
+                onJump={onJumpToMessage}
               />
             </div>
           )}
 
-          {/* Card video preview */}
-          <a
-            href={videoLink}
-            target="_blank"
+          {/* ✅ Thay thế <a> bằng <Link> để điều hướng nội bộ */}
+          <Link
+            to={`/liked-videos/${tinDangId}`} // <-- route LikedVideoDetailViewer
+            state={{
+              videos: [shallowVideoData],
+              initialIndex: 0,
+            }}
+            target="_blank" // ✅ Mở tab mới
             rel="noopener noreferrer"
             className="video-message-card"
             style={{ backgroundImage: `url(${shareInfo.previewImage})` }}
+            onClick={(e) => e.stopPropagation()} // Ngăn click nổi bọt
           >
             <div className="video-play-icon">
               <PlayCircle size={52} strokeWidth={1.6} color="#ffffffcc" />
@@ -117,7 +133,8 @@ const VideoMessage = forwardRef(
                 {shareInfo.previewTitle}
               </div>
             </div>
-          </a>
+          </Link>
+          {/* ✅ Kết thúc thẻ Link */}
 
           {/* Nếu có text phụ đi kèm video */}
           {extraText && (
@@ -136,7 +153,7 @@ const VideoMessage = forwardRef(
           />
         )}
 
-        {/* Menu hành động */}
+        {/* Menu hành động (Reply / Xóa) */}
         <MessageActions
           message={message}
           isSender={isSender}

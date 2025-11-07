@@ -61,11 +61,14 @@ const SocialChatViewer = ({ chat, userId }) => {
     const [partnerActivity, setPartnerActivity] = useState(null);
     const activityString = useRelativeTime(partnerActivity?.lastActive, partnerActivity?.isOnline);
 
-    // --- ✨ State cho Trả lời & Xóa ---
+    // --- State cho Trả lời & Xóa ---
     const [replyingTo, setReplyingTo] = useState(null);
-    const [messageToDelete, setMessageToDelete] = useState(null); 
+    const [messageToDelete, setMessageToDelete] = useState(null);
 
-    // ✨ 1. THÊM REF ĐỂ LƯU CÁC DOM NODE CỦA TIN NHẮN (TỪ CODE 2)
+    // ✨ [MỚI TỪ CODE 2] State quản lý trạng thái chặn
+    const [blockStatus, setBlockStatus] = useState(null);
+
+    // --- Ref để lưu các DOM node của tin nhắn ---
     const messageRefs = useRef(new Map());
 
     // --- Logic scroll (giữ nguyên) ---
@@ -102,7 +105,9 @@ const SocialChatViewer = ({ chat, userId }) => {
         fetchPartnerActivity();
     }, [chat?.partner?.id]);
 
-    // --- Handlers Real-time (ĐÃ SỬA VÀ BỔ SUNG) ---
+    // ===================================
+    // HÀM REALTIME HANDLERS
+    // ===================================
     const handleReceiveMessage = useCallback(
         (newMessage) => {
             if (newMessage.maCuocTroChuyen === chat?.maCuocTroChuyen) {
@@ -123,8 +128,8 @@ const SocialChatViewer = ({ chat, userId }) => {
         },
         [chat?.partner?.id]
     );
-    
-    // ✨ Handler cho tin nhắn BỊ THU HỒI
+
+    // Handler cho tin nhắn BỊ THU HỒI
     const handleMessageRecalled = useCallback(
         ({ maTinNhan, maCuocTroChuyen: convoId }) => {
             if (convoId !== chat?.maCuocTroChuyen) return;
@@ -133,8 +138,8 @@ const SocialChatViewer = ({ chat, userId }) => {
                     m.maTinNhan === maTinNhan
                         ? {
                             ...m,
-                            isRecalled: true, // Sửa 'daThuHoi' thành 'isRecalled'
-                            noiDung: "[Tin nhắn đã thu hồi]", 
+                            isRecalled: true,
+                            noiDung: "[Tin nhắn đã thu hồi]",
                             mediaUrl: null,
                             share: null,
                             parentMessage: m.parentMessage // Giữ lại parent nếu có
@@ -146,7 +151,7 @@ const SocialChatViewer = ({ chat, userId }) => {
         [chat?.maCuocTroChuyen]
     );
 
-    // ✨ Handler cho tin nhắn BỊ GỠ BỎ (CHỈ MÌNH TÔI)
+    // Handler cho tin nhắn BỊ GỠ BỎ (CHỈ MÌNH TÔI)
     const handleMessageRemovedForMe = useCallback(
         ({ maTinNhan, maCuocTroChuyen: convoId }) => {
             if (convoId !== chat?.maCuocTroChuyen) return;
@@ -154,6 +159,28 @@ const SocialChatViewer = ({ chat, userId }) => {
         },
         [chat?.maCuocTroChuyen]
     );
+
+    // ✨ [MỚI TỪ CODE 2] Handler cập nhật trạng thái Chặn/Gỡ Chặn
+    const handleBlockStatusChanged = useCallback(
+        (data) => {
+            // Chỉ cập nhật nếu đúng là cuộc trò chuyện đang mở
+            if (data.maCuocTroChuyen === chat?.maCuocTroChuyen) {
+                setBlockStatus({
+                    isBlocked: data.isBlocked,
+                    maNguoiChan: data.maNguoiChan,
+                });
+            }
+        },
+        [chat?.maCuocTroChuyen] // Phụ thuộc vào chat đang chọn
+    );
+
+    // ✨ [MỚI TỪ CODE 2] Handler nhận lỗi (ví dụ: gửi tin khi bị chặn)
+    const handleReceiveError = useCallback((errorMessage) => {
+        // Hiển thị lỗi cho người dùng
+        alert(errorMessage);
+        // Bạn có thể dùng một thư viện toast đẹp hơn (ví dụ: react-toastify)
+    }, []);
+
 
     // --- Logic fetch tin nhắn (giữ nguyên) ---
     const fetchMessages = useCallback(async (page, isInitialLoad = false) => {
@@ -189,34 +216,57 @@ const SocialChatViewer = ({ chat, userId }) => {
         }
     }, [chat?.maCuocTroChuyen]);
 
-    // --- useEffect Đăng ký sự kiện (ĐÃ SỬA) ---
+    // ===================================
+    // USE EFFECT (ĐĂNG KÝ SỰ KIỆN)
+    // ===================================
     useEffect(() => {
         if (!chat?.maCuocTroChuyen) return;
 
+        // ✨ [MỚI TỪ CODE 2] Cập nhật state chặn khi 'chat' prop thay đổi
+        setBlockStatus({
+            isBlocked: chat.isBlocked,
+            maNguoiChan: chat.maNguoiChan,
+        });
+
+        // Đăng ký các handler
         registerChatEventHandler("ReceiveMessage", handleReceiveMessage);
         registerChatEventHandler("PresenceUpdated", handlePresenceUpdate);
-        registerChatEventHandler("MessageRecalled", handleMessageRecalled); // ✨ Đã thêm
-        registerChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe); // ✨ Đã thêm
+        registerChatEventHandler("MessageRecalled", handleMessageRecalled);
+        registerChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
+        // ✨ [MỚI TỪ CODE 2] Đăng ký sự kiện
+        registerChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
+        registerChatEventHandler("ReceiveError", handleReceiveError);
 
+        // Reset và fetch tin nhắn
         setMessages([]);
         setHasMore(true);
         fetchMessages(1, true);
         if (chat?.maCuocTroChuyen) joinGroup(chat.maCuocTroChuyen);
-        
+
+        // Cleanup
         return () => {
             unregisterChatEventHandler("ReceiveMessage", handleReceiveMessage);
             unregisterChatEventHandler("PresenceUpdated", handlePresenceUpdate);
-            unregisterChatEventHandler("MessageRecalled", handleMessageRecalled); // ✨ Đã thêm
-            unregisterChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe); // ✨ Đã thêm
+            unregisterChatEventHandler("MessageRecalled", handleMessageRecalled);
+            unregisterChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
+            // ✨ [MỚI TỪ CODE 2] Hủy đăng ký
+            unregisterChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
+            unregisterChatEventHandler("ReceiveError", handleReceiveError);
         };
     }, [
-        chat?.maCuocTroChuyen, 
-        chat?.partner?.id, 
-        handleReceiveMessage, 
-        handlePresenceUpdate, 
+        chat?.maCuocTroChuyen,
+        chat?.partner?.id,
+        // ✏️ [SỬA TỪ CODE 2] Thêm chat.isBlocked và chat.maNguoiChan làm dependency
+        chat?.isBlocked,
+        chat?.maNguoiChan,
+        handleReceiveMessage,
+        handlePresenceUpdate,
         fetchMessages,
-        handleMessageRecalled, // ✨ Đã thêm
-        handleMessageRemovedForMe // ✨ Đã thêm
+        handleMessageRecalled,
+        handleMessageRemovedForMe,
+        // ✨ [MỚI TỪ CODE 2] Thêm dependencies
+        handleBlockStatusChanged,
+        handleReceiveError
     ]);
 
     // --- useEffect scroll (giữ nguyên) ---
@@ -241,15 +291,17 @@ const SocialChatViewer = ({ chat, userId }) => {
         };
     }, [hasMore, loadingMore, loading, pageNumber, fetchMessages]);
 
-    
-    // --- ✨ HÀM HÀNH ĐỘNG (ĐÃ SỬA) ---
 
-    // Bắt đầu trả lời (DÙNG TÊN onStartReply)
+    // ===================================
+    // HÀM HÀNH ĐỘNG (REPLY, DELETE, JUMP)
+    // ===================================
+
+    // Bắt đầu trả lời
     const handleStartReply = (message) => {
         setReplyingTo(message);
     };
 
-    // Mở modal xóa (DÙNG TÊN onOpenDeleteModal)
+    // Mở modal xóa
     const handleOpenDeleteModal = (message) => {
         setMessageToDelete(message);
     };
@@ -259,12 +311,12 @@ const SocialChatViewer = ({ chat, userId }) => {
         setMessageToDelete(null);
     };
 
-    // Xác nhận xóa/thu hồi (ĐÃ SỬA LẠI LOGIC)
+    // Xác nhận xóa/thu hồi
     const handleConfirmDelete = async () => {
         if (!messageToDelete) return;
 
         const { maTinNhan, maNguoiGui } = messageToDelete;
-        const conversationId = chat.maCuocTroChuyen; 
+        const conversationId = chat.maCuocTroChuyen;
 
         if (!conversationId) {
             console.error("Không tìm thấy conversationId!");
@@ -286,18 +338,18 @@ const SocialChatViewer = ({ chat, userId }) => {
             alert(error.message || "Đã xảy ra lỗi khi xóa tin nhắn.");
         }
     };
-    
-    // ✨ 2. THÊM HÀM JUMP-TO-MESSAGE (TỪ CODE 2)
+
+    // Hàm JUMP-TO-MESSAGE
     const handleJumpToMessage = (messageId) => {
         const node = messageRefs.current.get(messageId);
-        
+
         if (node) {
             // Nếu tìm thấy tin nhắn trong DOM
             node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
+
             // Thêm class 'highlighted' (CSS sẽ xử lý animation)
             node.classList.add('highlighted');
-            
+
             // Xóa class sau 2.5 giây để animation không chạy lại
             setTimeout(() => {
                 node.classList.remove('highlighted');
@@ -307,6 +359,33 @@ const SocialChatViewer = ({ chat, userId }) => {
             console.warn(`Không tìm thấy tin nhắn ${messageId} trong DOM. Có thể nó chưa được tải.`);
             alert("Không thể tìm thấy tin nhắn gốc (có thể đã bị trôi quá xa).");
         }
+    };
+
+    // ✨ [MỚI TỪ CODE 2] Hàm render ô nhập tin nhắn hoặc thông báo chặn
+    const renderChatInput = () => {
+        if (!blockStatus) return null; // Đang tải
+
+        if (blockStatus.isBlocked) {
+            const isBlocker = blockStatus.maNguoiChan === userId;
+            const message = isBlocker
+                ? "To send messages, unblock this account."
+                : "Bạn đã bị người dùng này chặn.";
+
+            return (
+                <div className="chat-input-blocked-wrapper">
+                    <p className="chat-input-blocked-text">{message}</p>
+                </div>
+            );
+        }
+
+        // Nếu không bị chặn
+        return (
+            <ChatInput
+                chatId={chat.maCuocTroChuyen}
+                replyingTo={replyingTo}
+                onClearReply={() => setReplyingTo(null)}
+            />
+        );
     };
 
 
@@ -325,16 +404,15 @@ const SocialChatViewer = ({ chat, userId }) => {
                     <h3>{chat.partner?.fullName || "Cuộc trò chuyện"}</h3>
                     {partnerActivity && (
                         <span
-                            className={`chat-viewer-status ${
-                                partnerActivity.isOnline ? "online" : "offline"
-                            }`}
+                            className={`chat-viewer-status ${partnerActivity.isOnline ? "online" : "offline"
+                                }`}
                         >
                             {activityString}
                         </span>
                     )}
                 </div>
             </header>
-            
+
             {/* --- Main (ĐÃ SỬA LỖI PROPS VÀ THÊM LOGIC REF) --- */}
             <main className="chat-messages-list">
                 <div ref={messageListTopRef} style={{ height: "1px" }} />
@@ -343,7 +421,7 @@ const SocialChatViewer = ({ chat, userId }) => {
                     <p style={{ textAlign: "center" }}>Đang tải...</p>
                 ) : (
                     messages.map((msg) => {
-                        // ✨ 3. THÊM CALLBACK REF (TỪ CODE 2)
+                        // THÊM CALLBACK REF
                         const messageRefCallback = (node) => {
                             if (node) {
                                 messageRefs.current.set(msg.maTinNhan, node);
@@ -351,27 +429,27 @@ const SocialChatViewer = ({ chat, userId }) => {
                                 messageRefs.current.delete(msg.maTinNhan);
                             }
                         };
-                        
+
                         // (Logic render của bạn)
                         return (msg.share && msg.share.previewVideo) && !msg.isRecalled ? (
                             <VideoMessage
-                                ref={messageRefCallback} // ✨ 4. GẮN REF
+                                ref={messageRefCallback} // GẮN REF
                                 key={msg.maTinNhan}
                                 message={msg}
                                 currentUserId={userId}
                                 onStartReply={handleStartReply}
                                 onOpenDeleteModal={handleOpenDeleteModal}
-                                onJumpToMessage={handleJumpToMessage} // ✨ 5. TRUYỀN HÀM JUMP
+                                onJumpToMessage={handleJumpToMessage} // TRUYỀN HÀM JUMP
                             />
                         ) : (
                             <TextMessage
-                                ref={messageRefCallback} // ✨ 4. GẮN REF
+                                ref={messageRefCallback} // GẮN REF
                                 key={msg.maTinNhan}
                                 message={msg}
                                 currentUserId={userId}
                                 onStartReply={handleStartReply}
                                 onOpenDeleteModal={handleOpenDeleteModal}
-                                onJumpToMessage={handleJumpToMessage} // ✨ 5. TRUYỀN HÀM JUMP
+                                onJumpToMessage={handleJumpToMessage} // TRUYỀN HÀM JUMP
                             />
                         );
                     })
@@ -379,18 +457,14 @@ const SocialChatViewer = ({ chat, userId }) => {
                 <div ref={messagesEndRef} />
             </main>
 
-            {/* --- ChatInput (ĐÃ SỬA PROPS) --- */}
-            <ChatInput 
-                chatId={chat.maCuocTroChuyen} 
-                replyingTo={replyingTo}
-                onClearReply={() => setReplyingTo(null)}
-            />
+            {/* ✏️ [SỬA TỪ CODE 2] Dùng hàm renderChatInput để hiển thị có điều kiện */}
+            {renderChatInput()}
 
             {/* --- Modal (ĐÃ SỬA PROPS) --- */}
             {messageToDelete && (
                 <DeleteMessageModal
                     message={messageToDelete}
-                    currentUserId={userId} // ✨ Bổ sung prop còn thiếu
+                    currentUserId={userId} // Bổ sung prop còn thiếu
                     onConfirm={handleConfirmDelete}
                     onClose={handleCloseDeleteModal}
                 />
