@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../context/ChatContext";
+import styles from "../ModuleChatCss/MessageItem.module.css";
 import { FaEllipsisV, FaTrash, FaClock } from "react-icons/fa";
 import Swal from "sweetalert2";
 
@@ -114,52 +115,53 @@ const MessageItem = ({ message, showSeenStatus }) => {
   }, [isMenuOpen]);
 
   return (
-    <div className="message-wrapper">
+    <div className={styles.messageWrapper}>
       <div
-        className={`message ${isSentByMe ? "sent" : "received"} ${
-          message.isRecalled ? "recalled" : ""
-        }`}
+        className={`
+          ${styles.message} ${isSentByMe ? styles.sent : styles.received} ${
+          message.isRecalled ? styles.recalled : ""
+        }`.replace(/\s+/g, " ")}
       >
-        <div className="message-content">
+        <div className={styles.messageContent}>
           {message.isRecalled ? (
-            <p className="recalled-message">Tin nhắn đã được thu hồi</p>
+            <p className={styles.recalledMessage}>Tin nhắn đã được thu hồi</p>
           ) : message.loaiTinNhan === "image" ? (
             <img
               src={message.noiDung}
               alt="img-chat"
-              className="message-image clickable-media"
+              className={styles.clickableMedia}
               onClick={() => openImageModal(message.noiDung)}
             />
           ) : message.loaiTinNhan === "video" ? (
-            <video src={message.noiDung} controls className="message-video" />
+            <video src={message.noiDung} controls className={styles.clickableMedia} />
           ) : (
             <p>{message.noiDung}</p>
           )}
         </div>
 
-        <div className="message-info">
-          <div className="message-time">{formatTime(message.thoiGian)}</div>
+        <div className={styles.info}>
+          <div className={styles.time}>{formatTime(message.thoiGian)}</div>
           {isSentByMe && showSeenStatus && !message.isRecalled && (
-            <div className="message-status">Đã xem</div>
+            <div className={styles.messageStatus}>Đã xem</div>
           )}
         </div>
 
         {isSentByMe && !message.isRecalled && (
-          <div className="message-menu-container" ref={menuRef}>
-            <button className="message-menu-trigger" onClick={toggleMessageMenu}>
+          <div className={styles.menuContainer} ref={menuRef}>
+            <button className={styles.menuTrigger} onClick={toggleMessageMenu}>
               <FaEllipsisV size={12} />
             </button>
 
             {isMenuOpen && (
-              <div className="message-menu">
+              <div className={styles.messageMenu}>
                 {canRecallMessage(message.thoiGianGui) ? (
                   <button
-                    className="message-menu-item recall-available"
+                    className={`${styles.messageMenuItem} ${styles.recallAvailable}`}
                     onClick={handleRecall}
                   >
                     <FaTrash size={12} />
                     <span>Thu hồi</span>
-                    <div className="recall-timer">
+                    <div className={styles.recallTimer}>
                       <FaClock size={10} />
                       {Math.floor(getRecallTimeRemaining(message.thoiGianGui))}:
                       {Math.floor(
@@ -168,7 +170,7 @@ const MessageItem = ({ message, showSeenStatus }) => {
                     </div>
                   </button>
                 ) : (
-                  <button className="message-menu-item recall-disabled" disabled>
+                  <button className={`${styles.messageMenuItem} ${styles.recallDisabled}`} disabled>
                     <FaTrash size={12} />
                     <span>Hết hạn thu hồi</span>
                   </button>

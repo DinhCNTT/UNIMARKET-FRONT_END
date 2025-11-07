@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "./context/ChatContext";
 import { FaBan, FaUnlock } from "react-icons/fa";
+import styles from './ModuleChatCss/ChatHeader.module.css';
 
 const ChatHeader = () => {
   const {
@@ -76,40 +77,38 @@ const ChatHeader = () => {
   }, [shouldShowStatus, displayIsOnline, displayLastOnline]);
 
   return (
-    <div className="chatbox-header">
-      <div className="chatbox-seller-frame">
-        <div className="chatbox-avatar-status-group">
-          <div className="chatbox-avatar-wrapper">
+    <div className={styles.header}>
+      <div className={styles.sellerFrame}>
+        <div className={styles.avatarStatusGroup}>
+          <div className={styles.avatarWrapper}>
             <img
               src={displayAvatar || "/src/assets/default-avatar.png"}
               alt="avatar"
-              className="chatbox-seller-avatar"
+              className={styles.sellerAvatar}
             />
             {shouldShowStatus && (
               <span
-                className={
-                  displayIsOnline
-                    ? "chatbox-status-dot online"
-                    : "chatbox-status-dot offline"
-                }
+                className={`${styles.statusDot} ${
+                  displayIsOnline ? styles.online : styles.offline
+                }`}
               ></span>
             )}
           </div>
-          <div className="chatbox-seller-meta">
-            <span className="chatbox-seller-name">
+          <div className={styles.sellerMeta}>
+            <span className={styles.sellerName}>
               {displayTen || "Chủ sản phẩm"}
             </span>
             {shouldShowStatus && getLastOnlineText() && (
-              <span className="chatbox-last-online">
+              <span className={styles.lastOnline}>
                 {getLastOnlineText()}
               </span>
             )}
           </div>
         </div>
-        <div className="chatbox-header-menu">
+        <div className={styles.headerMenu}>
           {!isBlockedByMe && !isBlockedByOther ? (
             <button
-              className="chatbox-header-menu-button"
+              className={styles.headerMenuButton}
               onClick={handleBlockUser}
             >
               <FaBan size={20} />
@@ -117,7 +116,7 @@ const ChatHeader = () => {
             </button>
           ) : isBlockedByMe ? (
             <button
-              className="chatbox-header-menu-button unblock"
+              className={`${styles.headerMenuButton} ${styles.unblock}`}
               onClick={handleUnblockUser}
             >
               <FaUnlock size={20} />

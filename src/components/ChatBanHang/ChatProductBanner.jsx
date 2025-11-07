@@ -3,6 +3,7 @@ import { useChat } from "./context/ChatContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api"; // ✅ Đảm bảo đường dẫn đúng
 import Swal from "sweetalert2";
+import styles from './ModuleChatCss/ChatProductBanner.module.css';
 
 const ChatProductBanner = () => {
   const { infoTinDang } = useChat();
@@ -46,23 +47,23 @@ const ChatProductBanner = () => {
 
   return (
     <div
-      className="chatbox-product-frame"
+      className={styles.productBanner}
       onClick={handleImageClick}
-      style={{ opacity: infoTinDang.isPostDeleted ? 0.6 : 1 }}
+      data-deleted={infoTinDang.isPostDeleted}
     >
-      <div className="chatbox-product-info">
+      <div className={styles.productInfo}>
         <img
           src={getFullImageUrl(infoTinDang.anh)}
           alt="Ảnh tin đăng"
-          className="chatbox-product-img"
+          className={styles.productImage}
         />
-        <div className="chatbox-product-meta">
-          <span className="chatbox-product-name">
+        <div className={styles.productMeta}>
+          <span className={styles.productName}>
             {infoTinDang.isPostDeleted
               ? `${infoTinDang.tieuDe} `
               : infoTinDang.tieuDe}
           </span>
-          <span className="chatbox-product-price">
+          <span className={styles.productPrice}>
             {infoTinDang.gia.toLocaleString("vi-VN", {
               style: "currency",
               currency: "VND",
@@ -70,12 +71,7 @@ const ChatProductBanner = () => {
           </span>
         </div>
         {infoTinDang.isPostDeleted && (
-          <span
-            className="post-deleted-badge"
-            style={{
-              color: "#ff6b6b", fontSize: "12px", marginLeft: "5px",
-            }}
-          >
+          <span className={styles.deletedBadge}>
             Tin đã xóa
           </span>
         )}

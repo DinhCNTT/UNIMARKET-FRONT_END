@@ -3,6 +3,7 @@ import { useChat } from "./context/ChatContext";
 import { FaImage, FaVideo } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
+import styles from './ModuleChatCss/ChatInput.module.css';
 
 // Constants (di chuyển từ ChatBox.jsx)
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
@@ -108,22 +109,22 @@ const ChatInput = () => {
   const isDisabled = isBlockedByMe || isBlockedByOther;
 
   return (
-    <div className="chatbox-input-container">
+    <div className={styles.chatboxInputContainer}>
       {!isConnected && (
-        <div className="connection-warning">
+        <div className={styles.connectionWarning}>
           ⚠️ Mất kết nối. Đang thử kết nối lại...
         </div>
       )}
 
       <div
-        className="chatbox-input"
+        className={styles.inputWrapper}
         style={{
           opacity: isDisabled ? 0.5 : 1,
           pointerEvents: isDisabled ? "none" : "auto",
         }}
       >
-        <div className="chatbox-media-upload-group">
-          <label className="chatbox-media-upload-label">
+        <div className={styles.mediaUploadGroup}>
+          <label className={styles.mediaUploadLabel}>
             <FaImage size={28} />
             <input
               type="file" style={{ display: "none" }}
@@ -131,7 +132,7 @@ const ChatInput = () => {
               accept="image/*" multiple
             />
           </label>
-          <label className="chatbox-media-upload-label">
+          <label className={styles.mediaUploadLabel}>
             <FaVideo size={28} />
             <input
               type="file" style={{ display: "none" }}
@@ -141,7 +142,7 @@ const ChatInput = () => {
           </label>
         </div>
 
-        <div className="input-field">
+        <div className={styles.inputField}>
           <textarea
             ref={inputRef}
             value={tinNhan}
@@ -158,7 +159,7 @@ const ChatInput = () => {
         </div>
 
         <button
-          className="send-btn"
+          className={styles.sendButton}
           onClick={handleSend}
           disabled={
             isDisabled ||
@@ -173,11 +174,11 @@ const ChatInput = () => {
         </button>
       </div>
 
-      <div className="chatbox-media-preview-list">
+      <div className={styles['chatbox-media-preview-list']}>
         {imagePreviewList.map((file, idx) => (
-          <div key={idx} className="chatbox-media-thumb">
+          <div key={idx} className={styles['chatbox-media-thumb']}>
             <button
-              className="chatbox-media-thumb-remove"
+              className={styles['chatbox-media-thumb-remove']}
               onClick={() =>
                 setImagePreviewList(imagePreviewList.filter((_, i) => i !== idx))
               }
@@ -188,9 +189,9 @@ const ChatInput = () => {
           </div>
         ))}
         {videoPreviewList.map((file, idx) => (
-          <div key={idx} className="chatbox-media-thumb">
+          <div key={idx} className={styles['chatbox-media-thumb']}>
             <button
-              className="chatbox-media-thumb-remove"
+              className={styles['chatbox-media-thumb-remove']}
               onClick={() =>
                 setVideoPreviewList(videoPreviewList.filter((_, i) => i !== idx))
               }

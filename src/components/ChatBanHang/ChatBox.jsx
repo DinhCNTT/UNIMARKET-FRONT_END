@@ -11,7 +11,7 @@ import { AuthContext } from "../../context/AuthContext"; // ✅ Đảm bảo đ�
 import api from "../../services/api"; // ✅ Đảm bảo đường dẫn đúng
 import Swal from "sweetalert2";
 import "animate.css";
-import "./ChatBox.css"; // ✅ Đảm bảo đường dẫn đúng
+import styles from "./ModuleChatCss/MessageList.module.css";
 
 // Context & Hook
 import { ChatContext } from "./context/ChatContext";
@@ -371,7 +371,7 @@ const contextValue = {
   // ==================== RENDER ====================
   return (
     <ChatContext.Provider value={contextValue}>
-      <div className="chatbox-container">
+  <div className={styles.chatboxContainer}>
         <ChatHeader />
         <ChatProductBanner />
         <MessageList />

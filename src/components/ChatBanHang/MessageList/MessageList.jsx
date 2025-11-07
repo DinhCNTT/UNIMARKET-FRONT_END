@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useChat } from "../context/ChatContext";
 import MessageItem from "./MessageItem";
+import styles from "../ModuleChatCss/MessageList.module.css";
 import { MessageSquareText } from "lucide-react";
 import { FaBan } from "react-icons/fa";
 const MessageList = () => {
@@ -52,14 +53,14 @@ const MessageList = () => {
   }, [danhSachTin, user]);
 
   return (
-    <div className="chatbox-messages">
+    <div className={styles.chatboxMessages}>
       {danhSachTin.length === 0 ? (
-        <div className="chatbox-empty-chat">
-          <div className="chatbox-empty-icon">
+        <div className={styles.chatboxEmptyChat}>
+          <div className={styles.chatboxEmptyIcon}>
             <MessageSquareText size={70} className="text-gray-400" />
           </div>
-          <p>Chưa có tin nhắn nào</p>
-          <p>Hãy bắt đầu cuộc trò chuyện!</p>
+          <p className={styles.emptyText}>Chưa có tin nhắn nào</p>
+          <p className={styles.emptyText}>Hãy bắt đầu cuộc trò chuyện!</p>
         </div>
       ) : (
         danhSachTin.map((msg) => (
@@ -72,7 +73,7 @@ const MessageList = () => {
       )}
 
       {(isBlockedByMe || isBlockedByOther) && (
-        <div className="chatbox-blocked-notice">
+        <div className={styles.blockedNotice}>
           <FaBan size={24} />
           <p>
             {isBlockedByMe

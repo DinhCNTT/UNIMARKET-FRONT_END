@@ -1,0 +1,479 @@
+/* Message styles */
+.messageWrapper {
+  display: flex;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.message {
+  max-width: 70%;
+  animation: fadeInUp 0.3s ease;
+  position: relative;
+}
+
+.sent {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.received {
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.messageContent {
+  padding: 12px 16px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  position: relative;
+}
+
+/* Bong bóng chỉ áp dụng cho p (text) */
+.sent .messageContent p {
+  background: #667eea;
+  color: white;
+  border-radius: 18px;
+  border-bottom-right-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  display: inline-block;
+}
+
+.received .messageContent p {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-radius: 18px;
+  border-bottom-left-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  display: inline-block;
+}
+
+/* Media trong tin nhắn */
+.messageContent img,
+.messageContent video {
+  max-width: 220px;
+  max-height: 180px;
+  border-radius: 10px;
+  margin: 4px 0;
+  display: block;
+  background: none;
+  padding: 0;
+}
+
+.clickableMedia {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.clickableMedia:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clickableMedia:hover::after {
+  content: "🔍";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: 0.9;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Message Menu (Thu hồi tin nhắn) */
+.menuContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.menuTrigger {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.sent:hover .menuTrigger {
+  opacity: 1;
+}
+
+.menuTrigger:hover {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+.messageMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 180px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+.messageMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: #475569;
+}
+
+.messageMenuItem:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.recallAvailable {
+  color: #dc2626;
+}
+
+.recallAvailable:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.recallDisabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.recallDisabled:hover {
+  background: none;
+}
+
+.messageMenuItem span {
+  flex: 1;
+}
+
+.recallTimer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #f59e0b;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 45px;
+  justify-content: center;
+}
+
+.recallTimer svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Thu hồi tin nhắn animations */
+.recalling {
+  animation: fadeOutScale 0.3s ease forwards;
+}
+
+.recalled {
+  opacity: 0.7;
+}
+
+.recalled .messageContent {
+  background: transparent;
+  color: #64748b;
+  font-style: italic;
+  border: none;
+}
+
+.recalledMessage {
+  font-style: italic;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recalledPreview {
+  font-style: italic;
+  color: #888;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutScale {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tối ưu cho màn hình cảm ứng */
+@media (hover: none) and (pointer: coarse) {
+  .clickableMedia:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .clickableMedia:hover::after {
+    display: none;
+  }
+
+  .clickableMedia:active {
+    transform: scale(0.98);
+  }
+
+  .sent .menuTrigger {
+    opacity: 0.7;
+  }
+}
+
+.messageStatus {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+  text-align: right;
+  padding-right: 4px;
+  font-style: italic;
+}
+
+.messageContent {
+  padding: 12px 16px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  position: relative;
+}
+
+/* Bong bóng chỉ áp dụng cho p (text) */
+.message.sent .messageContent p {
+  background: #667eea;
+  color: white;
+  border-radius: 18px;
+  border-bottom-right-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  display: inline-block;
+}
+
+.received .content p {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-radius: 18px;
+  border-bottom-left-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  display: inline-block;
+}
+
+.time {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.received .time {
+  text-align: left;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sent .info {
+  justify-content: flex-end;
+}
+
+.received .info {
+  justify-content: flex-start;
+}
+
+/* Thu hồi tin nhắn */
+.menuContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.menuTrigger {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.sent:hover .menuTrigger {
+  opacity: 1;
+}
+
+.menuTrigger:hover {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+.recalled {
+  opacity: 0.7;
+}
+
+.recalled .content {
+  background: transparent;
+  color: #64748b;
+  font-style: italic;
+  border: none;
+}
+
+.recalledMessage {
+  font-style: italic;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recalledPreview {
+  font-style: italic;
+  color: #888;
+}
+
+/* Media trong tin nhắn */
+.content img,
+.content video {
+  max-width: 220px;
+  max-height: 180px;
+  border-radius: 10px;
+  margin: 4px 0;
+  display: block;
+  background: none;
+  padding: 0;
+}
+
+.clickableMedia {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.clickableMedia:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clickableMedia:hover::after {
+  content: "🔍";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: 0.9;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (hover: none) and (pointer: coarse) {
+  .clickableMedia:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .clickableMedia:hover::after {
+    display: none;
+  }
+
+  .clickableMedia:active {
+    transform: scale(0.98);
+  }
+
+  .sent .menuTrigger {
+    opacity: 0.7;
+  }
+}
