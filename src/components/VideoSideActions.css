@@ -1,0 +1,118 @@
+/* src/components/VideoSideActions.css */
+
+.vdv-side-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8.5px;
+  margin-left: 16px; 
+  z-index: 5;
+  margin-top: 0; 
+}
+
+/* Logic vị trí dựa trên tỷ lệ video (nằm ở component cha) */
+.video-item.vdv-portrait .vdv-side-info {
+  margin-top: 220px;
+  margin-left: 20px; 
+}
+.video-item.vdv-landscape .vdv-side-info {
+  margin-top: 75px;
+}
+.video-item.vdv-square .vdv-side-info {
+  margin-top: 240px;
+}
+
+/* Avatar & Follow */
+.vdv-user-avatar-container {
+  position: relative;
+  display: inline-block;
+  width: 60px;  
+  height: 60px;
+}
+
+.vdv-user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.vdv-follow-button {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(30%);
+  background-color: #ffae42; 
+  color: #fff; 
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #fff;
+  font-size: 14px;
+}
+
+/* Nút bấm chung */
+.vdv-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f1f1f2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -10px;
+  position: relative;
+}
+
+.vdv-icon-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  text-align: center;
+  letter-spacing: 0.3px;
+  text-shadow: 
+    0 0 2px rgba(255,255,255,0.6),
+    0 0 4px rgba(255,255,255,0.4);
+  margin-top: 4px;
+  line-height: 1.2;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  user-select: none;
+}
+
+/* Hiệu ứng nút Like */
+.vdv-like-button {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.vdv-like-button:hover {
+  transform: scale(1.2) rotate(-5deg);
+  box-shadow: 0 0 15px rgba(255, 77, 109, 0.7);
+}
+
+.vdv-like-button.liked {
+  animation: heartBeat 0.6s ease, pulseGlow 1s ease-out;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.4); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.3); }
+  80% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 rgba(255, 77, 109, 0.7); }
+  70% { box-shadow: 0 0 20px rgba(255, 77, 109, 0); }
+  100% { box-shadow: 0 0 0 rgba(255, 77, 109, 0); }
+}
+
+

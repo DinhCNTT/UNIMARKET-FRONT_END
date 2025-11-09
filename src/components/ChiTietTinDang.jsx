@@ -1,471 +1,147 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ChiTietTinDang.module.css";
-import TopNavbar from "../components/TopNavbar";
-import FloatingProductBox from "./FloatingProductBox";
 import { AuthContext } from "../context/AuthContext";
-import Swal from "sweetalert2";
-import { MdOutlineSell, MdOutlineLocationOn, MdOutlineCalendarToday,MdOutlineChat } from "react-icons/md";
+import { usePostDetails } from "../hooks/usePostDetails"; // ✅ Import custom hook
+import { formatPrice, getMediaUrl } from "../utils/formatters"; // ✅ Import helpers
 
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
+// Import các component con
+import TopNavbar from "../components/TopNavbar";
+import FloatingProductBox from "../components/FloatingProductBox";
+import PostImageCarousel from "../components/PostImageCarousel";
+import PostDetailsInfo from "../components/PostDetailsInfo";
+import PostDescription from "../components/PostDescription";
+import SimilarPostsSection from "../components/SimilarPostsSection";
+import Lightbox from "../components/Lightbox";
 
-const formatPrice = (price) => {
-  if (price === null || price === undefined) return "";
-  // Dùng dấu chấm "." làm phân cách
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND";
-};
-
-// Nhận prop onOpenChat để callback mở chatbox nếu có
+/**
+ * Trang Chi Tiết Tin Đăng
+ * - Chịu trách nhiệm lấy ID từ URL.
+ * - Gọi custom hook `usePostDetails` để lấy data và logic.
+ * - Quản lý các UI state của riêng trang này (lightbox, floating box).
+ * - Sắp xếp layout các component con.
+ */
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Vẫn giữ navigate ở đây phòng trường hợp cần chuyển trang
   const { user } = useContext(AuthContext);
 
-  const [post, setPost] = useState(null);
-  const [similarPostsByCategory, setSimilarPostsByCategory] = useState([]);
-  const [similarPostsBySeller, setSimilarPostsBySeller] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  // ✅ Lấy toàn bộ logic và data từ custom hook
+  const { 
+    post, 
+    similarPostsByCategory, 
+    similarPostsBySeller, 
+    loading, 
+    handleChatWithSeller // Lấy hàm xử lý chat từ hook
+  } = usePostDetails(id, onOpenChat);
+
+  // State giao diện (UI state) vẫn giữ ở component này
+  const [showFloatingBox, setShowFloatingBox] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const scrollRefSeller = useRef(null);
-  const scrollRefCategory = useRef(null);
-  const [showFloatingBox, setShowFloatingBox] = useState(false);
-  const imageContainerRef = useRef(null);
-  
-  // Hiện box nổi khi scroll xuống nửa ảnh đầu tiên
+
+  // Effect quản lý box nổi
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 250) {
-        setShowFloatingBox(true);
-      } else {
-        setShowFloatingBox(false);
-      }
+      // Hiện box khi cuộn qua 250px
+      setShowFloatingBox(window.scrollY > 250);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
-  const handleScroll = (direction, ref) =>
-    ref.current.scrollBy({
-      left: direction === "left" ? -300 : 300,
-      behavior: "smooth",
-    });
-  const handleSimilarPostClick = (postId) => {
-    navigate(`/tin-dang/${postId}`);
-    window.scrollTo(0, 0);
+  // Handlers cho Lightbox
+  const handleOpenLightbox = (index) => {
+    setLightboxIndex(index);
+    setShowLightbox(true);
+  };
+  const handleCloseLightbox = () => setShowLightbox(false);
+
+  // Xử lý khi bấm chat (từ bất kỳ component con nào)
+  const handleChatClick = () => {
+    handleChatWithSeller();
   };
 
-  // Lấy tin đăng, tin tương tự theo danh mục, và tin từ cùng người bán
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          `http://localhost:5133/api/tindang/get-post-and-similar/${id}`
-        );
-        setPost(response.data.post);
-        setSimilarPostsByCategory(response.data.similarPostsByCategory);
-        setSimilarPostsBySeller(response.data.similarPostsBySeller);
-        setLoading(false);
-      } catch (error) {
-        console.error("Lỗi khi lấy tin đăng:", error);
-        setLoading(false);
-        setPost(null);
-      }
-    };
-    fetchPost();
-  }, [id]);
+  // --- Render ---
 
-  // Bấm nút chat với người bán
-  const handleChatWithSeller = async () => {
-    try {
-      const res = await axios.post("http://localhost:5133/api/chat/start", {
-        MaNguoiDung1: user.id,
-        MaNguoiDung2: post.maNguoiBan,
-        MaTinDang: post.maTinDang,
-      });
+  // 1. Trạng thái Đang Tải
+  if (loading) return <div className={styles.loading}>Đang tải thông tin...</div>;
+  
+  // 2. Trạng thái Lỗi / Không tìm thấy
+  if (!post) return <div className={styles.notFound}>Không tìm thấy tin đăng.</div>;
 
-      const maCuocTroChuyen = res.data?.maCuocTroChuyen || res.data?.MaCuocTroChuyen;
-      if (maCuocTroChuyen) {
-        if (typeof onOpenChat === "function") onOpenChat(maCuocTroChuyen);
-        else navigate(`/chat/${maCuocTroChuyen}`);
-      } else {
-        Swal.fire({ icon: "error", title: "Thông báo", text: "Không thể tạo cuộc trò chuyện. Vui lòng thử lại." });
-      }
-    } catch (err) {
-      console.error("StartChat error:", err);
-
-      // Nếu có response từ server
-      if (err.response) {
-        const { status, data } = err.response;
-        // data có thể là object, ProblemDetails, hoặc string
-        let serverMessage = null;
-
-        if (typeof data === "string") {
-          // Có thể server trả plain text
-          serverMessage = data;
-        } else if (data) {
-          // Thử nhiều property phổ biến
-          serverMessage = data.message || data.Message || data.detail || data.title || data.error;
-        }
-
-        // Nếu vẫn chưa có message, hiển thị theo status
-        if (serverMessage) {
-          Swal.fire({ icon: "error", title: "Thông báo", text: serverMessage });
-        } else if (status === 403) {
-          Swal.fire({ icon: "error", title: "Bị chặn", text: "Bạn không thể nhắn tin với người này (bị chặn)." });
-        } else if (status === 400) {
-          Swal.fire({ icon: "error", title: "Lỗi", text: "Yêu cầu không hợp lệ." });
-        } else {
-          Swal.fire({ icon: "error", title: "Lỗi", text: "Lỗi khi tạo cuộc trò chuyện. Vui lòng thử lại." });
-        }
-
-        // optional: log response body cho debug
-        console.log("Server response body:", data);
-      } else if (err.request) {
-        // request đã gửi nhưng không có response
-        Swal.fire({ icon: "error", title: "Lỗi kết nối", text: "Không nhận được phản hồi từ máy chủ." });
-        console.log("No response:", err.request);
-      } else {
-        // lỗi khác
-        Swal.fire({ icon: "error", title: "Lỗi", text: err.message || "Có lỗi xảy ra." });
-      }
-    }
-  };
-
-  if (loading) return <div>Đang tải thông tin...</div>;
-  if (!post) return <div>Không tìm thấy tin đăng.</div>;
-
+  // 3. Trạng thái Thành Công
   const formattedPrice = formatPrice(post.gia);
-
-  const PostImageCarousel = ({ images }) => {
-    const [current, setCurrent] = useState(0);
-    const validMedia = images?.filter((img) => img)?.slice(0, 8) || [];
-    if (!validMedia.length) return <div>Không có media.</div>;
-
-    const prevMedia = () =>
-      setCurrent((prev) => (prev === 0 ? validMedia.length - 1 : prev - 1));
-    const nextMedia = () =>
-      setCurrent((prev) => (prev === validMedia.length - 1 ? 0 : prev + 1));
-    const getMediaUrl = (media) =>
-      media.startsWith("http") ? media : `http://localhost:5133${media}`;
-    const isVideo = (url) => url.match(/\.(mp4|mov|avi|webm|ogg)$/i);
-
-    return (
-      <div className={styles.carouselWrapper}>
-        <div className={styles.carouselImgbox}>
-          {isVideo(validMedia[current]) ? (
-            <video
-              src={getMediaUrl(validMedia[current])}
-              controls
-              className={styles.carouselImg}
-              style={{ cursor: "zoom-in" }}
-              onClick={() => {
-                setShowLightbox(true);
-                setLightboxIndex(current);
-              }}
-            />
-          ) : (
-            <img
-              src={getMediaUrl(validMedia[current])}
-              alt={`Media ${current + 1}`}
-              className={styles.carouselImg}
-              style={{ cursor: "zoom-in" }}
-              onClick={() => {
-                setShowLightbox(true);
-                setLightboxIndex(current);
-              }}
-            />
-          )}
-          <div className={styles.carouselIndex}>
-            {current + 1} / {validMedia.length}
-          </div>
-          {validMedia.length > 1 && (
-            <>
-              <button
-                onClick={prevMedia}
-                className={`${styles.carouselBtn} ${styles.carouselBtnLeft}`}
-              >
-                 {'<'}
-              </button>
-              <button
-                onClick={nextMedia}
-                className={`${styles.carouselBtn} ${styles.carouselBtnRight}`}
-              >
-                {'>'}
-              </button>
-            </>
-          )}
-        </div>
-        {validMedia.length > 1 && (
-          <div className={styles.multiImageGallery}>
-            {validMedia.map((media, idx) =>
-              isVideo(media) ? (
-                <video
-                  key={idx}
-                  src={getMediaUrl(media)}
-                  className={styles.carouselThumb}
-                  onClick={() => setCurrent(idx)}
-                  style={{
-                    border: current === idx ? "2px solid #f80" : "1px solid #ddd",
-                    cursor: "pointer",
-                  }}
-                />
-              ) : (
-                <img
-                  key={idx}
-                  src={getMediaUrl(media)}
-                  alt={`Thumb ${idx + 1}`}
-                  className={styles.carouselThumb}
-                  onClick={() => setCurrent(idx)}
-                  style={{
-                    border: current === idx ? "2px solid #f80" : "1px solid #ddd",
-                    cursor: "pointer",
-                  }}
-                />
-              )
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className={styles.chiTietTinDang}>
       <TopNavbar />
-      <div className={styles.tinDangHeader}>
-        <div className={styles.imageContainer} ref={imageContainerRef}>
-          {/* Floating Product Box */}
-          {showFloatingBox && post && (
-            <FloatingProductBox
-              image={post.images?.[0]?.startsWith("http") ? post.images[0] : post.images?.[0] ? `http://localhost:5133${post.images[0]}` : ""}
-              title={post.tieuDe}
-              price={formattedPrice}
-              details={<>
-                <span>{post.loaiSanPham || post.tieuDe}</span>
-                {post.dungLuong && <span> | {post.dungLuong}</span>}
-                {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
-              </>}
-              description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
-              onShowPhone={() => setShowPhoneNumber(!showPhoneNumber)}
-              onChat={handleChatWithSeller}
-              showPhone={showPhoneNumber}
-              phoneMasked={showPhoneNumber ? post.phoneNumber : `${post.phoneNumber?.substring(0, 6)}****`}
-              currentUserId={user?.id}
-               sellerId={post.maNguoiBan}
-            />
-          )}
 
-          {post.images && post.images.length > 0 ? (
-            <PostImageCarousel images={post.images} />
-          ) : (
-            <div>Không có ảnh</div>
-          )}
-        </div>
-
-        <div className={styles.chiTietTinDangInfo}>
-          <h1>{post.tieuDe}</h1>
-          <p className={styles.infoLine}>
-            <MdOutlineSell className={styles.icon} />
-            <strong>Giá:</strong>{" "}
-            <span className={styles.price}>{formattedPrice}</span>
-          </p>
-          <p className={styles.infoLine}>
-            <MdOutlineLocationOn className={styles.icon} />
-            <strong>Địa chỉ:</strong> {post.diaChi}
-          </p>
-          <p className={styles.infoLine}>
-            <MdOutlineCalendarToday className={styles.icon} />
-            <strong>Ngày đăng:</strong> {formatDate(post.ngayDang)}
-          </p>
-          <div className={styles.sdtChat}>
-            <button className={styles.sdt} onClick={handleShowPhoneNumber}>
-              {showPhoneNumber
-                ? post.phoneNumber
-                : `Hiện số ${post.phoneNumber.substring(0, 6)}****`}
-            </button>
-
-            {user?.id !== post.maNguoiBan && (
-            <button
-              className={`${styles.sdt} ${styles.sdtChatBtn}`}
-              onClick={handleChatWithSeller}
-            >
-              <MdOutlineChat /> Chat với người bán
-            </button>
-          )}
-          </div>
-
-          <div className={styles.sellerInfo}>
-            <div className={styles.sellerName}>Người bán: {post.nguoiBan}</div>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.moTaChiTiet} id="mo-ta-chi-tiet">
-        <div style={{fontWeight:600, fontSize:18, marginBottom:8}}>Mô tả chi tiết</div>
-        
-        <div
-          className={`${styles.moTaNdWrapper} ${
-            showFullDescription ? styles.moTaNdFull : styles.moTaNdClamp
-          }`}
-          dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }}
+      {/* Floating Product Box */}
+      {showFloatingBox && (
+        <FloatingProductBox
+          image={getMediaUrl(post.images?.[0])}
+          title={post.tieuDe}
+          price={formattedPrice}
+          details={<>
+            <span>{post.loaiSanPham || post.tieuDe}</span>
+            {post.dungLuong && <span> | {post.dungLuong}</span>}
+            {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
+          </>}
+          description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
+          // Các props liên quan đến SĐT có thể để FloatingBox tự quản lý
+          onShowPhone={() => {}} 
+          onChat={handleChatClick} // Truyền hàm xử lý chat
+          showPhone={false} 
+          phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
+          currentUserId={user?.id}
+          sellerId={post.maNguoiBan}
         />
-        {post.moTa?.split("\n").length > 8 && (
-          <button
-            className={styles.moTaNdToggle}
-            onClick={() => setShowFullDescription(!showFullDescription)}
-          >
-            {showFullDescription ? "Thu gọn" : "Xem thêm"}
-          </button>
-        )}
-      </div>
-
-      {similarPostsBySeller.length > 0 && (
-        <div className={`${styles.tinDangTuongTu} ${styles.tinDangNguoiBan}`} id="tin-dang-tuong-tu">
-          <h2>Các tin đăng khác của {post.nguoiBan}</h2>
-          <div className={styles.similarPostsWrapper}>
-            <button className={`${styles.scrollBtn} ${styles.left}`} onClick={() => handleScroll("left", scrollRefSeller)}>
-              &lt;
-            </button>
-            <div className={styles.similarPostsContainer} ref={scrollRefSeller}>
-              {similarPostsBySeller.map((post) => (
-                <div
-                  key={post.maTinDang}
-                  className={styles.similarPostCard}
-                  onClick={() => handleSimilarPostClick(post.maTinDang)}
-                >
-                  <div className={styles.imageWrapper}>
-                    <img
-                      src={
-                        post.images?.[0]?.startsWith("http")
-                          ? post.images[0]
-                          : `http://localhost:5133${post.images[0]}`
-                      }
-                      alt={post.tieuDe}
-                    />
-                  </div>
-                  <h3>{post.tieuDe}</h3>
-                  <p className={styles.gia}>
-  {formatPrice(post.gia)}
-</p>
-                  <p>{post.diaChi}</p>
-                  <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
-                </div>
-              ))}
-            </div>
-            <button className={`${styles.scrollBtn} ${styles.right}`} onClick={() => handleScroll("right", scrollRefSeller)}>
-              &gt;
-            </button>
-          </div>
-        </div>
       )}
 
-      <div className={styles.tinDangTuongTu}>
-        <h2>Tin đăng tương tự</h2>
-        <div className={styles.similarPostsWrapper}>
-          <button className={`${styles.scrollBtn} ${styles.left}`} onClick={() => handleScroll("left", scrollRefCategory)}>
-            &lt;
-          </button>
-          <div className={styles.similarPostsContainer} ref={scrollRefCategory}>
-            {similarPostsByCategory.map((post) => (
-              <div
-                key={post.maTinDang}
-                className={styles.similarPostCard}
-                onClick={() => handleSimilarPostClick(post.maTinDang)}
-              >
-                <div className={styles.imageWrapper}>
-                  <img
-                    src={
-                      post.images?.[0]?.startsWith("http")
-                        ? post.images[0]
-                        : `http://localhost:5133${post.images[0]}`
-                    }
-                    alt={post.tieuDe}
-                  />
-                </div>
-                <h3>{post.tieuDe}</h3>
-                <p className={styles.gia}>
-  {formatPrice(post.gia)}
-</p>
-                <p>{post.diaChi}</p>
-                <p className={styles.nho}>{formatDate(post.ngayDang)}</p>
-              </div>
-            ))}
-          </div>
-          <button className={`${styles.scrollBtn} ${styles.right}`} onClick={() => handleScroll("right", scrollRefCategory)}>
-            &gt;
-          </button>
+      {/* Layout chính của tin đăng (Header) */}
+      <div className={styles.tinDangHeader}>
+        {/* Phần Carousel Ảnh */}
+        <div className={styles.imageContainer}>
+          <PostImageCarousel 
+            images={post.images} 
+            onImageClick={handleOpenLightbox} // Truyền hàm mở lightbox
+          />
+        </div>
+
+        {/* Phần Thông Tin Tin Đăng */}
+        <div className={styles.chiTietTinDangInfoWrapper}>
+          <PostDetailsInfo
+            post={post}
+            formattedPrice={formattedPrice}
+            onChat={handleChatClick} // Truyền hàm xử lý chat
+            currentUserId={user?.id}
+          />
         </div>
       </div>
 
+      {/* Phần Mô Tả */}
+      <PostDescription description={post.moTa} />
+
+      {/* Tin Đăng Cùng Người Bán */}
+      <SimilarPostsSection
+        title={`Các tin đăng khác của ${post.nguoiBan}`}
+        posts={similarPostsBySeller}
+      />
+
+      {/* Tin Đăng Tương Tự */}
+      <SimilarPostsSection
+        title="Tin đăng tương tự"
+        posts={similarPostsByCategory}
+      />
+
+      {/* Lightbox (chỉ render khi cần) */}
       {showLightbox && (
-        <div className={styles.lightboxOverlay} onClick={() => setShowLightbox(false)}>
-          {post.images[lightboxIndex].match(/\.(mp4|mov|avi|webm|ogg)$/i) ? (
-            <video
-              src={
-                post.images[lightboxIndex].startsWith("http")
-                  ? post.images[lightboxIndex]
-                  : `http://localhost:5133${post.images[lightboxIndex]}`
-              }
-              className={styles.lightboxImg}
-              controls
-              autoPlay
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <img
-              src={
-                post.images[lightboxIndex].startsWith("http")
-                  ? post.images[lightboxIndex]
-                  : `http://localhost:5133${post.images[lightboxIndex]}`
-              }
-              alt={`Full ${lightboxIndex + 1}`}
-              className={styles.lightboxImg}
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
-          <button
-            className={`${styles.lightboxNav} ${styles.left}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightboxIndex((prev) =>
-                prev === 0 ? post.images.length - 1 : prev - 1
-              );
-            }}
-          >
-            ←
-          </button>
-          <button
-            className={`${styles.lightboxNav} ${styles.right}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightboxIndex((prev) =>
-                prev === post.images.length - 1 ? 0 : prev + 1
-              );
-            }}
-          >
-            →
-          </button>
-          <span className={styles.lightboxClose} onClick={() => setShowLightbox(false)}>
-            ×
-          </span>
-          <div className={styles.lightboxCounter}>
-            {lightboxIndex + 1} / {post.images.length}
-          </div>
-        </div>
+        <Lightbox
+          images={post.images}
+          startIndex={lightboxIndex}
+          onClose={handleCloseLightbox} // Truyền hàm đóng lightbox
+        />
       )}
     </div>
   );
