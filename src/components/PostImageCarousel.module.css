@@ -1,0 +1,160 @@
+/* --- src/components/PostImageCarousel.module.css --- */
+/* Chứa toàn bộ logic CSS cho carousel ảnh/video */
+
+.carouselWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.carouselImgbox {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: #f8f8f8;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.carouselImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.carouselIndex {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.carouselBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: background 0.3s ease, color 0.3s ease;
+  box-shadow: none;
+}
+
+.carouselBtn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.carouselBtnLeft {
+  left: 10px;
+}
+
+.carouselBtnRight {
+  right: 10px;
+}
+
+.multiImageGallery {
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  margin-top: 10px;
+  gap: 6px;
+  padding-bottom: 5px;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  position: relative;
+}
+
+.multiImageGallery::-webkit-scrollbar {
+  display: none;
+}
+
+.carouselThumb {
+  width: 55px !important;
+  height: 55px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.carouselThumb:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.multiImageGallery::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 5px;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.noMedia {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  color: #888;
+  font-size: 16px;
+}
+
+/* --- Responsive cho Carousel --- */
+@media (max-width: 768px) {
+  .carouselImgbox {
+    height: 300px;
+  }
+
+  .carouselThumb {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  .multiImageGallery {
+    gap: 4px;
+  }
+
+  .noMedia {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carouselThumb {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .multiImageGallery {
+    gap: 3px;
+  }
+}

@@ -1,0 +1,124 @@
+/* --- src/components/SimilarPostsSection.module.css --- */
+/* Dùng cho cả "Tin tương tự" và "Tin của người bán" */
+
+.tinDangTuongTu {
+  margin-top: 40px;
+}
+
+.tinDangTuongTu h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.similarPostsWrapper {
+  position: relative;
+}
+
+/* Container ngang scroll được */
+.similarPostsContainer {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+}
+
+/* Ẩn thanh cuộn */
+.similarPostsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Nút cuộn trái/phải */
+.scrollBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.scrollBtn:hover {
+  opacity: 1;
+}
+
+.left {
+  left: -18px;
+}
+
+.right {
+  right: -18px;
+}
+
+/* Card từng tin */
+.similarPostCard {
+  min-width: 200px;
+  max-width: 220px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.similarPostCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #f1c40f;
+}
+
+/* Ảnh */
+.imageWrapper {
+  position: relative;
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Tiêu đề */
+.similarPostCard h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  height: 40px;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+/* Giá */
+.gia {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Địa chỉ + ngày đăng */
+.similarPostCard p {
+  font-size: 14px;
+  margin: 0 0 4px 0;
+}
+
+.nho {
+  font-size: 12px;
+  color: #999;
+}

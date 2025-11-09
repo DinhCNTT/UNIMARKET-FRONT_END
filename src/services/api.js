@@ -1,30 +1,30 @@
-import axios from 'axios';
+// src/services/api.js
+import axios from "axios";
 
-// Định nghĩa base URL cho backend của bạn
-const API_BASE_URL = 'http://localhost:5133/api';
+// ✅ 1. Sử dụng biến môi trường VITE_API_URL bạn vừa tạo
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // ----------------------------------------------------------------
-// 1. Interceptor cho REQUEST (Tự động đính kèm token)
+// ✅ 2. Interceptor cho REQUEST (Tự động đính kèm token)
+// Lấy từ cả 2 phiên bản của bạn, ưu tiên sessionStorage
 // ----------------------------------------------------------------
 api.interceptors.request.use(
   (config) => {
-    // ✅ Đã cập nhật: Lấy token theo logic của AuthContext
-    // Ưu tiên sessionStorage (cho tab hiện tại) trước
     const sessionToken = sessionStorage.getItem("token");
     const localToken = localStorage.getItem("token");
-    
+
     // Sử dụng token nào tìm thấy (ưu tiên session)
-    const token = sessionToken || localToken; 
+    const token = sessionToken || localToken;
 
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -34,7 +34,8 @@ api.interceptors.request.use(
 );
 
 // ----------------------------------------------------------------
-// 2. Interceptor cho RESPONSE (Tự động xử lý lỗi 401)
+// ✅ 3. Interceptor cho RESPONSE (Tự động xử lý lỗi 401)
+// Xử lý khi token hết hạn hoặc không hợp lệ
 // ----------------------------------------------------------------
 api.interceptors.response.use(
   (response) => {
@@ -42,12 +43,11 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Chỉ xử lý nếu có response lỗi từ server
+    // Chỉ xử lý nếu có response lỗi từ server và status là 401
     if (error.response && error.response.status === 401) {
-      console.error('Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.');
+      console.error("Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.");
 
-      // ✅ Đã cập nhật: Chạy lại logic clearStorage() của bạn
-      // Bằng cách này, chúng ta xóa token HẾT HẠN ở CẢ hai nơi
+      // Xóa tất cả thông tin đăng nhập ở CẢ hai nơi
       // 1. Xóa từ sessionStorage
       sessionStorage.removeItem("user");
       sessionStorage.removeItem("userId");
@@ -57,7 +57,7 @@ api.interceptors.response.use(
       sessionStorage.removeItem("userPhoneNumber");
       sessionStorage.removeItem("userAvatar");
       sessionStorage.removeItem("token");
-      
+
       // 2. Xóa từ localStorage
       localStorage.removeItem("user");
       localStorage.removeItem("userId");
@@ -67,21 +67,20 @@ api.interceptors.response.use(
       localStorage.removeItem("userPhoneNumber");
       localStorage.removeItem("userAvatar");
       localStorage.removeItem("token");
-      
-      // ✅ Đã cập nhật: Kích hoạt 'logout_signal'
-      // Để các tab khác cũng tự động đăng xuất
+
+      // Kích hoạt 'logout_signal' để các tab khác cũng tự động đăng xuất
       localStorage.setItem("logout_signal", Date.now().toString());
       setTimeout(() => {
         localStorage.removeItem("logout_signal");
       }, 100);
 
-      // Thông báo và chuyển hướng (như cũ)
+      // Thông báo và chuyển hướng
       alert("Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.");
-      
-      // (Thay '/login' bằng đường dẫn trang đăng nhập của bạn)
-      window.location.href = '/login'; 
+
+      // Chuyển hướng về trang đăng nhập
+      window.location.href = "/login";
     }
-    
+
     // Trả về lỗi để các hàm .catch() khác có thể xử lý (nếu không phải lỗi 401)
     return Promise.reject(error);
   }

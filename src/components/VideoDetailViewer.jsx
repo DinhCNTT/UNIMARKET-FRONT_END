@@ -1,235 +1,236 @@
+// src/components/VideoDetailViewer.jsx
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiEye } from "react-icons/fi";
+
 // 🔥 Icons
-import { 
-  IoHeart, 
-  IoHeartOutline, 
-  IoBookmark, 
-  IoBookmarkOutline, 
-  IoAdd,
-  IoAddCircleOutline   // ✅ thêm icon này
-} from "react-icons/io5";
-import { FaRegCommentDots, FaCheck } from "react-icons/fa6";   // fa6
-import { FaInfoCircle } from "react-icons/fa";                 // fa (chứa FaInfoCircle)
-import { SiMinutemailer } from "react-icons/si";
-import { FaShareAlt } from "react-icons/fa";
-import { IoCheckmarkCircleOutline } from "react-icons/io5";
+import { IoHeart } from "react-icons/io5";
+
 // 🔥 Components & Context
 import TopNavbarUniMarket from "./TopNavbarUniMarket";
 import CommentDrawer from "./CommentDrawer";
-import VideoSearchOverlay from "./VideoSearchOverlay";
-import VideoControls from "./VideoControls";
 import VideoDetailsPanel from "./VideoDetailsPanel";
-import { AuthContext } from "../context/AuthContext";
-import { VideoContext } from "../context/VideoContext";
-// 🔥 Assets & CSS
-import defaultAvatar from "../assets/default-avatar.png";
-import "./VideoDetailViewer.css";
 import SharePanel from "./SharePanel";
-import { useLocation } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { useVideoHub } from "../context/VideoHubContext"; // <-- Realtime Hub
 
-const VideoDetailViewer = ({ onOpenChat }) => {
-  const [videoList, setVideoList] = useState([]);
+// 🔥 Custom Hooks
+import { useVideoFeed } from "../hooks/useVideoFeed";
+import { useViewTracking } from "../hooks/useViewTracking";
+
+// 🔥 Child Components
+import VideoPlayer from "./VideoPlayer";
+import VideoInfoOverlay from "./VideoInfoOverlay";
+import VideoSideActions from "./VideoSideActions";
+
+// 🔥 Assets & CSS
+import "./VideoDetailViewer.css";
+
+const API_BASE = "http://localhost:5133";
+const SLIDE_DURATION = 650;
+
+const VideoDetailViewer = () => {
+  // 1) QUẢN LÝ DATA VÀ STATE
+  const { videoList, setVideoList, loading } = useVideoFeed();
   const [searchParams] = useSearchParams();
-  const initialIndexFromUrl = parseInt(searchParams.get('index')) || 0;
+  const initialIndexFromUrl = parseInt(searchParams.get("index")) || 0;
+
   const [currentIndex, setCurrentIndex] = useState(initialIndexFromUrl);
   const [showHeart, setShowHeart] = useState(false);
   const navigate = useNavigate();
-  const videoRef = useRef(null);
-  const iconCircleRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const clickCountRef = useRef(0);
-  const clickTimeoutRef = useRef(null);
-  const [videoAspectRatio, setVideoAspectRatio] = useState(null);
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
-  const [isSaved, setIsSaved] = useState(false);
-  const videoData = videoList.length > 0 ? videoList[currentIndex] : null;
+
+  // State cho các modal/drawer
   const [showComments, setShowComments] = useState(false);
-  const [aspectRatios, setAspectRatios] = useState({});
-  const { reloadFlag, loading } = useContext(VideoContext);
-  const [isReloading, setIsReloading] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const controlsTimeoutRef = useRef(null);
-  const location = useLocation();
-  const query = new URLSearchParams(location.search);
-  const initialIndex = parseInt(query.get("index")) || 0;
-  const [showSharePanel, setShowSharePanel] = useState(false);
-  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
-  // fllow
-  const [isFollowing, setIsFollowing] = useState(false);
-  const API_BASE = "http://localhost:5133";
-
-  // Kiểm tra trạng thái follow khi load video
-useEffect(() => {
-  if (videoData?.nguoiDang?.id && token) {
-    axios
-      .get(`${API_BASE}/api/follow/is-following/${videoData.nguoiDang.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then((res) => setIsFollowing(res.data.isFollowing))
-      .catch(() => setIsFollowing(false));
-  }
-}, [videoData?.nguoiDang?.id, token]);
-
-const handleToggleFollow = async () => {
-  if (!token) {
-    alert("Bạn cần đăng nhập để follow!");
-    return;
-  }
-  try {
-    if (isFollowing) {
-      await axios.post(
-        `${API_BASE}/api/follow/unfollow?followingId=${videoData.nguoiDang.id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setIsFollowing(false);
-    } else {
-      await axios.post(
-        `${API_BASE}/api/follow/follow?followingId=${videoData.nguoiDang.id}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setIsFollowing(true);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-  // Thời lượng animation phải khớp với CSS (ms)
-  const SLIDE_DURATION = 650;
-  const containerRef = useRef(null);
-  const videoElsRef = useRef([]);
-  const isAnimatingRef = useRef(false);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
+
+  // State tương tác
+  const [isFollowing, setIsFollowing] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  // VIEW TRACKING STATE & REFS
-  const viewTrackingRef = useRef({});
-  const viewTrackingTimers = useRef({});
-  const viewStartTimes = useRef({});
-  const hasTracked3Seconds = useRef({});
-// ✅ HÀM TÍNH THỜI GIAN XEM CHÍNH XÁC
-  const getCurrentWatchedSeconds = (maTinDang) => {
-  const startTime = viewStartTimes.current[maTinDang];
-  if (!startTime) return 0;
- 
-  return Math.floor((Date.now() - startTime) / 1000);
-};
-  // CẬP NHẬT hàm trackView để debug rõ hơn
-  const trackView = async (maTinDang, watchedSeconds, isCompleted = false, rewatchCount = 0, skipViewCount = false) => {
-  try {
-      const token = localStorage.getItem("token");
-     
-      // ✅ Đảm bảo watchedSeconds >= 0
-      const actualWatchedSeconds = Math.max(0, watchedSeconds);
-     
-      console.log(`🎥 Tracking view for video ${maTinDang}:`, {
-          watchedSeconds: actualWatchedSeconds,
-          isCompleted: isCompleted,
-          rewatchCount: rewatchCount,
-          skipViewCount: skipViewCount,
-          hasToken: !!token,
-          timestamp: new Date().toISOString()
-      });
-      const requestBody = {
-          maTinDang: maTinDang,
-          watchedSeconds: actualWatchedSeconds,
-          isCompleted: isCompleted,
-          rewatchCount: rewatchCount,
-          skipViewCount: skipViewCount
-      };
-      const headers = {
-          'Content-Type': 'application/json'
-      };
-     
-      if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-      }
-      const response = await axios.post('http://localhost:5133/api/video/track-view', requestBody, {
-          headers: headers
-      });
-      console.log(`✅ Track response for video ${maTinDang}:`, response.data);
-      // Cập nhật số view trong state nếu là view mới
-      if (response.data.isNewView) {
-          setVideoList(prevList =>
-              prevList.map(v =>
-                  v.maTinDang === maTinDang
-                      ? { ...v, soLuotXem: response.data.totalViews }
-                      : v
-              )
-          );
-      }
-      return response.data;
-  } catch (error) {
-      console.error(`❌ Error tracking view for video ${maTinDang}:`, error);
-      return null;
-  }
-};
-  // START VIEW TRACKING FOR A VIDEO
-  const startViewTracking = (maTinDang, videoElement) => {
-  if (!videoElement || viewTrackingTimers.current[maTinDang]) return;
-  console.log(`🎬 Starting view tracking for video ${maTinDang}`);
- 
-  viewStartTimes.current[maTinDang] = Date.now();
-  hasTracked3Seconds.current[maTinDang] = false;
-  // Timer để track view mỗi giây
-  viewTrackingTimers.current[maTinDang] = setInterval(() => {
-    if (videoElement.paused) return;
-    // ✅ SỬ DỤNG HÀM TÍNH CHÍNH XÁC
-    const elapsed = getCurrentWatchedSeconds(maTinDang);
-   
-    console.log(`⏱️ Video ${maTinDang} watched for ${elapsed} seconds`);
-    // ✅ Cập nhật state với thời gian thực
-    viewTrackingRef.current = {
-      ...viewTrackingRef.current,
-      [maTinDang]: {
-        ...(viewTrackingRef.current[maTinDang] ?? {}),
-        watchedSeconds: elapsed,
-        lastUpdateTime: Date.now()
-      }
-    };
-    // Track view đầu tiên khi đạt 3 giây - CHỈ LẦN NÀY MỚI TĂNG VIEW COUNT
-    if (elapsed >= 3 && !hasTracked3Seconds.current[maTinDang]) {
-      hasTracked3Seconds.current[maTinDang] = true;
-      trackView(maTinDang, elapsed, false, 0, false); // false = cho phép tăng view count
-      console.log(`🎯 First 3-second view tracked for video ${maTinDang}`);
+  const [showControls, setShowControls] = useState(true);
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
+  const [aspectRatios, setAspectRatios] = useState({});
+
+  // Refs
+  const videoRef = useRef(null);
+  const videoElsRef = useRef([]);
+  const containerRef = useRef(null);
+  const isAnimatingRef = useRef(false);
+  const controlsTimeoutRef = useRef(null);
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
+
+  // Ref lưu lại style body gốc
+  const originalBodyStyle = useRef({ className: "" });
+
+  // ✅ Realtime Hub refs
+  const { videoConnection: connection, isConnected } = useVideoHub();
+  // Dùng useRef để theo dõi ID video hiện tại mà không gây re-render
+  const currentVideoIdRef = useRef(null);
+
+  const videoData = videoList.length > 0 ? videoList[currentIndex] : null;
+
+  // 2) LOGIC NGHIỆP VỤ
+  const { stopViewTracking } = useViewTracking(
+    videoData,
+    currentIndex,
+    videoElsRef,
+    setVideoList
+  );
+
+  const formatCount = (num) => {
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+    if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
+    return num?.toString() ?? "0";
+  };
+
+  // Kiểm tra follow
+  useEffect(() => {
+    if (videoData?.nguoiDang?.id && token) {
+      axios
+        .get(`${API_BASE}/api/follow/is-following/${videoData.nguoiDang.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setIsFollowing(res.data.isFollowing))
+        .catch(() => setIsFollowing(false));
     }
-    // Track view mỗi 10 giây - KHÔNG TĂNG VIEW COUNT
-    if (elapsed > 3 && elapsed % 10 === 0) {
-      trackView(maTinDang, elapsed, false, 0, true); // true = skip view count
+  }, [videoData?.nguoiDang?.id, token]);
+
+  const handleToggleFollow = async () => {
+    if (!token) return alert("Bạn cần đăng nhập để follow!");
+    if (!videoData) return;
+    try {
+      const url = `${API_BASE}/api/follow/${
+        isFollowing ? "unfollow" : "follow"
+      }?followingId=${videoData.nguoiDang.id}`;
+      await axios.post(url, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setIsFollowing((prev) => !prev);
+    } catch (err) {
+      console.error(err);
     }
-  }, 1000);
-};
-  // STOP VIEW TRACKING FOR A VIDEO
-  const stopViewTracking = (maTinDang) => {
-  if (viewTrackingTimers.current[maTinDang]) {
-    clearInterval(viewTrackingTimers.current[maTinDang]);
-    delete viewTrackingTimers.current[maTinDang];
-    // ✅ Tính thời gian xem chính xác khi dừng
-    const finalWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
-   
-    // Gửi track cuối cùng nếu đã xem >=3 giây
-    if (finalWatchedSeconds >= 3) {
-      const tracking = viewTrackingRef.current[maTinDang] || {};
-      trackView(maTinDang, finalWatchedSeconds, false, tracking.loopCount || 0, true);
-      console.log(`🏁 Final view tracking sent for video ${maTinDang}: ${finalWatchedSeconds}s`);
+  };
+
+  const handleLike = async (videoToLike) => {
+    if (!token) return alert("Bạn cần đăng nhập để tym video!");
+    if (!videoToLike) return;
+    try {
+      // Optimistic Update
+      setVideoList((prevList) =>
+        prevList.map((v) => {
+          if (v.maTinDang === videoToLike.maTinDang) {
+            const newIsLiked = !v.isLiked;
+            return {
+              ...v,
+              isLiked: newIsLiked,
+              soTym: newIsLiked ? v.soTym + 1 : v.soTym - 1,
+            };
+          }
+          return v;
+        })
+      );
+
+      const res = await axios.post(
+        `${API_BASE}/api/video/${videoToLike.maTinDang}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Server trả về số chính xác, cập nhật lại để đồng bộ
+      const { isLiked, soTym } = res.data;
+      setVideoList((prevList) =>
+        prevList.map((v) =>
+          v.maTinDang === videoToLike.maTinDang ? { ...v, isLiked, soTym } : v
+        )
+      );
+    } catch (err) {
+      console.error("Lỗi khi gửi yêu cầu tym:", err);
     }
-    // ✅ Xóa thời gian bắt đầu
-    delete viewStartTimes.current[maTinDang];
-    delete hasTracked3Seconds.current[maTinDang];
-   
-    console.log(`🛑 Stopped view tracking for video ${maTinDang}`);
-  }
-};
+  };
+
+  const handleToggleSave = async (videoToSave) => {
+    if (!user || !token) return alert("Bạn cần đăng nhập để lưu video!");
+    if (!videoToSave) return;
+    try {
+      // Optimistic Update cho Save
+       setVideoList((prevList) =>
+        prevList.map((v) => {
+          if (v.maTinDang === videoToSave.maTinDang) {
+            const newIsSaved = !v.isSaved;
+            return {
+              ...v,
+              isSaved: newIsSaved,
+              soNguoiLuu: newIsSaved ? (v.soNguoiLuu || 0) + 1 : (v.soNguoiLuu || 1) - 1,
+            };
+          }
+          return v;
+        })
+      );
+
+      const { data } = await axios.post(
+        `${API_BASE}/api/video/ToggleSave`,
+        { maTinDang: videoToSave.maTinDang },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { saved, totalSaves } = data;
+      setVideoList((prevList) =>
+        prevList.map((v) =>
+          v.maTinDang === videoToSave.maTinDang
+            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
+            : v
+        )
+      );
+    } catch (err) {
+      console.error("Lỗi khi lưu video:", err);
+    }
+  };
+
+  // Optimistic Update cho Share
+  const handleOptimisticShareUpdate = (maTinDang) => {
+    console.log(`🚀 [Optimistic] Tăng share cho video ${maTinDang}`);
+    setVideoList((currentList) =>
+      currentList.map((video) =>
+        video.maTinDang === maTinDang
+          ? { ...video, soLuotChiaSe: (video.soLuotChiaSe || 0) + 1 }
+          : video
+      )
+    );
+  };
+
+  const handleVideoClick = (e, index) => {
+    e.preventDefault();
+    e.stopPropagation();
+    clickCountRef.current += 1;
+
+    if (clickCountRef.current === 1) {
+      clickTimeoutRef.current = setTimeout(() => {
+        const video = videoElsRef.current[index];
+        if (video) {
+          video.paused ? video.play() : video.pause();
+        }
+        clickCountRef.current = 0;
+      }, 250);
+    } else if (clickCountRef.current === 2) {
+      clearTimeout(clickTimeoutRef.current);
+      handleLike(videoData);
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 700);
+      clickCountRef.current = 0;
+    }
+  };
+
   const handleShowDetail = async (maTinDang) => {
     setLoadingDetail(true);
     setShowDetailPanel(true);
     try {
-      const res = await axios.get(`http://localhost:5133/api/video/detail/${maTinDang}`);
+      const res = await axios.get(`${API_BASE}/api/video/detail/${maTinDang}`);
       setDetailData(res.data);
     } catch (error) {
       console.error("Lỗi tải chi tiết tin:", error);
@@ -237,41 +238,12 @@ const handleToggleFollow = async () => {
       setLoadingDetail(false);
     }
   };
-  const handleCloseDetail = () => {
-    setShowDetailPanel(false);
-    setDetailData(null);
-  };
-  // Handler để nhận trạng thái drag từ VideoControls
-  const handleDragStateChange = (isDragging) => {
-    setIsDraggingVideo(isDragging);
-  };
-  // Điều hướng an toàn + đồng bộ transition
-  const goToIndex = (nextIndex) => {
-    if (isAnimatingRef.current) return;
-    if (nextIndex < 0 || nextIndex >= videoList.length) return;
-    if (nextIndex === currentIndex) return;
-    isAnimatingRef.current = true;
-    document.body.classList.add("video-transitioning");
-    // Stop tracking cho video hiện tại
-    if (videoData) {
-      stopViewTracking(videoData.maTinDang);
-    }
-    setCurrentIndex(nextIndex);
-    setTimeout(() => {
-      isAnimatingRef.current = false;
-      document.body.classList.remove("video-transitioning");
-    }, SLIDE_DURATION + 80);
-  };
-  const handleToggleComments = () => {
-    setShowComments(prev => !prev);
-  };
+
   const handleMouseMove = () => {
     setShowControls(true);
-   
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
-   
     controlsTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
     }, 3000);
@@ -281,293 +253,63 @@ const handleToggleFollow = async () => {
       setShowControls(false);
     }, 1000);
   };
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-      // Cleanup tất cả view tracking timers
-      Object.keys(viewTrackingTimers.current).forEach(maTinDang => {
-        stopViewTracking(parseInt(maTinDang));
-      });
-    };
-  }, []);
-  // Fetch all videos
-  useEffect(() => {
-    const fetchAllVideos = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        let allVideos = [];
-        let page = 1;
-        const pageSize = 10;
-        let hasMore = true;
-        // Lấy tất cả video
-        while (hasMore) {
-          const res = await axios.get(
-            `http://localhost:5133/api/video?page=${page}&pageSize=${pageSize}`,
-            {
-              headers: token ? { Authorization: `Bearer ${token}` } : {},
-            }
-          );
-          const data = res.data;
-          if (Array.isArray(data) && data.length > 0) {
-            allVideos = [...allVideos, ...data];
-            page++;
-          } else {
-            hasMore = false;
-          }
-        }
-        setVideoList(allVideos);
-        console.log(`📋 Loaded ${allVideos.length} videos for tracking`);
-      } catch (err) {
-        console.error("Lỗi khi lấy danh sách video:", err);
-      }
-    };
-    fetchAllVideos();
-  }, []);
-  // MAIN VIEW TRACKING EFFECT - Khi chuyển video
-  useEffect(() => {
-    if (!videoData) return;
-    const maTinDang = videoData.maTinDang;
-    const videoElement = videoElsRef.current[currentIndex];
-    if (!videoElement) return;
-    console.log(`🔄 Switched to video ${maTinDang} (index: ${currentIndex})`);
-   
-    // Khởi tạo tracking state cho video mới
-    viewTrackingRef.current = {
-      ...viewTrackingRef.current,
-      [maTinDang]: {
-        startTime: Date.now(),
-        watchedSeconds: 0,
-        hasTracked3Seconds: false,
-        hasCompleted: false,
-        loopCount: 0,
-        hasCountedView: false
-      }
-    };
-    const handlePlay = () => {
-      console.log(`▶️ Video ${maTinDang} started playing`);
-      startViewTracking(maTinDang, videoElement);
-    };
-    const handlePause = () => {
-  console.log(`⏸️ Video ${maTinDang} paused`);
- 
-  // ✅ Tính thời gian thực khi pause
-  const currentWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
- 
-  if (currentWatchedSeconds >= 3) {
-    const tracking = viewTrackingRef.current[maTinDang] || {};
-    trackView(maTinDang, currentWatchedSeconds, false, tracking.loopCount || 0, true);
-  }
-};
-    // FIX: handleEnded để đúng cách detect completion và rewatch
-    const handleEnded = () => {
-  console.log(`🏁 Video ${maTinDang} ended (backup - rarely happens with loop)`);
- 
-  const currentWatchedSeconds = getCurrentWatchedSeconds(maTinDang);
- 
-  const currentTracking = viewTrackingRef.current[maTinDang] || {};
-     
-      if (!currentTracking.hasCompleted) {
-          // ✅ Dùng thời gian thực thay vì state
-          trackView(maTinDang, currentWatchedSeconds, true, 0, true);
-         
-          viewTrackingRef.current = {
-              ...viewTrackingRef.current,
-              [maTinDang]: {
-                  ...currentTracking,
-                  hasCompleted: true
-              }
-          };
-      } else {
-          // Nếu đã completed mà vẫn trigger ended -> rewatch
-          const newLoopCount = (currentTracking.loopCount || 0) + 1;
-          trackView(maTinDang, currentWatchedSeconds, false, newLoopCount, true);
-         
-          viewTrackingRef.current = {
-              ...viewTrackingRef.current,
-              [maTinDang]: {
-                  ...currentTracking,
-                  loopCount: newLoopCount
-              }
-          };
-      }
-};
-    // handleTimeUpdate để track progress
-    const handleTimeUpdate = () => {
-  const currentTime = videoElement.currentTime;
-  const duration = videoElement.duration;
- 
-  if (duration > 0) {
-      const progress = (currentTime / duration) * 100;
-      // ✅ Lấy thời gian thực để backup
-      const realTimeWatched = getCurrentWatchedSeconds(maTinDang);
-     
-      const currentTracking = viewTrackingRef.current[maTinDang] || {};
-         
-          // LOGIC DETECT REWATCH: currentTime nhảy từ cuối về đầu
-          const wasNearEnd = currentTracking.lastProgress && currentTracking.lastProgress > 95;
-          const isRestarting = currentTime < 5 && wasNearEnd && currentTracking.hasCompleted;
-         
-          if (isRestarting) {
-              const newLoopCount = (currentTracking.loopCount || 0) + 1;
-              console.log(`🔄 LOOP DETECTED! Video ${maTinDang} restarted. Count: ${currentTracking.loopCount || 0} -> ${newLoopCount}`);
-             
-              // ✅ Gửi track với thời gian thực
-              trackView(maTinDang, realTimeWatched, false, newLoopCount, true);
-             
-              viewTrackingRef.current = {
-                  ...viewTrackingRef.current,
-                  [maTinDang]: {
-                      ...currentTracking,
-                      loopCount: newLoopCount,
-                      lastProgress: progress,
-                      hasCompleted: true
-                  }
-              };
-          }
-         
-          // DETECT COMPLETION lần đầu
-          if (progress >= 95 && !currentTracking.hasCompleted) {
-              console.log(`✅ Video ${maTinDang} completed for first time at ${progress.toFixed(1)}%`);
-             
-              // ✅ Track completion với thời gian thực
-              trackView(maTinDang, realTimeWatched, true, 0, true);
-             
-              viewTrackingRef.current = {
-                  ...viewTrackingRef.current,
-                  [maTinDang]: {
-                      ...currentTracking,
-                      hasCompleted: true,
-                      lastProgress: progress
-                  }
-              };
-          }
-         
-          // Cập nhật progress bình thường
-          viewTrackingRef.current = {
-              ...viewTrackingRef.current,
-              [maTinDang]: {
-                  ...currentTracking,
-                  lastProgress: progress,
-                  // ✅ Backup thời gian thực vào state
-                  watchedSeconds: realTimeWatched
-              }
-          };
-  }
-};
-    // Add event listeners
-    videoElement.addEventListener('play', handlePlay);
-    videoElement.addEventListener('pause', handlePause);
-    videoElement.addEventListener('ended', handleEnded);
-    videoElement.addEventListener('timeupdate', handleTimeUpdate);
-    // Bắt đầu tracking nếu video đang phát
-    if (!videoElement.paused) {
-      handlePlay();
-    }
-    // Cleanup khi chuyển video
-    return () => {
-      videoElement.removeEventListener('play', handlePlay);
-      videoElement.removeEventListener('pause', handlePause);
-      videoElement.removeEventListener('ended', handleEnded);
-      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
-      stopViewTracking(maTinDang);
-    };
-  }, [currentIndex, videoData]);
-  // TRACK VIEW KHI ĐÓNG TRANG
- useEffect(() => {
-  const handleBeforeUnload = () => {
+
+  // 3) ĐIỀU HƯỚNG
+  const goToIndex = (nextIndex) => {
+    if (isAnimatingRef.current) return;
+    if (nextIndex < 0 || nextIndex >= videoList.length) return;
+    if (nextIndex === currentIndex) return;
+
+    isAnimatingRef.current = true;
+    document.body.classList.add("video-transitioning");
+
     if (videoData) {
-      // ✅ Tính thời gian thực khi đóng trang
-      const finalWatchedSeconds = getCurrentWatchedSeconds(videoData.maTinDang);
-     
-      if (finalWatchedSeconds >= 3) {
-        // Sử dụng navigator.sendBeacon để gửi dữ liệu khi trang đóng
-        const tracking = viewTrackingRef.current[videoData.maTinDang] || {};
-        const data = JSON.stringify({
-          maTinDang: videoData.maTinDang,
-          watchedSeconds: finalWatchedSeconds,
-          isCompleted: false,
-          rewatchCount: tracking.loopCount || 0,
-          skipViewCount: true
-        });
-       
-        const blob = new Blob([data], { type: 'application/json' });
-        navigator.sendBeacon('http://localhost:5133/api/video/track-view', blob);
-        console.log(`📤 Sent final view tracking for video ${videoData.maTinDang} via beacon: ${finalWatchedSeconds}s`);
-      }
+      stopViewTracking(videoData.maTinDang);
     }
+
+    setCurrentIndex(nextIndex);
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+      document.body.classList.remove("video-transitioning");
+    }, SLIDE_DURATION + 80);
   };
-  window.addEventListener('beforeunload', handleBeforeUnload);
- 
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-  };
-}, [videoData]);
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      const handleLoadedMetadata = () => {
-        const aspectRatio = video.videoWidth / video.videoHeight;
-        setVideoAspectRatio(aspectRatio);
-       
-        video.style.width = '100%';
-        video.style.height = '100%';
-        video.style.maxWidth = 'none';
-        video.style.maxHeight = 'none';
-        video.style.objectFit = 'cover';
-      };
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      if (video.readyState >= 1) {
-        handleLoadedMetadata();
-      }
-      return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      };
-    }
-  }, [currentIndex, videoList]);
+
   useEffect(() => {
     const handleWheel = (e) => {
+      if (showComments || showDetailPanel || showSharePanel) return;
       e.preventDefault();
       if (isAnimatingRef.current) return;
-      if (e.deltaY > 0) {
-        goToIndex(currentIndex + 1);
-      } else if (e.deltaY < 0) {
-        goToIndex(currentIndex - 1);
-      }
+      if (e.deltaY > 0) goToIndex(currentIndex + 1);
+      else if (e.deltaY < 0) goToIndex(currentIndex - 1);
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
-  }, [currentIndex, videoList.length]);
+  }, [currentIndex, videoList.length, showComments, showDetailPanel, showSharePanel]);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let startY = 0;
-    let lastY = 0;
+    let startY = 0, lastY = 0;
     const THRESHOLD = 60;
+
     const onTouchStart = (e) => {
-      if (isAnimatingRef.current) return;
+      if (isAnimatingRef.current || showComments || showDetailPanel || showSharePanel) return;
       startY = e.touches[0].clientY;
       lastY = startY;
     };
     const onTouchMove = (e) => {
-      if (isAnimatingRef.current) return;
+      if (isAnimatingRef.current || showComments || showDetailPanel || showSharePanel) return;
       lastY = e.touches[0].clientY;
       e.preventDefault();
     };
     const onTouchEnd = () => {
-      if (isAnimatingRef.current) return;
+      if (isAnimatingRef.current || showComments || showDetailPanel || showSharePanel) return;
       const delta = lastY - startY;
       if (Math.abs(delta) > THRESHOLD) {
-        if (delta < 0) {
-          goToIndex(currentIndex + 1);
-        } else {
-          goToIndex(currentIndex - 1);
-        }
+        delta < 0 ? goToIndex(currentIndex + 1) : goToIndex(currentIndex - 1);
       }
     };
+
     el.addEventListener("touchstart", onTouchStart, { passive: false });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
     el.addEventListener("touchend", onTouchEnd, { passive: false });
@@ -576,371 +318,282 @@ const handleToggleFollow = async () => {
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
     };
-  }, [currentIndex, videoList.length]);
+  }, [currentIndex, videoList.length, showComments, showDetailPanel, showSharePanel]);
+
   useEffect(() => {
-    const nodes = videoElsRef.current;
-    nodes.forEach((v, i) => {
+    videoElsRef.current.forEach((v, i) => {
       if (!v) return;
       if (i === currentIndex) {
-        v.play().catch(() => {});
+        v.play().catch((err) => console.warn("Autoplay prevented:", err));
       } else {
         v.pause();
         v.currentTime = 0;
       }
     });
   }, [currentIndex]);
-  const handleLike = async () => {
-    const video = videoList[currentIndex];
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Bạn cần đăng nhập để tym video!");
-      return;
-    }
-    try {
-      const res = await axios.post(
-        `http://localhost:5133/api/video/${video.maTinDang}/like`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const { isLiked, soTym } = res.data;
-      setVideoList((prevList) =>
-        prevList.map((v, i) =>
-          i === currentIndex ? { ...v, isLiked, soTym } : v
-        )
-      );
-      if (isLiked && iconCircleRef.current) {
-        const circle = document.createElement("div");
-        circle.className = "vdv-heart-pulse-circle";
-        iconCircleRef.current.appendChild(circle);
-        setTimeout(() => circle.remove(), 600);
-      }
-    } catch (err) {
-      console.error("Lỗi khi gửi yêu cầu tym:", err);
-      if (err.response?.status === 401) {
-        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-      }
-    }
-  };
-  const handleToggleSave = async () => {
-    const token = localStorage.getItem("token");
-    if (!user || !token) {
-      alert("Bạn cần đăng nhập để lưu video!");
-      return;
-    }
-    try {
-      const { data } = await axios.post(
-        `http://localhost:5133/api/video/ToggleSave`,
-        { maTinDang: videoData.maTinDang },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const { saved, totalSaves } = data;
-      setVideoList(prevList =>
-        prevList.map((v, i) =>
-          i === currentIndex
-            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
-            : v
-        )
-      );
-      setIsSaved(saved);
-    } catch (err) {
-      console.error("Lỗi khi lưu video:", err);
-      if (err.response?.status === 401) {
-        alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-      } else {
-        alert("Lỗi khi lưu video. Vui lòng thử lại.");
-      }
-    }
-  };
-  const handleVideoClick = (e, index) => {
-    e.preventDefault();
-    e.stopPropagation();
-    clickCountRef.current += 1;
-    if (clickCountRef.current === 1) {
-      clickTimeoutRef.current = setTimeout(() => {
-        const video = videoElsRef.current[index];
-        if (video) {
-          if (video.paused) {
-            video.play();
-          } else {
-            video.pause();
-          }
-        }
-        clickCountRef.current = 0;
-      }, 250);
-    } else if (clickCountRef.current === 2) {
-      clearTimeout(clickTimeoutRef.current);
-      handleLike(videoList[index]);
-      setShowHeart(true);
-      setTimeout(() => setShowHeart(false), 700);
-      if (iconCircleRef.current) {
-        const circle = document.createElement("div");
-        circle.className = "vdv-heart-pulse-circle";
-        iconCircleRef.current.appendChild(circle);
-        setTimeout(() => circle.remove(), 600);
-      }
-      clickCountRef.current = 0;
-    }
-  };
-  const formatCount = (num) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return num.toString();
-  };
-  if (!videoData) {
-    return <div>Đang tải video...</div>;
-  }
-return ( 
-  <div className="vdv-wrapper vdv-full-screen-scroll">
-    <TopNavbarUniMarket />
 
-    {loading && (
+  useEffect(() => {
+    originalBodyStyle.current.className = document.body.className;
+    document.body.style.overflow = "hidden";
+    document.body.classList.remove("video-transitioning");
+
+    return () => {
+      console.log("🧹 [VideoDetailViewer] Cleanup body style...");
+      document.body.style.overflow = "";
+      document.body.className = originalBodyStyle.current.className;
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, []);
+
+  // ============================
+  // ✅✅ FIX REALTIME: THAM GIA/RỜI PHÒNG VIDEO (Phiên bản chắc chắn hơn)
+  // ============================
+  useEffect(() => {
+    // Chỉ chạy khi đã kết nối SignalR thành công và có dữ liệu video
+    if (!isConnected || !connection || !videoData) return;
+
+    const newVideoId = videoData.maTinDang?.toString();
+    
+    // Nếu ID video không đổi thì không cần làm gì (tránh spam join)
+    if (currentVideoIdRef.current === newVideoId) return;
+
+    const oldVideoId = currentVideoIdRef.current;
+
+    // 1. Rời phòng cũ (nếu có)
+    if (oldVideoId) {
+      console.log(`🔌 Đang rời phòng cũ: ${oldVideoId}`);
+      connection.invoke("LeaveVideoGroup", oldVideoId).catch(err => 
+          console.warn(`⚠️ Không thể rời phòng ${oldVideoId}:`, err));
+    }
+
+    // 2. Tham gia phòng mới ngay lập tức
+    if (newVideoId) {
+      console.log(`✨ Đang tham gia phòng mới: ${newVideoId}`);
+      connection.invoke("JoinVideoGroup", newVideoId)
+        .then(() => {
+           console.log(`✅ ĐÃ JOIN THÀNH CÔNG PHÒNG: ${newVideoId}`);
+           // Chỉ cập nhật ref khi thực sự join thành công trên server
+           currentVideoIdRef.current = newVideoId; 
+        })
+        .catch(err => {
+           console.error(`❌ LỖI JOIN PHÒNG ${newVideoId}:`, err);
+        });
+    }
+
+    // Cleanup khi component unmount hẳn
+    return () => {
+      // Không cần cleanup ở đây vì logic trên đã tự xử lý khi đổi video.
+      // Chỉ cần xử lý khi component chết hẳn.
+    };
+
+  }, [currentIndex, videoData, connection, isConnected]); 
+
+  // Cleanup cuối cùng khi component bị hủy hoàn toàn
+  useEffect(() => {
+      return () => {
+          if (isConnected && connection && currentVideoIdRef.current) {
+              console.log(`👋 Unmount: Rời phòng cuối cùng ${currentVideoIdRef.current}`);
+              connection.invoke("LeaveVideoGroup", currentVideoIdRef.current)
+                  .catch(err => console.warn("Lỗi rời phòng khi unmount", err));
+          }
+      }
+  }, [isConnected, connection]);
+
+
+  // ============================
+  // ✅ REALTIME: LẮNG NGHE SỰ KIỆN (ĐÃ BỔ SUNG COMMENT)
+  // ============================
+  useEffect(() => {
+    if (!connection || !isConnected) return;
+
+    // ✅ Chỉ nhận số lượng, KHÔNG nhận isLiked từ server để tránh ghi đè sai
+    const handleUpdateLike = (maTinDang, soTym) => {
+      // console.log(`🔔 Realtime Like: Video ${maTinDang} có ${soTym} tym`);
+      setVideoList((currentList) =>
+        currentList.map((video) =>
+          video.maTinDang === maTinDang ? { ...video, soTym } : video
+        )
+      );
+    };
+
+    const handleUpdateSave = (maTinDang, totalSaves) => {
+       setVideoList((currentList) =>
+        currentList.map((video) =>
+          video.maTinDang === maTinDang ? { ...video, soNguoiLuu: totalSaves } : video
+        )
+      );
+    };
+
+    const handleUpdateShare = (maTinDang, totalShares) => {
+      setVideoList((currentList) =>
+        currentList.map((video) =>
+          video.maTinDang === maTinDang ? { ...video, soLuotChiaSe: totalShares } : video
+        )
+      );
+    };
+
+    // ✅ HÀM MỚI (TỪ CODE 2): Cập nhật số lượng comment từ server
+    const handleUpdateCommentCount = (maTinDang, totalComments) => {
+      console.log(`💬 Realtime Comment: Video ${maTinDang} có ${totalComments} bình luận`);
+      setVideoList((currentList) => // Dùng 'currentList' cho nhất quán
+        currentList.map((v) =>
+          v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v
+        )
+      );
+    };
+
+    connection.on("UpdateLikeCount", handleUpdateLike);
+    connection.on("UpdateSaveCount", handleUpdateSave);
+    connection.on("UpdateShareCount", handleUpdateShare);
+    // ✅ ĐĂNG KÝ SỰ KIỆN MỚI (TỪ CODE 2)
+    connection.on("UpdateCommentCount", handleUpdateCommentCount);
+
+    return () => {
+      connection.off("UpdateLikeCount", handleUpdateLike);
+      connection.off("UpdateSaveCount", handleUpdateSave);
+      connection.off("UpdateShareCount", handleUpdateShare);
+      // ✅ HỦY ĐĂNG KÝ SỰ KIỆN MỚI (TỪ CODE 2)
+      connection.off("UpdateCommentCount", handleUpdateCommentCount);
+    };
+  }, [connection, isConnected, setVideoList]);
+
+  // 4) RENDER
+  if (loading && videoList.length === 0) {
+    return (
       <div className="loading-overlay">
         <div className="spinner"></div>
         <span>Đang tải video...</span>
       </div>
-    )}
+    );
+  }
 
-    <div ref={containerRef} className="video-list-container">
+  if (!videoData) {
+    return <div>Không có video nào.</div>;
+  }
+
+  let videoThumbnail = videoData.hinhAnh;
+  if (videoData.videoUrl && videoData.videoUrl.includes("cloudinary")) {
+    const lastDot = videoData.videoUrl.lastIndexOf(".");
+    if (lastDot !== -1) {
+      videoThumbnail = videoData.videoUrl.substring(0, lastDot) + ".jpg";
+    }
+  }
+
+  return (
+    <div className="vdv-wrapper vdv-full-screen-scroll">
+      <TopNavbarUniMarket />
+
+      {loading && videoList.length > 0 && (
+        <div className="loading-overlay" style={{ zIndex: 10000 }}>
+          <div className="spinner"></div>
+        </div>
+      )}
+
       <div
-        className={`video-list-wrapper ${!loading && isReloading ? "fade-in" : ""}`}
-        style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+        ref={containerRef}
+        className="video-list-container"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
-        {videoList.map((video, index) => {
-          const ratio = aspectRatios[index];
-          const ratioClass =
-            ratio != null
-              ? ratio < 1
-                ? "vdv-portrait"
-                : ratio > 1.5
-                ? "vdv-landscape"
-                : "vdv-square"
-              : "";
+        <div
+          className="video-list-wrapper"
+          style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+        >
+          {videoList.map((video, index) => {
+            const ratio = aspectRatios[index];
+            let ratioClass = "";
+            if (ratio != null) {
+              if (ratio < 1) ratioClass = "vdv-portrait";
+              else if (ratio > 1.5) ratioClass = "vdv-landscape";
+              else if (ratio > 1.2) ratioClass = "vdv-square-wide";
+              else ratioClass = "vdv-square";
+            }
 
-          return (
-            <div
-              className={`video-item ${!loading && isReloading && index === 0 ? "fade-in" : ""}`}
-              key={video.videoUrl}
-            >
+            return (
               <div
-                className={`vdv-container ${ratioClass} ${
-                  showComments ? "comment-open" : ""
-                }`}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
+                key={video.maTinDang || video.videoUrl || index}
+                className={`video-item ${ratioClass}`}
               >
-                <video
-                  ref={(el) => {
-                    videoElsRef.current[index] = el;
-                    if (index === currentIndex) videoRef.current = el;
-                  }}
-                  src={video.videoUrl}
-                  className="vdv-player"
-                  controls={false}
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
-                  autoPlay={index === currentIndex}
-                  loop
-                  onClick={(e) => handleVideoClick(e, index)}
-                  onDoubleClick={(e) => e.preventDefault()}
-                  onLoadedMetadata={(e) => {
-                    const ratio = e.target.videoWidth / e.target.videoHeight;
-                    setAspectRatios((prev) => ({
-                      ...prev,
-                      [index]: ratio,
-                    }));
-                  }}
-                />
-
-                {index === currentIndex && (
-                  <VideoControls
-                    videoRef={videoRef}
-                    isVisible={showControls}
-                    onDragStateChange={handleDragStateChange}
-                  />
-                )}
-
-                {!isDraggingVideo && (
-                  <div className="vdv-overlay">
-                    <div className="vdv-info-left">
-                      <div className="vdv-user-name">@{video.nguoiDang?.fullName}</div>
-                      <div className="vdv-title">{video.tieuDe}</div>
-                      <div className="vdv-price-address">
-                        <div className="vdv-price">{video.gia?.toLocaleString()} đ</div>
-                        <div className="vdv-address">
-                          {video.diaChi}, {video.quanHuyen}, {video.tinhThanh}
-                        </div>
-                      </div>
-                      {/* ✅ HIỂN THỊ SỐ VIEW */}
-                      <div className="vdv-view-count">
-                        <FiEye className="vdv-view-icon" />
-                        {formatCount(video.soLuotXem || 0)} lượt xem
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ✅ Cột bên phải */}
-              <div className={`vdv-side-info ${showComments ? "comment-open" : ""}`}>
-                {/* Avatar + Follow */}
-                <div className="vdv-user-avatar-container">
-                  <img
-                    src={video.nguoiDang?.avatarUrl || defaultAvatar}
-                    alt="avatar"
-                    className="vdv-user-avatar"
-                    onClick={() => navigate(`/nguoi-dung/${video.nguoiDang?.id}`)}
-                    style={{ cursor: "pointer" }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = defaultAvatar;
-                    }}
-                  />
-                  {video.nguoiDang?.id && (
-                    <div
-                      className="vdv-follow-button"
-                      onClick={handleToggleFollow}
-                      title={isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
-                    >
-                      {isFollowing ? (
-                        <IoCheckmarkCircleOutline size={24} />
-                      ) : (
-                        <IoAddCircleOutline size={24} />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* ❤️ Like */}
                 <div
-                  className={`vdv-icon-button vdv-like-button ${
-                    video.isLiked ? "liked" : ""
+                  className={`vdv-container ${ratioClass} ${
+                    showComments ? "comment-open" : ""
                   }`}
-                  onClick={() => handleLike(video)}
-                  title={
-                    !token
-                      ? "Bạn cần đăng nhập để tym"
-                      : video.isLiked
-                      ? "Đã tym"
-                      : "Nhấn để tym"
-                  }
                 >
-                  {video.isLiked ? (
-                    <IoHeart size={28} color="#ff4d6d" />
-                  ) : (
-                    <IoHeartOutline size={28} color="#ccc" />
-                  )}
-                </div>
-                <div className="vdv-icon-label">
-                  {formatCount(video.soTym || 0)}
+                  <VideoPlayer
+                    video={video}
+                    index={index}
+                    currentIndex={currentIndex}
+                    videoElsRef={videoElsRef}
+                    videoRef={videoRef}
+                    setAspectRatios={setAspectRatios}
+                    handleVideoClick={handleVideoClick}
+                    showControls={showControls}
+                    handleDragStateChange={setIsDraggingVideo}
+                  />
+
+                  <VideoInfoOverlay
+                    video={video}
+                    formatCount={formatCount}
+                    isDraggingVideo={isDraggingVideo}
+                  />
                 </div>
 
-                {/* 🔖 Save */}
-                <div
-                  className="vdv-icon-wrapper"
-                  onClick={() => handleToggleSave(video)}
-                  title={
-                    !user
-                      ? "Bạn cần đăng nhập để lưu video"
-                      : video.isSaved
-                      ? "Đã lưu video"
-                      : "Lưu video"
-                  }
-                  style={{ marginTop: "8px" }}
-                >
-                  <div className="vdv-icon-button vdv-save-button">
-                    {video.isSaved ? (
-                      <IoBookmark size={24} color="gold" />
-                    ) : (
-                      <IoBookmarkOutline size={24} color="gray" />
-                    )}
-                  </div>
-                  <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
-                    {formatCount(video.soNguoiLuu || 0)}
-                  </div>
-                </div>
-
-                {/* 💬 Comment */}
-                <div
-                  className="vdv-icon-button"
-                  onClick={() => handleToggleComments(video)}
-                >
-                  <FaRegCommentDots size={24} color="#ccc" />
-                </div>
-                <div className="vdv-icon-label">
-                  {video.soBinhLuan || 0}
-                </div>
-
-                {/* 📤 Share (mới cập nhật — nằm TRÊN detail + có số lượng share) */}
-                <div
-                  className="vdv-icon-button vdv-share-button"
-                  onClick={() => setShowSharePanel(true)}
-                  title="Chia sẻ tin đăng"
-                  style={{ marginTop: "16px" }}
-                >
-                  <FaShareAlt size={24} color="#fff" />
-                </div>
-                <div className="vdv-icon-label">
-                  {formatCount(video.soLuotChiaSe || 0)}
-                </div>
-
-                {/* ℹ️ Detail (bị đẩy xuống sau share) */}
-                <div
-                  className="vdv-icon-button vdv-detail-button"
-                  onClick={() => handleShowDetail(video.maTinDang)}
-                  title="Xem chi tiết tin đăng"
-                  style={{ marginTop: "16px" }}
-                >
-                  <FaInfoCircle size={24} color="#ccc" />
-                </div>
+                <VideoSideActions
+                  video={video}
+                  user={user}
+                  token={token}
+                  isFollowing={index === currentIndex ? isFollowing : false}
+                  formatCount={formatCount}
+                  onFollow={handleToggleFollow}
+                  onLike={() => handleLike(video)}
+                  onSave={() => handleToggleSave(video)}
+                  onComment={() => setShowComments((prev) => !prev)}
+                  onShare={() => setShowSharePanel(true)}
+                  onShowDetail={() => handleShowDetail(video.maTinDang)}
+                />
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
 
-    {/* ❤️ Hiệu ứng tym */}
-    {showHeart && (
-      <div className="vdv-heart-animation">
-        <IoHeart size={80} color="#ff4d6d" />
-      </div>
-    )}
+      {showHeart && (
+        <div className="vdv-heart-animation">
+          <IoHeart size={80} color="#ff4d6d" />
+        </div>
+      )}
 
-    {/* 💬 Drawer bình luận */}
-    {showComments && (
-      <CommentDrawer
-        maTinDang={videoData.maTinDang}
-        onClose={() => setShowComments(false)}
+      {showComments && (
+        <CommentDrawer
+          maTinDang={videoData.maTinDang}
+          onClose={() => setShowComments(false)}
+        />
+      )}
+
+      <VideoDetailsPanel
+        isOpen={showDetailPanel}
+        onClose={() => setShowDetailPanel(false)}
+        loading={loadingDetail}
+        data={detailData}
       />
-    )}
 
-    {/* 📄 Panel chi tiết */}
-    <VideoDetailsPanel
-      isOpen={showDetailPanel}
-      onClose={handleCloseDetail}
-      loading={loadingDetail}
-      data={detailData}
-    />
-
-    {/* 📤 Panel chia sẻ */}
-    <SharePanel 
-      key={videoData.maTinDang + currentIndex}
-      isOpen={showSharePanel}
-      onClose={() => setShowSharePanel(false)}
-      tinDangId={videoData.maTinDang}
-      displayMode="Video"
-      index={currentIndex}
-      previewTitle={videoData.tieuDe}
-      previewImage={videoData.hinhAnh}
-      previewVideo={videoData.videoUrl}
-    />
-  </div>
-);
-
+      {showSharePanel && videoData && (
+        <SharePanel
+          key={videoData.maTinDang}
+          isOpen={showSharePanel}
+          onClose={() => setShowSharePanel(false)}
+          tinDangId={videoData.maTinDang}
+          displayMode="Video"
+          index={currentIndex}
+          previewTitle={videoData.tieuDe}
+          previewImage={videoThumbnail}
+          previewVideo={videoData.videoUrl}
+          disableBodyScrollLock={true}
+          onShareSuccess={() => handleOptimisticShareUpdate(videoData.maTindang)}
+        />
+      )}
+    </div>
+  );
 };
+
 export default VideoDetailViewer;
