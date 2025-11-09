@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import styles from "./PostImageCarousel.module.css"; // Tạo file CSS riêng
-import { getMediaUrl } from "../utils/formatters"; // Import helper
+import React, { useState, useRef } from "react"; // Vẫn cần useRef
+import styles from "./PostImageCarousel.module.css";
+import { getMediaUrl } from "../utils/formatters";
 
 const PostImageCarousel = ({ images = [], onImageClick }) => {
   const [current, setCurrent] = useState(0);
+  const videoRef = useRef(null);
   const validMedia = images?.filter((img) => img)?.slice(0, 8) || [];
 
   if (!validMedia.length) return <div className={styles.noMedia}>Không có media.</div>;
@@ -15,16 +16,34 @@ const PostImageCarousel = ({ images = [], onImageClick }) => {
   const mediaSrc = getMediaUrl(validMedia[current]);
   const isCurrentVideo = isVideo(mediaSrc);
 
+  // --- BẮT ĐẦU SỬA LỖI ---
+  const handleVideoClick = (e) => {
+    // BƯỚC 1: Ngăn hành vi Play/Pause mặc định của trình duyệt
+    e.preventDefault(); 
+
+    // BƯỚC 2: Chủ động gọi pause()
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+
+    // BƯỚC 3: Mở Lightbox như bình thường
+    onImageClick(current);
+  };
+  // --- KẾT THÚC SỬA LỖI ---
+
   return (
     <div className={styles.carouselWrapper}>
       <div className={styles.carouselImgbox}>
         {isCurrentVideo ? (
           <video
+            ref={videoRef}
             src={mediaSrc}
             controls
             className={styles.carouselImg}
             style={{ cursor: "zoom-in" }}
-            onClick={() => onImageClick(current)}
+            
+            // Sử dụng hàm xử lý mới
+            onClick={handleVideoClick} 
           />
         ) : (
           <img
@@ -32,7 +51,7 @@ const PostImageCarousel = ({ images = [], onImageClick }) => {
             alt={`Media ${current + 1}`}
             className={styles.carouselImg}
             style={{ cursor: "zoom-in" }}
-            onClick={() => onImageClick(current)}
+            onClick={() => onImageClick(current)} // Ảnh thì không cần
           />
         )}
         <div className={styles.carouselIndex}>
