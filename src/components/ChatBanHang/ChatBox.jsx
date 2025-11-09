@@ -2,7 +2,7 @@ import React, {
   useEffect,
   useState,
   useContext,
-  useMemo,
+  useMemo, // Đảm bảo đã import useMemo
   useCallback,
   Suspense,
   lazy,
@@ -34,11 +34,14 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const {
     danhSachTin,
     isConnected,
-    connection, // Lấy connection để lắng nghe
+    connection, 
     recallMessage,
     recallMedia,
     markAsRead,
     sendMessageService,
+    loadMoreMessages,
+    isLoadingMore,
+    hasMore,
   } = useSignalR(maCuocTroChuyen, user);
 
   // 2. State do ChatBox quản lý (API, UI)
@@ -153,8 +156,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         const resParticipants = await api.get(`/chat/user/${user.id}`);
         const chats = resParticipants.data;
         const currentChat = Array.isArray(chats)
-  ? chats.find((c) => c.maCuocTroChuyen === maCuocTroChuyen)
-  : null;
+          ? chats.find((c) => c.maCuocTroChuyen === maCuocTroChuyen)
+          : null;
         if (currentChat) {
           const otherUserId = currentChat.maNguoiConLai;
           setMaNguoiConLai(otherUserId);
@@ -332,46 +335,60 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     : infoTinDang.maChuSanPham && infoTinDang.tenChuSanPham);
 
   // ==================== CONTEXT VALUE ====================
-const contextValue = {
-  // Data
-  danhSachTin,
-  infoTinDang,
-  user,
-  maCuocTroChuyen,
+  //
+  // 🚀 FIX: Bọc contextValue trong useMemo để tránh render lại không cần thiết
+  //
+  const contextValue = useMemo(() => ({
+    // Data
+    danhSachTin,
+    infoTinDang,
+    user,
+    maCuocTroChuyen,
+    modalImage,
 
-  // ✅ Thêm biến modalImage vào context
-  modalImage,
+    // Trạng thái
+    isConnected,
+    isBlockedByMe,
+    isBlockedByOther,
 
-  // Trạng thái
-  isConnected,
-  isBlockedByMe,
-  isBlockedByOther,
+    // Giá trị đã tính
+    displayAvatar,
+    displayTen,
+    displayIsOnline,
+    displayLastOnline,
+    displayFormattedLastSeen,
+    shouldShowStatus,
 
-  // Giá trị đã tính
-  displayAvatar,
-  displayTen,
-  displayIsOnline,
-  displayLastOnline,
-  displayFormattedLastSeen,
-  shouldShowStatus,
+    // Hàm (Handlers)
+    handleBlockUser,
+    handleUnblockUser,
+    openImageModal,
+    closeImageModal,
 
-  // Hàm (Handlers)
-  handleBlockUser,
-  handleUnblockUser,
-  openImageModal,
-  closeImageModal,
-
-  // Hàm từ hook SignalR
-  recallMessage,
-  recallMedia,
-  markAsRead,
-  sendMessageService,
-};
+    // Hàm từ hook SignalR
+    recallMessage,
+    recallMedia,
+    markAsRead,
+    sendMessageService,
+    loadMoreMessages,
+    isLoadingMore,
+    hasMore,
+  }), [
+      // Liệt kê tất cả các giá trị đã đưa vào object
+      danhSachTin, infoTinDang, user, maCuocTroChuyen, modalImage,
+      isConnected, isBlockedByMe, isBlockedByOther,
+      displayAvatar, displayTen, displayIsOnline, displayLastOnline,
+      displayFormattedLastSeen, shouldShowStatus,
+      handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,
+      recallMessage, recallMedia, markAsRead, sendMessageService,
+      loadMoreMessages, isLoadingMore, hasMore
+  ]); // <-- Mảng dependency đầy đủ
 
   // ==================== RENDER ====================
   return (
+    // Giờ đây value sẽ ổn định và không gây render lại vô ích
     <ChatContext.Provider value={contextValue}>
-  <div className={styles.chatboxContainer}>
+      <div className={styles.chatboxContainer}>
         <ChatHeader />
         <ChatProductBanner />
         <MessageList />

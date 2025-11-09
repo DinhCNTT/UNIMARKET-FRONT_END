@@ -21,6 +21,22 @@
   position: relative;
 }
 
+/* FIX BƯỚC 1: THÊM CLASS CHA MỚI NÀY
+  Nó sẽ làm "mỏ neo" (position: relative)
+  và lấp đầy không gian (flex: 1)
+*/
+.chatWindowWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Ngăn chặn bất kỳ tràn nào không mong muốn */
+}
+
+/* FIX BƯỚC 2: SỬA LẠI CLASS NÀY
+  Nó vẫn cuộn (overflow-y: auto)
+  và lấp đầy không gian (flex: 1)
+*/
 .chatboxMessages {
   flex: 1;
   padding: 20px;
@@ -29,6 +45,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Thêm padding-bottom để chừa chỗ cho thanh thông báo, 
+    tránh tin nhắn cuối bị che 
+  */
+  padding-bottom: 80px; 
 }
 
 .chatboxMessages::-webkit-scrollbar {
@@ -83,7 +103,10 @@
   line-height: 1.6;
 }
 
+/* FIX BƯỚC 3: THAY ĐỔI HOÀN TOÀN ĐỊNH VỊ CỦA .blockedNotice
+*/
 .blockedNotice {
+  /* --- Giữ nguyên các thuộc tính giao diện --- */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,11 +115,18 @@
   color: white;
   padding: 12px 20px;
   border-radius: 12px;
-  margin: 10px 20px;
   font-size: 14px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
   animation: slideIn 0.3s ease;
+
+  /* --- Thay đổi định vị --- */
+  position: absolute; /* Đổi sang absolute */
+  bottom: 20px;       /* Ghim cách đáy 20px */
+  left: 20px;         /* Ghim cách trái 20px */
+  right: 20px;        /* Ghim cách phải 20px */
+  margin: 0;          /* Bỏ margin cũ */
+  z-index: 10;        /* Đảm bảo nó nổi lên trên */
 }
 
 .blockedNotice svg {
@@ -145,9 +175,14 @@
     margin: 0;
     height: 100vh;
   }
-
+  
+  /* FIX BƯỚC 4: Cập nhật responsive cho .blockedNotice
+    Đổi 'margin' thành 'left', 'right', 'bottom'
+  */
   .blockedNotice {
-    margin: 8px 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 10px; /* Gần đáy hơn 1 chút trên mobile */
     padding: 10px 16px;
     font-size: 13px;
   }
@@ -160,9 +195,39 @@
     height: 100vh;
   }
 
+  /* FIX BƯỚC 5: Cập nhật responsive cho .blockedNotice
+  */
   .blockedNotice {
-    margin: 6px 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
     padding: 8px 12px;
     font-size: 12px;
+  }
+}
+
+/* ===== CSS CHO LOADING SPINNER (Thêm vào nếu bạn chưa có) ===== */
+.loadingMore {
+  position: absolute;
+  top: 15px; 
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 10; 
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #3b82f6; 
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }

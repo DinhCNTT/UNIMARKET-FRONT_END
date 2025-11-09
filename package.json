@@ -19,6 +19,7 @@
     "@microsoft/signalr": "^8.0.17",
     "@mui/material": "^6.4.8",
     "@react-oauth/google": "^0.12.2",
+    "@tanstack/react-virtual": "^3.13.12",
     "animate.css": "^4.1.1",
     "axios": "^1.8.4",
     "bootstrap": "^5.3.6",
