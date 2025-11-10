@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "./context/ChatContext";
-import { FaBan, FaUnlock } from "react-icons/fa";
+import { FaBan, FaUnlock, FaTrash } from "react-icons/fa";
 import styles from './ModuleChatCss/ChatHeader.module.css';
 
-const ChatHeader = () => {
+const ChatHeader = ({ onDelete }) => {
   const {
     displayAvatar,
     displayTen,
@@ -106,6 +106,16 @@ const ChatHeader = () => {
           </div>
         </div>
         <div className={styles.headerMenu}>
+          {onDelete && (
+            <button
+              className={`${styles.headerMenuButton} ${styles.deleteButton}`}
+              onClick={() => onDelete && onDelete()}
+              title="Xóa cuộc trò chuyện"
+            >
+              <FaTrash size={18} />
+              <span>Xóa</span>
+            </button>
+          )}
           {!isBlockedByMe && !isBlockedByOther ? (
             <button
               className={styles.headerMenuButton}

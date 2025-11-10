@@ -22,9 +22,27 @@ export const useSignalR = (maCuocTroChuyen, user) => {
         });
         if (!response.data) throw new Error("Lỗi lấy lịch sử chat");
 
+        // If user previously deleted this conversation, only keep messages sent after deletion time
+        let deletedMap = {};
+        try {
+          const raw = localStorage.getItem('deletedConversations');
+          deletedMap = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+          deletedMap = {};
+        }
+
+        const deletedAt = deletedMap[maCuocTroChuyen] ? new Date(deletedMap[maCuocTroChuyen]) : null;
+
         if (isMounted) {
+          const filtered = response.data.filter((msg) => {
+            if (!deletedAt) return true;
+            const t = msg.thoiGianGui ? (msg.thoiGianGui.endsWith('Z') ? msg.thoiGianGui : msg.thoiGianGui + 'Z') : null;
+            if (!t) return false;
+            return new Date(t) >= deletedAt;
+          });
+
           setDanhSachTin(
-            response.data.map((msg) => {
+            filtered.map((msg) => {
               let timeStr = msg.thoiGianGui;
               if (!timeStr.endsWith("Z")) timeStr += "Z";
               return {
@@ -71,7 +89,31 @@ export const useSignalR = (maCuocTroChuyen, user) => {
           const isHidden = hiddenChats.includes(maCuocTroChuyen);
           const isOwnMessage = msg.maNguoiGui === user?.id;
 
-          if (!isHidden || isOwnMessage) {
+          // If user previously deleted this conversation, and this is a new message from the other side,
+          // treat it as reappearance: clear previous history and only show the new message.
+          let deletedMap = {};
+          try {
+            const raw = localStorage.getItem('deletedConversations');
+            deletedMap = raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            deletedMap = {};
+          }
+          const hadDeleted = !!deletedMap[maCuocTroChuyen];
+
+          // If the user had previously deleted the conversation, any new message
+          // (whether sent by them or the other side) should make the conversation
+          // reappear — but we must avoid resurrecting old messages. We clear the
+          // delete marker and show only the incoming message as the new history
+          // baseline.
+          if (hadDeleted) {
+            try {
+              delete deletedMap[maCuocTroChuyen];
+              localStorage.setItem('deletedConversations', JSON.stringify(deletedMap));
+            } catch (e) {
+              // ignore localStorage errors
+            }
+            setDanhSachTin([newMsg]);
+          } else if (!isHidden || isOwnMessage) {
             setDanhSachTin((prev) => [...prev, newMsg]);
           }
         });
@@ -150,6 +192,11 @@ export const useSignalR = (maCuocTroChuyen, user) => {
     }
   }, [user?.id]);
 
+  // Hàm xóa tin nhắn local (xoá phía người gọi)
+  const deleteLocalMessage = useCallback((maTinNhan) => {
+    setDanhSachTin((prev) => prev.filter((m) => m.maTinNhan !== maTinNhan));
+  }, []);
+
   // Hàm Thu hồi Media (ảnh/video)
   const recallMedia = useCallback(async (maTinNhan) => {
     if (connectionRef.current && connectionRef.current.state === "Connected") {
@@ -188,5 +235,6 @@ export const useSignalR = (maCuocTroChuyen, user) => {
     recallMedia,
     markAsRead,
     sendMessageService, // Hàm gửi tin nhắn đã được chuẩn hóa
+    deleteLocalMessage,
   };
 };

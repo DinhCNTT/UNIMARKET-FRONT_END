@@ -14,6 +14,9 @@ import {
   FiTrash2               // 👈 thêm dòng này
 } from "react-icons/fi";
 
+// Services
+import { deleteConversationForMe, setChatState, bulkSetChatState, getUserChatStates, getUserChats } from "../services/chatService";
+
 
 
 const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
@@ -28,50 +31,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const connectionRef = useRef(null);
   const [showFriendList, setShowFriendList] = useState(false);
 
-  // API functions để tương tác với database
-  const setChatState = async (chatId, isHidden, isDeleted) => {
-    try {
-      await fetch('http://localhost:5133/api/chat/set-chat-state', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId,
-          chatId: chatId,
-          isHidden: isHidden,
-          isDeleted: isDeleted
-        })
-      });
-    } catch (error) {
-      console.error("Lỗi cập nhật trạng thái chat:", error);
-    }
-  };
-
-  const bulkSetChatState = async (chatIds, isHidden, isDeleted) => {
-    try {
-      await fetch('http://localhost:5133/api/chat/bulk-set-chat-state', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: userId,
-          chatIds: chatIds,
-          isHidden: isHidden,
-          isDeleted: isDeleted
-        })
-      });
-    } catch (error) {
-      console.error("Lỗi cập nhật trạng thái chat hàng loạt:", error);
-    }
-  };
-
-  const getUserChatStates = async () => {
-    try {
-      const response = await fetch(`http://localhost:5133/api/chat/user-chat-states/${userId}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Lỗi lấy trạng thái chat:", error);
-      return [];
-    }
-  };
+  // Use centralized service functions (imported from services/chatService)
 
   // Hàm lấy URL hình ảnh đầy đủ
   const getFullImageUrl = (url) => {
@@ -113,11 +73,23 @@ const sortChatsLikeMessenger = (chats) => {
   if (!showDeleteConfirm) return;
 
   try {
-    await fetch(
-      `http://localhost:5133/api/chat/delete-conversation-for-me/${showDeleteConfirm}?userId=${userId}`,
-      { method: "DELETE" }
-    );
-    await setChatState(showDeleteConfirm, false, true);
+  const deleteRes = await deleteConversationForMe(showDeleteConfirm, userId);
+    // Also update chat state to mark deleted locally/server-side (best-effort)
+    await setChatState(showDeleteConfirm, false, true, userId).catch(() => {});
+
+    // Remember deletion time locally so when conversation reappears we don't show old messages
+    try {
+      const raw = localStorage.getItem('deletedConversations');
+      const map = raw ? JSON.parse(raw) : {};
+      const serverHidden = deleteRes && (deleteRes.hidden || deleteRes.Hidden);
+      const thoiGianAn = serverHidden && (serverHidden.ThoiGianAn || serverHidden.thoiGianAn)
+        ? new Date(serverHidden.ThoiGianAn || serverHidden.thoiGianAn).toISOString()
+        : new Date().toISOString();
+      map[showDeleteConfirm] = thoiGianAn;
+      localStorage.setItem('deletedConversations', JSON.stringify(map));
+    } catch (e) {
+      console.warn('Could not persist deletedConversations to localStorage', e);
+    }
   } catch (err) {
     console.error("Lỗi xóa toàn bộ tin nhắn phía tôi:", err);
   }
@@ -196,20 +168,17 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
   };
 
   // Lấy trạng thái chat từ database
-  const chatStates = await getUserChatStates();
+  const chatStates = await getUserChatStates(userId);
   const chatState = chatStates.find(cs => cs.chatId === newChat.maCuocTroChuyen);
   const isHidden = chatState?.isHidden ?? false;
   const isDeleted = chatState?.isDeleted ?? false;
 
-  // Nếu cuộc trò chuyện bị xóa hoàn toàn và có tin nhắn mới từ đối phương
+  // Nếu cuộc trò chuyện bị xóa hoàn toàn và có tin nhắn mới từ đối phương => cho xuất hiện lại (theo cơ chế HasReappeared của server)
   if (isDeleted && newChat.maNguoiGuiCuoi !== userId) {
-    // Gỡ trạng thái xóa từ server
-    await setChatState(newChat.maCuocTroChuyen, false, false);
-    
     // Cập nhật local state để phản ánh thay đổi ngay lập tức
     newChat.isDeleted = false;
     newChat.isHidden = false;
-    
+
     // Hiển thị lại trong danh sách chat chính
     setChatList((prev) => {
       const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
@@ -223,7 +192,7 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
       }
       return sortChatsLikeMessenger(updatedList);
     });
-    
+
     // Xóa khỏi danh sách ẩn nếu có
     setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== newChat.maCuocTroChuyen));
     return;
@@ -283,7 +252,7 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
     connection.on("CapNhatTrangThaiTinNhan", async (data) => {
       // Lấy trạng thái chat từ server
       try {
-        const chatStates = await getUserChatStates();
+        const chatStates = await getUserChatStates(userId);
         const chatState = chatStates.find(cs => cs.chatId === data.maCuocTroChuyen);
         const isHidden = chatState?.isHidden ?? false;
         const isDeleted = chatState?.isDeleted ?? false;
@@ -320,7 +289,7 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
     connection.on("CapNhatTinDang", async (updatedPost) => {
       // Lấy trạng thái chat từ server để kiểm tra
       try {
-        const chatStates = await getUserChatStates();
+        const chatStates = await getUserChatStates(userId);
 
         setChatList((prev) =>
           prev.map((chat) => {
@@ -368,8 +337,7 @@ connection.on("UserBlocked", async (data) => {
 
   // Refresh lại chat list để cập nhật trạng thái block/unblock
   try {
-    const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
-    const chatData = await res.json();
+  const chatData = await getUserChats(userId);
 
     const visibleChats = [];
     const hiddenChats = [];
@@ -445,8 +413,7 @@ connection.on("ChatStatusChanged", (data) => {
     // ✅ FIX: Lấy danh sách cuộc trò chuyện với mapping chính xác
     const fetchChats = async () => {
       try {
-        const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
-        const data = await res.json();
+        const data = await getUserChats(userId);
         
         // Tách chat thành 2 danh sách: hiện và ẩn dựa trên database
         const visibleChats = [];
@@ -506,8 +473,7 @@ connection.on("ChatStatusChanged", (data) => {
       console.log("🔄 Refreshing ChatList...");
       
       try {
-        const res = await fetch(`http://localhost:5133/api/chat/user/${userId}`);
-        const data = await res.json();
+  const data = await getUserChats(userId);
         
         // Tách chat thành 2 danh sách: hiện và ẩn dựa trên database
         const visibleChats = [];
@@ -590,7 +556,7 @@ connection.on("ChatStatusChanged", (data) => {
   if (selectedToHide.length === 0) return;
   
   try {
-    await bulkSetChatState(selectedToHide, true, false);
+  await bulkSetChatState(selectedToHide, true, false, userId);
 
     const chatsToHide = chatList.filter(chat =>
       selectedToHide.includes(chat.maCuocTroChuyen)
@@ -625,7 +591,7 @@ connection.on("ChatStatusChanged", (data) => {
     
     try {
       // Cập nhật trạng thái trong database
-      await bulkSetChatState(selectedToHide, false, false);
+  await bulkSetChatState(selectedToHide, false, false, userId);
       
       // Lấy các chat cần gỡ ẩn
       const chatsToUnhide = hiddenChatList.filter(chat => selectedToHide.includes(chat.maCuocTroChuyen));

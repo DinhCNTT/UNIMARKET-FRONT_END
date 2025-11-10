@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../context/ChatContext";
+import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
 import { FaEllipsisV, FaTrash, FaClock } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 const MessageItem = ({ message, showSeenStatus }) => {
-  const { user, openImageModal, recallMessage, recallMedia } = useChat();
+  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -45,6 +46,36 @@ const MessageItem = ({ message, showSeenStatus }) => {
   };
 
   const closeMenu = () => setIsMenuOpen(false);
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "Xóa tin nhắn?",
+      text: "Tin nhắn sẽ bị xóa ở phía bạn.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) {
+      closeMenu();
+      return;
+    }
+
+    try {
+      await api.delete(`/chat/delete-for-me/${message.maTinNhan}`, { params: { userId: user.id } });
+      // Remove locally
+      try { deleteLocalMessage(message.maTinNhan); } catch (e) { /* ignore */ }
+      Swal.fire({ icon: 'success', title: 'Đã xóa', timer: 1200, showConfirmButton: false });
+    } catch (err) {
+      console.error('Lỗi xóa tin nhắn:', err);
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể xóa tin nhắn. Vui lòng thử lại.' });
+    }
+
+    closeMenu();
+  };
 
   const handleRecall = async () => {
     if (!canRecallMessage(message.thoiGianGui)) {
@@ -146,7 +177,7 @@ const MessageItem = ({ message, showSeenStatus }) => {
           )}
         </div>
 
-        {isSentByMe && !message.isRecalled && (
+        {!message.isRecalled && (
           <div className={styles.menuContainer} ref={menuRef}>
             <button className={styles.menuTrigger} onClick={toggleMessageMenu}>
               <FaEllipsisV size={12} />
@@ -154,25 +185,39 @@ const MessageItem = ({ message, showSeenStatus }) => {
 
             {isMenuOpen && (
               <div className={styles.messageMenu}>
-                {canRecallMessage(message.thoiGianGui) ? (
-                  <button
-                    className={`${styles.messageMenuItem} ${styles.recallAvailable}`}
-                    onClick={handleRecall}
-                  >
-                    <FaTrash size={12} />
-                    <span>Thu hồi</span>
-                    <div className={styles.recallTimer}>
-                      <FaClock size={10} />
-                      {Math.floor(getRecallTimeRemaining(message.thoiGianGui))}:
-                      {Math.floor(
-                        (getRecallTimeRemaining(message.thoiGianGui) % 1) * 60
-                      ).toString().padStart(2, "0")}
-                    </div>
-                  </button>
+                {isSentByMe ? (
+                  <>
+                    {canRecallMessage(message.thoiGianGui) ? (
+                      <button
+                        className={`${styles.messageMenuItem} ${styles.recallAvailable}`}
+                        onClick={handleRecall}
+                      >
+                        <FaTrash size={12} />
+                        <span>Thu hồi</span>
+                        <div className={styles.recallTimer}>
+                          <FaClock size={10} />
+                          {Math.floor(getRecallTimeRemaining(message.thoiGianGui))}:
+                          {Math.floor(
+                            (getRecallTimeRemaining(message.thoiGianGui) % 1) * 60
+                          ).toString().padStart(2, "0")}
+                        </div>
+                      </button>
+                    ) : (
+                      <button className={`${styles.messageMenuItem} ${styles.recallDisabled}`} disabled>
+                        <FaTrash size={12} />
+                        <span>Hết hạn thu hồi</span>
+                      </button>
+                    )}
+
+                    <button className={styles.messageMenuItem} onClick={handleDelete}>
+                      <FaTrash size={12} />
+                      <span>Xóa tin nhắn</span>
+                    </button>
+                  </>
                 ) : (
-                  <button className={`${styles.messageMenuItem} ${styles.recallDisabled}`} disabled>
+                  <button className={styles.messageMenuItem} onClick={handleDelete}>
                     <FaTrash size={12} />
-                    <span>Hết hạn thu hồi</span>
+                    <span>Xóa tin nhắn</span>
                   </button>
                 )}
               </div>
