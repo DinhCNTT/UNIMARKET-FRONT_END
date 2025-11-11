@@ -1,456 +1,355 @@
-/* Message styles */
+/* ========== Message Wrapper ========== */
 .messageWrapper {
   display: flex;
-  margin-bottom: 8px;
-  position: relative;
+  margin-bottom: 12px;
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.sentWrapper {
+  justify-content: flex-end;
+}
+
+.receivedWrapper {
+  justify-content: flex-start;
+}
+
+/* ========== Message Container ========== */
 .message {
   max-width: 70%;
-  animation: fadeInUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
   position: relative;
+  gap: 4px;
 }
 
 .sent {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
   align-items: flex-end;
 }
 
 .received {
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
   align-items: flex-start;
 }
 
-.messageContent {
-  padding: 12px 16px;
-  border-radius: 18px;
-  word-wrap: break-word;
+/* ========== Menu Container - Positioned Above Message ========== */
+.menuContainer {
   position: relative;
+  order: -1; /* Đặt menu lên trên cùng */
+  margin-bottom: 2px;
 }
 
-/* Bong bóng chỉ áp dụng cho p (text) */
-.sent .messageContent p {
-  background: #667eea;
-  color: white;
-  border-radius: 18px;
-  border-bottom-right-radius: 6px;
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
-  display: inline-block;
-}
-
-.received .messageContent p {
-  background: #e2e8f0;
-  color: #1e293b;
-  border-radius: 18px;
-  border-bottom-left-radius: 6px;
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
-  display: inline-block;
-}
-
-/* Media trong tin nhắn */
-.messageContent img,
-.messageContent video {
-  max-width: 220px;
-  max-height: 180px;
-  border-radius: 10px;
-  margin: 4px 0;
-  display: block;
-  background: none;
-  padding: 0;
-}
-
-.clickableMedia {
+.menuTrigger {
+  background: rgba(100, 116, 139, 0.08);
+  border: none;
+  color: #64748b;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.clickableMedia:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.clickableMedia:hover::after {
-  content: "🔍";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
+  padding: 6px 8px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 12px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  opacity: 0.9;
+  min-width: 32px;
+  height: 28px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.message:hover .menuTrigger {
+  opacity: 1;
+}
+
+.menuTrigger:hover,
+.menuActive {
+  background: rgba(100, 116, 139, 0.15);
+  color: #475569;
+  transform: scale(1.05);
+}
+
+.menuTrigger:active {
+  transform: scale(0.98);
+}
+
+/* ========== Dropdown Menu ========== */
+.messageMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  min-width: 200px;
+  overflow: hidden;
+  animation: menuSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Message Menu (Thu hồi tin nhắn) */
-.menuContainer {
-  position: relative;
-  display: inline-block;
+.received .messageMenu {
+  right: auto;
+  left: 0;
 }
 
-.menuTrigger {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  opacity: 0;
-  transition: all 0.2s ease;
-  font-size: 12px;
-  margin-left: 8px;
+@keyframes menuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.sent:hover .menuTrigger {
-  opacity: 1;
-}
-
-.menuTrigger:hover {
-  background: rgba(100, 116, 139, 0.1);
-  color: #475569;
-}
-
-.messageMenu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 180px;
-  overflow: hidden;
-  animation: slideDown 0.2s ease;
-}
-
-.messageMenuItem {
+/* ========== Menu Items ========== */
+.menuItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px 14px;
   border: none;
   background: none;
   width: 100%;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  color: #475569;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #334155;
+  font-weight: 500;
+  position: relative;
 }
 
-.messageMenuItem:hover:not(:disabled) {
-  background: #f8fafc;
+.menuItem:hover:not(.disabledItem) {
+  background: linear-gradient(to right, #f8fafc, #f1f5f9);
 }
 
-.recallAvailable {
-  color: #dc2626;
+.menuItem:active:not(.disabledItem) {
+  transform: scale(0.98);
 }
 
-.recallAvailable:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+.menuIcon {
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.recallDisabled {
-  color: #94a3b8;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.recallDisabled:hover {
-  background: none;
-}
-
-.messageMenuItem span {
+.menuText {
   flex: 1;
 }
 
-.recallTimer {
-  display: flex;
+/* Recall Item */
+.recallItem {
+  color: #f59e0b;
+}
+
+.recallItem:hover {
+  background: linear-gradient(to right, #fef3c7, #fde68a);
+  color: #d97706;
+}
+
+.recallItem .menuIcon {
+  color: #f59e0b;
+}
+
+/* Delete Item */
+.deleteItem {
+  color: #ef4444;
+}
+
+.deleteItem:hover {
+  background: linear-gradient(to right, #fef2f2, #fee2e2);
+  color: #dc2626;
+}
+
+.deleteItem .menuIcon {
+  color: #ef4444;
+}
+
+/* Disabled Item */
+.disabledItem {
+  color: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.disabledItem:hover {
+  background: none;
+}
+
+/* Timer Badge */
+.timer {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #f59e0b;
+  color: #d97706;
   background: #fef3c7;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-  min-width: 45px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  min-width: 48px;
   justify-content: center;
+  border: 1px solid #fde68a;
 }
 
-.recallTimer svg {
+.timer svg {
   width: 10px;
   height: 10px;
 }
 
-/* Thu hồi tin nhắn animations */
-.recalling {
-  animation: fadeOutScale 0.3s ease forwards;
+/* Menu Divider */
+.menuDivider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+  margin: 4px 0;
 }
 
+/* ========== Message Content ========== */
+.messageContent {
+  display: inline-block;
+  position: relative;
+}
+
+/* Text Messages */
+.textContent {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  margin: 0;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.sent .textContent {
+  background: #007aff;
+  color: white;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.received .textContent {
+  background:#f1f5f9; 
+  color: #1e293b; 
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ========== Media Messages ========== */
+.mediaWrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  display: inline-block;
+  background: #f8fafc;
+}
+
+.mediaContent {
+  max-width: 280px;
+  max-height: 280px;
+  border-radius: 12px;
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mediaWrapper:hover .mediaContent {
+  transform: scale(1.02);
+}
+
+.mediaOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  pointer-events: none;
+}
+
+.mediaWrapper:hover .mediaOverlay {
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.zoomIcon {
+  font-size: 32px;
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mediaWrapper:hover .zoomIcon {
+  transform: scale(1);
+}
+
+/* Video Controls */
+.mediaContent[controls] {
+  cursor: default;
+}
+
+/* ========== Message Info ========== */
+.messageInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 0 4px;
+}
+
+.sent .messageInfo {
+  flex-direction: row-reverse;
+}
+
+.messageTime {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.seenStatus {
+  font-size: 11px;
+  color: #667eea;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* ========== Recalled Messages ========== */
 .recalled {
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .recalled .messageContent {
   background: transparent;
-  color: #64748b;
-  font-style: italic;
-  border: none;
 }
 
-.recalledMessage {
-  font-style: italic;
-  color: #888;
-  display: flex;
+.recalledText {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.recalledPreview {
-  font-style: italic;
-  color: #888;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOutScale {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Tối ưu cho màn hình cảm ứng */
-@media (hover: none) and (pointer: coarse) {
-  .clickableMedia:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .clickableMedia:hover::after {
-    display: none;
-  }
-
-  .clickableMedia:active {
-    transform: scale(0.98);
-  }
-
-  .sent .menuTrigger {
-    opacity: 0.7;
-  }
-}
-
-.messageStatus {
-  font-size: 11px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
   color: #94a3b8;
-  margin-top: 2px;
-  text-align: right;
-  padding-right: 4px;
   font-style: italic;
-}
-
-.messageContent {
-  padding: 12px 16px;
-  border-radius: 18px;
-  word-wrap: break-word;
-  position: relative;
-}
-
-/* Bong bóng chỉ áp dụng cho p (text) */
-.message.sent .messageContent p {
-  background: #667eea;
-  color: white;
-  border-radius: 18px;
-  border-bottom-right-radius: 6px;
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.4;
   margin: 0;
-  display: inline-block;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
 }
 
-.received .content p {
-  background: #e2e8f0;
-  color: #1e293b;
-  border-radius: 18px;
-  border-bottom-left-radius: 6px;
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
-  display: inline-block;
-}
-
-.time {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 4px;
-  text-align: right;
-}
-
-.received .time {
-  text-align: left;
-}
-
-.info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.sent .info {
-  justify-content: flex-end;
-}
-
-.received .info {
-  justify-content: flex-start;
-}
-
-/* Thu hồi tin nhắn */
-.menuContainer {
-  position: relative;
-  display: inline-block;
-}
-
-.menuTrigger {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  opacity: 0;
-  transition: all 0.2s ease;
-  font-size: 12px;
-  margin-left: 8px;
-}
-
-.sent:hover .menuTrigger {
-  opacity: 1;
-}
-
-.menuTrigger:hover {
-  background: rgba(100, 116, 139, 0.1);
-  color: #475569;
-}
-
-.recalled {
-  opacity: 0.7;
-}
-
-.recalled .content {
-  background: transparent;
-  color: #64748b;
-  font-style: italic;
-  border: none;
-}
-
-.recalledMessage {
-  font-style: italic;
-  color: #888;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.recalledPreview {
-  font-style: italic;
-  color: #888;
-}
-
-/* Media trong tin nhắn */
-.content img,
-.content video {
-  max-width: 220px;
-  max-height: 180px;
-  border-radius: 10px;
-  margin: 4px 0;
-  display: block;
-  background: none;
-  padding: 0;
-}
-
-.clickableMedia {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.clickableMedia:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.clickableMedia:hover::after {
-  content: "🔍";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  opacity: 0.9;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
+/* ========== Animations ========== */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -458,22 +357,49 @@
   }
 }
 
-/* Responsive */
+/* ========== Responsive Design ========== */
+@media (max-width: 768px) {
+  .message {
+    max-width: 85%;
+  }
+
+  .mediaContent {
+    max-width: 240px;
+    max-height: 240px;
+  }
+
+  .messageMenu {
+    min-width: 180px;
+  }
+}
+
+/* Touch Devices */
 @media (hover: none) and (pointer: coarse) {
-  .clickableMedia:hover {
+  .menuTrigger {
+    opacity: 0.8;
+  }
+
+  .message:active .menuTrigger {
+    opacity: 1;
+  }
+
+  .mediaWrapper:hover .mediaContent {
     transform: none;
-    box-shadow: none;
   }
 
-  .clickableMedia:hover::after {
-    display: none;
+  .mediaWrapper:hover .mediaOverlay {
+    opacity: 0;
   }
 
-  .clickableMedia:active {
+  .mediaWrapper:active .mediaContent {
     transform: scale(0.98);
   }
 
-  .sent .menuTrigger {
-    opacity: 0.7;
+  .menuItem:hover {
+    background: none;
+  }
+
+  .menuItem:active:not(.disabledItem) {
+    background: #f1f5f9;
   }
 }

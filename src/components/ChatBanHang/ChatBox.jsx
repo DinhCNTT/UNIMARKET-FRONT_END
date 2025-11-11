@@ -16,6 +16,8 @@ import styles from "./ModuleChatCss/MessageList.module.css";
 // Context & Hook
 import { ChatContext } from "./context/ChatContext";
 import { useSignalR } from "./hooks/useSignalR";
+import { deleteConversationForMe, setChatState } from "../../services/chatService";
+import { useNavigate } from "react-router-dom";
 
 // Components (Tách ra)
 import ChatHeader from "./ChatHeader";
@@ -39,6 +41,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     recallMedia,
     markAsRead,
     sendMessageService,
+    deleteLocalMessage,
     loadMoreMessages,
     isLoadingMore,
     hasMore,
@@ -77,6 +80,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       return null;
     }
   };
+  const navigate = useNavigate();
 
   // ==================== EVENT HANDLERS (Điều phối) ====================
 
@@ -101,6 +105,59 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       }
     }
   }, [user?.id, maNguoiConLai]);
+
+  const handleDeleteConversation = useCallback(async () => {
+    if (!maCuocTroChuyen || !user?.id) return;
+
+    const result = await Swal.fire({
+      title: "Xác nhận xóa cuộc trò chuyện",
+      text: "Cuộc trò chuyện sẽ bị xóa ở phía bạn. Bạn có chắc chắn muốn tiếp tục?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+  const deleteRes = await deleteConversationForMe(maCuocTroChuyen, user.id);
+      // Best-effort: mark state on server
+      try {
+        await setChatState(maCuocTroChuyen, false, true, user.id);
+      } catch (e) {
+        // ignore
+      }
+
+      // Notify other components to refresh lists
+      window.dispatchEvent(new Event('refreshChatList'));
+
+      // Persist deletion time locally so when conversation reappears we avoid showing old messages
+      try {
+        const raw = localStorage.getItem('deletedConversations');
+        const map = raw ? JSON.parse(raw) : {};
+        // Prefer server-provided hide time if available to avoid clock skew/race
+        const serverHidden = deleteRes && (deleteRes.hidden || deleteRes.Hidden);
+        const thoiGianAn = serverHidden && (serverHidden.ThoiGianAn || serverHidden.thoiGianAn)
+          ? new Date(serverHidden.ThoiGianAn || serverHidden.thoiGianAn).toISOString()
+          : new Date().toISOString();
+        map[maCuocTroChuyen] = thoiGianAn;
+        localStorage.setItem('deletedConversations', JSON.stringify(map));
+      } catch (e) {
+        console.warn('Could not persist deletedConversations to localStorage', e);
+      }
+
+      await Swal.fire({ icon: 'success', title: 'Đã xóa', text: 'Cuộc trò chuyện đã được xóa ở phía bạn.' });
+
+      // Navigate away from the chat so ChatBox unmounts
+      navigate('/chat');
+    } catch (err) {
+      console.error('Lỗi xóa cuộc trò chuyện:', err);
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể xóa cuộc trò chuyện. Vui lòng thử lại.' });
+    }
+  }, [maCuocTroChuyen, user?.id, navigate]);
 
   const handleUnblockUser = useCallback(async () => {
     const result = await Swal.fire({
@@ -370,18 +427,19 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     recallMedia,
     markAsRead,
     sendMessageService,
+    deleteLocalMessage,
     loadMoreMessages,
     isLoadingMore,
     hasMore,
   }), [
       // Liệt kê tất cả các giá trị đã đưa vào object
       danhSachTin, infoTinDang, user, maCuocTroChuyen, modalImage,
-      isConnected, isBlockedByMe, isBlockedByOther,
-      displayAvatar, displayTen, displayIsOnline, displayLastOnline,
-      displayFormattedLastSeen, shouldShowStatus,
-      handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,
-      recallMessage, recallMedia, markAsRead, sendMessageService,
-      loadMoreMessages, isLoadingMore, hasMore
+  isConnected, isBlockedByMe, isBlockedByOther,
+  displayAvatar, displayTen, displayIsOnline, displayLastOnline,
+  displayFormattedLastSeen, shouldShowStatus,
+  handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,
+  recallMessage, recallMedia, markAsRead, sendMessageService,
+  deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore
   ]); // <-- Mảng dependency đầy đủ
 
   // ==================== RENDER ====================
@@ -389,7 +447,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     // Giờ đây value sẽ ổn định và không gây render lại vô ích
     <ChatContext.Provider value={contextValue}>
       <div className={styles.chatboxContainer}>
-        <ChatHeader />
+        <ChatHeader onDelete={handleDeleteConversation} />
         <ChatProductBanner />
         <MessageList />
         <ChatInput />

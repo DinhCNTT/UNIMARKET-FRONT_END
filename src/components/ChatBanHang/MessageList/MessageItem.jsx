@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../context/ChatContext";
+import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
-import { FaEllipsisV, FaTrash, FaClock } from "react-icons/fa";
+import { FaEllipsisV, FaTrash, FaClock, FaUndo } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 const MessageItem = ({ message, showSeenStatus }) => {
-  const { user, openImageModal, recallMessage, recallMedia } = useChat();
+  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const menuRef = useRef(null);
 
   const isSentByMe = message.maNguoiGui === user?.id;
@@ -38,6 +40,20 @@ const MessageItem = ({ message, showSeenStatus }) => {
     return Math.max(0, 5 - diffInMinutes);
   };
 
+  // Update timer every second
+  useEffect(() => {
+    if (!isSentByMe || !canRecallMessage(message.thoiGianGui)) return;
+    
+    const updateTimer = () => {
+      setTimeRemaining(getRecallTimeRemaining(message.thoiGianGui));
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [message.thoiGianGui, isSentByMe]);
+
   // === Handlers ===
   const toggleMessageMenu = (e) => {
     e.stopPropagation();
@@ -46,34 +62,64 @@ const MessageItem = ({ message, showSeenStatus }) => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  const handleRecall = async () => {
-    if (!canRecallMessage(message.thoiGianGui)) {
-      Swal.fire({
-        icon: "error", title: "Không thể thu hồi",
-        text: "Chỉ có thể thu hồi tin nhắn trong vòng 5 phút sau khi gửi.",
-        confirmButtonColor: "#d33",
-      });
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "Xóa tin nhắn?",
+      text: "Tin nhắn sẽ bị xóa ở phía bạn.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!result.isConfirmed) {
+      closeMenu();
       return;
     }
 
-    const remainingTime = getRecallTimeRemaining(message.thoiGianGui);
-    const remainingMinutes = Math.floor(remainingTime);
-    const remainingSeconds = Math.floor((remainingTime - remainingMinutes) * 60);
+    try {
+      await api.delete(`/chat/delete-for-me/${message.maTinNhan}`, { params: { userId: user.id } });
+      try { deleteLocalMessage(message.maTinNhan); } catch (e) { /* ignore */ }
+      Swal.fire({ icon: 'success', title: 'Đã xóa', timer: 1200, showConfirmButton: false });
+    } catch (err) {
+      console.error('Lỗi xóa tin nhắn:', err);
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể xóa tin nhắn. Vui lòng thử lại.' });
+    }
+
+    closeMenu();
+  };
+
+  const handleRecall = async () => {
+    if (!canRecallMessage(message.thoiGianGui)) {
+      Swal.fire({
+        icon: "error", 
+        title: "Không thể thu hồi",
+        text: "Chỉ có thể thu hồi tin nhắn trong vòng 5 phút sau khi gửi.",
+        confirmButtonColor: "#ef4444",
+      });
+      closeMenu();
+      return;
+    }
+
+    const remainingMinutes = Math.floor(timeRemaining);
+    const remainingSeconds = Math.floor((timeRemaining - remainingMinutes) * 60);
     const isMedia = message.loaiTinNhan === "image" || message.loaiTinNhan === "video";
     const mediaType = message.loaiTinNhan === "image" ? "ảnh" : "video";
 
     const result = await Swal.fire({
       title: `Thu hồi ${isMedia ? mediaType : "tin nhắn"}?`,
       html: `
-        <p>Bạn có chắc chắn muốn thu hồi?</p>
-        <p style="color: #ff6b6b; font-size: 14px;">
+        <p style="margin-bottom: 12px;">Bạn có chắc chắn muốn thu hồi?</p>
+        <div style="background: #fef3c7; color: #f59e0b; padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;">
           <i class="fa fa-clock"></i> 
-          Thời gian còn lại: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, "0")}
-        </p>`,
+          Còn lại: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, "0")}
+        </div>`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
       confirmButtonText: "Thu hồi",
       cancelButtonText: "Hủy",
     });
@@ -86,21 +132,24 @@ const MessageItem = ({ message, showSeenStatus }) => {
           await recallMessage(message.maTinNhan);
         }
         Swal.fire({
-          icon: "success", title: "Đã thu hồi",
-          timer: 1500, showConfirmButton: false,
+          icon: "success", 
+          title: "Đã thu hồi",
+          timer: 1500, 
+          showConfirmButton: false,
         });
       } catch (error) {
         Swal.fire({
-          icon: "error", title: "Lỗi thu hồi",
+          icon: "error", 
+          title: "Lỗi thu hồi",
           text: error.message || "Không thể thu hồi. Vui lòng thử lại.",
-          confirmButtonColor: "#d33",
+          confirmButtonColor: "#ef4444",
         });
       }
     }
     closeMenu();
   };
 
-  // Effect: Đóng menu khi click ra ngoài
+  // Close menu when clicking outside
   useEffect(() => {
     if (!isMenuOpen) return;
     const handleClickOutside = (event) => {
@@ -109,79 +158,102 @@ const MessageItem = ({ message, showSeenStatus }) => {
       }
     };
     document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [isMenuOpen]);
 
+  const canRecall = canRecallMessage(message.thoiGianGui);
+
   return (
-    <div className={styles.messageWrapper}>
+    <div className={`${styles.messageWrapper} ${isSentByMe ? styles.sentWrapper : styles.receivedWrapper}`}>
       <div
-        className={`
-          ${styles.message} ${isSentByMe ? styles.sent : styles.received} ${
+        className={`${styles.message} ${isSentByMe ? styles.sent : styles.received} ${
           message.isRecalled ? styles.recalled : ""
-        }`.replace(/\s+/g, " ")}
+        }`}
       >
-        <div className={styles.messageContent}>
-          {message.isRecalled ? (
-            <p className={styles.recalledMessage}>Tin nhắn đã được thu hồi</p>
-          ) : message.loaiTinNhan === "image" ? (
-            <img
-              src={message.noiDung}
-              alt="img-chat"
-              className={styles.clickableMedia}
-              onClick={() => openImageModal(message.noiDung)}
-            />
-          ) : message.loaiTinNhan === "video" ? (
-            <video src={message.noiDung} controls className={styles.clickableMedia} />
-          ) : (
-            <p>{message.noiDung}</p>
-          )}
-        </div>
-
-        <div className={styles.info}>
-          <div className={styles.time}>{formatTime(message.thoiGian)}</div>
-          {isSentByMe && showSeenStatus && !message.isRecalled && (
-            <div className={styles.messageStatus}>Đã xem</div>
-          )}
-        </div>
-
-        {isSentByMe && !message.isRecalled && (
+        {/* Menu Button - Now positioned above message */}
+        {!message.isRecalled && (
           <div className={styles.menuContainer} ref={menuRef}>
-            <button className={styles.menuTrigger} onClick={toggleMessageMenu}>
-              <FaEllipsisV size={12} />
+            <button 
+              className={`${styles.menuTrigger} ${isMenuOpen ? styles.menuActive : ''}`} 
+              onClick={toggleMessageMenu}
+              aria-label="Message options"
+            >
+              <FaEllipsisV />
             </button>
 
             {isMenuOpen && (
               <div className={styles.messageMenu}>
-                {canRecallMessage(message.thoiGianGui) ? (
-                  <button
-                    className={`${styles.messageMenuItem} ${styles.recallAvailable}`}
-                    onClick={handleRecall}
-                  >
-                    <FaTrash size={12} />
-                    <span>Thu hồi</span>
-                    <div className={styles.recallTimer}>
-                      <FaClock size={10} />
-                      {Math.floor(getRecallTimeRemaining(message.thoiGianGui))}:
-                      {Math.floor(
-                        (getRecallTimeRemaining(message.thoiGianGui) % 1) * 60
-                      ).toString().padStart(2, "0")}
-                    </div>
-                  </button>
+                {isSentByMe ? (
+                  <>
+                    <button
+                      className={`${styles.menuItem} ${canRecall ? styles.recallItem : styles.disabledItem}`}
+                      onClick={canRecall ? handleRecall : null}
+                      disabled={!canRecall}
+                    >
+                      <FaUndo className={styles.menuIcon} />
+                      <span className={styles.menuText}>Thu hồi</span>
+                      {canRecall && (
+                        <span className={styles.timer}>
+                          <FaClock />
+                          {Math.floor(timeRemaining)}:{Math.floor((timeRemaining % 1) * 60).toString().padStart(2, "0")}
+                        </span>
+                      )}
+                    </button>
+                    
+                    <div className={styles.menuDivider} />
+                    
+                    <button className={`${styles.menuItem} ${styles.deleteItem}`} onClick={handleDelete}>
+                      <FaTrash className={styles.menuIcon} />
+                      <span className={styles.menuText}>Xóa</span>
+                    </button>
+                  </>
                 ) : (
-                  <button className={`${styles.messageMenuItem} ${styles.recallDisabled}`} disabled>
-                    <FaTrash size={12} />
-                    <span>Hết hạn thu hồi</span>
+                  <button className={`${styles.menuItem} ${styles.deleteItem}`} onClick={handleDelete}>
+                    <FaTrash className={styles.menuIcon} />
+                    <span className={styles.menuText}>Xóa tin nhắn</span>
                   </button>
                 )}
               </div>
             )}
           </div>
         )}
+
+        {/* Message Content */}
+        <div className={styles.messageContent}>
+          {message.isRecalled ? (
+            <p className={styles.recalledText}>
+              <FaUndo size={12} />
+              Tin nhắn đã được thu hồi
+            </p>
+          ) : message.loaiTinNhan === "image" ? (
+            <div className={styles.mediaWrapper}>
+              <img
+                src={message.noiDung}
+                alt="img-chat"
+                className={styles.mediaContent}
+                onClick={() => openImageModal(message.noiDung)}
+              />
+              <div className={styles.mediaOverlay}>
+                <span className={styles.zoomIcon}>🔍</span>
+              </div>
+            </div>
+          ) : message.loaiTinNhan === "video" ? (
+            <video src={message.noiDung} controls className={styles.mediaContent} />
+          ) : (
+            <p className={styles.textContent}>{message.noiDung}</p>
+          )}
+        </div>
+
+        {/* Message Info */}
+        <div className={styles.messageInfo}>
+          <span className={styles.messageTime}>{formatTime(message.thoiGian)}</span>
+          {isSentByMe && showSeenStatus && !message.isRecalled && (
+            <span className={styles.seenStatus}>Đã xem</span>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default React.memo(MessageItem); // Bọc trong React.memo
+export default React.memo(MessageItem);

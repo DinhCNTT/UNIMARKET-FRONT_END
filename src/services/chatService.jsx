@@ -173,3 +173,118 @@ export const disconnectFromChatHub = async () => {
 export const getConnectionState = () => {
   return connection ? connection.state : "Disconnected";
 };
+// -----------------------------
+// API helpers for chat actions
+// -----------------------------
+export const deleteConversationForMe = async (maCuocTroChuyen, userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${apiBaseUrl}/chat/delete-conversation-for-me/${maCuocTroChuyen}?userId=${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+      headers
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Delete conversation failed: ${res.status} ${res.statusText} - ${text}`);
+    }
+
+    // Try to parse JSON response if available (we return the hidden record)
+    try {
+      const body = await res.json().catch(() => null);
+      return body || true;
+    } catch (err) {
+      return true;
+    }
+  } catch (err) {
+    console.error("deleteConversationForMe error:", err);
+    throw err;
+  }
+};
+
+export const setChatState = async (chatId, isHidden, isDeleted, userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${apiBaseUrl}/chat/set-chat-state`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ userId, chatId, isHidden, isDeleted })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`setChatState failed: ${res.status} ${res.statusText} - ${text}`);
+    }
+
+    return await res.json().catch(() => null);
+  } catch (err) {
+    console.error("setChatState error:", err);
+    throw err;
+  }
+};
+
+export const bulkSetChatState = async (chatIds, isHidden, isDeleted, userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${apiBaseUrl}/chat/bulk-set-chat-state`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ userId, chatIds, isHidden, isDeleted })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`bulkSetChatState failed: ${res.status} ${res.statusText} - ${text}`);
+    }
+
+    return await res.json().catch(() => null);
+  } catch (err) {
+    console.error("bulkSetChatState error:", err);
+    throw err;
+  }
+};
+
+export const getUserChatStates = async (userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${apiBaseUrl}/chat/user-chat-states/${encodeURIComponent(userId)}`, { headers });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`getUserChatStates failed: ${res.status} ${res.statusText} - ${text}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("getUserChatStates error:", err);
+    return [];
+  }
+};
+
+export const getUserChats = async (userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${apiBaseUrl}/chat/user/${encodeURIComponent(userId)}`, { headers });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`getUserChats failed: ${res.status} ${res.statusText} - ${text}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("getUserChats error:", err);
+    return [];
+  }
+};
