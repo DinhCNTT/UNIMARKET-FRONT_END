@@ -3,14 +3,18 @@
   display: flex;
   margin-bottom: 12px;
   animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; /* Để absolute position menu hoạt động */
+  padding: 0 44px; /* Dành chỗ cho nút ba chấm */
 }
 
 .sentWrapper {
   justify-content: flex-end;
+  margin-right: -22px; /* Dịch tin nhắn của bạn sang phải */
 }
 
 .receivedWrapper {
   justify-content: flex-start;
+  margin-left: -22px; /* Dịch tin nhắn của người khác sang trái */
 }
 
 /* ========== Message Container ========== */
@@ -30,11 +34,22 @@
   align-items: flex-start;
 }
 
-/* ========== Menu Container - Positioned Above Message ========== */
+/* ========== Menu Container - Positioned Beside Message ========== */
 .menuContainer {
-  position: relative;
-  order: -1; /* Đặt menu lên trên cùng */
-  margin-bottom: 2px;
+  position: absolute;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.sent .menuContainer {
+  left: -44px; /* Nằm bên trái tin nhắn của bạn */
+  top: 8px; /* Dịch nút xuống dưới */
+}
+
+.received .menuContainer {
+  right: -44px; /* Nằm bên phải tin nhắn người khác */
+  top: 8px; /* Dịch nút xuống dưới */
 }
 
 .menuTrigger {
