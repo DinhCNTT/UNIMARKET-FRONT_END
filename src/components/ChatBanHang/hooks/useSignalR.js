@@ -160,17 +160,6 @@ export const useSignalR = (maCuocTroChuyen, user) => {
           }
         });
 
-        // Event listener khi tin nhắn bị xóa từ người khác
-        connection.on("TinNhanDaXoa", (data) => {
-          if (!isMounted) return;
-          const maTinNhan = data?.maTinNhan || data?.MaTinNhan;
-          if (maTinNhan) {
-            setDanhSachTin((prev) =>
-              prev.filter((msg) => msg.maTinNhan !== maTinNhan)
-            );
-          }
-        });
-
         if (isMounted) {
           connectionRef.current = connection;
           setIsConnected(connection && connection.state === "Connected");

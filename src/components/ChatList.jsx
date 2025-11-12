@@ -129,6 +129,44 @@ const sortChatsLikeMessenger = (chats) => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showDeleteConfirm, expandedChatId]);
 
+  // ✅ Lắng nghe event khi tin nhắn bị xóa để cập nhật chatlist
+  useEffect(() => {
+    const handleMessageDeleted = (event) => {
+      const { lastMessage, maCuocTroChuyen } = event.detail;
+      
+      setChatList((prev) => {
+        const updatedList = prev.map((chat) => {
+          if (chat.maCuocTroChuyen === maCuocTroChuyen) {
+            if (lastMessage) {
+              // Cập nhật với tin nhắn mới nhất
+              return {
+                ...chat,
+                tinNhanCuoi: lastMessage.noiDung || "",
+                maNguoiGuiCuoi: lastMessage.maNguoiGui,
+                loaiTinNhanCuoi: lastMessage.loaiTinNhan,
+                thoiGianCapNhat: lastMessage.thoiGian,
+                ThoiGianCapNhat: lastMessage.thoiGian
+              };
+            } else {
+              // Không còn tin nhắn nào trong cuộc trò chuyện
+              return {
+                ...chat,
+                tinNhanCuoi: "",
+                maNguoiGuiCuoi: null,
+                loaiTinNhanCuoi: null
+              };
+            }
+          }
+          return chat;
+        });
+        return sortChatsLikeMessenger(updatedList);
+      });
+    };
+
+    window.addEventListener('messageDeleted', handleMessageDeleted);
+    return () => window.removeEventListener('messageDeleted', handleMessageDeleted);
+  }, []);
+
   // ✅ FIX: Kết nối SignalR với thời gian chính xác
   useEffect(() => {
     if (!userId) return;
