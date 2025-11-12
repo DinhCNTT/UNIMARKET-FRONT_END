@@ -16,6 +16,20 @@ const ChatInput = () => {
   const { isConnected, isBlockedByMe, isBlockedByOther, sendMessageService } =
     useChat();
 
+  // Quick replies list (short canned messages shown above the input)
+  const QUICK_REPLIES = [
+    "Điện thoại này còn không?",
+    "Bạn có ship hàng không?",
+    "Sản phẩm còn bảo hành không?",
+    "Sản phẩm này đã qua sửa chữa chưa?",
+    "Có phụ kiện đi kèm theo sản phẩm?",
+    "Sản phẩm có lỗi gì không?",
+    "Đây là hàng chính hãng hay xách tay?",
+    "Ngoại hình máy như thế nào?",
+    "Sản phẩm này còn không ạ?",
+    "Tôi muốn mua sản phẩm này."
+  ];
+
   const [tinNhan, setTinNhan] = useState("");
   const [imagePreviewList, setImagePreviewList] = useState([]);
   const [videoPreviewList, setVideoPreviewList] = useState([]);
@@ -283,6 +297,30 @@ const ChatInput = () => {
     uploadToCloudinary
   ]);
 
+  // Gửi nhanh từ quick reply
+  const handleQuickReply = useCallback(async (text) => {
+    if (!text) return;
+    if (isBlockedByMe || isBlockedByOther) {
+      Swal.fire("Lỗi", "Không thể gửi tin nhắn vì bạn đã bị chặn.", "error");
+      return;
+    }
+    if (!isConnected) {
+      Swal.fire("Lỗi", "Kết nối SignalR không sẵn sàng!", "error");
+      return;
+    }
+
+    try {
+      // use existing send service to preserve behavior
+      await sendMessageService(text, "text");
+      // clear textarea if it contains same text
+      setTinNhan((prev) => (prev.trim() === text.trim() ? "" : prev));
+      inputRef.current?.focus();
+    } catch (err) {
+      console.error("Quick reply send error:", err);
+      Swal.fire("Lỗi", "Không thể gửi tin nhắn nhanh!", "error");
+    }
+  }, [isBlockedByMe, isBlockedByOther, isConnected, sendMessageService]);
+
   const handleKeyDown = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -393,6 +431,21 @@ const ChatInput = () => {
           ))}
         </div>
       )}
+
+      {/* Quick replies bar */}
+      <div className={styles.quickReplies} aria-hidden={isDisabled}>
+        {QUICK_REPLIES.map((q, idx) => (
+          <button
+            key={`qr-${idx}`}
+            type="button"
+            className={styles.quickReplyBtn}
+            onClick={() => handleQuickReply(q)}
+            disabled={isDisabled}
+          >
+            {q}
+          </button>
+        ))}
+      </div>
 
       <div
         className={styles.inputWrap}

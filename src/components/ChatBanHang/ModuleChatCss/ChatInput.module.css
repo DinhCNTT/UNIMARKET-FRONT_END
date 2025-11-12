@@ -6,6 +6,41 @@
   display: flex;
   flex-direction: column;
 }
+/* Quick replies row shown above the input */
+.quickReplies {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+.quickReplies::-webkit-scrollbar {
+  height: 6px;
+}
+.quickReplies::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.08);
+  border-radius: 6px;
+}
+.quickReplyBtn {
+  flex: 0 0 auto;
+  background: #f3f4f6;
+  color: #111827;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.quickReplyBtn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+.quickReplyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 /* Wrapper thanh input */
 .inputWrap {
   flex: 1;
