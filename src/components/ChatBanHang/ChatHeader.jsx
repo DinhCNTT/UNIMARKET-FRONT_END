@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "./context/ChatContext";
-import { FaBan, FaUnlock } from "react-icons/fa";
+import { IoEllipsisVertical } from "react-icons/io5"; // <-- THÊM MỚI
 import styles from './ModuleChatCss/ChatHeader.module.css';
 
 const ChatHeader = () => {
@@ -11,10 +11,7 @@ const ChatHeader = () => {
     displayLastOnline,
     displayFormattedLastSeen,
     shouldShowStatus,
-    isBlockedByMe,
-    isBlockedByOther,
-    handleBlockUser,
-    handleUnblockUser,
+    toggleSidebar,
   } = useChat();
 
   const [, forceUpdate] = useState(0);
@@ -106,23 +103,12 @@ const ChatHeader = () => {
           </div>
         </div>
         <div className={styles.headerMenu}>
-          {!isBlockedByMe && !isBlockedByOther ? (
-            <button
-              className={styles.headerMenuButton}
-              onClick={handleBlockUser}
-            >
-              <FaBan size={20} />
-              <span>Chặn</span>
-            </button>
-          ) : isBlockedByMe ? (
-            <button
-              className={`${styles.headerMenuButton} ${styles.unblock}`}
-              onClick={handleUnblockUser}
-            >
-              <FaUnlock size={20} />
-              <span>Gỡ chặn</span>
-            </button>
-          ) : null}
+          <button
+  className={styles.headerMenuButton}
+  onClick={toggleSidebar} // <-- Sửa onClick
+>
+  <IoEllipsisVertical size={20} /> {/* <-- Sửa icon */}
+</button>
         </div>
       </div>
     </div>

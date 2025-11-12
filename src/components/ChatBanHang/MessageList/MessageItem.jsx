@@ -80,8 +80,19 @@ const MessageItem = ({ message, showSeenStatus }) => {
     }
 
     try {
-      await api.delete(`/chat/delete-for-me/${message.maTinNhan}`, { params: { userId: user.id } });
+      const response = await api.delete(`/chat/delete-for-me/${message.maTinNhan}`, { params: { userId: user.id } });
       try { deleteLocalMessage(message.maTinNhan); } catch (e) { /* ignore */ }
+      
+      // Emit event để ChatList cập nhật tin nhắn mới nhất
+      if (response.data?.lastMessage) {
+        window.dispatchEvent(new CustomEvent('messageDeleted', { 
+          detail: { 
+            lastMessage: response.data.lastMessage,
+            maCuocTroChuyen: message.maCuocTroChuyen
+          } 
+        }));
+      }
+      
       Swal.fire({ icon: 'success', title: 'Đã xóa', timer: 1200, showConfirmButton: false });
     } catch (err) {
       console.error('Lỗi xóa tin nhắn:', err);

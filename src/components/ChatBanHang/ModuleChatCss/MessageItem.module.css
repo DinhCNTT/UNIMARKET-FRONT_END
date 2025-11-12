@@ -9,12 +9,12 @@
 
 .sentWrapper {
   justify-content: flex-end;
-  margin-right: -22px; /* Dịch tin nhắn của bạn sang phải */
+  margin-right: -50px; /* Dịch tin nhắn của bạn sang phải */
 }
 
 .receivedWrapper {
   justify-content: flex-start;
-  margin-left: -22px; /* Dịch tin nhắn của người khác sang trái */
+  margin-left: -50px; /* Dịch tin nhắn của người khác sang trái */
 }
 
 /* ========== Message Container ========== */
@@ -89,7 +89,7 @@
 /* ========== Dropdown Menu ========== */
 .messageMenu {
   position: absolute;
-  top: calc(100% + 4px);
+  bottom: calc(100% + 4px);
   right: 0;
   background: white;
   border: 1px solid #e2e8f0;

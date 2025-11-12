@@ -1,24 +1,33 @@
 /* ===== CHATBOX CONTAINER ===== */
 .chatboxContainer {
   -webkit-locale: "vi";
-  box-sizing: border-box;
-  scrollbar-color: silver transparent;
-  scrollbar-width: thin;
-  font-family: 'Reddit Sans', sans-serif;
-  font-size: 100%;
-  --app-wrapper-height: 66px;
-  overflow-y: hidden;
-  margin: 86px auto 0;
-  width: 100%;
-  max-width: 1500px;
-  height: 100%;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
+box-sizing: border-box;
+scrollbar-color: silver transparent;
+scrollbar-width: thin;
+font-family: 'Reddit Sans', sans-serif;
+font-size: 100%;
+--app-wrapper-height: 66px;
+overflow-y: hidden;
+
+/* === SỬA Ở ĐÂY === */
+margin: 0;           /* BỎ margin cũ (86px) */
+width: 100%;
+max-width: 100%;      /* BỎ max-width (1500px) */
+/* === HẾT SỬA === */
+
+height: 100%;         /* Giữ nguyên, nó sẽ lấy 100% của 100vh */
+background: #fff;
+
+/* === SỬA Ở ĐÂY === */
+border-radius: 0;     /* BỎ border-radius (16px) */
+/* === HẾT SỬA === */
+
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+display: flex;
+flex-direction: column;
+overflow: hidden;
+position: relative;
+
 }
 
 /* FIX BƯỚC 1: THÊM CLASS CHA MỚI NÀY
@@ -231,4 +240,13 @@
   to {
     transform: rotate(360deg);
   }
+}
+/* ===== NEW LAYOUT STYLES ===== */
+.chatPageWrapper {
+  position: relative; /* Ngữ cảnh cho modal */
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100vh; /* Giả định cha có chiều cao */
+  overflow: hidden; /* Không cuộn ngang */
 }

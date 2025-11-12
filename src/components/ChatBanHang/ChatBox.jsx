@@ -12,6 +12,7 @@ import api from "../../services/api"; // ✅ Đảm bảo đường dẫn đúng
 import Swal from "sweetalert2";
 import "animate.css";
 import styles from "./ModuleChatCss/MessageList.module.css";
+import ChatInfoSidebar from "./ChatInfoSidebar";
 
 // Context & Hook
 import { ChatContext } from "./context/ChatContext";
@@ -62,6 +63,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const [isBlockedByMe, setIsBlockedByMe] = useState(false);
   const [isBlockedByOther, setIsBlockedByOther] = useState(false);
   const [maNguoiConLai, setMaNguoiConLai] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // ==================== API HELPERS ====================
   const fetchUserStatus = async (userId) => {
@@ -188,6 +190,12 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const closeImageModal = useCallback(() => {
     setModalImage(null);
   }, []);
+  const toggleSidebar = useCallback(() => {
+  setIsSidebarOpen((prev) => !prev);
+}, []);
+const closeSidebar = useCallback(() => {
+ setIsSidebarOpen(false);
+ }, []);
 
   // ==================== EFFECTS (Điều phối) ====================
 
@@ -431,6 +439,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     loadMoreMessages,
     isLoadingMore,
     hasMore,
+    isSidebarOpen,
+toggleSidebar,
+closeSidebar,
   }), [
       // Liệt kê tất cả các giá trị đã đưa vào object
       danhSachTin, infoTinDang, user, maCuocTroChuyen, modalImage,
@@ -439,24 +450,57 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   displayFormattedLastSeen, shouldShowStatus,
   handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,
   recallMessage, recallMedia, markAsRead, sendMessageService,
-  deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore
+  deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore,
+  isSidebarOpen, toggleSidebar, closeSidebar
   ]); // <-- Mảng dependency đầy đủ
 
   // ==================== RENDER ====================
   return (
-    // Giờ đây value sẽ ổn định và không gây render lại vô ích
+
     <ChatContext.Provider value={contextValue}>
-      <div className={styles.chatboxContainer}>
-        <ChatHeader onDelete={handleDeleteConversation} />
-        <ChatProductBanner />
-        <MessageList />
-        <ChatInput />
+
+      {/* 1. Wrapper mới cho layout flex (chat + sidebar) */}
+
+      <div className={styles.chatPageWrapper}>
+
+
+
+        {/* 2. Khung chat chính (sẽ co lại) */}
+
+        <div className={styles.chatboxContainer}>
+
+          <ChatHeader />
+
+          <ChatProductBanner />
+
+          <MessageList />
+
+          <ChatInput />
+
+        </div>
+
+
+
+        {/* 3. Sidebar mới (tự quản lý việc hiển thị) */}
+
+        <ChatInfoSidebar />
+
+
+
+        {/* 4. Modal (nằm ngoài để có z-index cao) */}
 
         <Suspense fallback={<div>Đang tải...</div>}>
+
           {modalImage && <ImageModal />}
+
         </Suspense>
+
+
+
       </div>
+
     </ChatContext.Provider>
+
   );
 };
 

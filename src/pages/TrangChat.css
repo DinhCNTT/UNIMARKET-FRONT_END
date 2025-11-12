@@ -103,6 +103,7 @@
   background: white;
   overflow: hidden;
   min-height: 0; /* để scroll chat đúng */
+  margin-top: 90px; /* đẩy xuống dưới một chút */
 }
 
 .empty-chat-placeholder {
