@@ -16,8 +16,7 @@
   height: 100vh;
   overflow: hidden;
   position: relative;
-  /* Thêm width 100vw để bắt sự kiện mouse-move toàn màn hình */
-  width: 100vw; 
+  width: 100vw; /* Bắt sự kiện mouse-move toàn màn hình */
 }
 
 .video-list-wrapper {
@@ -27,7 +26,7 @@
   will-change: transform;
 }
 
-/* CSS cho layout 1 item (video + side info) */
+/* Layout 1 item (video + side info) */
 .video-item {
   height: 100vh;
   display: flex;
@@ -36,12 +35,12 @@
   position: relative;
 }
 
-/* Video transitioning state */
+/* Video transitioning */
 body.video-transitioning .video-item {
   pointer-events: none;
 }
 
-/* Video container (cái hộp đen chứa video) */
+/* Video container */
 .vdv-container {
   position: relative;
   display: flex;
@@ -53,25 +52,30 @@ body.video-transitioning .video-item {
   height: 98%;
   max-width: 650px;
   flex-shrink: 0;
+  margin-left: 35px; 
 }
 
-/* Các tùy chọn tỷ lệ cho container */
+/* Tỷ lệ video */
 .vdv-container.vdv-landscape {
   max-width: 1000px;
   max-height: 530px;
 }
+
 .vdv-container.vdv-square-wide {
   max-width: 950px;
-  max-height: 9500px;
+  max-height: 9500px; /* nguyên bản */
 }
+
 .vdv-container.vdv-square {
-  max-width: 750px; 
-  max-height: 7500px;
+  max-width: 750px;
+  max-height: 7500px; /* nguyên bản */
 }
 
-/* --- HIỆU ỨNG TOÀN CỤC --- */
+/* ============================
+   HEART ANIMATION
+============================ */
 
-/* Heart animation (khi double-tap) */
+/* Double-tap heart */
 .vdv-heart-animation {
   position: absolute;
   top: 50%;
@@ -108,7 +112,7 @@ body.video-transitioning .video-item {
   }
 }
 
-/* Heart pulse circle effect (khi nhấn like) */
+/* Heart pulse ring */
 .vdv-heart-pulse-circle {
   position: absolute;
   top: 50%;
@@ -118,7 +122,7 @@ body.video-transitioning .video-item {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 46, 99, 0.3), transparent);
   border: 2px solid rgba(255, 46, 99, 0.7);
-  box-shadow: 
+  box-shadow:
     0 0 12px rgba(255, 46, 99, 0.6),
     0 0 25px rgba(255, 46, 99, 0.4),
     0 0 40px rgba(255, 46, 99, 0.2);
@@ -133,27 +137,30 @@ body.video-transitioning .video-item {
   0% {
     transform: translate(-50%, -50%) scale(0.6);
     opacity: 0.9;
-    box-shadow: 
+    box-shadow:
       0 0 12px rgba(255, 46, 99, 0.7),
       0 0 20px rgba(255, 46, 99, 0.5);
   }
   50% {
     transform: translate(-50%, -50%) scale(1.4);
     opacity: 0.5;
-    box-shadow: 
+    box-shadow:
       0 0 18px rgba(255, 46, 99, 0.4),
       0 0 30px rgba(255, 46, 99, 0.2);
   }
   100% {
     transform: translate(-50%, -50%) scale(2.5);
     opacity: 0;
-    box-shadow: 
+    box-shadow:
       0 0 25px rgba(255, 46, 99, 0.1),
       0 0 40px rgba(255, 46, 99, 0);
   }
 }
 
-/* --- LOGIC MỞ COMMENT --- */
+/* ============================
+   COMMENT OPEN EFFECT
+============================ */
+
 .vdv-container.vdv-portrait.comment-open {
   transform: translateX(-100px);
   transition: transform 0.3s ease;
@@ -179,15 +186,18 @@ body.video-transitioning .video-item {
   transition: transform 0.3s ease;
 }
 .vdv-container.vdv-square.comment-open {
-  transform: translateX(-100px); 
+  transform: translateX(-100px);
   transition: transform 0.3s ease;
 }
 .vdv-container.vdv-square.comment-open ~ .vdv-side-info {
-  transform: translateX(-110px); 
+  transform: translateX(-110px);
   transition: transform 0.3s ease;
 }
 
-/* --- LOADING OVERLAY --- */
+/* ============================
+   LOADING OVERLAY
+============================ */
+
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -203,6 +213,7 @@ body.video-transitioning .video-item {
   z-index: 9999;
   animation: fadeIn 0.3s ease-in-out;
 }
+
 .spinner {
   width: 48px;
   height: 48px;
@@ -212,18 +223,24 @@ body.video-transitioning .video-item {
   animation: spin 0.8s linear infinite;
   margin-bottom: 12px;
 }
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
+
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
 
-/* --- RESPONSIVE --- */
+/* ============================
+   RESPONSIVE
+============================ */
+
 @media (max-width: 768px) {
   .vdv-container {
     max-width: 95vw;
@@ -233,9 +250,6 @@ body.video-transitioning .video-item {
     margin-top: 30px;
     margin-left: -20px;
   }
-  /* .vdv-container.vdv-landscape .vdv-player {
-    (Rule này bị trùng, .vdv-player sẽ có file riêng)
-  } */
   .vdv-side-info {
     flex-direction: row;
     justify-content: center;
@@ -243,3 +257,87 @@ body.video-transitioning .video-item {
     gap: 20px;
   }
 }
+
+/* =====================================
+   THEME VARIABLES
+===================================== */
+
+[data-theme='light'] {
+  --theme-bg-primary: #ffffff;   /* Sidebar + panel */
+  --theme-bg-secondary: #ffffff; /* Video background cũng trắng luôn */
+  --theme-bg-hover: #f2f2f2;
+
+  --theme-text-primary: #121212;
+  --theme-text-secondary: #555555;
+
+  --theme-border-color: #e8e8e8;
+  --theme-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+
+[data-theme='dark'] {
+  --theme-bg-primary: #000000; /* Sidebar = đen */
+  --theme-bg-secondary: #000000; /* Video bg = đen */
+  --theme-bg-hover: #1a1a1a;
+
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #bbbbbb;
+
+  --theme-border-color: #222222;
+  --theme-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* =====================================
+   APPLY THEME
+===================================== */
+
+/* ================================================ */
+/*         FIX: ÁP DỤNG THEME + NOT(.active)        */
+/* ================================================ */
+
+/* Navbar thay đổi nền theo theme */
+[data-theme] .um-tn-navbar {
+  background-color: var(--theme-bg-primary);
+  border-right-color: var(--theme-border-color);
+}
+
+/* Icon mặc định — chỉ áp dụng khi KHÔNG ACTIVE */
+[data-theme] .um-tn-icon-btn:not(.active) {
+  color: var(--theme-text-secondary);
+}
+
+/* Chữ trong icon mặc định — khi KHÔNG ACTIVE */
+[data-theme] .um-tn-icon-btn:not(.active) span {
+  color: var(--theme-text-primary);
+}
+
+/* ================================================ */
+/*               LOGO theo THEME                    */
+/* ================================================ */
+[data-theme] .um-tn-logo {
+  background-color: var(--theme-bg-primary);
+}
+
+/* ================================================ */
+/*             VIDEO DETAIL VIEWER WRAPPER          */
+/* ================================================ */
+.vdv-wrapper {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Overlay thông tin video */
+[data-theme] .vdv-info-overlay {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ================================================ */
+/*         VIDEO SIDE ACTIONS (LIKE / SHARE)        */
+/* ================================================ */
+[data-theme] .vsa-wrapper .vsa-action-btn {
+  background-color: var(--theme-bg-primary);
+  color: var(--theme-text-primary);
+}
+

@@ -1,41 +1,63 @@
+/* src/components/SharePanel.css (Đã Sửa & Chuẩn Hóa) */
+
+/* ========================================================= */
+/*                         OVERLAY                           */
+/* ========================================================= */
 .share-panel-overlay {
   position: fixed;
   top: 0; left: 0;
-  width: 100%; height: 100%;
+
+  width: 100%;
+  height: 100%;
   background: rgba(0,0,0,0.5);
-  display: flex; 
-  align-items: center;    /* căn giữa theo chiều dọc */
-  justify-content: center; /* căn giữa theo chiều ngang */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   z-index: 2000;
 }
 
+/* ========================================================= */
+/*                           PANEL                           */
+/* ========================================================= */
 .share-panel {
-  background: #fff;
+  background-color: var(--theme-bg-primary);
+
   width: 100%;
   max-width: 420px;
-  border-radius: 16px; /* bo tròn đều 4 góc */
+
+  border-radius: 16px;
   padding: 20px;
+
   animation: fadeIn 0.3s ease;
+
+  transition: background-color 0.3s ease;
 }
 
-/* Thêm hiệu ứng fadeIn */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .share-title {
   text-align: center;
-  font-size: 20px;            /* to hơn */
-  font-weight: 700;           /* đậm */
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;  /* font hiện đại */
-  margin-bottom: 24px;        /* cách xa hơn một chút */
-  color: #222;               /* màu chữ rõ ràng */
-  letter-spacing: 0.5px;      /* giãn nhẹ cho đẹp */
+  font-size: 20px;
+  font-weight: 700;
+
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+
+  color: var(--theme-text-primary);
+
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
   position: relative;
-  top: -6px;                  /* đẩy cao lên một chút */
+  top: -6px;
 }
 
+/* ========================================================= */
+/*                   SOCIAL ICONS CAROUSEL                   */
+/* ========================================================= */
 .share-options-wrapper {
   position: relative;
   overflow: hidden;
@@ -44,9 +66,11 @@
 
 .share-options {
   display: flex;
-  gap: 20px; /* khoảng cách giữa các nút */
+  gap: 20px;
+
   overflow-x: auto;
   scroll-behavior: smooth;
+
   padding: 8px 36px;
 }
 
@@ -56,30 +80,40 @@
 
 .share-circle {
   display: flex;
-  flex-direction: column; /* icon trên, chữ dưới */
+  flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-width: 80px;    /* to hơn */
-  cursor: pointer;
-  background: transparent; /* bỏ màu nền khung cha */
+
+  min-width: 80px;
+  background: transparent;
   border: none;
+
+  cursor: pointer;
 }
+
 .share-circle span {
   margin-top: 8px;
-  font-size: 14px;        /* chữ to hơn */
-  font-weight: 700;       /* in đậm */
-  font-family: "Segoe UI", Roboto, sans-serif; /* font đẹp */
-  color: #333;
+  font-size: 14px;
+  font-weight: 700;
+
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--theme-text-primary);
+
   text-align: center;
 }
+
+/* Icons giữ màu thương hiệu */
 .share-circle svg {
-  width: 48px;    /* icon to hơn */
+  width: 48px;
   height: 48px;
+
   padding: 12px;
   border-radius: 50%;
+
   color: #fff;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
 }
+
 .share-circle:hover {
   transform: scale(1.1);
 }
@@ -88,25 +122,33 @@
 }
 
 .share-circle.facebook svg { background: #3b5998; }
-.share-circle.twitter svg { background: #1da1f2; }
-.share-circle.zalo svg { background: #0068ff; }
+.share-circle.twitter svg  { background: #1da1f2; }
+.share-circle.zalo svg     { background: #0068ff; }
 .share-circle.linkedin svg { background: #0077b5; }
 .share-circle.whatsapp svg { background: #25d366; }
 .share-circle.telegram svg { background: #0088cc; }
-.share-circle.copy svg { background: #666; }
+.share-circle.copy svg     { background: #666; }
 
+/* ========================================================= */
+/*                LEFT/RIGHT ARROWS SOCIAL SCROLL            */
+/* ========================================================= */
 .arrow-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  border: none;
+
   width: 28px;
   height: 28px;
+
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+
+  border: none;
   border-radius: 50%;
+
   cursor: pointer;
   opacity: 0;
+
   transition: opacity 0.2s;
   z-index: 2;
 }
@@ -118,66 +160,69 @@
 .arrow-btn.left { left: 0; }
 .arrow-btn.right { right: 0; }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* --- Danh sách bạn bè (CẬP NHẬT) --- */
+/* ========================================================= */
+/*                     FRIEND LIST SECTION                   */
+/* ========================================================= */
 .friend-list {
   margin: 10px 0;
-  position: relative; /* để absolute con bám vào */
-  padding: 0 10px; /* cho cân trong khung */
+  position: relative;
+  padding: 0 10px;
 }
 
 .friend-list h4 {
   font-size: 14px;
   margin-bottom: 8px;
+  color: var(--theme-text-primary);
 }
 
 .friend-list input {
   width: 100%;
   padding: 6px 8px;
+
   font-size: 13px;
-  border: 1px solid #ccc;
+
+  border: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
+
   border-radius: 6px;
   margin-bottom: 10px;
 }
 
-/* ✅ BƯỚC 1: Thêm wrapper cho friend scroll */
+/* ========================================================= */
+/*                  FRIEND HORIZONTAL SCROLL                 */
+/* ========================================================= */
 .friend-scroll-wrapper {
   position: relative;
-  /* Dùng margin âm để mũi tên sát ra 2 mép panel */
   margin: 0 -10px;
 }
 
-/* ✅ BƯỚC 2: Cập nhật .friend-scroll */
 .friend-scroll {
   display: flex;
-  overflow-x: auto;
   gap: 12px;
-  /* Thêm padding 2 bên để mũi tên không đè lên avatar */
-  padding: 6px 20px; 
-  scroll-behavior: smooth; /* Quan trọng cho JS scroll */
 
-  /* --- ẨN THANH CUỘN --- */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  overflow-x: auto;
+  padding: 6px 20px;
+
+  scroll-behavior: smooth;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
 .friend-scroll::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
-
-/* item bạn bè (giữ nguyên) */
 .friend-item {
   flex: 0 0 auto;
-  width: 90px;            /* rộng hơn để avatar thoáng */
-  text-align: left;         /* canh chữ sang trái */
+  width: 90px;
+
+  margin-left: 5px;
   cursor: pointer;
-  transition: opacity 0.3s;
+
   position: relative;
-  margin-left: 5px;         /* đẩy cả item sang trái */
+  transition: opacity 0.3s ease;
 }
 
 .friend-item.dimmed {
@@ -185,179 +230,204 @@
 }
 
 .friend-avatar {
-  width: 65px;            /* to hơn */
+  width: 65px;
   height: 65px;
+
   border-radius: 50%;
   object-fit: cover;
+
+  border: 3px solid var(--theme-border-color);
+
   display: block;
-  margin: 0 auto 8px;       /* cách chữ rõ hơn */
-  border: 3px solid #ddd;   /* viền nhẹ cho đẹp */
+  margin: 0 auto 8px;
 }
 
+/* Khi được chọn → viền xanh */
 .friend-item.selected .friend-avatar {
-  border-color: #4caf50;    /* viền xanh khi chọn */
+  border-color: #4caf50;
 }
 
 .friend-name {
-  font-size: 14px;        /* chữ to hơn */
-  font-weight: 600;       /* đậm hơn */
-  font-family: "Segoe UI", Roboto, Arial, sans-serif; /* font hiện đại */
-  color: #333;             /* chữ rõ nét */
-  text-align: center;       /* chữ cân đối dưới avatar */
+  font-size: 14px;
+  font-weight: 600;
+
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--theme-text-primary);
+
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* icon tick khi chọn (giữ nguyên) */
+/* Checkmark góc avatar */
 .friend-item .checkmark {
-  display: flex; /* Dùng flex để căn giữa icon */
-  align-items: center;
-  justify-content: center;
   position: absolute;
-  top: 5px; /* Điều chỉnh vị trí */
-  right: 5px; /* Điều chỉnh vị trí */
+  top: 5px;
+  right: 5px;
+
   width: 18px;
   height: 18px;
-  background-color: #007bff; /* Màu xanh dương */
-  color: white;
-  border-radius: 50%;
-  font-size: 10px; /* Kích thước icon bên trong */
-  border: 2px solid white; /* Viền trắng cho nổi bật */
-}
 
-/* ✅ BƯỚC 3: Thêm CSS cho mũi tên mới */
-.friend-arrow-btn {
-  position: absolute;
-  top: 50%; /* Căn giữa theo chiều dọc */
-  transform: translateY(-50%);
-  background: #ffffff; /* Nền trắng */
-  border: 1px solid #ddd; /* Viền xám nhạt */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1); /* Đổ bóng nhẹ */
-  color: #333; /* Màu icon mũi tên */
-  width: 28px;
-  height: 28px;
+  background-color: #007bff;
+  color: white;
+
   border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
+  font-size: 10px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px; /* Kích thước icon */
-  font-weight: bold;
-  line-height: 1;
 
-  /* 1. Mặc định ẩn đi */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+  border: 2px solid var(--theme-bg-primary);
 }
 
-/* 2. Khi hover vào .friend-list (cha) thì hiện mũi tên */
+/* ========================================================= */
+/*                       FRIEND ARROWS                       */
+/* ========================================================= */
+.friend-arrow-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 28px;
+  height: 28px;
+
+  background: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-text-primary);
+
+  border-radius: 50%;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition: opacity 0.2s ease, 
+              visibility 0.2s ease,
+              transform 0.2s ease,
+              background-color 0.3s ease,
+              color 0.3s ease;
+
+  z-index: 10;
+}
+
 .friend-list:hover .friend-arrow-btn {
   opacity: 1;
   visibility: visible;
 }
 
-/* Thêm hiệu ứng hover cho chính mũi tên */
 .friend-arrow-btn:hover {
+  background: var(--theme-bg-hover);
   transform: translateY(-50%) scale(1.1);
-  background: #f9f9f9;
 }
 
-/* Vị trí mũi tên */
-.friend-arrow-btn.left {
-  left: 10px; /* Đặt cách mép 10px */
-}
+.friend-arrow-btn.left  { left: 10px; }
+.friend-arrow-btn.right { right: 10px; }
 
-.friend-arrow-btn.right {
-  right: 10px; /* Đặt cách mép 10px */
-}
-
-/* 3. Ẩn mũi tên nếu bị disabled (đã cuộn hết) */
-.friend-arrow-btn.disabled,
-.friend-arrow-btn:disabled {
-  opacity: 0 !important; /* Dùng !important để ghi đè :hover */
+.friend-arrow-btn:disabled,
+.friend-arrow-btn.disabled {
+  opacity: 0 !important;
   visibility: hidden;
   cursor: default;
   transform: translateY(-50%) scale(0.9);
 }
 
-
-/* --- CSS cho phần tìm kiếm (giữ nguyên) --- */
+/* ========================================================= */
+/*                        SEARCH INPUT                       */
+/* ========================================================= */
 .search-toggle {
   position: absolute;
   top: -45px;
   left: 10px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  cursor: pointer;
 
-  /* bỏ khung nền đen */
-  width: auto;
-  height: auto;
   background: none;
   border: none;
   border-radius: 0;
+
+  cursor: pointer;
+  z-index: 10;
 }
 
 .search-icon {
-  color: #000;    /* icon đen */
-  font-size: 28px; /* icon to rõ hơn */
+  font-size: 28px;
+  color: var(--theme-text-primary);
 }
 
 .search-input {
   width: 100%;
-  max-width: 250px; /* khống chế không to quá */
+  max-width: 250px;
   padding: 6px 10px;
+
   border-radius: 8px;
-  border: 1px solid #ccc;
   outline: none;
-}
-/* Wrapper cho nút icon, căn ra giữa */
-.send-section.icon-only {
-  position: relative;       /* Đảm bảo có thể định vị linh hoạt */
-  padding: 10px 15px;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-start; /* ✅ Căn nút sang trái */
-  align-items: center;
+
+  border: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
 }
 
-/* Nút icon tròn chuyên nghiệp */
-.send-btn.professional.icon-only {
+/* ========================================================= */
+/*                         SEND BUTTON                       */
+/* ========================================================= */
+.send-section.icon-only {
+  position: relative;
+  padding: 10px 15px;
+
+  border-top: 1px solid var(--theme-border-color);
+
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+}
+
+/* Icon button giữ gradient xanh */
+.send-btn.professional.icon-only {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
   justify-content: center;
-  width: 50px;  /* Kích thước nút */
-  height: 50px; /* Kích thước nút */
-  font-size: 20px; /* Kích thước icon */
+  align-items: center;
+
+  font-size: 20px;
   color: #fff;
+
   background: linear-gradient(90deg, #007bff, #0056b3);
   border: none;
-  border-radius: 50%; /* Bo tròn thành hình tròn */
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-  padding: 0; /* Reset padding */
-}
+  border-radius: 50%;
 
-/* Di chuyển icon vào giữa (nếu cần) */
-.send-btn.professional.icon-only .send-icon {
-  margin: 0; /* Reset margin */
+  cursor: pointer;
+  padding: 0;
+
+  box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+
+  transition: all 0.3s ease;
 }
 
 .send-btn.professional.icon-only:hover {
   opacity: 0.9;
-  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
-  transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0,123,255,0.4);
 }
 
 .send-btn.professional.icon-only:disabled {
   background: #ccc;
   cursor: not-allowed;
+
   box-shadow: none;
   transform: none;
 }

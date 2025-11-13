@@ -1,11 +1,19 @@
 import React, { useRef, useEffect, useContext, useState } from "react";
 import {
-  FiSearch, FiBell, FiHome, FiCompass, FiUpload, FiMessageSquare, FiUser
+  FiSearch,
+  FiBell,
+  FiHome,
+  FiCompass,
+  FiUpload,
+  FiMessageSquare,
+  FiUser,
+  FiMoreHorizontal,
 } from "react-icons/fi";
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import "./TopNavbarUniMarket.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { VideoContext } from "../context/VideoContext";
+import MorePanel from "./MorePanel";
 
 export default function TopNavbarUniMarket() {
   const navRef = useRef(null);
@@ -14,15 +22,13 @@ export default function TopNavbarUniMarket() {
   const location = useLocation();
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
-  // ✅ state profile user
   const [profile, setProfile] = useState(null);
 
-  // ✅ THÊM: Navbar mini khi ở trang chat
   const isChatRoute = location.pathname.startsWith("/chat");
   const [isMini, setIsMini] = useState(isChatRoute);
 
   useEffect(() => {
-    setIsMini(isChatRoute); // tự đồng bộ mini theo route
+    setIsMini(isChatRoute);
   }, [isChatRoute]);
 
   const getAvatarSrc = (url) => {
@@ -30,10 +36,17 @@ export default function TopNavbarUniMarket() {
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
-  // ✅ Giữ For You active chỉ khi đang ở VideoDetailViewer
+  const PANEL_TABS = new Set(["search", "upload", "activity", "more"]);
+
+  // Logic giữ "For You" active (Giữ nguyên)
   useEffect(() => {
     const path = location.pathname;
-    const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
+    const floatingTabs = new Set([
+      ...PANEL_TABS,
+      "messages",
+      "profile",
+    ]);
+
     if (path.startsWith("/video/")) {
       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
         setActiveTab("forYou");
@@ -45,7 +58,7 @@ export default function TopNavbarUniMarket() {
     }
   }, [location.pathname, activeTab, setActiveTab]);
 
-  // ✅ fetch profile
+  // Fetch profile (Giữ nguyên)
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
@@ -57,111 +70,106 @@ export default function TopNavbarUniMarket() {
         "Content-Type": "application/json",
       },
     })
-      .then((r) => {
-        if (!r.ok) throw new Error("Không lấy được profile");
-        return r.json();
-      })
+      .then((r) => r.json())
       .then(setProfile)
       .catch(console.error);
   }, []);
 
+  // toggleTab (Giữ nguyên)
   const toggleTab = (tab) => {
-    if (tab === "forYou") {
-      setActiveTab("forYou");
-      triggerReload();
-      if (!window.location.pathname.startsWith("/video/")) {
-        navigate("/video/1");
-      }
-    } else if (tab === "search") {
-      setActiveTab("search");
-    } else {
-      setActiveTab(tab);
-    }
-  };
-
-  // ✅ Sync activeTab theo route chat để giữ nút Messages màu vàng
-useEffect(() => {
-  if (location.pathname.startsWith("/chat")) {
-    // 🚀 Không ép về "messages" nếu đang mở search
-    if (activeTab !== "messages" && activeTab !== "search") {
-      setActiveTab("messages");
-    }
-  } else if (activeTab === "messages") {
-    setActiveTab(null);
-  }
-}, [location.pathname, activeTab, setActiveTab]);
-
-
-  // ✅ Click icon chat
-  const handleChatClick = () => {
-    navigate("/chat");
-    setActiveTab("messages");
-    setIsMini(true); // vào chat -> mini
-  };
-
-  // ✅ Click outside: KHÔNG ép về forYou khi đang ở trang chat
-useEffect(() => {
-  const handleClickOutside = (e) => {
-    const nav = navRef.current;
-    const panel = panelRef.current;
-    const clickedOutsideNav = nav && !nav.contains(e.target);
-    const clickedOutsidePanel = !panel || !panel.contains(e.target);
-    if (!(clickedOutsideNav && clickedOutsidePanel)) return;
-
-    const floatingTabs = new Set(["search", "upload", "messages", "activity"]);
-
-    // ⚡ Sửa chỗ này:
-    // Nếu đang ở trang chat mà tab hiện tại KHÔNG phải search thì bỏ qua
-    if (isChatRoute && activeTab !== "search") return;
-
-    if (activeTab === "search") {
-      setActiveTab(null); // Đóng search khi click ngoài
-      return;
-    }
-    if (floatingTabs.has(activeTab)) {
+    if (activeTab === tab && tab !== "forYou") {
       setActiveTab(null);
       return;
     }
+    if (tab === "forYou") {
+      setActiveTab("forYou");
+      triggerReload();
+      if (!location.pathname.startsWith("/video/")) {
+        navigate("/video/1");
+      }
+      return;
+    }
+    setActiveTab(tab);
   };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [activeTab, setActiveTab, isChatRoute]);
+  // ==========================================================
+  // ✅ SỬA LỖI CHÍNH NẰM Ở ĐÂY
+  // ==========================================================
+  useEffect(() => {
+    if (location.pathname.startsWith("/chat")) {
+      // Chúng ta thêm "activeTab !== 'more'" vào điều kiện
+      // để báo cho hook này "đừng làm gì cả nếu 'more' đang mở"
+      if (
+        activeTab !== "messages" &&
+        activeTab !== "search" &&
+        activeTab !== "more" // <-- DÒNG SỬA LỖI
+      ) {
+        setActiveTab("messages");
+      }
+    } else if (activeTab === "messages") {
+      setActiveTab(null);
+    }
+  }, [location.pathname, activeTab, setActiveTab]);
+  // ==========================================================
 
+  const handleChatClick = () => {
+    navigate("/chat");
+    setActiveTab("messages");
+    setIsMini(true);
+  };
 
+  const isPanelOpen = PANEL_TABS.has(activeTab);
 
-return (
-  <div className="um-tn-root">
-  <nav
-  className={`um-tn-navbar ${
-    activeTab === "search" || (location.pathname.startsWith("/chat") && activeTab !== "search")
-      ? "collapsed"
-      : ""
-  }`}
-  ref={navRef}
->
+  // Click Outside (Giữ nguyên)
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const nav = navRef.current;
+      const panel = panelRef.current;
 
-        {/* Logo */}
+      const clickedOutsideNav = nav && !nav.contains(e.target);
+      const clickedOutsidePanel = !panel || !panel.contains(e.target);
+
+      if (!(clickedOutsideNav && clickedOutsidePanel)) return;
+      if (isChatRoute && activeTab !== "search") return;
+      if (PANEL_TABS.has(activeTab)) {
+        setActiveTab(null); // Khi đóng 'more', useEffect trên sẽ tự động set về 'messages'
+        return;
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [activeTab, isChatRoute]); // Đã bỏ PANEL_TABS khỏi dependency vì nó là const
+
+  return (
+    <div className="um-tn-root">
+      <nav
+        className={`um-tn-navbar ${
+          activeTab === "search" ||
+          activeTab === "more" ||
+          (location.pathname.startsWith("/chat") && activeTab !== "search")
+            ? "collapsed"
+            : ""
+        }`}
+        ref={navRef}
+      >
         <div
           className="um-tn-logo"
           onClick={() => {
-            setActiveTab("forYou"); // bấm logo về mặc định For You
-            navigate("/market");   
+            setActiveTab("forYou");
+            navigate("/market");
           }}
           style={{ cursor: "pointer" }}
         >
-          {activeTab === "search" || location.pathname.startsWith("/chat") ? (
-  <div className="um-tn-logo-u">U</div>
-) : (
-  <img
-    src="/logoWeb.png"
-    alt="UniMarket Logo"
-    className="um-tn-logo-img"
-  />
-)}
+          {activeTab === "search" ||
+          activeTab === "more" ||
+          location.pathname.startsWith("/chat") ? (
+            <div className="um-tn-logo-u">U</div>
+          ) : (
+            <img src="/logoWeb.png" alt="Logo" className="um-tn-logo-img" />
+          )}
         </div>
 
-        {/* Nút Search */}
         <button
           className={`um-tn-icon-btn search-btn ${
             activeTab === "search" ? "active" : ""
@@ -169,12 +177,10 @@ return (
           onClick={() => toggleTab("search")}
         >
           <FiSearch size={20} />
-          {activeTab !== "search" && <span>Search</span>}
+          {activeTab !== "search" && activeTab !== "more" && <span>Search</span>}
         </button>
 
-        {/* Các nút Menu */}
         <div className="um-tn-icons">
-          {/* For You */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "forYou" ? "active" : ""
@@ -182,10 +188,11 @@ return (
             onClick={() => toggleTab("forYou")}
           >
             <FiHome size={20} />
-            <span>For You</span>
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>For You</span>
+            )}
           </button>
 
-          {/* Explore */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "explore" ? "active" : ""
@@ -193,10 +200,11 @@ return (
             onClick={() => toggleTab("explore")}
           >
             <FiCompass size={20} />
-            {activeTab !== "search" && <span>Explore</span>}
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>Explore</span>
+            )}
           </button>
 
-          {/* Upload */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "upload" ? "active" : ""
@@ -204,10 +212,11 @@ return (
             onClick={() => toggleTab("upload")}
           >
             <FiUpload size={20} />
-            {activeTab !== "search" && <span>Upload</span>}
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>Upload</span>
+            )}
           </button>
 
-          {/* Activity */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "activity" ? "active" : ""
@@ -215,49 +224,73 @@ return (
             onClick={() => toggleTab("activity")}
           >
             <FiBell size={20} />
-            {activeTab !== "search" && <span>Activity</span>}
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>Activity</span>
+            )}
           </button>
 
-          {/* Messages */}
-        <button
-          className={`um-tn-icon-btn ${activeTab === "messages" ? "active" : ""}`}
-          onClick={handleChatClick}
-        >
-          <FiMessageSquare size={20} />
-          <span>Messages</span>
-        </button>
-
-
-          {/* Profile */}
           <button
-            className={`um-tn-icon-btn ${activeTab === "profile" ? "active" : ""}`}
+            className={`um-tn-icon-btn ${
+              activeTab === "messages" ? "active" : ""
+            }`}
+            onClick={handleChatClick}
+          >
+            <FiMessageSquare size={20} />
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>Messages</span>
+            )}
+          </button>
+
+          <button
+            className={`um-tn-icon-btn ${
+              activeTab === "profile" ? "active" : ""
+            }`}
             onClick={() => {
               if (profile?.id) {
-                setActiveTab("profile"); 
-                navigate(`/nguoi-dung/${profile.id}`);  
+                setActiveTab("profile");
+                navigate(`/nguoi-dung/${profile.id}`);
               }
             }}
           >
-            {profile && profile.avatarUrl ? (
+            {profile?.avatarUrl ? (
               <img
                 src={getAvatarSrc(profile.avatarUrl)}
-                alt="Avatar"
+                alt="avatar"
                 className="um-tn-avatar"
               />
             ) : (
               <FiUser size={20} />
             )}
-            {activeTab !== "search" && <span>Profile</span>}
+            {activeTab !== "search" && activeTab !== "more" && (
+              <span>Profile</span>
+            )}
           </button>
+        </div>
 
+        <div className="um-tn-more-section">
+          <button
+            className={`um-tn-icon-btn um-tn-more-btn ${
+              activeTab === "more" ? "active" : ""
+            }`}
+            onClick={() => toggleTab("more")}
+          >
+            <FiMoreHorizontal size={20} />
+            {activeTab !== "more" && <span>Thêm</span>}
+          </button>
         </div>
       </nav>
 
-      {/* Panel */}
-<div className={`um-tn-panel-wrapper ${activeTab ? "open" : ""}`} aria-hidden={activeTab ? "false" : "true"}>
+      {/* PANEL WRAPPER (Giữ nguyên) */}
+      <div
+        className={`um-tn-panel-wrapper ${isPanelOpen ? "open" : ""}`}
+        aria-hidden={isPanelOpen ? "false" : "true"}
+      >
         {activeTab === "search" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <VideoSearchOverlay isOpen={activeTab === "search"} onClose={() => setActiveTab(null)} />
+            <VideoSearchOverlay
+              isOpen={activeTab === "search"}
+              onClose={() => setActiveTab(null)}
+            />
           </div>
         )}
 
@@ -275,7 +308,6 @@ return (
           </div>
         )}
 
-        {/* ❌ Không render khi đang ở /chat */}
         {activeTab === "messages" && !isChatRoute && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <h3>Tin nhắn</h3>
@@ -283,11 +315,9 @@ return (
           </div>
         )}
 
-        {activeTab === "profile" && <div className="um-tn-tab-content" ref={panelRef}></div>}
-        {activeTab === "forYou" && <div className="um-tn-tab-content" ref={panelRef}></div>}
-        {activeTab === "explore" && (
+        {activeTab === "more" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <h3>Explore</h3>
+            <MorePanel onClose={() => setActiveTab(null)} />
           </div>
         )}
       </div>

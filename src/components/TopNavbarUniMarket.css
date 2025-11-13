@@ -1,116 +1,88 @@
+/* src/components/TopNavbarUniMarket.css (Đã sửa & chuẩn hóa) */
+
+/* ============================== */
+/*          NAVBAR CHÍNH          */
+/* ============================== */
 .um-tn-navbar {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  width: 160px; /* rộng hơn để chữ thoải mái */
-  background-color: #fff;
+  width: 160px;
+
+  /* Theme */
+  background-color: var(--theme-bg-primary);
+  border-right: 1px solid var(--theme-border-color);
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   padding: 16px 10px;
   z-index: 999;
+
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .um-tn-icons {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px; /* icon thoáng hơn */
+  gap: 16px;
   margin-top: 24px;
   width: 100%;
 }
 
+/* ============================== */
+/*          ICON BUTTON           */
+/* ============================== */
 .um-tn-icon-btn {
   all: unset;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px; /* khoảng cách icon - chữ */
+  gap: 12px;
   cursor: pointer;
-  color: #333;
-  font-size: 16px; 
+
+  /* Theme */
+  color: var(--theme-text-primary);
+
+  font-size: 16px;
   font-weight: 600;
   font-family: "Poppins", sans-serif;
   padding: 10px 14px;
   border-radius: 8px;
   width: 100%;
-  transition: color 0.25s ease;
+
+  transition: color 0.25s ease, background-color 0.25s ease;
 }
 
 .um-tn-icon-btn svg {
-  font-size: 28px; 
+  font-size: 28px;
   transition: transform 0.25s ease, color 0.25s ease;
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
-/* ✅ Hover/Active chỉ đổi màu chữ + icon */
+/* Hover + Active */
 .um-tn-icon-btn:hover,
 .um-tn-icon-btn.active {
   color: orange;
+  background-color: var(--theme-bg-hover);
+  width: 85%; /* 👈 Thu nhỏ chiều ngang */
 }
+
 
 .um-tn-icon-btn:hover svg,
 .um-tn-icon-btn.active svg {
   color: orange;
-  transform: scale(1.1); /* phóng to nhẹ khi hover */
+  transform: scale(1.1);
 }
 
-.um-tn-logo {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  padding: 0;            /* bỏ hết padding để sát trái */
-  margin-top: -10px;     /* đẩy lên cao hơn một chút */
-  background-color: #fff;
-}
-
-.um-tn-logo-img {
-  width: 110px;          /* logo to rõ hơn */
-  height: auto;
-  object-fit: contain;   /* giữ tỉ lệ chuẩn */
-}
-.um-tn-icon-btn.search-btn {
-  border: 1px solid #ccc;     /* viền */
-  border-radius: 20px;        /* bo tròn */
-  padding: 8px 10px;
-  background: #fff;
-}
-
-.um-tn-icon-btn.search-btn:hover {
-  background: #f5f5f5;
-}
-/* Khi thu gọn */
-/* Khi thu gọn */
-.um-tn-navbar {
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* mượt hơn */
-}
-
-.um-tn-navbar.collapsed {
-  width: 60px;
-  border-right: 1px solid rgba(0, 0, 0, 0.06); /* viền mờ nhẹ */
-}
-
-/* Tất cả phần tử con trong navbar chuyển động mượt */
-.um-tn-navbar * {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Ẩn chữ với hiệu ứng fade */
-.um-tn-navbar.collapsed .um-tn-icon-btn span {
-  opacity: 0;
-  transform: translateX(-8px);
-  pointer-events: none;
-}
-
-/* Logo khi collapsed */
-.um-tn-navbar.collapsed .um-tn-logo-img {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-/* Logo chữ U */
+/* ============================== */
+/*            LOGO U              */
+/* ============================== */
 .um-tn-logo-u {
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   font-weight: 900;
@@ -132,12 +104,90 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.um-tn-logo-img {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ============================== */
+/*      SEARCH BUTTON (TOP)       */
+/* ============================== */
+.um-tn-icon-btn.search-btn {
+  border: 1px solid var(--theme-border-color);
+  background: var(--theme-bg-hover);
+
+  border-radius: 20px;
+  padding: 8px 10px;
+}
+
+.um-tn-icon-btn.search-btn:hover {
+  background: var(--theme-bg-primary);
+  border-color: orange;
+}
+
+/* ============================== */
+/*            COLLAPSED           */
+/* ============================== */
+.um-tn-navbar.collapsed {
+  width: 60px;
+  border-right: 1px solid var(--theme-border-color);
+}
+
+/* Tất cả con chuyển động mượt */
+.um-tn-navbar * {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ẩn chữ */
+.um-tn-navbar.collapsed .um-tn-icon-btn span {
+  opacity: 0;
+  transform: translateX(-8px);
+  pointer-events: none;
+}
+
+/* Logo khi thu gọn */
+.um-tn-navbar.collapsed .um-tn-logo-img {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* ============================== */
+/*        LOGO U (CHỮ U)          */
+/* ============================== */
+.um-tn-logo-u {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-weight: 900;
+  font-size: 60px;
+
+  /* Theme */
+  color: var(--theme-text-primary);
+
+  text-align: center;
+  width: 100%;
+  line-height: 1;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 72px;
+  border-radius: 14px;
+
+  background-color: var(--theme-bg-hover);
+  box-shadow: 0 6px 20px rgba(8, 15, 30, 0.08);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
 .um-tn-logo-u:hover {
   transform: translateY(-2px) scale(1.07);
   box-shadow: 0 10px 32px rgba(8, 15, 30, 0.12);
 }
 
-/* Icon căn trái và vừa hơn khi thu gọn */
+/* ============================== */
+/*       ICON KHI COLLAPSED       */
+/* ============================== */
 .um-tn-navbar.collapsed .um-tn-icon-btn {
   display: flex;
   align-items: center;
@@ -148,10 +198,9 @@
 .um-tn-navbar.collapsed .um-tn-icon-btn svg {
   width: 24px;
   height: 24px;
-
 }
 
-/* Ô search khi thu gọn */
+/* Search btn khi thu gọn */
 .um-tn-navbar.collapsed .search-btn {
   background: none;
   border: none;
@@ -169,4 +218,42 @@
 .um-tn-navbar.collapsed .search-btn span {
   opacity: 0;
   transform: translateX(-8px);
+}
+
+/* ============================== */
+/*          PANEL WRAPPER         */
+/* ============================== */
+.um-tn-panel-wrapper {
+  position: fixed;
+  top: 0;
+  left: 160px; /* Khi sidebar lớn */
+  width: 360px;
+  height: 100vh;
+
+  transform: translateX(-100%);
+  transition: transform .35s ease;
+  pointer-events: none;
+  z-index: 900;
+}
+
+.um-tn-navbar.collapsed + .um-tn-panel-wrapper {
+  left: 60px; /* Khi sidebar nhỏ */
+}
+
+.um-tn-panel-wrapper.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* ============================== */
+/*        PANEL NỘI DUNG          */
+/* ============================== */
+.um-tn-tab-content {
+  width: 100%;
+  height: 100%;
+  background-color: var(--theme-bg-primary);
+  border-left: 1px solid var(--theme-border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }

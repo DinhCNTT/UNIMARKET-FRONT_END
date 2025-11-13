@@ -1,140 +1,188 @@
-.sticky-bar {
+/* src/components/StickyInfoBar.css (Đã sửa & chuẩn hóa) */
+
+/* ======================================================== */
+/*                      BIẾN TOÀN CỤC                       */
+/* ======================================================== */
+:root {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Giữ màu nhấn + giá */
+  --color-primary: #f59e0b;
+  --color-primary-dark: #d97706;
+  --color-price: #d9534f;
+}
+
+/* ======================================================== */
+/*                     CONTAINER CHÍNH                      */
+/* ======================================================== */
+.sticky-container {
   position: sticky;
-  top: 0;
+  top: -20px;
+  margin: 0 -24px;
   z-index: 100;
-  background: #fff;
-  width: 100%;
-  min-height: 100px;
+
+  /* Theme */
+  background-color: var(--theme-bg-primary);
+
+  font-family: var(--font-sans);
+
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.05),
+    0 2px 4px -2px rgba(0,0,0,0.05);
+
+  animation: fadeInDown 0.3s ease-out;
+  transition: background-color 0.3s ease;
+}
+
+/* Hiệu ứng fade in xuống */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================================== */
+/*        KHU VỰC 1: THANH THÔNG TIN SẢN PHẨM (TOP)         */
+/* ======================================================== */
+.sticky-info-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
+  gap: 16px;
+  padding: 12px 24px;
 
-  /* bỏ border + bỏ shadow */
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-
-  /* Dịch chuyển */
-  transform: translate(0px, -25px);
-  width: calc(90.5% + 20px);
+  /* Theme */
+  border-bottom: 1px solid var(--theme-border-color);
 }
 
-
-/* Ảnh thumb bên trái */
-.sticky-left img.sticky-thumb {
-  width: 60px;
-  height: 60px;
+/* Ảnh đại diện bên trái */
+.sticky-left .sticky-thumb {
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   border-radius: 8px;
-  transform: translateY(-10px);
+  flex-shrink: 0;
 }
 
+/* Nội dung trung tâm */
 .sticky-center {
   flex: 1;
-  margin: 0 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-  margin-top: -40px;   /* đẩy cả khối lên */
+  min-width: 0;
 }
 
 .sticky-title {
-  font-weight: 700;
-  font-size: 17px;
-  color: #222;
-  line-height: 1.4;
-  margin-bottom: 2px;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  
-  white-space: normal;      /* Cho phép xuống dòng */
-  overflow: visible;        /* Hiển thị đầy đủ */
-  text-overflow: unset;     /* Bỏ dấu ... */
-  word-break: break-word;   /* Tự ngắt từ khi dài quá */
+  font-weight: 600;
+  font-size: 16px;
+
+  /* Theme */
+  color: var(--theme-text-primary);
+
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-
 .sticky-price {
-  font-weight: 700;             /* in rõ, chuyên nghiệp */
-  font-size: 15px;
-  color: #e53935;               /* đỏ tươi chuyên nghiệp */
-  margin-top: 0;                /* đẩy sát lên gần tiêu đề */
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-price);
+  margin-top: 2px;
 }
 
 /* Khu vực nút bên phải */
 .sticky-right {
   display: flex;
-  gap: 10px; /* khoảng cách giữa 2 nút */
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.sticky-btn {
+/* ======================================================== */
+/*             KHU VỰC 2: THANH TAB BÊN DƯỚI                */
+/* ======================================================== */
+.sticky-tab-content {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff7f2;              /* nền nhạt */
-  color: #d96a29;                   /* màu cam tinh tế */
-  font-weight: 600;
-  font-size: 15px;
-  padding: 10px 16px;
-  border-radius: 12px;              /* bo tròn mềm mại */
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* bóng nhẹ */
-}
-
-.sticky-btn .btn-icon,
-.sticky-btn svg {
-  font-size: 16px;
-}
-
-.sticky-btn:hover {
-  background: #ffece1;  /* hover đổi nền cam nhạt */
-  color: #b8531e;       /* hover cam đậm hơn */
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-}
-
-/* Tab bar dưới sticky */
-.sticky-tab-bar {
-  position: sticky;
-  top: 75px; /* top = sticky-bar height */
-  background: #fff;
-  display: inline-flex;       /* chỉ dài theo nội dung */
   justify-content: flex-start;
-  gap: 8px;                   /* khoảng cách giữa các nút */
-  border-bottom: 1px solid #ddd;
-  z-index: 998;
-  padding: 0 12px;            /* canh lề bên trong */
-  border-radius: 6px;         /* bo nhẹ cho đẹp */
-  width: auto;                /* thu gọn theo nút */
-  max-width: fit-content;     /* ngắn theo nội dung */
-  margin-left: 20px;          /* đẩy sang phải */
+  gap: 16px;
+  padding: 0 24px;
 }
-/* Nút tab */
+
 .tab-btn {
-  flex: none;              /* bỏ flex:1 để nút không giãn full */
-  padding: 6px 14px;       /* nhỏ gọn lại */
-  font-size: 13px;
+  font-family: var(--font-sans);
+  padding: 10px 4px;
+  font-size: 14px;
   font-weight: 500;
   text-align: center;
   background: none;
   border: none;
-  border-radius: 6px;      /* bo nhẹ cho đẹp */
+  border-bottom: 2px solid transparent;
   cursor: pointer;
-  transition: color 0.2s, border-bottom 0.2s, background 0.2s;
+
+  /* Theme */
+  color: var(--theme-text-secondary);
+
+  transition: color 0.2s, border-bottom 0.2s;
 }
 
-/* Hover */
 .tab-btn:hover {
-  background: #f9f9f9;
+  color: var(--theme-text-primary);
 }
 
-/* Tab active */
+/* Tab Active – Giữ nguyên màu cam */
 .tab-btn.active {
   font-weight: 600;
-  color: #f59e0b;
-  border-bottom: 2px solid #f59e0b;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ======================================================== */
+/*                     NHÓM NÚT BÊN PHẢI                    */
+/* ======================================================== */
+.sticky-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Nút Gọi điện (Primary) */
+.sticky-btn.phone {
+  background-color: var(--color-primary);
+  color: white;
+}
+.sticky-btn.phone:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Nút Chat (Secondary) */
+.sticky-btn.chat {
+  background-color: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border-color);
+}
+.sticky-btn.chat:hover {
+  background-color: var(--theme-bg-primary);
+}
+
+/* ======================================================== */
+/*        OVERLAY THÔNG TIN TRONG VIDEO (KHÁC FILE)         */
+/* ======================================================== */
+[data-theme] .vdv-info-overlay {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
