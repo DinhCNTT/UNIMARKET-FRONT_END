@@ -1,13 +1,13 @@
-// src/components/VideoSideActions.jsx
 import React from 'react';
 import {
   IoHeart, IoHeartOutline, IoBookmark, IoBookmarkOutline,
   IoAddCircleOutline, IoCheckmarkCircleOutline
 } from "react-icons/io5";
 import { FaRegCommentDots, FaInfoCircle, FaShareAlt } from "react-icons/fa";
-import defaultAvatar from "../assets/default-avatar.png"; // Đảm bảo đường dẫn này chính xác
+import defaultAvatar from "../assets/default-avatar.png";
 import { useNavigate } from 'react-router-dom';
 import "./VideoSideActions.css";
+
 const VideoSideActions = ({
   video,
   user,
@@ -55,68 +55,73 @@ const VideoSideActions = ({
 
       {/* ❤️ Like */}
       <div
-        className={`vdv-icon-button vdv-like-button ${video.isLiked ? "liked" : ""}`}
+        className="vdv-action-item"
         onClick={onLike}
         title={!token ? "Bạn cần đăng nhập để tym" : video.isLiked ? "Đã tym" : "Nhấn để tym"}
       >
-        {video.isLiked ? (
-          <IoHeart size={28} color="#ff4d6d" />
-        ) : (
-          <IoHeartOutline size={28} color="#ccc" />
-        )}
-      </div>
-      <div className="vdv-icon-label">
-        {formatCount(video.soTym || 0)}
+        <div className={`vdv-icon-button vdv-like-button ${video.isLiked ? "liked" : ""}`}>
+          {video.isLiked ? (
+            <IoHeart size={28} color="#ff4d6d" />
+          ) : (
+            <IoHeartOutline size={28} />
+          )}
+        </div>
+        <div className="vdv-icon-label">
+          {formatCount(video.soTym || 0)}
+        </div>
       </div>
 
       {/* 🔖 Save */}
       <div
-        className="vdv-icon-wrapper"
+        className="vdv-action-item"
         onClick={onSave}
         title={!user ? "Bạn cần đăng nhập để lưu" : video.isSaved ? "Đã lưu" : "Lưu video"}
-        style={{ marginTop: "8px" }}
       >
-        <div className="vdv-icon-button vdv-save-button">
+        <div className="vdv-icon-button">
           {video.isSaved ? (
             <IoBookmark size={24} color="gold" />
           ) : (
-            <IoBookmarkOutline size={24} color="gray" />
+            <IoBookmarkOutline size={24} />
           )}
         </div>
-        <div className="vdv-icon-label" style={{ marginTop: "10px" }}>
+        <div className="vdv-icon-label">
           {formatCount(video.soNguoiLuu || 0)}
         </div>
       </div>
 
       {/* 💬 Comment */}
-      <div className="vdv-icon-button" onClick={onComment}>
-        <FaRegCommentDots size={24} color="#ccc" />
-      </div>
-      <div className="vdv-icon-label">
-        {video.soBinhLuan || 0}
+      <div className="vdv-action-item" onClick={onComment}>
+        <div className="vdv-icon-button">
+          <FaRegCommentDots size={24} />
+        </div>
+        <div className="vdv-icon-label">
+          {video.soBinhLuan || 0}
+        </div>
       </div>
 
       {/* 📤 Share */}
       <div
-        className="vdv-icon-button vdv-share-button"
+        className="vdv-action-item"
         onClick={onShare}
         title="Chia sẻ tin đăng"
-        style={{ marginTop: "16px" }}
       >
-        <FaShareAlt size={24} color="#fff" />
-      </div>
-      <div className="vdv-icon-label">
-        {formatCount(video.soLuotChiaSe || 0)}
+        <div className="vdv-icon-button">
+          <FaShareAlt size={24} />
+        </div>
+        <div className="vdv-icon-label">
+          {formatCount(video.soLuotChiaSe || 0)}
+        </div>
       </div>
 
       {/* ℹ️ Detail */}
       <div
-        className="vdv-icon-button vdv-detail-button"
+        className="vdv-action-item"
         onClick={onShowDetail}
         title="Xem chi tiết tin đăng"
-        style={{ marginTop: "16px" }}
       >
-        <FaInfoCircle size={24} color="#ccc" />
+        <div className="vdv-icon-button">
+          <FaInfoCircle size={24} />
+        </div>
       </div>
     </div>
   );

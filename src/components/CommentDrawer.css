@@ -1,9 +1,14 @@
-/* ========== COMMENT DRAWER OVERLAY & DRAWER ========== */
+/* src/components/CommentDrawer.css (Đã sửa & chuẩn hóa) */
+
+/* ======================================================= */
+/*                  OVERLAY & MAIN DRAWER                  */
+/* ======================================================= */
 .CommentDrawerOverlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0,0,0,0.5);
   z-index: 999;
+
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
@@ -13,104 +18,117 @@
 .CommentDrawer {
   position: fixed;
   top: 0;
-  right: 0; /* Luôn sát bên phải */
-  
-  background: #fff;
+  right: 0;
+
+  background-color: var(--theme-bg-primary);
+  color: var(--theme-text-primary);
+
   width: 100%;
   max-width: 420px;
-  height: 100vh; /* Chiếm toàn bộ chiều cao màn hình */
-  
+  height: 100vh;
+
   display: flex;
   flex-direction: column;
-  z-index: 1000;
-  
-  animation: slideInRight 0.3s ease;
   overflow-y: auto;
   overflow-x: visible;
+
+  z-index: 1000;
+  animation: slideInRight 0.3s ease;
+
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Slide animation */
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%); /* Trượt từ phải vào */
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
-/* ========== COMMENT DRAWER HEADER ========== */
+/* ======================================================= */
+/*                        HEADER                           */
+/* ======================================================= */
 .CommentDrawerHeader {
   padding: 12px 16px;
-  border-bottom: 1px solid #ddd;
-  font-weight: bold;
+  border-bottom: 1px solid var(--theme-border-color);
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  font-weight: bold;
 }
 
+/* Close button (giữ style cam) */
 .CommentDrawerCloseButton {
   width: 22px;
   height: 22px;
-  background-color: #ffb84d; /* cam nhạt, mềm mắt */
+
+  background-color: #ffb84d;
   color: #fff;
+
   border: none;
   border-radius: 50%;
   font-size: 12px;
   font-weight: bold;
+
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
   line-height: 1;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* bóng nhẹ */
-}
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease;
+}
 .CommentDrawerCloseButton:hover {
-  background-color: #ffa31a; /* cam nhạt hơn khi hover */
+  background-color: #ffa31a;
 }
 
-/* ========== COMMENT LIST ========== */
+/* ======================================================= */
+/*                     COMMENT LIST                        */
+/* ======================================================= */
 .CommentList {
   flex: 1;
-  overflow-y: auto;
   padding: 10px 16px;
+
   display: flex;
   flex-direction: column;
   gap: 12px;
-  scrollbar-width: thin; /* Firefox: cực mảnh */
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+  overflow-y: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-border-color) transparent;
 }
 
-/* Chrome, Edge, Safari */
 .CommentList::-webkit-scrollbar {
-  width: 3px; /* siêu mảnh */
+  width: 3px;
 }
-
 .CommentList::-webkit-scrollbar-track {
-  background: transparent; /* trong suốt */
+  background: transparent;
 }
-
 .CommentList::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15); /* xám rất nhạt */
-  border-radius: 10px; /* bo tròn nhiều để mềm mại */
+  background-color: var(--theme-border-color);
+  border-radius: 10px;
   transition: background-color 0.2s ease, width 0.2s ease;
 }
-
-/* Khi hover vào danh sách, thanh trượt rõ hơn */
 .CommentList:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.35); /* đậm hơn chút */
-  width: 5px; /* hơi to hơn khi hover */
+  background-color: var(--theme-text-secondary);
+  width: 5px;
 }
 
 .CommentNoComment {
-  text-align: center;
-  color: #666;
   padding: 20px;
+  text-align: center;
+
+  color: var(--theme-text-secondary);
 }
 
-/* ========== COMMENT THREAD & ITEM ========== */
+/* ======================================================= */
+/*                  COMMENT STRUCTURE                       */
+/* ======================================================= */
 .CommentThread {
   margin-bottom: 16px;
 }
@@ -132,11 +150,13 @@
 }
 
 .CommentAvatar {
-  cursor: pointer;
   width: 32px;
   height: 32px;
+
   border-radius: 50%;
   object-fit: cover;
+
+  cursor: pointer;
   flex-shrink: 0;
 }
 
@@ -145,7 +165,9 @@
   height: 28px;
 }
 
-/* ========== COMMENT CONTENT ========== */
+/* ======================================================= */
+/*                   COMMENT TEXT AREA                      */
+/* ======================================================= */
 .CommentContentWrapper {
   flex: 1;
   min-width: 0;
@@ -153,8 +175,8 @@
 
 .CommentHeader {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 4px;
 }
 
@@ -165,8 +187,8 @@
 }
 
 .CommentUserName {
-  font-weight: 600;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -188,46 +210,55 @@
 
 .CommentSendingStatus {
   font-size: 10px;
-  color: #999;
+  color: var(--theme-text-secondary);
 }
 
+/* Menu button */
 .CommentMenuButton {
   position: absolute;
   top: 8px;
   right: 8px;
+
   cursor: pointer;
   font-size: 20px;
-  line-height: 1;
 }
 
+/* Content */
 .CommentContent {
   font-size: 14px;
   line-height: 1.4;
-  color: #000;
+  color: var(--theme-text-primary);
+
+  margin-bottom: 8px;
   white-space: pre-wrap;
   word-break: break-word;
-  margin-bottom: 8px;
 }
 
 .CommentReplyContent {
   font-size: 13px;
 }
 
-/* ========== COMMENT ACTIONS ========== */
+/* ======================================================= */
+/*                     COMMENT ACTIONS                      */
+/* ======================================================= */
 .CommentActions {
   display: flex;
   align-items: center;
   gap: 16px;
+
   margin-top: 8px;
 }
 
 .CommentReplyButton {
   background: none;
   border: none;
+
   font-size: 12px;
-  color: #666;
+  color: var(--theme-text-secondary);
+
   cursor: pointer;
   padding: 4px 0;
+
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -245,38 +276,40 @@
 
 .CommentTime {
   font-size: 11px;
-  color: #999;
+  color: var(--theme-text-secondary);
 }
 
 .CommentToggleRepliesButton {
   background: none;
   border: none;
-  font-size: 12px;
   color: #007aff;
+
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   padding: 4px 0;
-  font-weight: 500;
 }
 
-/* ========== COMMENT REPLY FORM ========== */
+/* ======================================================= */
+/*                       REPLY FORM                         */
+/* ======================================================= */
 .CommentReplyForm {
-  margin-top: 12px;
   padding: 12px;
-  background-color: #f8f9fa;
+
+  background-color: var(--theme-bg-hover);
+  border: 1px solid var(--theme-border-color);
+
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  margin-top: 12px;
 }
 
-/* Form trả lời sau comment chính */
 .CommentReplyFormAfterMain {
-  margin-left: 44px; /* Căn lề với nội dung comment (32px avatar + 12px gap) */
+  margin-left: 44px;
   margin-top: 16px;
   margin-bottom: 16px;
 }
 
-/* Form trả lời sau reply */
 .CommentReplyFormAfterReply {
-  margin-left: 0; /* Không cần margin-left vì đã nằm trong CommentRepliesContainer */
   margin-top: 12px;
   margin-bottom: 16px;
 }
@@ -290,10 +323,12 @@
 .CommentReplyAvatar {
   width: 24px;
   height: 24px;
+
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
+
   margin-top: 4px;
+  flex-shrink: 0;
 }
 
 .CommentReplyInputWrapper {
@@ -302,27 +337,36 @@
 
 .CommentReplyTextarea {
   width: 100%;
-  resize: none;
   min-height: 36px;
+
   padding: 8px 12px;
   font-size: 14px;
-  border-radius: 18px;
-  border: 1px solid #ddd;
   box-sizing: border-box;
+  border-radius: 18px;
+
   outline: none;
-  background-color: #fff;
+  resize: none;
+
+  background-color: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-text-primary);
+}
+
+.CommentReplyTextarea::placeholder {
+  color: var(--theme-text-secondary);
 }
 
 .CommentReplyFormFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   margin-top: 8px;
 }
 
 .CommentReplyCharCount {
   font-size: 11px;
-  color: #999;
+  color: var(--theme-text-secondary);
 }
 
 .CommentReplyFormButtons {
@@ -330,64 +374,83 @@
   gap: 8px;
 }
 
+/* Cancel */
 .CommentReplyCancelButton {
   background: transparent;
-  border: 1px solid #ddd;
   border-radius: 16px;
+
   padding: 6px 12px;
   font-size: 12px;
+
   cursor: pointer;
-  color: #666;
+
+  border: 1px solid var(--theme-border-color);
+  color: var(--theme-text-secondary);
 }
 
+/* Submit */
 .CommentReplySubmitButton {
   background-color: #fc5b5b;
   color: #fff;
+
   border: none;
   border-radius: 20px;
+
   padding: 6px 14px;
   font-size: 13px;
+
   cursor: pointer;
 }
-
 .CommentReplySubmitButtonDisabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* ========== COMMENT DELETE MENU ========== */
+/* ======================================================= */
+/*                       DELETE MENU                        */
+/* ======================================================= */
 .CommentDeleteMenu {
   position: absolute;
   top: 25px;
-  right: 0px;
-  background: #fff;
-  border: 1px solid #ddd;
+  right: 0;
+
+  background: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
+
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  z-index: 1000;
   min-width: 120px;
+
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+
   overflow: hidden;
+  z-index: 1000;
 }
 
 .CommentDeleteMenuItem {
   padding: 12px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #ff3b30;
+
   display: flex;
   align-items: center;
   gap: 8px;
+
+  cursor: pointer;
+  font-size: 14px;
+  color: #ff3b30;
+
   transition: background-color 0.2s;
 }
-
 .CommentDeleteMenuItem:hover {
-  background-color: #f5f5f5;
+  background-color: var(--theme-bg-hover);
 }
 
-/* ========== COMMENT REPLIES CONTAINER ========== */
+/* ======================================================= */
+/*                     REPLIES CONTAINER                    */
+/* ======================================================= */
 .CommentRepliesContainer {
-  margin-left: 44px; /* Căn lề với nội dung comment (32px avatar + 12px gap) */
-  border-left: 2px solid #e9ecef;
+  margin-left: 44px;
+
+  border-left: 2px solid var(--theme-border-color);
+
   padding-left: 20px;
   margin-top: 12px;
 }
@@ -398,29 +461,40 @@
 
 .CommentReply {
   margin-left: 0;
-  position: relative;
 }
 
-/* ========== COMMENT INPUT AREA ========== */
+/* ======================================================= */
+/*                      MAIN INPUT AREA                     */
+/* ======================================================= */
 .CommentInputArea {
   padding: 12px;
-  border-top: 1px solid #eee;
-  background-color: #fff;
+
+  border-top: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-primary);
 }
 
 .CommentInputTextarea {
-  resize: none;
-  overflow: hidden;
-  min-height: 40px;
-  line-height: 20px;
   width: 100%;
+  min-height: 40px;
   padding: 8px 12px;
+
   font-size: 15px;
-  box-sizing: border-box;
+  line-height: 20px;
+
   border-radius: 6px;
-  border: 1px solid #ddd;
+  box-sizing: border-box;
   margin-bottom: 8px;
+
   outline: none;
+  resize: none;
+
+  border: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
+}
+
+.CommentInputTextarea::placeholder {
+  color: var(--theme-text-secondary);
 }
 
 .CommentInputFooter {
@@ -431,60 +505,66 @@
 
 .CommentInputCharCount {
   font-size: 12px;
-  color: #666;
+  color: var(--theme-text-secondary);
 }
 
 .CommentInputSubmitButton {
   padding: 8px 10px;
-  width: auto;
+
   min-width: 40px;
   background-color: #ffb84d;
-  color: white;
+
+  color: #fff;
   border: none;
+
   border-radius: 6px;
   font-weight: bold;
+
   cursor: pointer;
   flex-shrink: 0;
   text-align: center;
-  line-height: 1;
+
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
-
 .CommentInputSubmitButton:hover {
   background-color: #ffa31a;
 }
-
 .CommentInputSubmitButton:active {
   transform: scale(0.95);
 }
-
 .CommentInputSubmitButtonDisabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* ========== COMMENT LOGIN PROMPT ========== */
+/* ======================================================= */
+/*                     LOGIN PROMPT                         */
+/* ======================================================= */
 .CommentLoginPrompt {
   padding: 20px;
   text-align: center;
-  border-top: 1px solid #eee;
-  color: #666;
+
+  border-top: 1px solid var(--theme-border-color);
+  color: var(--theme-text-secondary);
 }
 
-/* ========== COMMENT TOAST STYLES ========== */
+/* ======================================================= */
+/*                     COMMENT TOAST                        */
+/* ======================================================= */
 .CommentToast {
   background: #1c1c1e !important;
   color: #fff !important;
+
   border-radius: 12px !important;
   padding: 12px 16px !important;
-  width: fit-content !important;
-  min-width: unset !important;
+
   max-width: 90vw !important;
+  width: fit-content !important;
 }
 
 .CommentToastContainer {
+  color: #fff;
   font-size: 14px;
-  color: white;
 }
 
 .CommentToastMessage {
@@ -500,14 +580,14 @@
 .CommentToastCancelBtn {
   padding: 4px 10px;
   font-size: 12px;
+
   border: 1px solid #888;
   border-radius: 6px;
-  background-color: transparent;
+  background: transparent;
   color: #ddd;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
 
+  cursor: pointer;
+}
 .CommentToastCancelBtn:hover {
   background-color: #444;
 }
@@ -515,14 +595,16 @@
 .CommentToastDeleteBtn {
   padding: 4px 10px;
   font-size: 12px;
+
   border: 1px solid #f44;
   border-radius: 6px;
-  background-color: transparent;
+
+  background: transparent;
   color: #f77;
   cursor: pointer;
+
   transition: background-color 0.2s, color 0.2s;
 }
-
 .CommentToastDeleteBtn:hover {
   background-color: #f44;
   color: #fff;

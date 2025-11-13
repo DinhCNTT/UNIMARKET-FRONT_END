@@ -6,6 +6,11 @@ import { AuthContext } from '../context/AuthContext';
 import defaultAvatar from '../assets/default-avatar.png';
 import toast from 'react-hot-toast';
 
+// IMPORT ICON CHUYÊN NGHIỆP
+import { FaReply, FaTrash, FaTimes } from 'react-icons/fa';
+import { BsThreeDots } from 'react-icons/bs';
+import { IoClose } from 'react-icons/io5';
+
 const CommentDrawer = ({ maTinDang, onClose }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -357,7 +362,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                     }}
                     title="Tùy chọn"
                   >
-                    ⋯
+                    <BsThreeDots /> {/* <-- THAY ĐỔI ICON */}
                   </div>
                 )}
               </div>
@@ -384,7 +389,9 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                     disabled={isOptimistic}
                     className={`CommentReplyButton ${activeReplyId === comment.id ? 'CommentReplyButtonActive' : ''} ${isOptimistic ? 'CommentReplyButtonDisabled' : ''}`}
                   >
-                    💬 {activeReplyId === comment.id ? 'Hủy' : 'Trả lời'}
+                    {/* <-- THAY ĐỔI ICON --> */}
+                    {activeReplyId === comment.id ? <FaTimes /> : <FaReply />}
+                    {activeReplyId === comment.id ? 'Hủy' : 'Trả lời'}
                   </button>
                 )}
 
@@ -420,7 +427,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                     }}
                     className="CommentDeleteMenuItem"
                   >
-                    🗑️ Xóa bình luận
+                    <FaTrash /> Xóa bình luận {/* <-- THAY ĐỔI ICON */}
                   </div>
                 </div>
               )}
@@ -544,7 +551,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                               }}
                               title="Tùy chọn"
                             >
-                              ⋯
+                              <BsThreeDots /> {/* <-- THAY ĐỔI ICON */}
                             </div>
                           )}
                         </div>
@@ -571,7 +578,9 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                               disabled={reply.isOptimistic}
                               className={`CommentReplyButton ${activeReplyId === reply.id ? 'CommentReplyButtonActive' : ''} ${reply.isOptimistic ? 'CommentReplyButtonDisabled' : ''}`}
                             >
-                              💬 {activeReplyId === reply.id ? 'Hủy' : 'Trả lời'}
+                              {/* <-- THAY ĐỔI ICON --> */}
+                              {activeReplyId === reply.id ? <FaTimes /> : <FaReply />}
+                              {activeReplyId === reply.id ? 'Hủy' : 'Trả lời'}
                             </button>
                           )}
 
@@ -597,7 +606,7 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
                               }}
                               className="CommentDeleteMenuItem"
                             >
-                              🗑️ Xóa bình luận
+                              <FaTrash /> Xóa bình luận {/* <-- THAY ĐỔI ICON */}
                             </div>
                           </div>
                         )}
@@ -695,7 +704,9 @@ const CommentDrawer = ({ maTinDang, onClose }) => {
       >
         <div className="CommentDrawerHeader">
           <span>Bình luận ({totalComments})</span>
-          <button onClick={onClose} className="CommentDrawerCloseButton">&times;</button>
+          <button onClick={onClose} className="CommentDrawerCloseButton">
+            <IoClose /> {/* <-- THAY ĐỔI ICON */}
+          </button>
         </div>
 
         <div className="CommentList">
