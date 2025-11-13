@@ -6,7 +6,8 @@ import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand } from "react-icons/fa"
 import Swal from "sweetalert2";
 
 const MessageItem = ({ message, showSeenStatus }) => {
-  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } = useChat();
+  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } =
+    useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const menuRef = useRef(null);
@@ -15,10 +16,13 @@ const MessageItem = ({ message, showSeenStatus }) => {
   const isSentByMe = message.maNguoiGui === user?.id;
 
   const formatTime = (time) => {
-    return time || new Date().toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return (
+      time ||
+      new Date().toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
   };
 
   const canRecallMessage = (messageTime) => {
@@ -90,9 +94,12 @@ const MessageItem = ({ message, showSeenStatus }) => {
     }
 
     try {
-      const response = await api.delete(`/chat/delete-for-me/${message.maTinNhan}`, {
-        params: { userId: user.id }
-      });
+      const response = await api.delete(
+        `/chat/delete-for-me/${message.maTinNhan}`,
+        {
+          params: { userId: user.id },
+        }
+      );
 
       try {
         deleteLocalMessage(message.maTinNhan);
@@ -143,7 +150,8 @@ const MessageItem = ({ message, showSeenStatus }) => {
 
     const remainingMinutes = Math.floor(timeRemaining);
     const remainingSeconds = Math.floor((timeRemaining - remainingMinutes) * 60);
-    const isMedia = message.loaiTinNhan === "image" || message.loaiTinNhan === "video";
+    const isMedia =
+      message.loaiTinNhan === "image" || message.loaiTinNhan === "video";
     const mediaType = message.loaiTinNhan === "image" ? "ảnh" : "video";
 
     const result = await Swal.fire({
@@ -152,7 +160,9 @@ const MessageItem = ({ message, showSeenStatus }) => {
         <p style="margin-bottom: 12px;">Bạn có chắc chắn muốn thu hồi?</p>
         <div style="background: #fef3c7; color: #f59e0b; padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;">
           <i class="fa fa-clock"></i> 
-          Còn lại: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, "0")}
+          Còn lại: ${remainingMinutes}:${remainingSeconds
+        .toString()
+        .padStart(2, "0")}
         </div>`,
       icon: "warning",
       showCancelButton: true,
@@ -214,7 +224,9 @@ const MessageItem = ({ message, showSeenStatus }) => {
         {!message.isRecalled && (
           <div className={styles.menuContainer} ref={menuRef}>
             <button
-              className={`${styles.menuTrigger} ${isMenuOpen ? styles.menuActive : ""}`}
+              className={`${styles.menuTrigger} ${
+                isMenuOpen ? styles.menuActive : ""
+              }`}
               onClick={toggleMessageMenu}
               aria-label="Message options"
             >
@@ -238,7 +250,9 @@ const MessageItem = ({ message, showSeenStatus }) => {
                         <span className={styles.timer}>
                           <FaClock />
                           {Math.floor(timeRemaining)}:
-                          {Math.floor((timeRemaining % 1) * 60).toString().padStart(2, "0")}
+                          {Math.floor((timeRemaining % 1) * 60)
+                            .toString()
+                            .padStart(2, "0")}
                         </span>
                       )}
                     </button>
@@ -280,7 +294,10 @@ const MessageItem = ({ message, showSeenStatus }) => {
                 onClick={() => openImageModal(message.noiDung)}
               />
               <div className={styles.mediaOverlay}>
-                <span className={styles.zoomIcon}></span>
+                {/* DÒNG NÀY ĐÃ ĐƯỢC SỬA THEO YÊU CẦU CỦA BẠN */}
+                <span className={styles.zoomIcon}>
+                  <FaExpand />
+                </span>
               </div>
             </div>
           ) : message.loaiTinNhan === "video" ? (
