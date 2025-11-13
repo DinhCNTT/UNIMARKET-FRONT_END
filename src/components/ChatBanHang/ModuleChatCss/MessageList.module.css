@@ -59,23 +59,25 @@ position: relative;
     tránh tin nhắn cuối bị che 
   */
   padding-bottom: 80px; 
+  scrollbar-width: thin; /* Làm hẹp thanh cuộn */
+  scrollbar-color: #a0a0a1 #f7f7f7 /* [Màu thumb] [Màu track] */
 }
 
 .chatboxMessages::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .chatboxMessages::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f7f7f7;
 }
 
 .chatboxMessages::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #a0a0a1;
   border-radius: 3px;
 }
 
 .chatboxMessages::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #8e8e8f;
 }
 
 .chatboxEmptyChat {

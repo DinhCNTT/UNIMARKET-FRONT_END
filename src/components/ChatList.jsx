@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from 'react-dom';
 import * as signalR from "@microsoft/signalr";
 import "./ChatList.css";
 import { MoreVertical, Trash2 } from "lucide-react"; // ← Cái này từ lucide-react (khác lib)
@@ -11,7 +12,9 @@ import {
   FiCamera as Camera, 
   FiVideo as Video, 
   FiMoreVertical, 
-  FiTrash2               // 👈 thêm dòng này
+  FiTrash2,               // 👈 trash icon
+  FiEye,                  // 👈 eye icon for unhide
+  FiEyeOff                // 👈 eye-off icon for hide
 } from "react-icons/fi";
 
 // Services
@@ -28,7 +31,9 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [filterMode, setFilterMode] = useState("all");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [expandedChatId, setExpandedChatId] = useState(null);
+  const [popoverStyle, setPopoverStyle] = useState(null);
   const connectionRef = useRef(null);
+  const menuButtonRefs = useRef({});
   const [showFriendList, setShowFriendList] = useState(false);
 
   // Use centralized service functions (imported from services/chatService)
@@ -63,7 +68,30 @@ const sortChatsLikeMessenger = (chats) => {
     e.stopPropagation();
     if (expandedChatId === chatId) {
       setExpandedChatId(null);
+      setPopoverStyle(null);
     } else {
+      // compute position for portal popover
+      const btn = menuButtonRefs.current[chatId];
+      if (btn && btn.getBoundingClientRect) {
+        const rect = btn.getBoundingClientRect();
+        const popoverWidth = 220; // match CSS min-width
+        const margin = 8;
+        let left = rect.right - popoverWidth;
+        // ensure within viewport
+        left = Math.max(margin, Math.min(left, window.innerWidth - popoverWidth - margin));
+        // default place below; if not enough space, place above
+        const estimatedHeight = 110; // approximate popover height
+        let top = rect.bottom + 6;
+        let placeAbove = false;
+        if (rect.bottom + estimatedHeight + margin > window.innerHeight) {
+          // place above
+          top = rect.top - estimatedHeight - 6;
+          placeAbove = true;
+        }
+        setPopoverStyle({ position: 'fixed', top: Math.round(top) + 'px', left: Math.round(left) + 'px', width: popoverWidth + 'px', transformOrigin: placeAbove ? 'bottom right' : 'top right' });
+      } else {
+        setPopoverStyle(null);
+      }
       setExpandedChatId(chatId);
     }
   };
@@ -109,6 +137,38 @@ const sortChatsLikeMessenger = (chats) => {
   setExpandedChatId(null);
 };
 
+  // Ẩn / gỡ ẩn cuộc trò chuyện cho từng item
+  const handleToggleHide = async (chatId, currentlyHidden) => {
+    try {
+      // setChatState(chatId, isHidden, isDeleted, userId)
+      await setChatState(chatId, !currentlyHidden, false, userId);
+
+      // Update local lists
+      if (!currentlyHidden) {
+        // move to hidden list
+        setChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== chatId));
+        setHiddenChatList((prev) => {
+          const existing = prev.find((c) => c.maCuocTroChuyen === chatId);
+          if (existing) return prev;
+          const moved = chatList.find((c) => c.maCuocTroChuyen === chatId);
+          return moved ? sortChatsLikeMessenger([{ ...moved, isHidden: true }, ...prev]) : prev;
+        });
+      } else {
+        // unhide: move back to chatList
+        setHiddenChatList((prev) => prev.filter((c) => c.maCuocTroChuyen !== chatId));
+        // best-effort: refetch chat or move from hidden to visible
+        const moved = hiddenChatList.find((c) => c.maCuocTroChuyen === chatId);
+        if (moved) {
+          setChatList((prev) => sortChatsLikeMessenger([{ ...moved, isHidden: false }, ...prev]));
+        }
+      }
+    } catch (err) {
+      console.error('Lỗi khi (gỡ)ẩn cuộc trò chuyện:', err);
+    } finally {
+      setExpandedChatId(null);
+    }
+  };
+
   // Hủy bỏ xác nhận xóa
   const handleCancelDelete = () => {
     setShowDeleteConfirm(null);
@@ -120,8 +180,10 @@ const sortChatsLikeMessenger = (chats) => {
       if (showDeleteConfirm && !e.target.closest('.chatlist-delete-confirm-modal')) {
         setShowDeleteConfirm(null);
       }
-      if (expandedChatId && !e.target.closest('.chatlist-item')) {
+      // Don't close if click is inside the popover (portal) either
+      if (expandedChatId && !e.target.closest('.chatlist-item') && !e.target.closest('.chatlist-menu-popover')) {
         setExpandedChatId(null);
+        setPopoverStyle(null);
       }
     };
 
@@ -800,23 +862,20 @@ connection.on("ChatStatusChanged", (data) => {
 </div>
                   </div>
 
-                  {/* Menu tuỳ chọn */}
+                  {/* Menu tuỳ chọn (nút 3 chấm + popover) */}
                   {!chat.isBlocked && !isHideMode && (
-                    <button className="chatlist-menu-btn" onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)} title="Tùy chọn">
-                      <FiMoreVertical size={20} />
-                    </button>
+                    <div className="chatlist-menu-wrapper" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="chatlist-menu-btn"
+                        onClick={(e) => handleMenuClick(e, chat.maCuocTroChuyen)}
+                        title="Tùy chọn"
+                        ref={(el) => (menuButtonRefs.current[chat.maCuocTroChuyen] = el)}
+                      >
+                        <FiMoreVertical size={20} />
+                      </button>
+                    </div>
                   )}
                 </div>
-
-                {/* Menu mở rộng (xóa hội thoại) */}
-                {expandedChatId === chat.maCuocTroChuyen && (
-                  <div className="chatlist-delete-expanded">
-                    <button className="chatlist-delete-btn-expanded" onClick={(e) => { e.stopPropagation(); handleShowDeleteConfirm(chat.maCuocTroChuyen); }}>
-                      <FiTrash2 size={18} />
-                      Xóa cuộc trò chuyện
-                    </button>
-                  </div>
-                )}
               </div>
             ))
           )}
@@ -853,11 +912,20 @@ connection.on("ChatStatusChanged", (data) => {
       </div>
     )}
 
+    {/* Portal popover: render outside list so it won't be clipped */}
+    <ChatListPopoverPortal
+      expandedChatId={expandedChatId}
+      popoverStyle={popoverStyle}
+      onToggleHide={handleToggleHide}
+      handleShowDeleteConfirm={handleShowDeleteConfirm}
+      combinedChats={[...chatList, ...hiddenChatList]}
+    />
+
     {/* ==================================================================== */}
     {/* ✨ NÚT ẨN HỘI THOẠI CHỈ HIỂN THỊ KHI KHÔNG Ở TRONG DANH SÁCH BẠN BÈ ✨ */}
     {/* ==================================================================== */}
     {!showFriendList && (
-      <div className="chatlist-hide-button-container">
+      <div className={`chatlist-hide-button-container ${expandedChatId ? 'menu-open' : ''}`}>
         {filterMode === "all" ? (
           !isHideMode ? (
             <button
@@ -914,3 +982,41 @@ connection.on("ChatStatusChanged", (data) => {
 };
 
 export default ChatList;
+
+// Render popover as portal so it can overlay other UI (hide bar) without being clipped.
+function ChatListPopoverPortal({ expandedChatId, popoverStyle, onClose, onDelete, onToggleHide, combinedChats, handleShowDeleteConfirm }) {
+  if (!expandedChatId) return null;
+  const chat = combinedChats.find(c => c.maCuocTroChuyen === expandedChatId);
+  if (!chat) return null;
+
+  return createPortal(
+    <div
+      className="chatlist-menu-popover"
+      style={{ ...popoverStyle, position: popoverStyle?.position || 'fixed' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button className="chatlist-menu-popover-btn chatlist-delete-btn-expanded" onClick={(e) => { e.stopPropagation(); handleShowDeleteConfirm(chat.maCuocTroChuyen); }}>
+        <FiTrash2 size={16} />
+        <span style={{marginLeft:8}}>Xóa cuộc trò chuyện</span>
+      </button>
+      <button className="chatlist-menu-popover-btn chatlist-hide-btn-expanded" onClick={(e) => { e.stopPropagation(); onToggleHide(chat.maCuocTroChuyen, !!chat.isHidden); }}>
+        {chat.isHidden ? (
+          <>
+            <FiEye size={16} />
+            <span style={{marginLeft:8}}>Gỡ ẩn hội thoại</span>
+          </>
+        ) : (
+          <>
+            <FiEyeOff size={16} />
+            <span style={{marginLeft:8}}>Ẩn hội thoại</span>
+          </>
+        )}
+      </button>
+    </div>,
+    document.body
+  );
+}
+
+// Mount portal inside the component render so we have access to state
+// (We render after the ChatList so it overlays the full page)
+// Note: this must be added to the component tree; we will render it via JSX below.

@@ -42,6 +42,9 @@
 
 .chatlist-item-content {
   flex: 1;
+  min-width: 0; /* allow children to shrink so ellipsis works */
+  display: flex;
+  flex-direction: column;
 }
 
 .chatlist-item-title {
@@ -67,9 +70,10 @@
   color: #666;               /* ✅ tinh tế hơn #777 */
   margin-top: 4px;
   line-height: 1.4;
-  white-space: nowrap;       /* ✅ không tràn dòng */
+  white-space: nowrap;       /* không tràn dòng */
   overflow: hidden;
-  text-overflow: ellipsis;   /* ✅ nếu dài sẽ hiện "..." */
+  text-overflow: ellipsis;   /* nếu dài sẽ hiện "..." */
+  max-width: 100%;
 }
 
 
@@ -82,8 +86,8 @@
   padding: 8px;
   border-radius: 50%;
   transition: all 0.2s ease;
-  margin-left: auto;
-  margin-right: 5px;
+  margin-left: 8px;
+  margin-right: 6px;
   opacity: 0.6;
   color: #666;
   width: 32px;
@@ -91,6 +95,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Expanded menu buttons */
+.chatlist-hide-btn-expanded {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: #f3f4f6;
+  color: #111;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.chatlist-hide-btn-expanded:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
 }
 
 .chatlist-menu-btn:hover {
@@ -141,11 +164,7 @@
   gap: 8px;
 }
 
-.chatlist-delete-btn-expanded:hover {
-  background-color: #e63939;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
-}
+/* Old rule - removed to use new popover-specific styling */
 
 .chatlist-delete-btn-expanded:active {
   transform: translateY(0);
@@ -301,6 +320,14 @@
   box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
 }
 
+/* When a menu is open, push the hide-bar down so it doesn't cover the popover */
+.chatlist-hide-button-container.menu-open {
+  /* Don't push the hide bar — let the popover overlay it. */
+  transform: none !important;
+  transition: none !important;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.08);
+}
+
 /* Container để căn góc phải */
 .chatlist-btn-container {
   position: absolute;
@@ -406,6 +433,133 @@
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Popover menu (small floating card like Zalo) */
+.chatlist-menu-wrapper {
+  position: relative; /* anchor for popover */
+  z-index: 9999; /* ensure wrapper and popover sit above everything (overlay behavior) */
+}
+.chatlist-menu-popover {
+  position: absolute;
+  /* anchor under the 3-dot button (aligned to its right edge) */
+  right: 0;
+  top: calc(100% + 6px);
+  transform: translateY(0) scale(1);
+  opacity: 0;
+  background: #ffffff; /* clean white card */
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 12px 30px rgba(2,6,23,0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 2000; /* high so it can overlap the chatbox */
+  min-width: 220px; /* slightly larger menu */
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  animation: popoverDropIn 0.14s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+@keyframes popoverDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.chatlist-menu-popover-btn {
+  background: transparent;
+  border: none;
+  padding: 14px 16px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  color: #111827;
+}
+.chatlist-menu-popover-btn:hover {
+  background: #f5f5f5;
+  transform: translateX(2px);
+}
+
+/* Small caret to visually attach popover to button */
+.chatlist-menu-popover::before {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-left: 1px solid rgba(0,0,0,0.08);
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Remove caret/diamond for popover (user requested no triangle/shape) */
+.chatlist-menu-popover::before { display: none !important; }
+
+/* Delete (red) button - simple text style on white background */
+.chatlist-delete-btn-expanded {
+  background: transparent;
+  color: #111827;
+  padding: 12px 14px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 500;
+  border-radius: 0;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+.chatlist-delete-btn-expanded svg {
+  color: #111827;
+  flex-shrink: 0;
+}
+.chatlist-delete-btn-expanded:hover {
+  background: #f5f5f5;
+}
+
+/* Hide (orange) button - simple text style on white background */
+.chatlist-hide-btn-expanded {
+  background: transparent;
+  color: #111827;
+  padding: 12px 14px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 500;
+  border-radius: 0;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+.chatlist-hide-btn-expanded svg {
+  color: #111827;
+  flex-shrink: 0;
+}
+.chatlist-hide-btn-expanded:hover {
+  background: #f5f5f5;
+}
+
+/* Remove default focus/active background on popover buttons */
+.chatlist-menu-popover-btn:focus, .chatlist-menu-popover-btn:active {
+  outline: none;
+  background: transparent !important;
+}
+
+/* Ensure menu wrapper sits above chat items */
+.chatlist-scrollable .chatlist-item { z-index: 1; }
 /* --- Header quay lại khi ở màn hình Bạn bè --- */
 .chatlist-back-header {
   display: flex;

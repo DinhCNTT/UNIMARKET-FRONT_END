@@ -1,0 +1,41 @@
+/* Quick replies row shown above the input */
+.quickReplies {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  scrollbar-width: thin; /* Làm hẹp thanh cuộn */
+  scrollbar-color: #a0a0a1 #f7f7f7; /* [Màu thumb] [Màu track] */
+}
+.quickReplies::-webkit-scrollbar {
+  height: 4px;
+}
+.quickReplies::-webkit-scrollbar-track {
+  background: #f7f7f7; /* <-- Màu track mới */
+}
+.quickReplies::-webkit-scrollbar-thumb {
+  background: #a0a0a1;
+  border-radius: 6px;
+}
+.quickReplyBtn {
+  flex: 0 0 auto;
+  background: #f3f4f6;
+  color: #111827;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+.quickReplyBtn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+.quickReplyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none; /* Đảm bảo nút bị vô hiệu hóa không di chuyển khi hover */
+}

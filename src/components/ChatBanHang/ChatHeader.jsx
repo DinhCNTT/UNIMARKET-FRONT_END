@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "./context/ChatContext";
-import { IoEllipsisVertical } from "react-icons/io5"; // <-- THÊM MỚI
-import styles from './ModuleChatCss/ChatHeader.module.css';
+import { TfiMenuAlt } from "react-icons/tfi"; // ✅ Đổi icon ở đây
+import styles from "./ModuleChatCss/ChatHeader.module.css";
 
 const ChatHeader = () => {
   const {
@@ -16,7 +16,6 @@ const ChatHeader = () => {
 
   const [, forceUpdate] = useState(0);
 
-  // Helper tính toán text
   const getLastOnlineText = () => {
     if (!shouldShowStatus) return "";
     if (displayIsOnline) return "Đang hoạt động";
@@ -61,14 +60,13 @@ const ChatHeader = () => {
     return `Hoạt động từ ${diffD} ngày trước`;
   };
 
-  // Effect: Cập nhật văn bản trạng thái mỗi giây khi offline
   useEffect(() => {
     if (!shouldShowStatus || displayIsOnline || !displayLastOnline) return;
 
-    forceUpdate((v) => v + 1); // Cập nhật 1 lần khi
+    forceUpdate((v) => v + 1);
     const updateInterval = setInterval(() => {
       forceUpdate((v) => v + 1);
-    }, 1000); // Cập nhật mỗi giây
+    }, 1000);
 
     return () => clearInterval(updateInterval);
   }, [shouldShowStatus, displayIsOnline, displayLastOnline]);
@@ -102,17 +100,19 @@ const ChatHeader = () => {
             )}
           </div>
         </div>
+
+        {/* ✅ Đổi icon ở đây */}
         <div className={styles.headerMenu}>
           <button
-  className={styles.headerMenuButton}
-  onClick={toggleSidebar} // <-- Sửa onClick
->
-  <IoEllipsisVertical size={20} /> {/* <-- Sửa icon */}
-</button>
+            className={styles.headerMenuButton}
+            onClick={toggleSidebar}
+          >
+            <TfiMenuAlt size={20} /> {/* ✅ Icon mới */}
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default React.memo(ChatHeader); // Bọc trong React.memo
+export default React.memo(ChatHeader);

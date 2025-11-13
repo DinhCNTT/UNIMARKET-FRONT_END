@@ -1,53 +1,28 @@
-import React, { useState, useRef, useCallback, useMemo } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useChat } from "./context/ChatContext";
 import { FaImage, FaVideo, FaPaperPlane, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
-import styles from './ModuleChatCss/ChatInput.module.css'; 
+import styles from './ModuleChatCss/ChatInput.module.css';
 
-// Constants
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
 const CLOUDINARY_CLOUD_NAME = "dcwe8drcu";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 5;
 
-const ChatInput = () => {
-  const { isConnected, isBlockedByMe, isBlockedByOther, sendMessageService } =
-    useChat();
+const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisabled, inputRef }) => {
+  const { isConnected, isBlockedByMe, isBlockedByOther, sendMessageService } = useChat();
 
-  // Quick replies list (short canned messages shown above the input)
-  const QUICK_REPLIES = [
-    "Điện thoại này còn không?",
-    "Bạn có ship hàng không?",
-    "Sản phẩm còn bảo hành không?",
-    "Sản phẩm này đã qua sửa chữa chưa?",
-    "Có phụ kiện đi kèm theo sản phẩm?",
-    "Sản phẩm có lỗi gì không?",
-    "Đây là hàng chính hãng hay xách tay?",
-    "Ngoại hình máy như thế nào?",
-    "Sản phẩm này còn không ạ?",
-    "Tôi muốn mua sản phẩm này."
-  ];
-
-  const [tinNhan, setTinNhan] = useState("");
   const [imagePreviewList, setImagePreviewList] = useState([]);
   const [videoPreviewList, setVideoPreviewList] = useState([]);
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  
-  const inputRef = useRef(null);
+
   const abortControllerRef = useRef(null);
   const fileInputImageRef = useRef(null);
   const fileInputVideoRef = useRef(null);
 
-  const isDisabled = useMemo(() => 
-    isBlockedByMe || isBlockedByOther || isUploading, 
-    [isBlockedByMe, isBlockedByOther, isUploading]
-  );
-
-  // 🔥 DRAG & DROP - Kéo thả file
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -77,7 +52,6 @@ const ChatInput = () => {
         }
         return true;
       }).slice(0, MAX_FILES - imagePreviewList.length);
-      
       setImagePreviewList(prev => [...prev, ...validImages]);
     }
 
@@ -89,12 +63,10 @@ const ChatInput = () => {
         }
         return true;
       }).slice(0, MAX_FILES - videoPreviewList.length);
-      
       setVideoPreviewList(prev => [...prev, ...validVideos]);
     }
   }, [imagePreviewList.length, videoPreviewList.length]);
 
-  // 🔥 PASTE IMAGE - Dán ảnh từ clipboard
   const handlePaste = useCallback((e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -118,7 +90,6 @@ const ChatInput = () => {
     }
   }, []);
 
-  // Upload với progress tracking
   const uploadToCloudinary = useCallback(async (file, onProgress) => {
     if (file.size > MAX_FILE_SIZE) {
       Swal.fire("Lỗi", `File "${file.name}" quá lớn. Tối đa 10MB!`, "error");
@@ -155,14 +126,14 @@ const ChatInput = () => {
 
   const handleFileInputChange = useCallback((e, type) => {
     const files = Array.from(e.target.files);
-    
+
     if (type === "image") {
       const currentTotal = imagePreviewList.length;
       if (currentTotal + files.length > MAX_FILES) {
         Swal.fire("Cảnh báo", `Chỉ được chọn tối đa ${MAX_FILES} ảnh!`, "warning");
         return;
       }
-      
+
       const validImages = files.filter((f) => {
         if (!f.type.startsWith("image")) return false;
         if (f.size > MAX_FILE_SIZE) {
@@ -171,7 +142,6 @@ const ChatInput = () => {
         }
         return true;
       });
-      
       setImagePreviewList((prev) => [...prev, ...validImages]);
     } else {
       const currentTotal = videoPreviewList.length;
@@ -179,7 +149,7 @@ const ChatInput = () => {
         Swal.fire("Cảnh báo", `Chỉ được chọn tối đa ${MAX_FILES} video!`, "warning");
         return;
       }
-      
+
       const validVideos = files.filter((f) => {
         if (!f.type.startsWith("video")) return false;
         if (f.size > MAX_FILE_SIZE) {
@@ -188,10 +158,8 @@ const ChatInput = () => {
         }
         return true;
       });
-      
       setVideoPreviewList((prev) => [...prev, ...validVideos]);
     }
-    
     e.target.value = null;
   }, [imagePreviewList.length, videoPreviewList.length]);
 
@@ -203,13 +171,8 @@ const ChatInput = () => {
     setVideoPreviewList((prev) => prev.filter((_, i) => i !== idx));
   }, []);
 
-  // Gửi tin nhắn
   const handleSend = useCallback(async () => {
-    if (
-      !tinNhan.trim() &&
-      imagePreviewList.length === 0 &&
-      videoPreviewList.length === 0
-    ) {
+    if (!tinNhan.trim() && imagePreviewList.length === 0 && videoPreviewList.length === 0) {
       Swal.fire("Lỗi", "Vui lòng nhập tin nhắn hoặc gửi ảnh/video", "error");
       return;
     }
@@ -228,7 +191,6 @@ const ChatInput = () => {
     setUploadProgress(0);
 
     try {
-      // 1. Gửi text ngay
       if (tinNhan.trim()) {
         await sendMessageService(tinNhan.trim(), "text");
         setTinNhan("");
@@ -237,7 +199,6 @@ const ChatInput = () => {
       const totalFiles = imagePreviewList.length + videoPreviewList.length;
       let uploadedCount = 0;
 
-      // 2. Upload images
       if (imagePreviewList.length > 0) {
         const imageUploads = imagePreviewList.map(async (file) => {
           const url = await uploadToCloudinary(file, (progress) => {
@@ -250,11 +211,9 @@ const ChatInput = () => {
           }
           return url;
         });
-
         await Promise.allSettled(imageUploads);
       }
 
-      // 3. Upload videos
       if (videoPreviewList.length > 0) {
         const videoUploads = videoPreviewList.map(async (file) => {
           const url = await uploadToCloudinary(file, (progress) => {
@@ -267,16 +226,13 @@ const ChatInput = () => {
           }
           return url;
         });
-
         await Promise.allSettled(videoUploads);
       }
 
-      // Success
       setUploadProgress(100);
       setImagePreviewList([]);
       setVideoPreviewList([]);
       inputRef.current?.focus();
-      
     } catch (err) {
       Swal.fire("Lỗi", err.message || "Không thể gửi tin nhắn!", "error");
       console.error("Send error:", err);
@@ -287,39 +243,10 @@ const ChatInput = () => {
       }, 300);
     }
   }, [
-    tinNhan,
-    imagePreviewList,
-    videoPreviewList,
-    isBlockedByOther,
-    isBlockedByMe,
-    isConnected,
-    sendMessageService,
-    uploadToCloudinary
+    tinNhan, imagePreviewList, videoPreviewList, isBlockedByOther,
+    isBlockedByMe, isConnected, sendMessageService, uploadToCloudinary,
+    setIsUploading, setTinNhan, inputRef
   ]);
-
-  // Gửi nhanh từ quick reply
-  const handleQuickReply = useCallback(async (text) => {
-    if (!text) return;
-    if (isBlockedByMe || isBlockedByOther) {
-      Swal.fire("Lỗi", "Không thể gửi tin nhắn vì bạn đã bị chặn.", "error");
-      return;
-    }
-    if (!isConnected) {
-      Swal.fire("Lỗi", "Kết nối SignalR không sẵn sàng!", "error");
-      return;
-    }
-
-    try {
-      // use existing send service to preserve behavior
-      await sendMessageService(text, "text");
-      // clear textarea if it contains same text
-      setTinNhan((prev) => (prev.trim() === text.trim() ? "" : prev));
-      inputRef.current?.focus();
-    } catch (err) {
-      console.error("Quick reply send error:", err);
-      Swal.fire("Lỗi", "Không thể gửi tin nhắn nhanh!", "error");
-    }
-  }, [isBlockedByMe, isBlockedByOther, isConnected, sendMessageService]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -328,33 +255,29 @@ const ChatInput = () => {
     }
   }, [handleSend]);
 
-  // 🔥 AUTO-RESIZE TEXTAREA
   const handleTextChange = useCallback((e) => {
     setTinNhan(e.target.value);
-    
-    // Auto resize
     const textarea = e.target;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
-  }, []);
+  }, [setTinNhan]);
 
-  // Cleanup
   React.useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       imagePreviewList.forEach(file => {
-        URL.revokeObjectURL(URL.createObjectURL(file));
+        if (file) URL.revokeObjectURL(URL.createObjectURL(file));
       });
       videoPreviewList.forEach(file => {
-        URL.revokeObjectURL(URL.createObjectURL(file));
+        if (file) URL.revokeObjectURL(URL.createObjectURL(file));
       });
     };
-  }, []);
+  }, [imagePreviewList, videoPreviewList]);
 
   return (
-    <div 
+    <div
       className={`${styles.chatInput} ${isDragging ? styles.dragging : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -378,10 +301,7 @@ const ChatInput = () => {
       {isUploading && (
         <div className={styles.uploadProgress}>
           <div className={styles.progressBar}>
-            <div 
-              className={styles.progressFill} 
-              style={{ width: `${uploadProgress}%` }}
-            />
+            <div className={styles.progressFill} style={{ width: `${uploadProgress}%` }} />
           </div>
           <span className={styles.progressText}>
             Đang upload... {Math.round(uploadProgress)}%
@@ -400,11 +320,7 @@ const ChatInput = () => {
               >
                 <FaTimes />
               </button>
-              <img 
-                src={URL.createObjectURL(file)} 
-                alt={`preview-img-${idx}`}
-                loading="lazy"
-              />
+              <img src={URL.createObjectURL(file)} alt={`preview-img-${idx}`} loading="lazy" />
               <div className={styles.thumbInfo}>
                 <span>{(file.size / 1024 / 1024).toFixed(1)}MB</span>
               </div>
@@ -419,11 +335,7 @@ const ChatInput = () => {
               >
                 <FaTimes />
               </button>
-              <video 
-                src={URL.createObjectURL(file)} 
-                controls 
-                preload="metadata"
-              />
+              <video src={URL.createObjectURL(file)} controls preload="metadata" />
               <div className={styles.thumbInfo}>
                 <span>{(file.size / 1024 / 1024).toFixed(1)}MB</span>
               </div>
@@ -431,21 +343,6 @@ const ChatInput = () => {
           ))}
         </div>
       )}
-
-      {/* Quick replies bar */}
-      <div className={styles.quickReplies} aria-hidden={isDisabled}>
-        {QUICK_REPLIES.map((q, idx) => (
-          <button
-            key={`qr-${idx}`}
-            type="button"
-            className={styles.quickReplyBtn}
-            onClick={() => handleQuickReply(q)}
-            disabled={isDisabled}
-          >
-            {q}
-          </button>
-        ))}
-      </div>
 
       <div
         className={styles.inputWrap}
@@ -456,13 +353,13 @@ const ChatInput = () => {
       >
         <div className={styles.actions}>
           <label className={styles.actionBtn} title="Chọn ảnh">
-            <FaImage size={20} /> 
+            <FaImage size={20} />
             <input
               ref={fileInputImageRef}
-              type="file" 
+              type="file"
               style={{ display: "none" }}
               onChange={(e) => handleFileInputChange(e, "image")}
-              accept="image/*" 
+              accept="image/*"
               multiple
               disabled={isDisabled}
             />
@@ -471,10 +368,10 @@ const ChatInput = () => {
             <FaVideo size={20} />
             <input
               ref={fileInputVideoRef}
-              type="file" 
+              type="file"
               style={{ display: "none" }}
               onChange={(e) => handleFileInputChange(e, "video")}
-              accept="video/*" 
+              accept="video/*"
               multiple
               disabled={isDisabled}
             />
@@ -488,10 +385,10 @@ const ChatInput = () => {
             onChange={handleTextChange}
             onPaste={handlePaste}
             placeholder={
-              isUploading 
-                ? "Đang upload..." 
-                : isDisabled 
-                ? "Không thể gửi tin nhắn" 
+              isUploading
+                ? "Đang upload..."
+                : isDisabled
+                ? "Không thể gửi tin nhắn"
                 : "Aa"
             }
             disabled={isDisabled}
@@ -505,11 +402,7 @@ const ChatInput = () => {
           onClick={handleSend}
           disabled={
             isDisabled ||
-            !(
-              tinNhan.trim() ||
-              imagePreviewList.length ||
-              videoPreviewList.length
-            )
+            !(tinNhan.trim() || imagePreviewList.length || videoPreviewList.length)
           }
           aria-label="Gửi tin nhắn"
           title="Gửi"

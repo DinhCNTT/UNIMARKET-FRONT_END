@@ -5,70 +5,39 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
+  border-radius: 20px; /* bo góc rõ hơn */
 }
-/* Quick replies row shown above the input */
-.quickReplies {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 6px;
-}
-.quickReplies::-webkit-scrollbar {
-  height: 6px;
-}
-.quickReplies::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.08);
-  border-radius: 6px;
-}
-.quickReplyBtn {
-  flex: 0 0 auto;
-  background: #f3f4f6;
-  color: #111827;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 16px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease, transform 0.12s ease;
-}
-.quickReplyBtn:hover {
-  background: #e5e7eb;
-  transform: translateY(-1px);
-}
-.quickReplyBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+
 /* Wrapper thanh input */
 .inputWrap {
   flex: 1;
   position: relative;
   display: flex;
-  align-items: flex-end; 
+  align-items: flex-end;
   gap: 8px;
-  background: transparent; 
+  background: transparent;
   border-radius: 0;
   padding: 0;
   min-height: auto;
   transition: all 0.3s ease;
 }
+
 /* Class chứa textarea, hình "viên thuốc" */
 .textWrap {
   flex: 1;
   min-width: 0;
   background: #f3f4f6;
-  border-radius: 20px; 
+  border-radius: 20px;
   padding: 8px 14px;
-  display: flex; 
+  display: flex;
   transition: all 0.3s ease;
 }
-/* Thêm :focus-within cho .textWrap */
+
 .textWrap:focus-within {
   background: #e5e7eb;
-  box-shadow: 0 0 0 2px #3b82f6; 
+  box-shadow: 0 0 0 2px #3b82f6;
 }
+
 /* Textarea */
 .textWrap textarea {
   width: 100%;
@@ -79,16 +48,19 @@
   font-size: 14px;
   line-height: 1.4;
   max-height: 100px;
-  padding: 0; 
+  padding: 0;
   margin: 0;
   color: #000;
 }
+
 .textWrap textarea:focus {
   outline: none;
 }
+
 .textWrap textarea::placeholder {
   color: #9ca3af;
 }
+
 /* Nút Gửi */
 .sendBtn {
   background: #3b82f6;
@@ -106,19 +78,22 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
+
 .sendBtn:hover {
   background: #2563eb;
   transform: translateY(-2px);
 }
+
 .sendBtn:disabled {
   background: #e5e7eb;
   color: #9ca3af;
   cursor: not-allowed;
   transform: none;
 }
+
 /* Cảnh báo kết nối */
 .warning {
-  position: relative; 
+  position: relative;
   top: 0;
   left: 0;
   transform: none;
@@ -132,12 +107,14 @@
   font-weight: 500;
   text-align: center;
 }
+
 /* Group nút upload */
 .actions {
   display: flex;
   align-items: center;
-  gap: 4px; 
+  gap: 4px;
 }
+
 /* Nút upload (icon) */
 .actionBtn {
   display: flex;
@@ -151,26 +128,30 @@
   color: #3b82f6;
   flex-shrink: 0;
 }
+
 .actionBtn:hover {
   background: rgba(0, 0, 0, 0.05);
   color: #2563eb;
 }
-/* KHU VỰC PREVIEW (ĐÃ DỜI LÊN TRÊN) */
+
+/* Preview */
 .previews {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 20px; 
-  padding-left: 0; /* BỎ PADDING BÊN TRÁI */
+  margin-bottom: 20px;
+  padding-left: 0;
 }
+
 .thumb {
   position: relative;
-  width: 72px; 
+  width: 72px;
   height: 72px;
   border-radius: 8px;
   overflow: visible;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .thumb img,
 .thumb video {
   width: 100%;
@@ -178,6 +159,7 @@
   object-fit: cover;
   border-radius: 8px;
 }
+
 .thumbRemove {
   position: absolute;
   top: -8px;
@@ -197,16 +179,94 @@
   transition: all 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 .thumbRemove:hover {
   background: #dc2626;
   transform: scale(1.1);
 }
+
+/* Drag & Drop Overlay */
+.dragOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(59, 130, 246, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.dragContent {
+  color: white;
+  text-align: center;
+}
+
+.dragContent p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.chatInput.dragging {
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Upload Progress */
+.uploadProgress {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 12px;
+  color: #4b5563;
+  text-align: center;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Thumb Info */
+.thumbInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 11px;
+  text-align: center;
+  padding: 2px 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .previews {
     padding-left: 0;
   }
 }
+
 @media (max-width: 480px) {
   .chatInput {
     padding: 8px;
