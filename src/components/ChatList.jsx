@@ -1016,7 +1016,3 @@ function ChatListPopoverPortal({ expandedChatId, popoverStyle, onClose, onDelete
     document.body
   );
 }
-
-// Mount portal inside the component render so we have access to state
-// (We render after the ChatList so it overlays the full page)
-// Note: this must be added to the component tree; we will render it via JSX below.

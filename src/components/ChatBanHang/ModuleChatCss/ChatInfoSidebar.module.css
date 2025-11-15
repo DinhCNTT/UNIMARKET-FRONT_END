@@ -104,38 +104,41 @@
   border: none;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400; /* 👈 ĐÃ SỬA: từ 600 thành 400 */
   cursor: pointer;
   transition: background-color 0.2s;
   text-align: left;
-}
 
+  /* 💎 ĐÃ THÊM: Font-family hiện đại */
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
 .actionButton svg {
   font-size: 18px;
 }
 
 /* Nút Chặn */
 .blockButton {
-  background-color: #fef2f2;
-  color: #ef4444;
+  background-color: transparent;
+  color: #222222;
 }
 .blockButton:hover {
-  background-color: #fee2e2;
+  background-color: #fef2f2;
 }
 
 /* Nút Gỡ Chặn */
 .unblockButton {
-  background-color: #ecfdf5;
-  color: #10b981;
+  background-color: transparent;
+  color: #222222;
 }
 .unblockButton:hover {
-  background-color: #d1fae5;
+  background-color: #ecfdf5;
 }
 
 /* Nút Báo xấu */
 .reportButton {
-  background-color: #fffbeb;
-  color: #f59e0b;
+  background-color: transparent;
+  color: #222222;
 }
 .reportButton:hover {
   background-color: #fef3c7;
@@ -182,6 +185,129 @@
 }
 
 .profileButton:hover {
-  background-color: #e8e8e8; ;
+  background-color: #e8e8e8;
   border-color: #d1d5db;
+}
+
+/* --- PHẦN MEDIA MỚI --- */
+
+.mediaSection {
+  /* ⚠️ BỎ PADDING: Bỏ padding ở đây để nút "Xem tất cả"
+     có thể căn chỉnh khớp với lề 16px của .sidebarContent 
+  */
+}
+
+.mediaSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+.mediaLoading {
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Lưới hiển thị media */
+.mediaGrid {
+  display: grid;
+  /* 👈 SỬA: Đổi từ 3 cột thành 4 cột để khớp với 8 item */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/* Mỗi ô media */
+.mediaItem {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Tạo tỷ lệ vuông */
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+}
+
+/* Ảnh/Video bên trong ô */
+.mediaItemImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+/* Khi là ảnh, cho phép click và zoom */
+.mediaItem:has(> img) {
+  cursor: pointer;
+}
+.mediaItem:has(> img):hover .mediaItemImage {
+  transform: scale(1.05);
+}
+
+/* Khi là video */
+.mediaItemVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.videoIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none; /* Cho phép click xuyên qua icon */
+}
+
+/* 🌟 NÚT XEM TẤT CẢ MỚI 🌟 */
+.viewAllButton {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px; /* Khoảng cách với lưới media */
+  background-color: #374151; /* Màu xám đậm */
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.viewAllButton:hover {
+  background-color: #4b5563; /* Màu xám đậm hơn khi hover */
+}
+
+
+/* Khi không có media */
+.mediaEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  color: #6b7280;
+}
+.mediaEmpty svg {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #9ca3af;
+}
+.mediaEmpty p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
 }

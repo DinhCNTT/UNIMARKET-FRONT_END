@@ -1,8 +1,8 @@
 .chatlist-container {
   flex-direction: column;
-  height: 120vh;
+  height: auto;
   background-color: white;
-  
+  display: flex;
 }
 
 /* Phần tìm kiếm + filter */
@@ -620,4 +620,7 @@
 .special-item:hover .chatlist-item-title .icon {
   transform: scale(1.1);
   color: #1e3a8a;
+}
+.special-item .chatlist-item-info {
+  color: #4b5563; /* màu xám hiện đại */
 }

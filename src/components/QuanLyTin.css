@@ -31,6 +31,9 @@
   gap: 12px;
   position: relative;
   padding-bottom: 8px;
+
+  /* Thêm dòng này để đẩy xuống dưới */
+  margin-top: 20px; 
 }
 
 .qlt-wrapper h2:before {
@@ -114,7 +117,7 @@
   box-shadow: 0 0 0 3px rgba(255, 138, 0, 0.1);
 }
 
-.search-icon {
+.qlt-search-icon{
   position: absolute;
   left: 12px;
   top: 50%;

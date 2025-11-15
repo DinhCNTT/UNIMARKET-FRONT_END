@@ -1,15 +1,13 @@
 .category-container {
   width: 100%;
-  max-width: 960px;
-  height: 350px;
-    margin: 415px auto 0 auto; /* moved down a bit */
+  margin: 415px auto 20px auto; /* thêm 20px cách dưới */
   text-align: center;
   position: relative;
   padding: 20px;
   background-color: #FFFAFA;
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transform: translateX(-3px); /* 👈 đẩy qua trái 20px */
+  transform: translateX(7px);
 }
 
 .category-title {  
@@ -37,7 +35,7 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    gap: 0px; /* Tăng khoảng cách giữa các ảnh */
+    gap: 5px; /* Tăng khoảng cách giữa các ảnh */
     margin-top: -60px; /* Đẩy lên ít để phần khám phá nằm thấp hơn */
 }
 

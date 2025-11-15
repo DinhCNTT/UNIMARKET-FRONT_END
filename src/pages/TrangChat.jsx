@@ -66,7 +66,7 @@ const TrangChat = () => {
     const isChatRoute = location.pathname.startsWith("/chat");
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", height: "95vh" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
             <TopNavbarUniMarket />
             <div className={`trang-chat-container ${isChatRoute ? "with-mini-nav" : ""}`}>
                 <div className="chat-list-container">

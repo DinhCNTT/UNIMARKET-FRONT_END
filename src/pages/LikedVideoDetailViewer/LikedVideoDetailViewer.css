@@ -72,7 +72,7 @@
   gap: 12px;
   z-index: 10;
   overflow: hidden;
-  padding-top: 130px;
+  padding-top: 50px;
   padding-bottom: 20px;
 }
 
@@ -82,7 +82,7 @@
 /* Thông tin người đăng */
 .lvv-user-info-wrapper {
   position: sticky;         /* 👈 Mấu chốt giúp mượt */
-  top: 0;                   /* Bám sát đầu vùng scroll */
+  top: 0px; 
   z-index: 99;
   background-color: rgba(128, 128, 128, 0.3);
   border-radius: 16px;
@@ -652,7 +652,7 @@
 
 .lvv-comment-input-fixed {
   position: fixed;
-  bottom: 15vh;
+  bottom: 5vh;
   left: 0;
   width: 100%;
   display: flex;

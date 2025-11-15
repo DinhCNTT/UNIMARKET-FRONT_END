@@ -218,7 +218,7 @@ const QuanLyTin = () => {
           </h2>
         </div>
         <div className="qlt-search-wrapper" style={{ position: "relative" }}>
-          <FaSearch className="search-icon" />
+          <FaSearch className="qlt-search-icon" />
           <input
             type="text"
             placeholder="Tìm tin đăng của bạn..."

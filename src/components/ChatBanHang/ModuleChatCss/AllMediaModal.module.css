@@ -1,0 +1,160 @@
+/* AllMediaModal.module.css */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Cao hơn sidebar */
+}
+
+.modalContent {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px; /* Giới hạn chiều rộng */
+  height: 90vh; /* Chiều cao tối đa */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Để header/footer cố định */
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+}
+.closeButton:hover {
+  background-color: #f3f4f6;
+}
+
+.modalBody {
+  flex: 1; /* Lấp đầy không gian */
+  overflow-y: auto; /* Cho phép cuộn */
+  padding: 24px;
+}
+
+.dateGroup {
+  margin-bottom: 24px;
+}
+
+.dateHeader {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+/* Lưới media - Responsive */
+.mediaGrid {
+  display: grid;
+  /* Hiển thị 3 cột trên màn nhỏ */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* Tăng số cột trên màn hình lớn hơn */
+@media (min-width: 640px) {
+  .mediaGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (min-width: 768px) {
+  .mediaGrid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+
+.mediaItem {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Tỷ lệ vuông */
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  cursor: pointer;
+}
+
+.mediaItemImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+.mediaItem:hover .mediaItemImage {
+  transform: scale(1.05);
+}
+
+.mediaItemVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.videoIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+/* Loading và Empty state */
+.mediaLoading {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.mediaEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 16px;
+  color: #6b7280;
+}
+.mediaEmpty svg {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #9ca3af;
+}
+.mediaEmpty p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}

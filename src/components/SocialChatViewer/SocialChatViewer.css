@@ -30,7 +30,7 @@
   /* Màu nền #f9f9f9 giữ nguyên để tạo sự tách biệt nhẹ */
   background-color: #f9f9f9; 
   flex-shrink: 0;
-  margin-top: -95px;
+  margin-top: -90px;
 }
 
 .chat-viewer-header .chat-viewer-avatar {

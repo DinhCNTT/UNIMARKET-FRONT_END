@@ -28,6 +28,7 @@ import ChatInfoSidebar from "./ChatInfoSidebar";
 import QuickReplies from "./QuickReplies";
 
 const ImageModal = lazy(() => import("./ImageModal"));
+const VideoModal = lazy(() => import("./VideoModal")); // 👈 THÊM DÒNG NÀY
 
 const ChatBox = ({ maCuocTroChuyen }) => {
   const { user } = useContext(AuthContext);
@@ -71,6 +72,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   });
 
   const [modalImage, setModalImage] = useState(null);
+  const [videoModalUrl, setVideoModalUrl] = useState(null);
   const [isBlockedByMe, setIsBlockedByMe] = useState(false);
   const [isBlockedByOther, setIsBlockedByOther] = useState(false);
   const [maNguoiConLai, setMaNguoiConLai] = useState(null);
@@ -227,6 +229,13 @@ const ChatBox = ({ maCuocTroChuyen }) => {
 
   const closeImageModal = useCallback(() => {
     setModalImage(null);
+  }, []);
+
+  const openVideoModal = useCallback((videoUrl) => { // 👈 THÊM HÀM NÀY
+    setVideoModalUrl(videoUrl);
+  }, []);
+  const closeVideoModal = useCallback(() => { // 👈 THÊM HÀM NÀY
+    setVideoModalUrl(null);
   }, []);
 
   const toggleSidebar = useCallback(() => {
@@ -438,6 +447,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     handleUnblockUser,
     openImageModal,
     closeImageModal,
+    openVideoModal,
+    closeVideoModal,
     recallMessage,
     recallMedia,
     markAsRead,
@@ -454,8 +465,8 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     isConnected, isBlockedByMe, isBlockedByOther,
     displayAvatar, displayTen, displayIsOnline, displayLastOnline,
     displayFormattedLastSeen, shouldShowStatus, displayUserId,
-    handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,
-    recallMessage, recallMedia, markAsRead, sendMessageService,
+    handleBlockUser, handleUnblockUser, openImageModal, closeImageModal,openVideoModal,
+    closeVideoModal,recallMessage, recallMedia, markAsRead, sendMessageService,
     deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore,
     isSidebarOpen, toggleSidebar, closeSidebar
   ]);
@@ -485,6 +496,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         <ChatInfoSidebar />
         <Suspense fallback={<div>Đang tải...</div>}>
           {modalImage && <ImageModal />}
+          {videoModalUrl && (
+            <VideoModal url={videoModalUrl} onClose={closeVideoModal} />
+          )}
         </Suspense>
       </div>
     </ChatContext.Provider>
