@@ -8,6 +8,7 @@ import {
   deleteConversation,
 } from "../services/chatSocialService";
 import ChatListItemMenu from "./ChatListItemMenu";
+import { BellOff } from "react-feather"; // <-- Logic từ Code 1
 
 const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   const [friendChats, setFriendChats] = useState([]);
@@ -15,7 +16,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   const [error, setError] = useState(null);
 
   // ===================================================
-  // 🕒 Format thời gian tin nhắn
+  // 🕒 Format thời gian tin nhắn (Giống nhau)
   // ===================================================
   const formatMessageTime = (utcDateString) => {
     if (!utcDateString) return "";
@@ -54,7 +55,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   };
 
   // ===================================================
-  // 🔄 Realtime: Cập nhật cuộc trò chuyện
+  // 🔄 Realtime: Cập nhật cuộc trò chuyện (Logic Mute từ Code 1)
   // ===================================================
   const handleUpdateConversation = useCallback(
     (data) => {
@@ -97,6 +98,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
                 data.lastMessage?.messageType || data.messageType || "text",
             },
             unreadCount: newUnreadCount,
+            isMuted: existingChat.isMuted, // <-- Logic từ Code 1: Giữ trạng thái isMuted
           };
 
           const newChats = prevChats.filter(
@@ -134,6 +136,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
             )
               ? 0
               : 1,
+            isMuted: false, // <-- Logic từ Code 1: Mặc định chat mới là false
           };
           joinGroup(data.maCuocTroChuyen);
           return [newChat, ...prevChats];
@@ -146,7 +149,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   );
 
   // ===================================================
-  // 🟢 Realtime: Cập nhật trạng thái online/offline
+  // 🟢 Realtime: Cập nhật trạng thái online/offline (Giống nhau)
   // ===================================================
   const handlePresenceUpdate = useCallback((presence) => {
     setFriendChats((prev) =>
@@ -165,7 +168,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   }, []);
 
   // ===================================================
-  // ✨ [MỚI] Realtime: Cập nhật trạng thái chặn / gỡ chặn
+  // ✨ Realtime: Cập nhật trạng thái chặn / gỡ chặn (Giống nhau)
   // ===================================================
   const handleBlockStatusChanged = useCallback((data) => {
     setFriendChats((prevChats) =>
@@ -182,7 +185,23 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   }, []);
 
   // ===================================================
-  // 📦 Lấy danh sách cuộc trò chuyện
+  // ✨ [MỚI] Realtime: Cập nhật trạng thái Tắt/Bật TB (Logic từ Code 1)
+  // ===================================================
+  const handleMuteStatusChanged = useCallback((data) => {
+    setFriendChats((prevChats) =>
+      prevChats.map((chat) =>
+        chat.maCuocTroChuyen === data.maCuocTroChuyen
+          ? {
+              ...chat,
+              isMuted: data.isMuted,
+            }
+          : chat
+      )
+    );
+  }, []);
+
+  // ===================================================
+  // 📦 Lấy danh sách cuộc trò chuyện (Logic Mute từ Code 1)
   // ===================================================
   const fetchFriendChats = useCallback(async () => {
     try {
@@ -210,6 +229,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
         ? data.map((chat) => ({
             ...chat,
             unreadCount: chat.unreadCount ?? 0,
+            isMuted: chat.isMuted ?? false, // <-- Logic từ Code 1: Đảm bảo isMuted có giá trị
           }))
         : [];
 
@@ -232,7 +252,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   }, [userId]);
 
   // ===================================================
-  // 🗑️ Xử lý xóa cuộc trò chuyện
+  // 🗑️ Xử lý xóa cuộc trò chuyện (Giống nhau)
   // ===================================================
   const handleDeleteConversation = async (maCuocTroChuyen) => {
     setError(null);
@@ -258,7 +278,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   };
 
   // ===================================================
-  // ⚡ Đăng ký / Hủy đăng ký realtime event
+  // ⚡ Đăng ký / Hủy đăng ký realtime event (Logic Mute từ Code 1)
   // ===================================================
   useEffect(() => {
     if (!userId) return;
@@ -267,11 +287,21 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     registerChatEventHandler("CapNhatCuocTroChuyen", handleUpdateConversation);
     registerChatEventHandler("PresenceUpdated", handlePresenceUpdate);
     registerChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
+    // ✨ [MỚI] Đăng ký sự kiện Mute (Logic từ Code 1)
+    registerChatEventHandler("MuteStatusChanged", handleMuteStatusChanged);
 
     return () => {
-      unregisterChatEventHandler("CapNhatCuocTroChuyen", handleUpdateConversation);
+      unregisterChatEventHandler(
+        "CapNhatCuocTroChuyen",
+        handleUpdateConversation
+      );
       unregisterChatEventHandler("PresenceUpdated", handlePresenceUpdate);
-      unregisterChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
+      unregisterChatEventHandler(
+        "BlockStatusChanged",
+        handleBlockStatusChanged
+      );
+      // ✨ [MỚI] Hủy đăng ký sự kiện Mute (Logic từ Code 1)
+      unregisterChatEventHandler("MuteStatusChanged", handleMuteStatusChanged);
     };
   }, [
     userId,
@@ -279,10 +309,11 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
     handleUpdateConversation,
     handlePresenceUpdate,
     handleBlockStatusChanged,
+    handleMuteStatusChanged, // <-- Logic từ Code 1
   ]);
 
   // ===================================================
-  // 🖱️ Chọn cuộc trò chuyện
+  // 🖱️ Chọn cuộc trò chuyện (Giống nhau)
   // ===================================================
   const handleSelectChat = (chat) => {
     const wasUnread = chat.unreadCount > 0;
@@ -300,13 +331,18 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   };
 
   // ===================================================
-  // 💬 Render dòng tin nhắn cuối
+  // 💬 Render dòng tin nhắn cuối (Logic Mute từ Code 1)
   // ===================================================
   const renderLastMessageLine = (chat, isUnread) => {
     const lastMessage = chat.lastMessage;
     const formattedTime = formatMessageTime(lastMessage.thoiGianGui);
     const isActiveChat = chat.maCuocTroChuyen === selectedChatId;
-    const textClass = isUnread && !isActiveChat ? "last-text bold" : "last-text";
+
+    // ✨ [MỚI] Chỉ in đậm khi: chưa đọc, không active, VÀ không bị mute (Logic từ Code 1)
+    const isActuallyUnread = isUnread && !isActiveChat && !chat.isMuted;
+
+    const textClass = isActuallyUnread ? "last-text bold" : "last-text";
+    const senderClass = isActuallyUnread ? "last-sender bold" : "last-sender";
 
     const senderId = lastMessage.sender?.Id || lastMessage.sender?.id;
     const senderName =
@@ -315,8 +351,6 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
         : lastMessage.sender?.FullName ||
           lastMessage.sender?.fullName ||
           "Ai đó";
-    const senderClass =
-      isUnread && !isActiveChat ? "last-sender bold" : "last-sender";
 
     const content = (lastMessage.noiDung || "").trim();
 
@@ -358,7 +392,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
   };
 
   // ===================================================
-  // 🧩 Render danh sách chat
+  // 🧩 Render danh sách chat (Gộp cả logic Mute từ Code 1 và <span> từ Code 2)
   // ===================================================
   if (loading) return <p className="chatlist-empty">Đang tải...</p>;
 
@@ -376,11 +410,15 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
           return (
             <div
               key={chat.maCuocTroChuyen}
-              className={`chatlist-item-wrapper ${isActive ? "active-chat" : ""}`}
+              className={`chatlist-item-wrapper ${
+                isActive ? "active-chat" : ""
+              } ${
+                chat.isMuted ? "muted" : "" // <-- Logic từ Code 1: Thêm class 'muted'
+              }`}
             >
               <div
                 className={`chatlist-item ${
-                  isUnread && !isActive ? "unread-chat" : ""
+                  isUnread && !isActive && !chat.isMuted ? "unread-chat" : "" // <-- Logic từ Code 1: Chỉ tô nền unread khi không mute
                 }`}
                 onClick={() => handleSelectChat(chat)}
               >
@@ -391,7 +429,12 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
                 />
                 <div className="chatlist-item-content">
                   <div className="chatlist-item-title">
-                    <span className="chatlist-item-title-text">{chat.partner?.fullName || "Người dùng"}</span>
+                    {/* 👇 ĐÂY LÀ PHẦN GỘP TỪ CODE 2 (của bạn) VÀO CODE 1 👇 */}
+                    <span className="chatlist-item-title-text">
+                      {chat.partner?.fullName || "Người dùng"}
+                    </span>
+                    {/* 👆 KẾT THÚC PHẦN GỘP 👆 */}
+                    
                     {chat.partner?.isOnline && (
                       <span className="online-dot" title="Đang online"></span>
                     )}
@@ -403,12 +446,21 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
                   </div>
                 </div>
 
+                {/* ✨ [MỚI] Logic hiển thị thông báo (Logic từ Code 1) */}
                 {isUnread && !isActive && (
-                  <div className="unread-badge">{chat.unreadCount}</div>
+                  <div className="chatlist-item-badge-container">
+                    {chat.isMuted ? (
+                      // 1. Nếu Mute: Hiển thị chuông
+                      <BellOff className="muted-bell-icon" size={16} />
+                    ) : (
+                      // 2. Nếu không Mute: Hiển thị số lượng
+                      <div className="unread-badge">{chat.unreadCount}</div>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {/* ✨ Truyền chat + currentUserId cho menu */}
+              {/* ✨ Truyền chat (đã có isMuted) cho menu (Logic từ Code 1) */}
               <ChatListItemMenu
                 chat={chat}
                 currentUserId={userId}

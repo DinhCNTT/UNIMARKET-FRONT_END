@@ -1,9 +1,3 @@
-// ===================================================
-// File: src/services/chatSocialService.jsx
-// ✅ Phiên bản hoàn chỉnh – Tối ưu hiệu năng, đa người dùng,
-//    hỗ trợ reply / recall / block / unblock / delete-for-me / realtime error
-// ===================================================
-
 import * as signalR from "@microsoft/signalr";
 
 const hubUrl = "http://localhost:5133/SocialChatHub"; // ⚙️ đổi sang https nếu server có SSL
@@ -21,10 +15,10 @@ const eventHandlers = {
   MessageRecalled: [],
   Typing: [],
   MessageRemovedForMe: [],
-  // ✨ [MỚI] Sự kiện chặn/gỡ chặn
   BlockStatusChanged: [],
-  // ✨ [MỚI] Sự kiện lỗi realtime (bị chặn, lỗi gửi tin…)
   ReceiveError: [],
+  // ✨ [MỚI] Thêm sự kiện Mute
+  MuteStatusChanged: [],
 };
 
 // ===================================================
@@ -48,7 +42,9 @@ export const registerChatEventHandler = (eventName, callback) => {
 
 export const unregisterChatEventHandler = (eventName, callback) => {
   if (eventHandlers[eventName]) {
-    eventHandlers[eventName] = eventHandlers[eventName].filter((h) => h !== callback);
+    eventHandlers[eventName] = eventHandlers[eventName].filter(
+      (h) => h !== callback
+    );
   }
 };
 
@@ -142,6 +138,11 @@ export const connectToSocialChatHub = () => {
       eventHandlers.ReceiveError.forEach((h) => h(errorMessage))
     );
 
+    // ✨ [MỚI] Đăng ký sự kiện Mute/Unmute
+    connection.on("MuteStatusChanged", (data) =>
+      eventHandlers.MuteStatusChanged.forEach((h) => h(data))
+    );
+
     // ===================================================
     // Kết nối Hub (auto retry)
     // ===================================================
@@ -176,18 +177,20 @@ export const disconnectFromSocialChatHub = async () => {
 // Hàm gọi Hub an toàn
 // ===================================================
 const invoke = async (methodName, ...args) => {
-  await connectionPromise;
+  await connectionPromise; // Chờ kết nối đầu tiên hoàn tất (nếu đang diễn ra)
 
   if (connection?.state !== signalR.HubConnectionState.Connected) {
     console.warn(`⚠️ Hub chưa kết nối (${methodName}), thử reconnect...`);
     try {
+      // Thử kết nối lại
       await connectToSocialChatHub();
     } catch (error) {
       console.error("❌ Không thể reconnect:", error);
-      return;
+      return; // Không thể làm gì hơn
     }
   }
 
+  // Nếu kết nối thành công (hoặc đã kết nối từ trước)
   try {
     return await connection.invoke(methodName, ...args);
   } catch (err) {
@@ -198,14 +201,22 @@ const invoke = async (methodName, ...args) => {
 // ===================================================
 // HÀM CHAT CHÍNH (Invoke SignalR)
 // ===================================================
-export const joinGroup = (maCuocTroChuyen) => invoke("JoinGroup", maCuocTroChuyen);
-export const leaveGroup = (maCuocTroChuyen) => invoke("LeaveGroup", maCuocTroChuyen);
+export const joinGroup = (maCuocTroChuyen) =>
+  invoke("JoinGroup", maCuocTroChuyen);
+export const leaveGroup = (maCuocTroChuyen) =>
+  invoke("LeaveGroup", maCuocTroChuyen);
 
 // ✨ SendMessage — hỗ trợ reply
-export const sendMessage = (maCuocTroChuyen, noiDung, mediaUrl = null, parentMessageId = null) =>
+export const sendMessage = (
+  maCuocTroChuyen,
+  noiDung,
+  mediaUrl = null,
+  parentMessageId = null
+) =>
   invoke("SendMessage", maCuocTroChuyen, noiDung, mediaUrl, parentMessageId);
 
-export const markAsSeen = (maCuocTroChuyen) => invoke("MarkAsSeen", maCuocTroChuyen);
+export const markAsSeen = (maCuocTroChuyen) =>
+  invoke("MarkAsSeen", maCuocTroChuyen);
 export const recallMessage = (maCuocTroChuyen, maTinNhan) =>
   invoke("ThuHoiTinNhan", maCuocTroChuyen, maTinNhan);
 
@@ -216,9 +227,9 @@ export const updateUserPresence = (userId, isOnline) =>
   invoke("CapNhatTrangThaiNguoiDung", userId, isOnline);
 
 // ===================================================
-// ✨ API — Block / Unblock Conversation
+// ✨ API HELPER (Chung cho Block, Mute)
 // ===================================================
-const callBlockApi = async (maCuocTroChuyen, action) => {
+const callConversationApi = async (maCuocTroChuyen, action) => {
   const token = getAuthToken();
   if (!token) throw new Error("Token không tồn tại.");
 
@@ -246,11 +257,23 @@ const callBlockApi = async (maCuocTroChuyen, action) => {
   }
 };
 
+// ===================================================
+// ✨ API — Block / Unblock Conversation
+// ===================================================
 export const blockConversation = (maCuocTroChuyen) =>
-  callBlockApi(maCuocTroChuyen, "block");
+  callConversationApi(maCuocTroChuyen, "block");
 
 export const unblockConversation = (maCuocTroChuyen) =>
-  callBlockApi(maCuocTroChuyen, "unblock");
+  callConversationApi(maCuocTroChuyen, "unblock");
+
+// ===================================================
+// ✨ [MỚI] API — Mute / Unmute Conversation
+// ===================================================
+export const muteConversation = (maCuocTroChuyen) =>
+  callConversationApi(maCuocTroChuyen, "mute");
+
+export const unmuteConversation = (maCuocTroChuyen) =>
+  callConversationApi(maCuocTroChuyen, "unmute");
 
 // ===================================================
 // API — Ẩn hoặc xóa cuộc trò chuyện

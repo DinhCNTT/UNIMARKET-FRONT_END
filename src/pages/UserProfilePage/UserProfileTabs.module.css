@@ -1,0 +1,49 @@
+.tabsContainer {
+  display: flex;
+  background-color: var(--theme-bg-primary);
+  border-bottom: 1px solid var(--theme-border-color);
+  padding-left: 12px;
+  gap: 6px;
+  width: fit-content;
+  position: relative;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Underline chung */
+.tabsContainer::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: var(--underline-left, 0); /* ✅ Dùng CSS variable */
+  width: var(--underline-width, 0); /* ✅ Dùng CSS variable */
+  height: 2px;
+  background: #ff6600;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+  transition: color 0.25s ease;
+  position: relative;
+  outline: none;
+}
+
+.tab:hover {
+  color: #ff6600;
+  background: none;
+}
+.tab.active {
+  color: #ff6600;
+  background: none;
+}

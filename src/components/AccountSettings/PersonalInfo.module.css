@@ -1,0 +1,246 @@
+/* Container chính */
+.cardWrapper {
+  width: 100%;
+  max-width: 650px;
+  padding: 48px 80px;
+  background-color: #fff;
+  border-radius: 20px;
+  margin: 60px auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transform: translateX(105px);
+}
+
+
+
+/* Tiêu đề */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #1a1a1a;
+  text-align: left;
+  position: relative;
+  padding-bottom: 12px;
+}
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #ff9900, #ff6600);
+  border-radius: 2px;
+}
+
+/* Form chung */
+.formGroup {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+}
+
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid #d0d0d0;
+  background-color: #fdfdfd;
+  font-size: 15px;
+  color: #333;
+  transition: all 0.25s ease-in-out;
+}
+
+.input:focus {
+  border-color: #ff9800;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.18);
+  outline: none;
+}
+
+.input:disabled {
+  background-color: #f5f5f5;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* Nút bấm chung */
+.button {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #fff;
+  padding: 8px 16px; /* Tăng padding 1 chút */
+  font-weight: 500;
+  font-size: 14px; /* Tăng size 1 chút */
+  border: none;
+  border-radius: 8px; /* Đồng bộ với input */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  width: auto; /* Quan trọng: để nút tự co giãn */
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #fb8c00, #ef6c00);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Đường kẻ ngang */
+.divider {
+  margin: 40px 0;
+  border: none;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+/* Wrapper cho input email */
+.emailInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 500px;
+}
+
+.emailInputWrapper .input {
+  flex: 1;
+}
+
+.verifiedIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #27ae60;
+  font-size: 18px;
+}
+
+/* Thao tác với Avatar */
+.avatarSection {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.avatarPreview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Nút upload hình dấu + */
+.avatarUploadBtn {
+  background: #e6f9ec;
+  border: 2px dashed #2ecc40;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  /* Dịch nút lên trên ảnh */
+  transform: translate(-30px, 25px);
+  transition: all 0.2s ease;
+}
+.avatarUploadBtn:hover {
+  background: #d6f4e0;
+  transform: translate(-30px, 25px) scale(1.1);
+}
+
+/* Popup */
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.popupContent {
+  background: #ffffff;
+  padding: 28px 24px;
+  border-radius: 16px;
+  width: 380px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  animation: popupFadeIn 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.popupContent h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.popupActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Nút trong popup (style khác 1 chút) */
+.popupContent .button {
+  flex: 1;
+}
+.popupContent .buttonSecondary {
+  background: #eee;
+  color: #555;
+}
+.popupContent .buttonSecondary:hover {
+  background: #ddd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Thông báo lỗi inline */
+.errorMessage {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 16px;
+}

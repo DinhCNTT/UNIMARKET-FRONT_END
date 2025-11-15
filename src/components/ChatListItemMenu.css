@@ -20,6 +20,9 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, background-color 0.2s ease, visibility 0.2s ease;
+  
+  /* ✨ [MỚI] Thêm từ Code 2: Cần để chứa 2 icon chồng lên nhau */
+  position: relative; 
 }
 
 /* 2. SỬA: Thêm .active-chat để nút hiện lên khi item được chọn (màu xanh) */
@@ -31,12 +34,47 @@
 
 /* 3. XÓA: Bỏ hover riêng của nút 3 chấm để đồng bộ màu */
 /* .menu-toggle-btn:hover {
-  background-color: #f0f2f5; 
+  background-color: #f0f2f5; 
 } 
 */
 
+/* ================================================== */
+/* ✨ [MỚI] CSS CHO TÍNH NĂNG MUTE (TỪ CODE 2) */
+/* ================================================== */
 
+/* Ẩn/hiện icon chuông và 3 chấm */
+.chatlist-item-menu .menu-toggle-btn .mute-icon {
+  display: none; /* Ẩn icon chuông mặc định */
+}
+.chatlist-item-menu .menu-toggle-btn .more-icon {
+  display: block; /* Hiện 3 chấm mặc định */
+}
+
+/* * KHI CHAT BỊ MUTE (class .muted ở wrapper) 
+ * VÀ KHÔNG HOVER
+ */
+.chatlist-item-wrapper.muted .chatlist-item-menu .menu-toggle-btn .mute-icon {
+  display: block;
+  color: #8a96a3; /* Màu xám cho icon chuông */
+}
+.chatlist-item-wrapper.muted .chatlist-item-menu .menu-toggle-btn .more-icon {
+  display: none;
+}
+
+/* * KHI CHAT BỊ MUTE 
+ * VÀ ĐANG HOVER (vào toàn bộ .chatlist-item-wrapper)
+ */
+.chatlist-item-wrapper.muted:hover .chatlist-item-menu .menu-toggle-btn .mute-icon {
+  display: none;
+}
+.chatlist-item-wrapper.muted:hover .chatlist-item-menu .menu-toggle-btn .more-icon {
+  display: block;
+}
+
+
+/* ================================================== */
 /* === PHẦN MENU DROPDOWN (Giữ nguyên) === */
+/* ================================================== */
 .menu-dropdown {
   position: absolute;
   top: 40px; 

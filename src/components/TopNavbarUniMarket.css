@@ -257,3 +257,10 @@
   flex-direction: column;
   overflow: hidden;
 }
+.um-tn-avatar {
+  width: 28px;  /* To hơn một chút */
+  height: 28px; /* Bằng width */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2); 
+}

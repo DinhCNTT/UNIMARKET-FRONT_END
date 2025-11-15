@@ -1,0 +1,33 @@
+/* Style cho layout chính của trang */
+.profileContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  padding-left: 170px; /* Giữ khoảng trống cho sidebar */
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--theme-bg-secondary);
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+.contentArea {
+  width: 100%;
+  max-width: 1075px;
+  background-color: var(--theme-bg-primary);
+  box-shadow: var(--theme-shadow, none) !important;
+  border-radius: 20px;
+  overflow: hidden;
+  border: none !important;
+  margin-top: -20px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.errorText {
+  color: var(--theme-text-secondary);
+  margin-top: 100px;
+  font-size: 1.2rem;
+}

@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./ChatListItemMenu.css";
-import { MoreHorizontal } from "react-feather";
 
-// ✨ Import API từ service
+// ✨ Import icon mở rộng
+import { MoreHorizontal, BellOff } from "react-feather";
+
+// ✨ Import API từ service (ĐẦY ĐỦ)
 import {
   blockConversation,
   unblockConversation,
+  muteConversation,
+  unmuteConversation,
 } from "../services/chatSocialService";
 
 const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
@@ -22,6 +26,7 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
         setIsOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -57,7 +62,6 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
       setIsLoading(true);
       try {
         await blockConversation(chat.maCuocTroChuyen);
-        // realtime "BlockStatusChanged" sẽ tự cập nhật UI
       } catch (error) {
         alert(error.message || "Lỗi khi chặn người dùng.");
       } finally {
@@ -77,9 +81,31 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
     setIsLoading(true);
     try {
       await unblockConversation(chat.maCuocTroChuyen);
-      // realtime "BlockStatusChanged" sẽ tự cập nhật UI
     } catch (error) {
       alert(error.message || "Lỗi khi gỡ chặn người dùng.");
+    } finally {
+      setIsLoading(false);
+      setIsOpen(false);
+    }
+  };
+
+  // ===================================================
+  // ✨ Mute / Unmute cuộc trò chuyện
+  // ===================================================
+  const handleToggleMuteClick = async (e) => {
+    e.stopPropagation();
+    if (isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      if (chat.isMuted) {
+        await unmuteConversation(chat.maCuocTroChuyen);
+      } else {
+        await muteConversation(chat.maCuocTroChuyen);
+      }
+    } catch (error) {
+      alert(error.message || "Lỗi khi thay đổi cài đặt thông báo.");
     } finally {
       setIsLoading(false);
       setIsOpen(false);
@@ -95,13 +121,13 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
   };
 
   // ===================================================
-  // Logic xác định menu CHẶN / GỠ CHẶN
+  // Xác định menu CHẶN / GỠ CHẶN
   // ===================================================
   let blockOption = null;
+
   if (chat && currentUserId) {
     if (chat.isBlocked) {
       if (chat.maNguoiChan === currentUserId) {
-        // 🟢 Chính mình là người chặn
         blockOption = (
           <button
             onClick={handleUnblockClick}
@@ -112,11 +138,9 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
           </button>
         );
       } else {
-        // 🔴 Mình bị chặn → không hiển thị gì
-        blockOption = null;
+        blockOption = null; // Mình bị chặn → không hiển thị tùy chọn
       }
     } else {
-      // 🟢 Chưa bị chặn
       blockOption = (
         <button
           onClick={handleBlockClick}
@@ -135,16 +159,32 @@ const ChatListItemMenu = ({ chat, currentUserId, onDelete }) => {
   return (
     <div className="chatlist-item-menu" ref={menuRef}>
       <button onClick={handleToggleMenu} className="menu-toggle-btn">
-        <MoreHorizontal size={20} />
+        {/* ✨ Hiển thị icon chuông nếu bị mute */}
+        {chat.isMuted && <BellOff size={20} className="mute-icon" />}
+        <MoreHorizontal size={20} className="more-icon" />
       </button>
 
       {isOpen && (
         <div className="menu-dropdown">
+          {/* ✨ Nút Tắt/Bật thông báo */}
+          <button
+            onClick={handleToggleMuteClick}
+            className="menu-item"
+            disabled={isLoading}
+          >
+            {isLoading
+              ? "Đang xử lý..."
+              : chat.isMuted
+              ? "Bật thông báo"
+              : "Tắt thông báo"}
+          </button>
+
+          {/* Xóa đoạn chat */}
           <button onClick={handleDeleteClick} className="menu-item delete">
             Xóa đoạn chat
           </button>
 
-          {/* ✨ Tùy chọn chặn/gỡ chặn */}
+          {/* Chặn / Gỡ chặn */}
           {blockOption}
         </div>
       )}

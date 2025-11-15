@@ -83,8 +83,6 @@
 .friend-chatlist .chatlist-item-title .online-dot {
   display: inline-block;
   vertical-align: middle;
-  width: 10px;
-  height: 10px;
   background: #00c853;
   border-radius: 50%;
   margin-left: 6px;
