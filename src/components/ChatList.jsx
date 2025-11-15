@@ -858,7 +858,7 @@ connection.on("ChatStatusChanged", (data) => {
             <div className="chatlist-item-content">
               <div className="chatlist-item-title">
                 <Users size={20} className="icon" />
-                UniMarket Bạn bè
+                <span className="chatlist-item-title-text">UniMarket Bạn bè</span>
               </div>
               <div className="chatlist-item-last">Xem danh sách bạn bè của bạn</div>
             </div>
@@ -899,7 +899,7 @@ connection.on("ChatStatusChanged", (data) => {
 
                   {/* Nội dung hội thoại */}
                   <div className="chatlist-item-content">
-                    <div className="chatlist-item-title">{chat.tieuDeTinDang}</div>
+                    <div className="chatlist-item-title"><span className="chatlist-item-title-text">{chat.tieuDeTinDang}</span></div>
                     <div className="chatlist-item-price">
                       Giá:{" "}
                       {chat.giaTinDang?.toLocaleString("vi-VN", {

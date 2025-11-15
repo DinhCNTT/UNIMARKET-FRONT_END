@@ -30,6 +30,12 @@ import QuickReplies from "./QuickReplies";
 const ImageModal = lazy(() => import("./ImageModal"));
 const VideoModal = lazy(() => import("./VideoModal")); // 👈 THÊM DÒNG NÀY
 
+const ModalLoadingFallback = () => (
+  <div className={styles.modalLoadingOverlay}>
+    <div className={styles.modalLoadingSpinner}></div>
+  </div>
+);
+
 const ChatBox = ({ maCuocTroChuyen }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -494,7 +500,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           />
         </div>
         <ChatInfoSidebar />
-        <Suspense fallback={<div>Đang tải...</div>}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           {modalImage && <ImageModal />}
           {videoModalUrl && (
             <VideoModal url={videoModalUrl} onClose={closeVideoModal} />

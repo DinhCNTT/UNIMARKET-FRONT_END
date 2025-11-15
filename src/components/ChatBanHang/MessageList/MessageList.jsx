@@ -25,27 +25,60 @@ const MessageList = () => {
     hasMore,
   } = useChat();
 
-  // console.log("MessageList render, isLoadingMore:", isLoadingMore);
-
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const parentRef = useRef(null);
   const prevScrollHeight = useRef(0);
 
+  // ✅ FIX CHÍNH: Estimate hợp lý + enable dynamic sizing
+  const estimateSize = useCallback((index) => {
+    const msg = danhSachTin[index];
+    if (!msg) return 100;
+    
+    // Ước tính HỢP LÝ (không quá lớn, không quá nhỏ)
+    if (msg.loaiTinNhan === "image" || msg.loaiTinNhan === "video") {
+      return 320; // 👈 Giảm xuống 320px
+    }
+    if (msg.isRecalled) {
+      return 70; // 👈 Giảm xuống 70px
+    }
+    // Text: Tính dựa trên độ dài
+    const textLength = msg.noiDung?.length || 50;
+    return Math.min(150, 70 + textLength * 0.3); // 👈 Max 150px
+  }, [danhSachTin]);
+
   const rowVirtualizer = useVirtualizer({
     count: danhSachTin.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 100, // Nhớ chỉnh lại số này cho đúng
-    overscan: 20,
+    estimateSize: estimateSize, // 👈 Dùng estimate hợp lý
+    overscan: 5, // 👈 Giảm overscan xuống 5
+    getItemKey: (index) => danhSachTin[index]?.maTinNhan || index,
+    // 👇 QUAN TRỌNG: Enable dynamic measurement
+    lanes: 1,
   });
+
+  // 👇 Callback xử lý khi media loaded
+  const handleMediaLoaded = useCallback((maTinNhan) => {
+    // Tìm index và measure lại chính xác item đó
+    const index = danhSachTin.findIndex(msg => msg.maTinNhan === maTinNhan);
+    if (index !== -1 && parentRef.current) {
+      requestAnimationFrame(() => {
+        const element = parentRef.current.querySelector(`[data-index="${index}"]`);
+        if (element) {
+          // Measure lại item cụ thể
+          const height = element.getBoundingClientRect().height;
+          // Force virtualizer cập nhật size
+          rowVirtualizer.measureElement(element);
+        }
+      });
+    }
+  }, [danhSachTin, rowVirtualizer]);
 
   // Logic xử lý cuộn (Kích hoạt Phân trang)
   const handleScroll = useCallback(() => {
     if (!parentRef.current) return;
     const { scrollTop } = parentRef.current;
 
-    // Nới lỏng điều kiện
     if (scrollTop < 5 && hasMore && !isLoadingMore) {
-      // console.log("ĐÃ CUỘN LÊN ĐỈNH! Đang gọi loadMoreMessages...");
       prevScrollHeight.current = parentRef.current.scrollHeight;
       loadMoreMessages();
     }
@@ -64,14 +97,37 @@ const MessageList = () => {
     setIsFirstLoad(true);
   }, [user, markAsRead]);
 
+  // ✅ Effect: Measure TẤT CẢ items sau khi render
+  useEffect(() => {
+    if (danhSachTin.length > 0 && parentRef.current) {
+      // Đợi DOM render xong
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Measure toàn bộ
+          rowVirtualizer.measure();
+        });
+      });
+    }
+  }, [danhSachTin.length, rowVirtualizer]);
+
   // Effect: Tự cuộn xuống dưới cùng KHI MỚI VÀO CHAT
   useEffect(() => {
     if (isFirstLoad && danhSachTin.length > 0) {
-      rowVirtualizer.scrollToIndex(danhSachTin.length - 1, {
-        align: "end",
-        behavior: "auto", // 'auto' là đúng khi mới tải trang
-      });
-      setIsFirstLoad(false);
+      // ✅ FIX: Hiện lập tức không trượt
+      const timer = setTimeout(() => {
+        // Measure trước
+        rowVirtualizer.measure();
+        // Đợi measure xong rồi scroll
+        setTimeout(() => {
+          rowVirtualizer.scrollToIndex(danhSachTin.length - 1, {
+            align: "end",
+            behavior: "auto",
+            smooth: false, // 👈 Hiện lập tức
+          });
+          setIsFirstLoad(false);
+        }, 50); // 👈 Giảm xuống 50ms để nhanh hơn
+      }, 100); // 👈 Giảm xuống 100ms
+      return () => clearTimeout(timer);
     }
   }, [isFirstLoad, danhSachTin.length, rowVirtualizer]);
 
@@ -79,23 +135,33 @@ const MessageList = () => {
   const lastMessageId = danhSachTin[danhSachTin.length - 1]?.maTinNhan;
   useEffect(() => {
     if (!isFirstLoad && danhSachTin.length > 0) {
-      //
-      // 🚀 FIX: Sửa 'smooth' thành 'auto'
-      // 'auto' là dịch chuyển tức thời, sẽ hết lỗi
-      //
-      rowVirtualizer.scrollToIndex(danhSachTin.length - 1, {
-        align: "end",
-        behavior: "auto", // <--- SỬA LỖI Ở ĐÂY
+      // Measure trước rồi scroll
+      requestAnimationFrame(() => {
+        rowVirtualizer.measure();
+        setTimeout(() => {
+          rowVirtualizer.scrollToIndex(danhSachTin.length - 1, {
+            align: "end",
+            behavior: "smooth", // 👈 Đổi thành smooth
+          });
+        }, 100);
       });
     }
-  }, [lastMessageId, isFirstLoad, rowVirtualizer]); // Chạy khi tin nhắn cuối cùng thay đổi
+  }, [lastMessageId, isFirstLoad, rowVirtualizer]);
 
-  // Effect: Giữ vị trí cuộn KHI TẢI TIN CŨ
+  // ✅ Giữ vị trí cuộn KHI TẢI TIN CŨ
   useLayoutEffect(() => {
     if (!isLoadingMore && prevScrollHeight.current > 0 && parentRef.current) {
       const newScrollHeight = parentRef.current.scrollHeight;
-      parentRef.current.scrollTop = newScrollHeight - prevScrollHeight.current;
-      prevScrollHeight.current = 0;
+      const scrollDiff = newScrollHeight - prevScrollHeight.current;
+      
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (parentRef.current) {
+            parentRef.current.scrollTop = scrollDiff;
+            prevScrollHeight.current = 0;
+          }
+        });
+      });
     }
   }, [isLoadingMore]);
 
@@ -105,7 +171,6 @@ const MessageList = () => {
     const myMessages = danhSachTin.filter((m) => m.maNguoiGui === user.id);
     if (myMessages.length === 0) return null;
 
-    // Sắp xếp lại để lấy tin nhắn cuối cùng
     const lastMessage = myMessages.sort(
       (a, b) => new Date(b.thoiGianGui) - new Date(a.thoiGianGui)
     )[0];
@@ -116,12 +181,7 @@ const MessageList = () => {
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    /* FIX BƯỚC 1: Thêm <div> cha làm "mỏ neo"
-      Nó KHÔNG cuộn, và có position: relative
-    */
     <div className={styles.chatWindowWrapper}>
-      {/* FIX BƯỚC 2: Đây là <div> CŨ của bạn, GIỜ CHỈ ĐỂ CUỘN 
-      */}
       <div
         ref={parentRef}
         onScroll={handleScroll}
@@ -151,17 +211,15 @@ const MessageList = () => {
               <p className={styles.emptyText}>Hãy bắt đầu cuộc trò chuyện!</p>
             </div>
           ) : (
-            // Dùng virtualItems.map()
             virtualItems.map((virtualItem) => {
-              // Kiểm tra msg có tồn tại
               const msg = danhSachTin[virtualItem.index];
-              if (!msg) return null; // Thêm kiểm tra an toàn
+              if (!msg) return null;
 
               return (
                 <div
                   key={msg.maTinNhan}
-                  ref={rowVirtualizer.measureElement}
                   data-index={virtualItem.index}
+                  ref={rowVirtualizer.measureElement}
                   style={{
                     position: "absolute",
                     top: 0,
@@ -173,21 +231,16 @@ const MessageList = () => {
                   <MessageItem
                     message={msg}
                     showSeenStatus={msg.maTinNhan === lastSeenMsgId}
+                    onMediaLoaded={handleMediaLoaded}
                   />
                 </div>
               );
             })
           )}
         </div>
-
-        {/* FIX BƯỚC 3: XÓA thanh thông báo chặn ra khỏi <div> cuộn này
-        */}
       </div>
-      {/* (Đóng .chatboxMessages) */}
 
-      {/* FIX BƯỚC 4: DÁN thanh thông báo chặn VÀO ĐÂY
-        (Nằm bên ngoài div cuộn, nhưng bên trong div "mỏ neo")
-      */}
+      {/* Thanh thông báo chặn */}
       {(isBlockedByMe || isBlockedByOther) && (
         <div className={styles.blockedNotice}>
           <FaBan size={24} />
@@ -198,7 +251,7 @@ const MessageList = () => {
           </p>
         </div>
       )}
-    </div> /* (Đóng .chatWindowWrapper) */
+    </div>
   );
 };
 

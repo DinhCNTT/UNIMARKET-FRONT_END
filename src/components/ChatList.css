@@ -1,8 +1,8 @@
 .chatlist-container {
+  display: flex;
   flex-direction: column;
-  height: 120vh;
+  height: 100vh; /* fit viewport */
   background-color: white;
-  
 }
 
 /* Header wrapper cho search + filter button */
@@ -115,6 +115,17 @@
   line-height: 1.4;          /* ✅ thoáng hơn */
   letter-spacing: 0.2px;     /* ✅ chữ tinh tế hơn */
   color: inherit;            /* ✅ giữ màu gốc */
+}
+
+.chatlist-item-title-text {
+  display: -webkit-box;           /* 👈 Đổi từ inline-block */
+  -webkit-line-clamp: 2;          /* 👈 Cho phép tối đa 2 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.4;               /* 👈 Khoảng cách giữa các dòng */
+  word-break: break-word;         /* 👈 Ngắt từ dài nếu cần */
 }
 
 .chatlist-item-price {
@@ -485,6 +496,8 @@
 /* Smooth scrolling cho container */
 .chatlist-scrollable {
   scroll-behavior: smooth;
+  flex: 1 1 auto; /* allow scrollable area to grow/shrink inside container */
+  overflow-y: auto; /* show scrollbar only when content overflows */
 }
 
 /* Ngăn highlight text khi drag */
@@ -711,6 +724,16 @@
   gap: 8px;
   font-weight: 600;
   color: #1d4ed8; /* màu xanh hiện đại */
+}
+
+/* Ensure the title text truncates correctly when the title is a flex container (special item) */
+.special-item .chatlist-item-title-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .special-item .chatlist-item-title .icon {

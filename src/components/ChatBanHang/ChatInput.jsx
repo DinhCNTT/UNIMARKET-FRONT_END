@@ -10,6 +10,7 @@ const CLOUDINARY_CLOUD_NAME = "dcwe8drcu";
 const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 5;
+const MAX_CHARS = 500; // ✅ Giới hạn 500 ký tự
 
 const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisabled, inputRef }) => {
   const { isConnected, isBlockedByMe, isBlockedByOther, sendMessageService } = useChat();
@@ -172,6 +173,17 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
   }, []);
 
   const handleSend = useCallback(async () => {
+    // ✅ KIỂM TRA VƯỢT QUÁ 500 KÝ TỰ KHI GỬI
+    if (tinNhan.trim().length > MAX_CHARS) {
+      Swal.fire({
+        icon: "error",
+        title: "Vượt quá giới hạn",
+        text: `Tin nhắn tối đa ${MAX_CHARS} ký tự. Hiện tại: ${tinNhan.trim().length} ký tự`,
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
+
     if (!tinNhan.trim() && imagePreviewList.length === 0 && videoPreviewList.length === 0) {
       Swal.fire("Lỗi", "Vui lòng nhập tin nhắn hoặc gửi ảnh/video", "error");
       return;
@@ -261,11 +273,9 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
       const text = e?.detail?.text;
       if (!text) return;
       try {
-        // Use the context sendMessageService if available
         if (sendMessageService) {
           await sendMessageService(text.trim(), 'text');
         } else {
-          // fallback: set input and call handleSend
           setTinNhan(text);
           await handleSend();
         }
@@ -277,8 +287,13 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
     return () => window.removeEventListener('quick-reply', onQuickReply);
   }, [sendMessageService, handleSend, setTinNhan]);
 
+  // ✅ Handle text change - CHỈ CẬP NHẬT, KHÔNG CHẶN
   const handleTextChange = useCallback((e) => {
-    setTinNhan(e.target.value);
+    const newValue = e.target.value;
+    
+    // ✅ CHỈ cập nhật, không chặn (để người dùng tự biết vượt quá)
+    setTinNhan(newValue);
+    
     const textarea = e.target;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
@@ -297,6 +312,11 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
       });
     };
   }, [imagePreviewList, videoPreviewList]);
+
+  // ✅ Tính số ký tự
+  const currentLength = tinNhan.length;
+  const isOverLimit = currentLength > MAX_CHARS;
+  const isNearLimit = currentLength > MAX_CHARS - 50 && !isOverLimit;
 
   return (
     <div
@@ -400,7 +420,7 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
           </label>
         </div>
 
-        <div className={styles.textWrap}>
+        <div className={styles.textWrap} style={{ position: 'relative' }}>
           <textarea
             ref={inputRef}
             value={tinNhan}
@@ -416,7 +436,28 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
             disabled={isDisabled}
             onKeyDown={handleKeyDown}
             rows={1}
+            style={{
+              paddingRight: '60px', // ✅ Chừa chỗ cho counter
+            }}
           />
+          {/* ✅ HIỂN THỊ COUNTER LUÔN */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '12px',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: isOverLimit ? '#ef4444' : isNearLimit ? '#f59e0b' : '#94a3b8',
+              pointerEvents: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              padding: '2px 6px',
+              borderRadius: '6px',
+              transition: 'color 0.2s ease',
+            }}
+          >
+            {currentLength}/{MAX_CHARS}
+          </div>
         </div>
 
         <button

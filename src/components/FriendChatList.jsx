@@ -391,7 +391,7 @@ const FriendChatList = ({ userId, onSelectChat, selectedChatId }) => {
                 />
                 <div className="chatlist-item-content">
                   <div className="chatlist-item-title">
-                    {chat.partner?.fullName || "Người dùng"}
+                    <span className="chatlist-item-title-text">{chat.partner?.fullName || "Người dùng"}</span>
                     {chat.partner?.isOnline && (
                       <span className="online-dot" title="Đang online"></span>
                     )}
