@@ -1,9 +1,9 @@
 .pi-card-wrapper {
   width: 100%;
-  max-width: 1200px; /* ✅ Tăng max-width cho màn hình lớn */
-  padding: 48px 80px; /* ✅ Tăng padding cho không gian thoáng */
+  max-width: 1400px; /* ⬅️ rộng hơn sang phải */
+  padding: 48px 80px;
   background-color: #fff;
-  border-radius: 20px; /* ✅ Bo góc lớn hơn */
+  border-radius: 20px;
   margin: 60px auto;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);

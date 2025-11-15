@@ -272,8 +272,8 @@
   width: 100%;
   padding: 12px;
   margin-top: 16px; /* Khoảng cách với lưới media */
-  background-color: #374151; /* Màu xám đậm */
-  color: #ffffff;
+  background-color: #e8e8e8;
+  color: #222222;
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -285,7 +285,7 @@
 }
 
 .viewAllButton:hover {
-  background-color: #4b5563; /* Màu xám đậm hơn khi hover */
+  background-color: #d6d6d6; /* Màu xám đậm hơn khi hover */
 }
 
 

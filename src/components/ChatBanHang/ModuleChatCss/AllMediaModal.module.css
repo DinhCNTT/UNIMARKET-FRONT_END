@@ -16,11 +16,14 @@
   background: #ffffff;
   border-radius: 12px;
   width: 90%;
-  max-width: 800px; /* Giới hạn chiều rộng */
-  height: 90vh; /* Chiều cao tối đa */
+  max-width: 800px;
+  height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Để header/footer cố định */
+  overflow: hidden;
+
+  margin-left: 300px; 
+  margin-top: 70px;   /* 👈 đẩy xuống dưới */
 }
 
 .modalHeader {
