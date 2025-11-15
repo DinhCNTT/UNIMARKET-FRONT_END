@@ -1,15 +1,76 @@
 .chatlist-container {
   flex-direction: column;
-  height: auto;
+  height: 120vh;
   background-color: white;
-  display: flex;
+  
 }
 
-/* Phần tìm kiếm + filter */
-.chatlist-search,
+/* Header wrapper cho search + filter button */
+.chatlist-header-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ccc;
+  gap: 8px;
+}
+
+/* Phần tìm kiếm */
+.chatlist-search {
+  flex: 1;
+  padding: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+.chatlist-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.chatlist-search input:focus {
+  border-color: #999;
+}
+
+/* Nút filter ba chấm */
+.chatlist-filter-menu-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chatlist-filter-menu-btn:hover {
+  background-color: #f0f0f0;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.chatlist-filter-menu-btn:active {
+  transform: scale(0.95);
+}
+
+/* Phần tìm kiếm + filter cũ (deprecated) */
 .chatlist-filter-dropdown {
   padding: 8px 10px;
   border-bottom: 1px solid #ccc;
+  display: none; /* ẩn dropdown cũ */
 }
 
 /* Style từng item chat */
@@ -447,13 +508,13 @@
   transform: translateY(0) scale(1);
   opacity: 0;
   background: #ffffff; /* clean white card */
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 12px 30px rgba(2,6,23,0.12);
-  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
   z-index: 2000; /* high so it can overlap the chatbox */
-  min-width: 220px; /* slightly larger menu */
-  max-width: 320px;
+  min-width: 240px;
+  max-width: 340px;
   display: flex;
   flex-direction: column;
   animation: popoverDropIn 0.14s cubic-bezier(0.2, 0, 0, 1) forwards;
@@ -462,31 +523,72 @@
 @keyframes popoverDropIn {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.99);
+    transform: translateY(-8px) scale(0.96);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
+
+.chatlist-menu-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .chatlist-menu-popover-btn {
   background: transparent;
   border: none;
-  padding: 14px 16px;
+  padding: 12px 14px;
   text-align: left;
   width: 100%;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
+  justify-content: flex-start;
+  gap: 12px;
+  font-size: 14px;
   font-weight: 500;
-  transition: all 0.15s ease;
-  color: #111827;
+  transition: all 0.12s ease;
+  color: #1f2937;
+  position: relative;
+  height: 44px;
+  min-height: 44px;
 }
+
+.menu-icon-svg {
+  color: #374151;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatlist-menu-popover-btn.active {
+  background: #eff6ff;
+  color: #0284c7;
+  font-weight: 600;
+}
+
+.chatlist-menu-popover-btn.active .menu-icon-svg {
+  color: #0284c7;
+}
+
 .chatlist-menu-popover-btn:hover {
-  background: #f5f5f5;
-  transform: translateX(2px);
+  background: #f9fafb;
+}
+
+.chatlist-menu-popover-btn:hover .menu-icon-svg {
+  color: #0284c7;
+}
+
+/* Divider line trong popover menu */
+.chatlist-menu-divider {
+  height: 1px;
+  background-color: #f3f4f6;
+  margin: 8px 0;
 }
 
 /* Small caret to visually attach popover to button */
@@ -621,6 +723,5 @@
   transform: scale(1.1);
   color: #1e3a8a;
 }
-.special-item .chatlist-item-info {
-  color: #4b5563; /* màu xám hiện đại */
-}
+
+

@@ -255,6 +255,28 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
     }
   }, [handleSend]);
 
+  // Listen for quick-reply events to send immediately in this chat context
+  React.useEffect(() => {
+    const onQuickReply = async (e) => {
+      const text = e?.detail?.text;
+      if (!text) return;
+      try {
+        // Use the context sendMessageService if available
+        if (sendMessageService) {
+          await sendMessageService(text.trim(), 'text');
+        } else {
+          // fallback: set input and call handleSend
+          setTinNhan(text);
+          await handleSend();
+        }
+      } catch (err) {
+        console.error('Lỗi gửi quick-reply (ChatBanHang):', err);
+      }
+    };
+    window.addEventListener('quick-reply', onQuickReply);
+    return () => window.removeEventListener('quick-reply', onQuickReply);
+  }, [sendMessageService, handleSend, setTinNhan]);
+
   const handleTextChange = useCallback((e) => {
     setTinNhan(e.target.value);
     const textarea = e.target;

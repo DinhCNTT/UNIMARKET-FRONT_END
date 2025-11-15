@@ -25,7 +25,7 @@
   display: inline-block;
 }
 
-/* Main Share Button */
+/* Main Share Button (Giữ nguyên màu accent) */
 .UserProfile-ShareButton-mainButton {
   display: inline-flex;
   align-items: center;
@@ -42,7 +42,7 @@
   box-shadow: 0 2px 8px rgba(255, 102, 0, 0.3);
   outline: none;
   position: relative;
-  top: -25px; /* chỉnh số âm nhỏ để dịch nút lên */
+  top: -25px;
 }
 
 .UserProfile-ShareButton-mainButton:hover {
@@ -55,7 +55,7 @@
   transform: translateY(0);
 }
 
-/* Overlay */
+/* Overlay (Giữ nguyên) */
 .UserProfile-ShareButton-overlay {
   position: fixed;
   top: 0;
@@ -68,25 +68,24 @@
   animation: UserProfile-ShareButton-overlayFadeIn 0.2s ease;
 }
 
-/* Dropdown - LUÔN CỐ ĐỊNH Ở GIỮA MÀN HÌNH */
+/* Dropdown */
 .UserProfile-ShareButton-dropdown {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 320px;
-  max-width: calc(100vw - 32px); /* Đảm bảo không vượt quá màn hình */
-  background: #ffffff;
+  max-width: calc(100vw - 32px);
+  background: var(--theme-bg-primary, #ffffff);
+  border: 2px solid var(--theme-border-color, #e0e0e0);
   border-radius: 16px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 2px solid #e0e0e0;
+  box-shadow: var(--theme-shadow, 0 25px 80px rgba(0, 0, 0, 0.4));
   z-index: 999999;
   overflow: hidden;
   animation: UserProfile-ShareButton-dropdownOpen 0.3s ease;
   font-family: inherit;
 }
 
-/* Responsive cho mobile */
 @media (max-width: 768px) {
   .UserProfile-ShareButton-dropdown {
     width: calc(100vw - 32px);
@@ -97,7 +96,7 @@
 /* Header */
 .UserProfile-ShareButton-header {
   padding: 16px 20px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--theme-border-color, #f0f0f0);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -107,7 +106,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--theme-text-primary, #1a1a1a);
 }
 
 .UserProfile-ShareButton-closeBtn {
@@ -116,7 +115,7 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  color: #666;
+  color: var(--theme-text-secondary, #666);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,8 +125,8 @@
 }
 
 .UserProfile-ShareButton-closeBtn:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--theme-bg-hover, #f0f0f0);
+  color: var(--theme-text-primary, #333);
 }
 
 /* Copy Section */
@@ -154,8 +153,8 @@
   gap: 8px;
   padding: 0 4px;
   height: 24px;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--theme-bg-secondary, #f8f9fa);
+  border: 1px solid var(--theme-border-color, #e9ecef);
   border-radius: 10px;
   transition: all 0.2s ease;
 }
@@ -168,11 +167,11 @@
 
 .UserProfile-ShareButton-linkInputWrapper:focus-within {
   border-color: #ff6600;
-  background: white;
+  background: var(--theme-bg-primary, white);
 }
 
 .UserProfile-ShareButton-linkIcon {
-  color: #666;
+  color: var(--theme-text-secondary, #666);
   flex-shrink: 0;
 }
 
@@ -182,7 +181,7 @@
   border: none;
   outline: none;
   font-size: 12px;
-  color: #222;
+  color: var(--theme-text-secondary, #222);
   font-family: monospace;
 }
 
@@ -227,12 +226,12 @@
 /* Social Section */
 .UserProfile-ShareButton-socialSection {
   padding: 16px 20px 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--theme-border-color, #f0f0f0);
 }
 
 .UserProfile-ShareButton-socialLabel {
   font-size: 13px;
-  color: #666;
+  color: var(--theme-text-secondary, #666);
   margin-bottom: 12px;
   font-weight: 500;
 }
@@ -243,6 +242,7 @@
   gap: 8px;
 }
 
+/* Social Buttons (giữ nguyên màu brand) */
 .UserProfile-ShareButton-socialBtn {
   background: transparent;
   position: relative;

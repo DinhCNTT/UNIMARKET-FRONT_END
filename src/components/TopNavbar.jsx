@@ -346,7 +346,7 @@ const TopNavbar = () => {
           }}
           aria-label="Unimarket home"
         >
-          <img src="/logoWeb.png" alt="Unimarket" className="logo-img" />
+          <img src="/logoWeb (1).png" alt="Unimarket" className="logo-img" />
         </a>
 
         <nav className="main-menu">

@@ -15,6 +15,7 @@ import TopNavbarUniMarket from "../components/TopNavbarUniMarket";
 
 // ✅ Context quản lý tab Navbar
 import { VideoContext } from "../context/VideoContext";
+import { useTheme } from "../context/ThemeContext";
 
 const UserProfilePage = () => {
   const { userId } = useParams();
@@ -34,25 +35,30 @@ const UserProfilePage = () => {
 
   // ✅ LẤY TỪ CONTEXT
   const { activeTab, setActiveTab } = useContext(VideoContext);
+  const { effectiveTheme } = useTheme();
 
   // ✅ Giữ màu vàng cho nút Profile trong navbar
-// ✅ Giữ màu vàng cho nút Profile CHỈ KHI đang xem chính mình
-useEffect(() => {
-  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    if (!loggedInUser) return; 
 
-  if (!loggedInUser) return;
+    const isMyProfile =
+      window.location.pathname.includes("/nguoi-dung") &&
+      String(loggedInUser.id) === String(userId);
 
-  if (
-    window.location.pathname.includes("/nguoi-dung") &&
-    String(loggedInUser.id) === String(userId) // so sánh id
-  ) {
-    setActiveTab("profile");
-  } else {
-    if (activeTab === "profile") {
-      setActiveTab(""); // khi xem người khác thì không active
+    const PANEL_TABS = new Set(["search", "upload", "activity", "more"]);
+
+    if (isMyProfile) {
+      if (!PANEL_TABS.has(activeTab) && activeTab !== "profile") {
+        setActiveTab("profile");
+      }
+    } else {
+      if (activeTab === "profile") {
+        setActiveTab(""); // hoặc null
+      }
     }
-  }
-}, [userId, setActiveTab]);
+  }, [userId, activeTab, setActiveTab]);
+
 
 
   // ✅ Reset mặc định tab Posts khi load profile mới
@@ -182,7 +188,10 @@ useEffect(() => {
   const displayedVideos = showMoreVideos ? videos : videos.slice(0, 10);
 
   return (
-    <div className="userprofilepage-modern-profile-container">
+    <div 
+    className="userprofilepage-modern-profile-container"
+    data-theme={effectiveTheme}
+    >
       {/* Auth Button */}
       <UserAuthButton />
 

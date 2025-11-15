@@ -4,6 +4,8 @@ import * as signalR from "@microsoft/signalr";
 import "./ChatList.css";
 import { MoreVertical, Trash2 } from "lucide-react"; // ← Cái này từ lucide-react (khác lib)
 import FriendChatList from "./FriendChatList";
+import QuickMessageModal from "./ChatList/QuickMessageModal";
+import { useQuickMessages } from "./ChatList/useQuickMessages";
 
 // ✅ Thêm FiTrash2 vô đây:
 import { 
@@ -14,7 +16,11 @@ import {
   FiMoreVertical, 
   FiTrash2,               // 👈 trash icon
   FiEye,                  // 👈 eye icon for unhide
-  FiEyeOff                // 👈 eye-off icon for hide
+  FiEyeOff,               // 👈 eye-off icon for hide
+  FiCheckSquare,          // 👈 checkbox icon for select multiple
+  FiList,                 // 👈 list icon for "all"
+  FiEyeOff as FiHidden,   // 👈 hidden icon for "hidden chats"
+  FiMessageSquare         // 👈 message icon for quick messages
 } from "react-icons/fi";
 
 // Services
@@ -32,9 +38,26 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [expandedChatId, setExpandedChatId] = useState(null);
   const [popoverStyle, setPopoverStyle] = useState(null);
+  const [showQuickMessageModal, setShowQuickMessageModal] = useState(false);
   const connectionRef = useRef(null);
   const menuButtonRefs = useRef({});
   const [showFriendList, setShowFriendList] = useState(false);
+
+  // Use quick messages hook
+  const {
+    quickMessages,
+    editingId,
+    editingContent,
+    setEditingContent,
+    isLoadingQuickMessages,
+    isSavingQuickMessages,
+    loadQuickMessages,
+    saveQuickMessages,
+    deleteQuickMessage,
+    startEditMessage,
+    cancelEdit,
+    syncQuickRepliesBar,
+  } = useQuickMessages(userId);
 
   // Use centralized service functions (imported from services/chatService)
 
@@ -151,7 +174,7 @@ const sortChatsLikeMessenger = (chats) => {
           const existing = prev.find((c) => c.maCuocTroChuyen === chatId);
           if (existing) return prev;
           const moved = chatList.find((c) => c.maCuocTroChuyen === chatId);
-          return moved ? sortChatsLikeMessenger([{ ...moved, isHidden: true }, ...prev]) : prev;
+          return moved ? sortChatsLikeMessenger([{ ...moved, isHidden: true, hasUnreadMessages: false }, ...prev]) : prev;
         });
       } else {
         // unhide: move back to chatList
@@ -177,6 +200,11 @@ const sortChatsLikeMessenger = (chats) => {
   // Lắng nghe click ngoài để đóng menu
   useEffect(() => {
     const handleClickOutside = (e) => {
+      // Không đóng menu nếu modal quản lý tin nhắn nhanh đang mở
+      if (showQuickMessageModal) {
+        return;
+      }
+      
       if (showDeleteConfirm && !e.target.closest('.chatlist-delete-confirm-modal')) {
         setShowDeleteConfirm(null);
       }
@@ -189,7 +217,30 @@ const sortChatsLikeMessenger = (chats) => {
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [showDeleteConfirm, expandedChatId]);
+  }, [showDeleteConfirm, expandedChatId, showQuickMessageModal]);
+
+  // Lắng nghe click ngoài modal quản lý tin nhắn nhanh
+  useEffect(() => {
+    if (!showQuickMessageModal) return;
+
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.chatlist-quick-message-modal')) {
+        setShowQuickMessageModal(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showQuickMessageModal, userId]);
+
+  // Load quick messages and sync quick-replies bar only when header filter (three-dot) is opened
+  useEffect(() => {
+    if (expandedChatId !== 'header-filter') return;
+    if (!userId) return;
+
+    console.log('[ChatList] Header filter opened - loading quick messages...');
+    loadQuickMessages();
+  }, [expandedChatId, userId]);
 
   // ✅ Lắng nghe event khi tin nhắn bị xóa để cập nhật chatlist
   useEffect(() => {
@@ -739,7 +790,7 @@ connection.on("ChatStatusChanged", (data) => {
       </div>
     ) : (
       // B. Header gốc cho màn hình Mua bán (hiển thị mặc định)
-      <>
+      <div className="chatlist-header-wrapper">
         <div className="chatlist-search">
           <input
             type="text"
@@ -749,19 +800,37 @@ connection.on("ChatStatusChanged", (data) => {
             spellCheck={false}
           />
         </div>
-        <div className="chatlist-filter-dropdown">
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="chatlist-filter-select"
-            disabled={isHideMode}
-            title="Lọc cuộc trò chuyện"
-          >
-            <option value="all">Tất cả</option>
-            <option value="hidden">Tin đã ẩn</option>
-          </select>
-        </div>
-      </>
+        <button
+          className="chatlist-filter-menu-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            const rect = btn.getBoundingClientRect();
+            const popoverWidth = 220;
+            const margin = 8;
+            let left = rect.right - popoverWidth;
+            left = Math.max(margin, Math.min(left, window.innerWidth - popoverWidth - margin));
+            const estimatedHeight = 110;
+            let top = rect.bottom + 6;
+            let placeAbove = false;
+            if (rect.bottom + estimatedHeight + margin > window.innerHeight) {
+              top = rect.top - estimatedHeight - 6;
+              placeAbove = true;
+            }
+            setPopoverStyle({ 
+              position: 'fixed', 
+              top: Math.round(top) + 'px', 
+              left: Math.round(left) + 'px', 
+              width: popoverWidth + 'px', 
+              transformOrigin: placeAbove ? 'bottom right' : 'top right' 
+            });
+            setExpandedChatId(expandedChatId === 'header-filter' ? null : 'header-filter');
+          }}
+          title="Tùy chọn lọc"
+        >
+          <FiMoreVertical size={20} />
+        </button>
+      </div>
     )}
 
     {/* ==================================================================== */}
@@ -912,6 +981,22 @@ connection.on("ChatStatusChanged", (data) => {
       </div>
     )}
 
+    {/* Quick Message Modal */}
+    <QuickMessageModal
+      show={showQuickMessageModal}
+      quickMessages={quickMessages}
+      editingId={editingId}
+      editingContent={editingContent}
+      onClose={() => setShowQuickMessageModal(false)}
+      onContentChange={setEditingContent}
+      onSave={saveQuickMessages}
+      onDelete={deleteQuickMessage}
+      onEdit={startEditMessage}
+      onCancelEdit={cancelEdit}
+      isLoading={isLoadingQuickMessages}
+      isSaving={isSavingQuickMessages}
+    />
+
     {/* Portal popover: render outside list so it won't be clipped */}
     <ChatListPopoverPortal
       expandedChatId={expandedChatId}
@@ -919,45 +1004,36 @@ connection.on("ChatStatusChanged", (data) => {
       onToggleHide={handleToggleHide}
       handleShowDeleteConfirm={handleShowDeleteConfirm}
       combinedChats={[...chatList, ...hiddenChatList]}
+      filterMode={filterMode}
+      setFilterMode={setFilterMode}
+      toggleHideMode={toggleHideMode}
+      chatList={chatList}
+      hiddenChatList={hiddenChatList}
+      setShowQuickMessageModal={setShowQuickMessageModal}
+      setExpandedChatId={setExpandedChatId}
     />
 
     {/* ==================================================================== */}
-    {/* ✨ NÚT ẨN HỘI THOẠI CHỈ HIỂN THỊ KHI KHÔNG Ở TRONG DANH SÁCH BẠN BÈ ✨ */}
+    {/* ✨ THANH XÁC NHẬN CHỈ HIỂN THỊ KHI ĐANG Ở CHẾ ĐỘ CHỌN ✨ */}
     {/* ==================================================================== */}
-    {!showFriendList && (
-      <div className={`chatlist-hide-button-container ${expandedChatId ? 'menu-open' : ''}`}>
+    {!showFriendList && isHideMode && (
+      <div className={`chatlist-hide-button-container`}>
         {filterMode === "all" ? (
-          !isHideMode ? (
+          <>
             <button
-              onClick={toggleHideMode}
-              className="chatlist-btn-hide-chat"
+              onClick={confirmHideChats}
+              disabled={selectedToHide.length === 0}
+              className="chatlist-btn-hide-chat chatlist-btn-confirm"
             >
-              Ẩn hội thoại
+              Xác nhận ẩn ({selectedToHide.length})
             </button>
-          ) : (
-            <>
-              <button
-                onClick={confirmHideChats}
-                disabled={selectedToHide.length === 0}
-                className="chatlist-btn-hide-chat chatlist-btn-confirm"
-              >
-                Xác nhận ẩn ({selectedToHide.length})
-              </button>
-              <button
-                onClick={cancelHideChats}
-                className="chatlist-btn-hide-chat chatlist-btn-cancel"
-              >
-                Hủy
-              </button>
-            </>
-          )
-        ) : !isHideMode ? (
-          <button
-            onClick={toggleHideMode}
-            className="chatlist-btn-hide-chat"
-          >
-            Gỡ ẩn hội thoại
-          </button>
+            <button
+              onClick={cancelHideChats}
+              className="chatlist-btn-hide-chat chatlist-btn-cancel"
+            >
+              Hủy
+            </button>
+          </>
         ) : (
           <>
             <button
@@ -984,10 +1060,96 @@ connection.on("ChatStatusChanged", (data) => {
 export default ChatList;
 
 // Render popover as portal so it can overlay other UI (hide bar) without being clipped.
-function ChatListPopoverPortal({ expandedChatId, popoverStyle, onClose, onDelete, onToggleHide, combinedChats, handleShowDeleteConfirm }) {
+function ChatListPopoverPortal({ expandedChatId, popoverStyle, onClose, onDelete, onToggleHide, combinedChats, handleShowDeleteConfirm, filterMode, setFilterMode, toggleHideMode, chatList, hiddenChatList, setShowQuickMessageModal, setExpandedChatId }) {
   if (!expandedChatId) return null;
-  const chat = combinedChats.find(c => c.maCuocTroChuyen === expandedChatId);
+
+  // Luôn lấy chat mới nhất từ combinedChats để đảm bảo realtime
+  const getLatestChat = () => {
+    return combinedChats.find(c => c.maCuocTroChuyen === expandedChatId);
+  };
+  
+  // Check trực tiếp xem chat này ở tab nào để biết trạng thái isHidden
+  const getIsHiddenState = () => {
+    const inChatList = chatList.find(c => c.maCuocTroChuyen === expandedChatId);
+    if (inChatList) return false; // Nằm trong danh sách chính => không bị ẩn
+    
+    const inHiddenList = hiddenChatList.find(c => c.maCuocTroChuyen === expandedChatId);
+    if (inHiddenList) return true; // Nằm trong danh sách ẩn => đã bị ẩn
+    
+    // Fallback: lấy từ chat object
+    const chat = getLatestChat();
+    return chat?.isHidden || false;
+  };
+
+  // If it's the header filter menu
+  if (expandedChatId === 'header-filter') {
+    return createPortal(
+      <div
+        className="chatlist-menu-popover"
+        style={{ ...popoverStyle, position: popoverStyle?.position || 'fixed' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="chatlist-menu-group">
+          <button 
+            className={`chatlist-menu-popover-btn ${filterMode === 'all' ? 'active' : ''}`}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setFilterMode('all');
+            }}
+          >
+            <FiList size={18} className="menu-icon-svg" />
+            <span>Tất cả</span>
+          </button>
+          <button 
+            className={`chatlist-menu-popover-btn ${filterMode === 'hidden' ? 'active' : ''}`}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setFilterMode('hidden');
+            }}
+          >
+            <FiHidden size={18} className="menu-icon-svg" />
+            <span>Tin đã ẩn</span>
+          </button>
+        </div>
+        <div className="chatlist-menu-divider"></div>
+        <button 
+          className="chatlist-menu-popover-btn"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            toggleHideMode();
+          }}
+        >
+          <FiCheckSquare size={18} className="menu-icon-svg" />
+          <span>Chọn nhiều hội thoại</span>
+        </button>
+        <div className="chatlist-menu-divider"></div>
+        <button 
+          className="chatlist-menu-popover-btn"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            console.log('[ChatList] Opening quick message modal');
+            setShowQuickMessageModal(true);
+            try {
+              // expandedChatId should already be null from parent
+              // but just in case we're in a context where it's needed
+            } catch(err) {
+              console.warn('Note about state:', err);
+            }
+          }}
+        >
+          <FiMessageSquare size={18} className="menu-icon-svg" />
+          <span>Quản lý tin nhắn nhanh</span>
+        </button>
+      </div>,
+      document.body
+    );
+  }
+
+  // If it's a chat item menu
+  const chat = getLatestChat();
   if (!chat) return null;
+  
+  const isCurrentlyHidden = getIsHiddenState();
 
   return createPortal(
     <div
@@ -999,8 +1161,8 @@ function ChatListPopoverPortal({ expandedChatId, popoverStyle, onClose, onDelete
         <FiTrash2 size={16} />
         <span style={{marginLeft:8}}>Xóa cuộc trò chuyện</span>
       </button>
-      <button className="chatlist-menu-popover-btn chatlist-hide-btn-expanded" onClick={(e) => { e.stopPropagation(); onToggleHide(chat.maCuocTroChuyen, !!chat.isHidden); }}>
-        {chat.isHidden ? (
+      <button className="chatlist-menu-popover-btn chatlist-hide-btn-expanded" onClick={(e) => { e.stopPropagation(); onToggleHide(chat.maCuocTroChuyen, isCurrentlyHidden); }}>
+        {isCurrentlyHidden ? (
           <>
             <FiEye size={16} />
             <span style={{marginLeft:8}}>Gỡ ẩn hội thoại</span>

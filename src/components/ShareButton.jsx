@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Share2, Copy, Facebook, Twitter, Send, Link, X } from 'lucide-react';
 import './ShareButton.css';
-
+import { useTheme } from '../context/ThemeContext';
 const ShareButton = ({ profileUser }) => {
+  const { effectiveTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const buttonRef = useRef(null);
@@ -93,6 +94,7 @@ const ShareButton = ({ profileUser }) => {
         <div 
           id="UserProfile-ShareButton-dropdownPortal" 
           className="UserProfile-ShareButton-dropdown"
+          data-theme={effectiveTheme}
         >
           {/* Header */}
           <div className="UserProfile-ShareButton-header">

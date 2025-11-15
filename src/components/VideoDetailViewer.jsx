@@ -15,7 +15,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useVideoHub } from "../context/VideoHubContext"; 
 
 // 🔥 Theme
-import { ThemeProvider, useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/ThemeContext";
 
 // 🔥 Custom hooks
 import { useVideoFeed } from "../hooks/useVideoFeed";
@@ -35,7 +35,7 @@ const SLIDE_DURATION = 650;
 // ======================================================
 //  COMPONENT CON — TOÀN BỘ NỘI DUNG CHÍNH ĐƯỢC ĐẶT Ở ĐÂY
 // ======================================================
-const VideoDetailViewerContent = () => {
+const VideoDetailViewer = () => {
 
   // =======================
   // 🎨 THEME từ context
@@ -610,17 +610,6 @@ const VideoDetailViewerContent = () => {
         />
       )}
     </div>
-  );
-};
-
-// ======================================================
-// COMPONENT CHA — CHỈ TRÁCH NHIỆM BỌC THEME PROVIDER
-// ======================================================
-const VideoDetailViewer = () => {
-  return (
-    <ThemeProvider>
-      <VideoDetailViewerContent />
-    </ThemeProvider>
   );
 };
 

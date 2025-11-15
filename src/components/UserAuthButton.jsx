@@ -3,25 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { BiIdCard } from "react-icons/bi";
 import { FaSignOutAlt } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
+import { FiUser } from "react-icons/fi"; // ✅ Icon đăng nhập mới
 import { AuthContext } from "../context/AuthContext";
 import defaultAvatar from '../assets/default-avatar.png';
 import './UserAuthButton.css';
+import { useTheme } from '../context/ThemeContext';
 
 const UserAuthButton = () => {
-  const { user, logout } = useContext(AuthContext); // ✅ Thêm logout từ context
+  const { user, logout } = useContext(AuthContext);
+  const { effectiveTheme } = useTheme();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // --- HANDLERS ---
   const handleLoginClick = () => {
     navigate('/login');
   };
 
   const handleAvatarClick = () => {
-    setShowDropdown(!showDropdown);
+    setShowDropdown(prev => !prev);
   };
 
   const handleProfileClick = () => {
-    // ✅ FIX: Sử dụng user.id thay vì user.maKhachHang
     if (user?.id) {
       navigate(`/nguoi-dung/${user.id}`);
     } else {
@@ -36,24 +39,23 @@ const UserAuthButton = () => {
   };
 
   const handleLogoutClick = () => {
-    // ✅ FIX: Gọi logout từ AuthContext thay vì xử lý thủ công
     logout();
-    
-    // Reload trang để đảm bảo UI được cập nhật
     window.location.reload();
   };
 
+  // --- RENDER LOGIN BUTTON ---
   if (!user) {
     return (
       <div className="userauthbutton-container">
         <button className="userauthbutton-login-btn" onClick={handleLoginClick}>
-          <span className="userauthbutton-login-icon">👤</span>
+          <FiUser className="userauthbutton-login-icon" />
           Đăng nhập
         </button>
       </div>
     );
   }
 
+  // --- RENDER USER DROPDOWN ---
   return (
     <div className="userauthbutton-container">
       <div className="userauthbutton-avatar-wrapper" onClick={handleAvatarClick}>
@@ -69,7 +71,7 @@ const UserAuthButton = () => {
       </div>
 
       {showDropdown && (
-        <div className="userauthbutton-dropdown">
+        <div className="userauthbutton-dropdown" data-theme={effectiveTheme}>
           <div className="userauthbutton-dropdown-header">
             <img
               src={user.avatarUrl || defaultAvatar}
@@ -81,22 +83,25 @@ const UserAuthButton = () => {
               <div className="userauthbutton-dropdown-email">{user.email}</div>
             </div>
           </div>
-          
+
           <div className="userauthbutton-dropdown-divider"></div>
-          
+
           <button className="userauthbutton-dropdown-item" onClick={handleProfileClick}>
             <BiIdCard className="userauthbutton-dropdown-icon" />
             Trang cá nhân
           </button>
-          
+
           <button className="userauthbutton-dropdown-item" onClick={handleSettingsClick}>
             <IoSettingsOutline className="userauthbutton-dropdown-icon" />
             Cài đặt tài khoản
           </button>
-          
+
           <div className="userauthbutton-dropdown-divider"></div>
-          
-          <button className="userauthbutton-dropdown-item userauthbutton-logout" onClick={handleLogoutClick}>
+
+          <button
+            className="userauthbutton-dropdown-item userauthbutton-logout"
+            onClick={handleLogoutClick}
+          >
             <FaSignOutAlt className="userauthbutton-dropdown-icon" />
             Đăng xuất
           </button>
@@ -104,7 +109,10 @@ const UserAuthButton = () => {
       )}
 
       {showDropdown && (
-        <div className="userauthbutton-dropdown-overlay" onClick={() => setShowDropdown(false)}></div>
+        <div
+          className="userauthbutton-dropdown-overlay"
+          onClick={() => setShowDropdown(false)}
+        ></div>
       )}
     </div>
   );

@@ -11,6 +11,22 @@ const ChatInput = ({ chatId, replyingTo, onClearReply }) => {
         if (replyingTo) inputRef.current?.focus();
     }, [replyingTo]);
 
+    // Listen for quick-reply events to send immediately
+    useEffect(() => {
+        const onQuickReply = async (e) => {
+            const detail = e?.detail;
+            const replyText = detail?.text;
+            if (!replyText || !chatId) return;
+            try {
+                await sendMessage(chatId, replyText.trim(), null, null);
+            } catch (err) {
+                console.error('Lỗi gửi quick-reply:', err);
+            }
+        };
+        window.addEventListener('quick-reply', onQuickReply);
+        return () => window.removeEventListener('quick-reply', onQuickReply);
+    }, [chatId]);
+
     const handleSend = async (e) => {
         e.preventDefault();
         if (text.trim() === '' || !chatId) return;
