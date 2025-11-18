@@ -223,7 +223,7 @@
 .text-message-wrapper { 
   display: flex;
   gap: 6px;
-  max-width: 85%;
+  max-width: 500px; 
   align-items: flex-end;
 }
 
@@ -268,22 +268,28 @@
   background-color: #ffffff;
 }
 
-.chat-input-field {
+.chat-input-field { /* Bây giờ là <textarea> */
   flex-grow: 1;
   background-color: #f0f2f5;
   border: none;
-  padding: 12px 16px;
+  padding: 10px 16px; /* Padding cho dễ chịu */
   border-radius: 20px;
   color: #050505;
   font-size: 1rem;
-  /* Thêm font-family để đảm bảo kế thừa */
   font-family: inherit;
   transition: box-shadow 0.2s ease;
+  
+  /* --- ✨ [MỚI] CSS quan trọng cho Textarea --- */
+  resize: none; /* Tắt thanh resize của trình duyệt */
+  overflow-y: hidden; /* Sẽ được JS quản lý (ẩn/hiện thanh cuộn) */
+  max-height: 150px;  /* Giới hạn chiều cao tối đa (khoảng 5-6 dòng) */
+  box-sizing: border-box; /* Tính cả padding vào chiều cao */
+  width: 100%; /* Luôn chiếm đủ chiều rộng wrapper */
+  line-height: 1.4;
+  min-height: 42px; /* Chiều cao tối thiểu (10*2 padding + 22 line-height) */
 }
-
 .chat-input-field:focus {
   outline: none;
-  /* Thêm hiệu ứng focus chuyên nghiệp */
   box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
 }
 
@@ -291,6 +297,19 @@
   color: #8a8d91;
 }
 
+.chat-input-counter {
+  position: absolute;
+  bottom: 12px; /* Căn vào góc phải-dưới của textarea */
+  right: 16px;
+  font-size: 0.8rem;
+  color: #65676b; /* Màu xám mờ */
+  user-select: none; /* Không cho phép chọn text */
+  pointer-events: none; /* Click xuyên qua nó */
+}
+.chat-input-field[style*="overflow-y: auto"] {
+    /* Thêm padding để thanh cuộn không đè lên chữ */
+    padding-right: 24px; 
+}
 .chat-send-btn {
   background-color: #007aff;
   border: none; 
@@ -301,21 +320,20 @@
   height: 44px;
   font-size: 1rem; 
   cursor: pointer;
-  /* Thêm hiệu ứng chuyển động */
   transition: background-color 0.2s ease, transform 0.1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0; /* ✨ [THÊM] Ngăn nút bị co lại */
 }
 
 .chat-send-btn:hover {
-  background-color: #006ce0; /* Hơi đậm hơn khi hover */
+  background-color: #006ce0;
 }
 
 .chat-send-btn:active {
-  transform: scale(0.95); /* Hiệu ứng nhấn xuống */
+  transform: scale(0.95);
 }
-
 /* ========================================= */
 /* --- TIN NHẮN BỊ THU HỒI --- */
 /* ========================================= */
@@ -445,7 +463,19 @@
   flex-direction: column;
   background-color: #ffffff;
 }
-
+.chat-input-form-container {
+  padding: 10px 16px;
+  border-top: 1px solid #ebebeb;
+  display: flex;
+  gap: 10px;
+  /* ✨ [SỬA] Căn nút Gửi ở dưới cùng khi textarea dãn ra */
+  align-items: flex-end; 
+  background-color: #ffffff;
+}
+.chat-input-field-wrapper {
+  flex-grow: 1; /* Chiếm hết không gian còn lại */
+  position: relative; /* Để định vị bộ đếm */
+}
 .reply-preview-container {
   display: flex;
   padding: 8px 16px;
