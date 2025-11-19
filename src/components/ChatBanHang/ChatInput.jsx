@@ -173,16 +173,6 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
   }, []);
 
   const handleSend = useCallback(async () => {
-    // ✅ KIỂM TRA VƯỢT QUÁ 500 KÝ TỰ KHI GỬI
-    if (tinNhan.trim().length > MAX_CHARS) {
-      Swal.fire({
-        icon: "error",
-        title: "Vượt quá giới hạn",
-        text: `Tin nhắn tối đa ${MAX_CHARS} ký tự. Hiện tại: ${tinNhan.trim().length} ký tự`,
-        confirmButtonColor: "#ef4444",
-      });
-      return;
-    }
 
     if (!tinNhan.trim() && imagePreviewList.length === 0 && videoPreviewList.length === 0) {
       Swal.fire("Lỗi", "Vui lòng nhập tin nhắn hoặc gửi ảnh/video", "error");
@@ -204,9 +194,14 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
 
     try {
       if (tinNhan.trim()) {
-        await sendMessageService(tinNhan.trim(), "text");
-        setTinNhan("");
-      }
+  await sendMessageService(tinNhan.trim(), "text");
+  setTinNhan("");
+
+  // Reset chiều cao textarea
+  if (inputRef.current) {
+    inputRef.current.style.height = "auto";
+  }
+}
 
       const totalFiles = imagePreviewList.length + videoPreviewList.length;
       let uploadedCount = 0;
@@ -291,8 +286,9 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
   const handleTextChange = useCallback((e) => {
     const newValue = e.target.value;
     
-    // ✅ CHỈ cập nhật, không chặn (để người dùng tự biết vượt quá)
-    setTinNhan(newValue);
+    if (newValue.length <= MAX_CHARS) {
+   setTinNhan(newValue);
+  }
     
     const textarea = e.target;
     textarea.style.height = 'auto';

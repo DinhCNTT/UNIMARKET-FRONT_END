@@ -4,7 +4,7 @@ import { connectToChatHub, sendMessage } from "../../../services/chatService";
 import api from "../../../services/api";
 import Swal from "sweetalert2";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 const mapMessage = (msg) => {
   let timeStr = msg.thoiGianGui;

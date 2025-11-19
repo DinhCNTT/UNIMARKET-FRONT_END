@@ -11,8 +11,13 @@ export const formatDate = (dateString) => {
 };
 
 export const formatPrice = (price) => {
-  if (price === null || price === undefined) return "";
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND";
+  if (price === null || price === undefined || isNaN(price)) return "";
+
+  const formattedValue = new Intl.NumberFormat('vi-VN', { 
+    minimumFractionDigits: 0, 
+  }).format(price);
+
+  return formattedValue + ' đ';
 };
 
 export const getMediaUrl = (mediaUrl) => {

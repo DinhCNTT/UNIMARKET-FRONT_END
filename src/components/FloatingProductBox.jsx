@@ -1,44 +1,175 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./FloatingProductBox.css";
 
 
 const FloatingProductBox = ({ image, title, price, details, description, onShowPhone, onChat, showPhone, phoneMasked, currentUserId, sellerId }) => {
+  // Visual guide Y (px from top of viewport) for tuning scroll-spy
+  const GUIDE_Y = 200; // adjust as needed while tuning; temporary visual aid
+
   const [tab, setTab] = useState('overview');
   const [activeTab, setActiveTab] = useState('overview');
+  const [guideDescTop, setGuideDescTop] = useState(GUIDE_Y);
+  const [guideSimilarTop, setGuideSimilarTop] = useState(GUIDE_Y + 200);
+  const ignoreScrollUntilRef = useRef(0); // timestamp to ignore scroll updates (ms)
 
   useEffect(() => {
-    const handleScroll = () => {
+    // Find potential scroll container (if the app uses an inner scroll area)
+    const findScrollContainer = () => {
+      const selectors = ['.um-tn-tab-content', '.app-content', '.main-content', '.page-content'];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (el) return el;
+      }
+      return null;
+    };
+
+    const container = findScrollContainer();
+
+    // Helper: compute element top relative to viewport or relative to a scroll container's viewport
+    const getRelativeTop = (el, containerEl) => {
+      if (!el) return Infinity;
+      const rect = el.getBoundingClientRect();
+      if (containerEl) {
+        const containerRect = containerEl.getBoundingClientRect();
+        return rect.top - containerRect.top; // distance from top of container's visible area
+      }
+      return rect.top; // distance from top of viewport
+    };
+
+    const handleScrollGeneric = () => {
+      if (Date.now() < ignoreScrollUntilRef.current) return; // ignore during programmatic scroll
+
       const overviewEl = document.getElementById('tong-quan');
       const descEl = document.getElementById('mo-ta-chi-tiet');
-      const similarEl = document.getElementById('tin-dang-tuong-tu');
-      const scrollY = window.scrollY + 200; // offset để trigger sớm hơn
+      // Prefer the heading node inside the similar wrapper; if not found, fall back to wrapper itself
+      const similarHeading = document.querySelector('#tin-dang-tuong-tu h2') || document.querySelector('#cac-tin-dang-khac h2') || document.getElementById('tin-dang-tuong-tu') || document.getElementById('cac-tin-dang-khac');
+
+      const overviewThreshold = 180; // for overview
+      const descThreshold = 260; // fallback threshold for desc
+      const similarThreshold = 120; // highlight 'Tin đăng tương tự' a bit later
+
+      // Compute floating bar height and landing Y values (match click scroll targets)
+      const floatingEl = document.querySelector('.floating-product-box');
+      const floatingH = floatingEl ? floatingEl.getBoundingClientRect().height : 144;
+      const descLandingY = floatingH + 8; // where description heading will sit after clicking 'desc'
+      const similarExtra = 360; // extra used previously so floatingH + similarExtra ~= 510
+      const similarLandingY = floatingH + similarExtra; // where similar heading will sit after clicking 'similar'
+
+      // Update guide line positions (only when changed to avoid extra re-renders)
+      if (Math.abs((guideDescTop || 0) - descLandingY) > 1) setGuideDescTop(descLandingY);
+      if (Math.abs((guideSimilarTop || 0) - similarLandingY) > 1) setGuideSimilarTop(similarLandingY);
+
+      // Get bounding rects relative to viewport or container
+      const getRects = (el) => {
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        if (container) {
+          const cRect = container.getBoundingClientRect();
+          return {
+            top: rect.top - cRect.top,
+            bottom: rect.bottom - cRect.top,
+            height: rect.height,
+            rect,
+            containerRect: cRect
+          };
+        }
+        return { top: rect.top, bottom: rect.bottom, height: rect.height, rect };
+      };
+
+      const o = getRects(overviewEl);
+      const d = getRects(descEl);
+      const s = getRects(similarHeading);
+
+      // Helper to compute visible pixels and ratio of an element inside viewport/container
+      const computeVisibility = (rectObj) => {
+        if (!rectObj || !rectObj.rect) return { visiblePx: 0, ratio: 0 };
+        const rect = rectObj.rect;
+        const viewportTop = container ? container.getBoundingClientRect().top : 0;
+        const viewportBottom = container ? container.getBoundingClientRect().bottom : window.innerHeight;
+        const top = rect.top;
+        const bottom = rect.bottom;
+        const visibleTop = Math.max(top, viewportTop);
+        const visibleBottom = Math.min(bottom, viewportBottom);
+        const visiblePx = Math.max(0, visibleBottom - visibleTop);
+        const ratio = rect.height > 0 ? visiblePx / rect.height : 0;
+        return { visiblePx, ratio };
+      };
+
+      const oVis = computeVisibility(o);
+      const dVis = computeVisibility(d);
+      const sVis = computeVisibility(s);
+
+      // Determine active tab. Preference: similar > desc > overview (deeper wins)
       let currentTab = 'overview';
-      if (overviewEl && scrollY >= overviewEl.offsetTop) {
+
+      // Debug log (include landing lines)
+      try {
+        console.debug('[FPB] positions', {
+          overviewTop: o && (o.rect ? o.rect.top : o.top),
+          descTop: d && (d.rect ? d.rect.top : d.top),
+          similarTop: s && (s.rect ? s.rect.top : s.top),
+          oVis, dVis, sVis,
+          viewportHeight: container ? container.getBoundingClientRect().height : window.innerHeight,
+          floatingH,
+          descLandingY,
+          similarLandingY,
+          GUIDE_Y
+        });
+      } catch (e) {}
+
+      // Decide active tab based on where headings would land when clicked
+      // Priority: similar > desc > overview
+      const oTop = o ? (o.rect ? o.rect.top : o.top) : Infinity;
+      const dTop = d ? (d.rect ? d.rect.top : d.top) : Infinity;
+      const sTop = s ? (s.rect ? s.rect.top : s.top) : Infinity;
+
+      // Trigger exactly when headings reach their landing lines (match click landing)
+      if (s && sTop <= similarLandingY) {
+        currentTab = 'similar';
+      } else if (d && dTop <= descLandingY) {
+        currentTab = 'desc';
+      } else if (o && (oVis.ratio >= 0.15 || oTop <= 120)) {
+        currentTab = 'overview';
+      } else {
         currentTab = 'overview';
       }
-      if (descEl && scrollY >= descEl.offsetTop) {
-        currentTab = 'desc';
+
+      if (currentTab !== activeTab) {
+        try { console.debug('[FPB] activeTab ->', currentTab); } catch (e) {}
+        setActiveTab(currentTab);
       }
-      if (similarEl && scrollY >= similarEl.offsetTop) {
-        currentTab = 'similar';
-      }
-      setActiveTab(currentTab);
     };
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    if (container) {
+      const boundHandler = () => handleScrollGeneric();
+      container.addEventListener('scroll', boundHandler);
+      // Run once to initialise
+      boundHandler();
+      return () => container.removeEventListener('scroll', boundHandler);
+    }
+
+    window.addEventListener('scroll', handleScrollGeneric);
+    handleScrollGeneric();
+    return () => window.removeEventListener('scroll', handleScrollGeneric);
   }, []);
 
   const handleTab = (type) => {
     setTab(type);
+    setActiveTab(type); // phản hồi UI ngay lập tức
+    // Ignore scroll-driven updates for a short period while programmatic scroll runs
+    ignoreScrollUntilRef.current = Date.now() + 700;
     if(type === 'overview') {
-      // Nếu muốn về đầu trang luôn:
-      // window.scrollTo({top: 0, behavior: 'smooth'});
-      // Nếu muốn về đúng đầu vùng Tổng quan:
       const el = document.getElementById('tong-quan');
       if(el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 155;
-        window.scrollTo({top: y, behavior: 'smooth'});
+        const y = el.getBoundingClientRect().top + window.scrollY - 144;
+        // Try to scroll any likely scroll container first
+        const container = document.querySelector('.um-tn-tab-content') || document.querySelector('.app-content') || null;
+        if (container && typeof container.scrollTo === 'function') {
+          const top = el.offsetTop - 144;
+          container.scrollTo({ top, behavior: 'smooth' });
+        } else {
+          window.scrollTo({top: y, behavior: 'smooth'});
+        }
       } else {
         window.scrollTo({top: 0, behavior: 'smooth'});
       }
@@ -46,21 +177,35 @@ const FloatingProductBox = ({ image, title, price, details, description, onShowP
     if(type === 'desc') {
       const el = document.getElementById('mo-ta-chi-tiet');
       if(el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 155;
-        window.scrollTo({top: y, behavior: 'smooth'});
+        const y = el.getBoundingClientRect().top + window.scrollY - 144;
+        const container = document.querySelector('.um-tn-tab-content') || document.querySelector('.app-content') || null;
+        if (container && typeof container.scrollTo === 'function') {
+          const top = el.offsetTop - 144;
+          container.scrollTo({ top, behavior: 'smooth' });
+        } else {
+          window.scrollTo({top: y, behavior: 'smooth'});
+        }
       }
     }
     if(type === 'similar') {
       const el = document.getElementById('tin-dang-tuong-tu');
       if(el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 155;
-        window.scrollTo({top: y, behavior: 'smooth'});
+        // Larger offset for similar section (buttons / controls above)
+        const y = el.getBoundingClientRect().top + window.scrollY - 510;
+        const container = document.querySelector('.um-tn-tab-content') || document.querySelector('.app-content') || null;
+        if (container && typeof container.scrollTo === 'function') {
+          const top = el.offsetTop - 510;
+          container.scrollTo({ top, behavior: 'smooth' });
+        } else {
+          window.scrollTo({top: y, behavior: 'smooth'});
+        }
       }
     }
   };
 
   return (
     <div className="floating-product-box">
+      {/* guide line removed */}
       <div className="fpb-content">
         <img src={image} alt={title} className="fpb-image" width={48} height={48} />
         <div className="fpb-info">

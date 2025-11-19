@@ -1,6 +1,4 @@
-/* --- src/components/PostImageCarousel.module.css --- */
-/* Chứa toàn bộ logic CSS cho carousel ảnh/video */
-
+/* Wrapper tổng */
 .carouselWrapper {
   display: flex;
   flex-direction: column;
@@ -9,152 +7,170 @@
   position: relative;
 }
 
+/* --- ẢNH LỚN --- */
 .carouselImgbox {
   width: 100%;
-  height: 400px;
+  height: 420px;
   position: relative;
-  background: #f8f8f8;
+  background: #000;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .carouselImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
+  object-fit: contain; 
+  cursor: zoom-in;
 }
 
 .carouselIndex {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  bottom: 15px;
+  right: 15px;
   font-size: 12px;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
-  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  padding: 4px 12px;
+  backdrop-filter: blur(4px);
 }
 
+/* Nút điều hướng LỚN */
 .carouselBtn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   color: #fff;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 18px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5;
-  transition: background 0.3s ease, color 0.3s ease;
-  box-shadow: none;
+  transition: all 0.2s ease;
 }
 
 .carouselBtn:hover {
   background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  color: #000;
 }
 
-.carouselBtnLeft {
-  left: 10px;
+.carouselBtnLeft { left: 10px; }
+.carouselBtnRight { right: 10px; }
+
+/* --- THUMBNAIL CONTAINER --- */
+.thumbGalleryContainer {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-top: 10px;
+  width: 100%;
+  height: 80px; /* Chiều cao cố định cho vùng thumb */
 }
 
-.carouselBtnRight {
-  right: 10px;
-}
-
+/* Dải chứa ảnh thumbnail */
 .multiImageGallery {
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  
+  /* Quan trọng: Nếu ít ảnh thì căn giữa, nhiều ảnh thì cuộn */
+  justify-content: flex-start; 
+  
   overflow-x: auto;
-  margin-top: 10px;
-  gap: 6px;
-  padding-bottom: 5px;
-  scrollbar-width: none;
+  gap: 10px;
+  padding: 0 10px; /* Padding 2 đầu để ảnh không dính sát mép khi cuộn hết */
+  width: 100%;
+  height: 100%;
   scroll-behavior: smooth;
-  position: relative;
+  scrollbar-width: none; /* Ẩn thanh cuộn Firefox */
 }
 
 .multiImageGallery::-webkit-scrollbar {
-  display: none;
+  display: none; /* Ẩn thanh cuộn Chrome */
+}
+
+/* Wrapper cho từng item thumbnail (để xử lý viền active đẹp hơn) */
+.thumbItemWrapper {
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent; /* Viền mặc định trong suốt */
+  transition: all 0.2s ease;
+  padding: 2px; /* Tạo khoảng cách giữa viền và ảnh */
+}
+
+/* Trạng thái đang chọn */
+.activeThumb {
+  border-color: #f80; /* Màu viền khi active */
 }
 
 .carouselThumb {
-  width: 55px !important;
-  height: 55px !important;
-  object-fit: cover !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
 }
 
-.carouselThumb:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.multiImageGallery::after {
-  content: "";
+/* --- NÚT MŨI TÊN NHỎ (Thumbnail) --- */
+.thumbScrollBtn {
   position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 5px;
-  width: 20px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
-  pointer-events: none;
-  z-index: 2;
-}
-
-.noMedia {
-  width: 100%;
-  height: 400px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #555;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
-  border-radius: 8px;
-  color: #888;
-  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  font-weight: bold;
 }
 
-/* --- Responsive cho Carousel --- */
+.thumbScrollBtn:hover {
+  background: #f5f5f5;
+  color: #000;
+}
+
+.thumbScrollBtnLeft { left: 0; }
+.thumbScrollBtnRight { right: 0; }
+
+/* Làm mờ 2 bên khi có nút cuộn đè lên */
+.thumbGalleryContainer::before,
+.thumbGalleryContainer::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.thumbGalleryContainer::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(255,255,255,1), transparent);
+  display: none; /* Mặc định ẩn, hiện bằng JS logic nếu muốn phức tạp hơn, hoặc để đơn giản thì CSS luôn hiện nếu cần */
+}
+
+/* Nếu muốn đơn giản hiệu quả, chỉ cần nút đè lên là đủ, không cần gradient */
+
+/* Responsive */
 @media (max-width: 768px) {
-  .carouselImgbox {
-    height: 300px;
-  }
-
-  .carouselThumb {
-    width: 45px !important;
-    height: 45px !important;
-  }
-
-  .multiImageGallery {
-    gap: 4px;
-  }
-
-  .noMedia {
-    height: 300px;
-  }
-}
-
-@media (max-width: 480px) {
-  .carouselThumb {
-    width: 40px !important;
-    height: 40px !important;
-  }
-
-  .multiImageGallery {
-    gap: 3px;
-  }
+  .carouselImgbox { height: 300px; }
+  .carouselThumb { width: 50px; height: 50px; }
 }

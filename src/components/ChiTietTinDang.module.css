@@ -2,9 +2,8 @@
 /* Chứa layout chính của trang, wrapper, và bố cục flexbox */
 
 .chiTietTinDang {
-  width: 1000px;
-  margin-top: 120px;
-  margin-left: 260px;
+  width: 1150px; /* tăng độ rộng */
+  margin: 120px auto 0; /* căn giữa đều 2 bên */
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -23,7 +22,7 @@
 
 /* Wrapper cho component Carousel */
 .imageContainer {
-  width: 50%;
+  width: 38%;
   min-width: 320px;
   max-width: 600px;
 }
@@ -48,4 +47,21 @@
     width: 100%;
     min-width: 100%;
   }
+}
+/* Ensure anchors aren't hidden behind the floating sticky box */
+#tong-quan,
+#mo-ta-chi-tiet {
+  /* Match the JS offset used in FloatingProductBox / StickyInfoBar */
+  scroll-margin-top: 144px;
+}
+
+/* The Similar posts section has extra controls (scroll buttons),
+   push its anchor a bit higher so content isn't hidden under them */
+#tin-dang-tuong-tu {
+  scroll-margin-top: 510px;
+}
+
+/* Seller's other posts wrapper - align with similar section controls */
+#cac-tin-dang-khac {
+  scroll-margin-top: 510px;
 }

@@ -48,7 +48,7 @@
 }
 
 .fpb-image:hover {
-  transform: scale(1.05);
+  transform: none;
 }
 
 .fpb-info {
@@ -130,8 +130,8 @@
 }
 
 .fpb-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: none;
+  box-shadow: none;
 }
 
 .fpb-btn:active {
@@ -156,51 +156,77 @@
   height: 18px;
 }
 
+/* (removed duplicate old tab styles) */
+/* FloatingProductBox.css - PHẦN TỐI ƯU HÓA TAB */
+
 /* Tabs dưới FloatingProductBox */
 .fpb-tabs {
   width: 100%;
   background: #fff;
+  /* KHÔNG cần position: sticky hay relative. It is child of fixed box */
   z-index: 1099;
-  position: relative;
+  border-top: 1px solid #e0e0e0;
 }
+
 .fpb-tabs-inner {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   gap: 0;
   font-size: 16px;
+  padding: 0 20px;
 }
+
 .fpb-tab {
   border: none;
   background: none;
   padding: 16px 24px;
   cursor: pointer;
-  color: #666;         /* <-- ĐỔI THÀNH XÁM NHẠT */
-  font-weight: 400;   /* <-- THÊM NÉT MỎNG (NORMAL) */
+  color: #666666;
+  font-weight: 400;
   position: relative;
   outline: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
+
+.fpb-tab:hover { color: #222222; }
+
 .fpb-tab.active {
-  color: #000000; /* <-- Màu đen đậm khi active */
-  font-weight: 600;   /* <-- THÊM NÉT ĐẬM (BOLD) */
+  color: #222222;
+  font-weight: 600;
+  background: transparent; /* use no colored background, keep text color */
+  border-radius: 6px;
 }
+
+/* Removed extra left accent for the first tab */
+
 .fpb-tab.active::after {
   content: '';
   display: block;
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: 6px;
-  height: 2px;
+  bottom: 0px;
+  height: 3px;
   border-radius: 2px;
   background: #222222;
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
   animation: tab-underline 0.3s cubic-bezier(.4,0,.2,1);
 }
+
 @keyframes tab-underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
 }
+
+/* Tab-specific responsive tweaks */
+@media (max-width: 768px) {
+  .fpb-tabs-inner { padding: 0 16px; }
+  .fpb-tab { padding: 12px 16px; font-size: 15px; }
+  .fpb-tab.active::after { left: 10px; right: 10px; }
+}
+
+/* guide lines removed */
 
 /* Mobile Responsive */
 @media (max-width: 768px) {

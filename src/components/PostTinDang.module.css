@@ -6,7 +6,7 @@
   background-color: #fff;
   width: 720px;
   max-width: 1000px;
-  margin-left: calc((100% - 720px) / 2 - 150px);
+  margin-left: calc((100% - 720px) / 2);
   margin-right: auto;
 }
 
@@ -18,12 +18,12 @@
   padding: 90px;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 150%;
-  max-width: 130%;
-  margin-left: -10%;
-  margin-right: auto;
+  width: calc(100% + 350px);  /* rộng hơn 100% một chút */
+  max-width: none;            /* bỏ giới hạn cũ */
+  margin: 0 -20px;            /* căn giữa lại */
   min-height: 1300px;
 }
+
 
 .formGroup {
   width: 60%;
@@ -62,7 +62,7 @@
 }
 
 .formGroup input[type="checkbox"] {
-  transform: scale(1.5) translateY(13px) translateX(-70px);
+  transform: scale(1.5) translateY(13px) translateX(-40px);
   margin-right: 10px;
   accent-color: #ffa500;
 }
@@ -132,10 +132,10 @@
 }
 
 .mediaSection {
-  left: -320px;
+  left: -295px;
   position: relative;
-  top: -900px;
-  width: 400px;
+  top: -860px;
+  width: 430px;
   padding: 20px;
   border-radius: 8px;
   /* 👇 Xóa hết hiệu ứng khung */
@@ -197,7 +197,8 @@
   border: 1px dashed #f76c0d;
   border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin-top: 10px;
+  margin-bottom: 2px;
 }
 
 .errorText {
@@ -211,7 +212,7 @@
   flex-wrap: wrap;
   gap: 13px;
   margin-top: 10px;
-  margin-left: 15px; /* 👈 dịch sang phải 10px */
+  margin-left: 8px;
 }
 
 .previewItem {

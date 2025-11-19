@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ChiTietTinDang.module.css";
 import { AuthContext } from "../context/AuthContext";
-import { usePostDetails } from "../hooks/usePostDetails"; // ✅ Import custom hook
-import { formatPrice, getMediaUrl } from "../utils/formatters"; // ✅ Import helpers
+import { usePostDetails } from "../hooks/usePostDetails"; 
+import { formatPrice, getMediaUrl } from "../utils/formatters"; 
 
 // Import các component con
 import TopNavbar from "../components/TopNavbar";
@@ -15,32 +15,35 @@ import SimilarPostsSection from "../components/SimilarPostsSection";
 import Lightbox from "../components/Lightbox";
 
 /**
- * Trang Chi Tiết Tin Đăng
- * - Chịu trách nhiệm lấy ID từ URL.
- * - Gọi custom hook `usePostDetails` để lấy data và logic.
- * - Quản lý các UI state của riêng trang này (lightbox, floating box).
- * - Sắp xếp layout các component con.
+ * Trang Chi Tiết Tin Đăng (Merged Version)
+ * - Kết hợp logic Chat, hiển thị chi tiết (Code bạn bè).
+ * - Kết hợp logic Lưu tin/Yêu thích (Code của bạn).
+ * - Cấu trúc ID đầy đủ để hỗ trợ scroll/neo trang.
  */
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
-  const navigate = useNavigate(); // Vẫn giữ navigate ở đây phòng trường hợp cần chuyển trang
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
-  // ✅ Lấy toàn bộ logic và data từ custom hook
+  // ✅ LOGIC GỘP:
+  // 1. Lấy data tin đăng, logic chat (từ Code 2)
+  // 2. Lấy logic Lưu tin: isSaved, handleToggleSave (từ Code 1)
   const { 
     post, 
     similarPostsByCategory, 
     similarPostsBySeller, 
     loading, 
-    handleChatWithSeller // Lấy hàm xử lý chat từ hook
+    handleChatWithSeller,
+    isSaved,          // <-- Feature Lưu tin (Code tui)
+    handleToggleSave  // <-- Feature Lưu tin (Code tui)
   } = usePostDetails(id, onOpenChat);
 
-  // State giao diện (UI state) vẫn giữ ở component này
+  // State giao diện (Floating box, Lightbox)
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Effect quản lý box nổi
+  // Effect quản lý box nổi khi cuộn trang
   useEffect(() => {
     const handleScroll = () => {
       // Hiện box khi cuộn qua 250px
@@ -88,10 +91,10 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             {post.dungLuong && <span> | {post.dungLuong}</span>}
             {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
           </>}
+          // Xử lý mô tả ngắn gọn, loại bỏ HTML tags
           description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
-          // Các props liên quan đến SĐT có thể để FloatingBox tự quản lý
           onShowPhone={() => {}} 
-          onChat={handleChatClick} // Truyền hàm xử lý chat
+          onChat={handleChatClick} // Truyền hàm chat
           showPhone={false} 
           phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
           currentUserId={user?.id}
@@ -100,12 +103,14 @@ const ChiTietTinDang = ({ onOpenChat }) => {
       )}
 
       {/* Layout chính của tin đăng (Header) */}
-      <div className={styles.tinDangHeader}>
+      {/* ID 'tong-quan' hỗ trợ neo trang */}
+      <div className={styles.tinDangHeader} id="tong-quan">
+        
         {/* Phần Carousel Ảnh */}
         <div className={styles.imageContainer}>
           <PostImageCarousel 
             images={post.images} 
-            onImageClick={handleOpenLightbox} // Truyền hàm mở lightbox
+            onImageClick={handleOpenLightbox} 
           />
         </div>
 
@@ -114,33 +119,44 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           <PostDetailsInfo
             post={post}
             formattedPrice={formattedPrice}
-            onChat={handleChatClick} // Truyền hàm xử lý chat
+            onChat={handleChatClick} 
             currentUserId={user?.id}
+            
+            // ✅ QUAN TRỌNG: Truyền props Lưu tin xuống (Logic Code 1)
+            isSaved={isSaved} 
+            onToggleSave={handleToggleSave}
           />
         </div>
       </div>
 
       {/* Phần Mô Tả */}
-      <PostDescription description={post.moTa} />
+      <div id="mo-ta-chi-tiet">
+        <PostDescription description={post.moTa} />
+      </div>
 
       {/* Tin Đăng Cùng Người Bán */}
-      <SimilarPostsSection
-        title={`Các tin đăng khác của ${post.nguoiBan}`}
-        posts={similarPostsBySeller}
-      />
+      {/* ID 'cac-tin-dang-khac' lấy từ Code 2 (Code 1 bị thiếu thẻ div bao ngoài này) */}
+      <div id="cac-tin-dang-khac">
+        <SimilarPostsSection
+          title={`Các tin đăng khác của ${post.nguoiBan}`}
+          posts={similarPostsBySeller}
+        />
+      </div>
 
       {/* Tin Đăng Tương Tự */}
-      <SimilarPostsSection
-        title="Tin đăng tương tự"
-        posts={similarPostsByCategory}
-      />
+      <div id="tin-dang-tuong-tu">
+        <SimilarPostsSection
+          title="Tin đăng tương tự"
+          posts={similarPostsByCategory}
+        />
+      </div>
 
-      {/* Lightbox (chỉ render khi cần) */}
+      {/* Lightbox */}
       {showLightbox && (
         <Lightbox
           images={post.images}
           startIndex={lightboxIndex}
-          onClose={handleCloseLightbox} // Truyền hàm đóng lightbox
+          onClose={handleCloseLightbox} 
         />
       )}
     </div>
