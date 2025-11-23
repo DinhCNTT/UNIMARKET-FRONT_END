@@ -1,10 +1,12 @@
 /* AllMediaModal.module.css */
+
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  /* Overlay giữ màu tối bán trong suốt để tập trung sự chú ý */
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
@@ -13,7 +15,8 @@
 }
 
 .modalContent {
-  background: #ffffff;
+  /* ✅ ĐỔI MÀU: Nền modal */
+  background: var(--theme-bg-primary);
   border-radius: 12px;
   width: 90%;
   max-width: 800px;
@@ -22,8 +25,12 @@
   flex-direction: column;
   overflow: hidden;
 
+  /* Giữ nguyên vị trí của bạn */
   margin-left: 300px; 
   margin-top: 70px;   /* 👈 đẩy xuống dưới */
+  
+  /* Thêm transition để đổi màu mượt */
+  transition: background-color 0.3s ease;
 }
 
 .modalHeader {
@@ -31,14 +38,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  /* ✅ ĐỔI MÀU: Viền dưới header */
+  border-bottom: 1px solid var(--theme-border-color);
   flex-shrink: 0;
 }
 
 .modalTitle {
   font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  /* ✅ ĐỔI MÀU: Tiêu đề modal */
+  color: var(--theme-text-primary);
   margin: 0;
 }
 
@@ -47,19 +56,38 @@
   border: none;
   cursor: pointer;
   font-size: 24px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Nút đóng */
+  color: var(--theme-text-secondary);
   padding: 4px;
   border-radius: 50%;
   display: flex;
+  transition: background-color 0.2s ease;
 }
 .closeButton:hover {
-  background-color: #f3f4f6;
+  /* ✅ ĐỔI MÀU: Hover nút đóng */
+  background-color: var(--theme-bg-hover);
 }
 
 .modalBody {
   flex: 1; /* Lấp đầy không gian */
   overflow-y: auto; /* Cho phép cuộn */
   padding: 24px;
+  
+  /* Tùy chỉnh thanh cuộn cho đẹp trên nền tối */
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-border-color) transparent;
+}
+
+/* Scrollbar style */
+.modalBody::-webkit-scrollbar {
+  width: 6px;
+}
+.modalBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modalBody::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border-color);
+  border-radius: 10px;
 }
 
 .dateGroup {
@@ -69,7 +97,8 @@
 .dateHeader {
   font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  /* ✅ ĐỔI MÀU: Tiêu đề ngày tháng */
+  color: var(--theme-text-primary);
   margin: 0 0 16px 0;
 }
 
@@ -100,7 +129,8 @@
   padding-top: 100%; /* Tỷ lệ vuông */
   border-radius: 8px;
   overflow: hidden;
-  background-color: #f3f4f6;
+  /* ✅ ĐỔI MÀU: Nền placeholder khi ảnh chưa load */
+  background-color: var(--theme-bg-secondary);
   cursor: pointer;
 }
 
@@ -130,6 +160,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 24px;
+  /* Icon video giữ màu trắng vì nó nằm trên hình ảnh/video */
   color: rgba(255, 255, 255, 0.8);
   pointer-events: none;
 }
@@ -137,7 +168,8 @@
 /* Loading và Empty state */
 .mediaLoading {
   font-size: 14px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Text loading */
+  color: var(--theme-text-secondary);
   text-align: center;
   padding: 20px 0;
 }
@@ -149,12 +181,15 @@
   justify-content: center;
   text-align: center;
   padding: 48px 16px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Text empty */
+  color: var(--theme-text-secondary);
 }
 .mediaEmpty svg {
   font-size: 48px;
   margin-bottom: 16px;
-  color: #9ca3af;
+  /* ✅ ĐỔI MÀU: Icon empty */
+  color: var(--theme-icon-color);
+  opacity: 0.5;
 }
 .mediaEmpty p {
   font-size: 15px;

@@ -1,11 +1,15 @@
 /* Container chính */
 .chatInput {
-  background: #fff;
-  border-top: 1px solid #e2e8f0;
+  /* ✅ ĐỔI MÀU: Nền container input */
+  background: var(--theme-bg-primary);
+  /* ✅ ĐỔI MÀU: Viền trên */
+  border-top: 1px solid var(--theme-border-color);
+  
   padding: 10px;
   display: flex;
   flex-direction: column;
   border-radius: 20px; /* bo góc rõ hơn */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Wrapper thanh input */
@@ -26,7 +30,8 @@
 .textWrap {
   flex: 1;
   min-width: 0;
-  background: #f3f4f6;
+  /* ✅ ĐỔI MÀU: Nền ô nhập liệu (xám nhạt ở Light, xám đậm ở Dark) */
+  background: var(--theme-bg-secondary);
   border-radius: 20px;
   padding: 8px 14px;
   display: flex;
@@ -34,7 +39,8 @@
 }
 
 .textWrap:focus-within {
-  background: #e5e7eb;
+  /* ✅ ĐỔI MÀU: Nền khi focus */
+  background: var(--theme-bg-hover);
   box-shadow: 0 0 0 2px #3b82f6;
 }
 
@@ -50,7 +56,8 @@
   max-height: 100px;
   padding: 0;
   margin: 0;
-  color: #000;
+  /* ✅ ĐỔI MÀU: Màu chữ nhập liệu */
+  color: var(--theme-text-primary);
 }
 
 .textWrap textarea:focus {
@@ -58,12 +65,13 @@
 }
 
 .textWrap textarea::placeholder {
-  color: #9ca3af;
+  /* ✅ ĐỔI MÀU: Màu placeholder */
+  color: var(--theme-text-secondary);
 }
 
 /* Nút Gửi */
 .sendBtn {
-  background: #3b82f6;
+  background: #3b82f6; /* Giữ màu xanh thương hiệu */
   color: white;
   width: 40px;
   height: 40px;
@@ -85,8 +93,9 @@
 }
 
 .sendBtn:disabled {
-  background: #e5e7eb;
-  color: #9ca3af;
+  /* ✅ ĐỔI MÀU: Nút gửi khi disabled */
+  background: var(--theme-bg-secondary);
+  color: var(--theme-text-secondary);
   cursor: not-allowed;
   transform: none;
 }
@@ -99,13 +108,16 @@
   transform: none;
   width: 100%;
   margin-bottom: 8px;
-  background: #fee2e2;
-  color: #991b1b;
+  /* ✅ ĐỔI MÀU: Nền cảnh báo */
+  background: var(--theme-bg-secondary);
+  /* Giữ màu đỏ cho chữ cảnh báo hoặc dùng biến */
+  color: #ff4444; 
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
+  border: 1px solid rgba(255, 68, 68, 0.2);
 }
 
 /* Group nút upload */
@@ -125,12 +137,14 @@
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
+  /* Giữ màu xanh cho icon action */
   color: #3b82f6;
   flex-shrink: 0;
 }
 
 .actionBtn:hover {
-  background: rgba(0, 0, 0, 0.05);
+  /* ✅ ĐỔI MÀU: Nền hover nút action */
+  background: var(--theme-bg-hover);
   color: #2563eb;
 }
 
@@ -150,6 +164,8 @@
   border-radius: 8px;
   overflow: visible;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* ✅ ĐỔI MÀU: Viền nhẹ cho thumb để nổi trên nền tối */
+  border: 1px solid var(--theme-border-color);
 }
 
 .thumb img,
@@ -226,7 +242,8 @@
 .progressBar {
   width: 100%;
   height: 8px;
-  background: #e5e7eb;
+  /* ✅ ĐỔI MÀU: Nền thanh progress */
+  background: var(--theme-bg-secondary);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -239,7 +256,8 @@
 
 .progressText {
   font-size: 12px;
-  color: #4b5563;
+  /* ✅ ĐỔI MÀU: Chữ progress */
+  color: var(--theme-text-secondary);
   text-align: center;
   margin-top: 4px;
   display: block;

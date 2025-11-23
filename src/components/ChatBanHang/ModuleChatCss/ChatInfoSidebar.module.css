@@ -1,9 +1,15 @@
+/* ========================================= */
+/* --- SIDEBAR CHÍNH --- */
+/* ========================================= */
 .sidebar {
   width: 0;
   flex-shrink: 0;
-  background: #ffffff;
-  border-left: 1px solid #e5e7eb;
-  transition: width 0.3s ease-in-out;
+  /* ✅ ĐỔI MÀU: Nền Sidebar */
+  background: var(--theme-bg-primary);
+  /* ✅ ĐỔI MÀU: Viền trái */
+  border-left: 1px solid var(--theme-border-color);
+  
+  transition: width 0.3s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -14,14 +20,33 @@
 .sidebar.open {
   width: 320px;
 }
+
 /* Content */
 .sidebarContent {
   flex: 1;
   overflow-y: auto;
   padding: 24px 16px;
+  
+  /* Tùy chỉnh thanh cuộn */
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-border-color) transparent;
 }
 
-/* User Info Section */
+/* Webkit Scrollbar */
+.sidebarContent::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebarContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebarContent::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border-color);
+  border-radius: 10px;
+}
+
+/* ========================================= */
+/* --- USER INFO SECTION --- */
+/* ========================================= */
 .userInfoSection {
   display: flex;
   flex-direction: column;
@@ -39,7 +64,8 @@
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #f0f0f0;
+  /* ✅ ĐỔI MÀU: Viền avatar */
+  border: 3px solid var(--theme-bg-secondary); 
 }
 
 .statusDot {
@@ -49,15 +75,17 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 3px solid #fff;
+  /* ✅ ĐỔI MÀU: Viền chấm online (để tách biệt với avatar) */
+  border: 3px solid var(--theme-bg-primary); 
 }
 
 .statusDot.online {
-  background: #10b981;
+  background: #10b981; /* Màu xanh online giữ nguyên */
 }
 
 .statusDot.offline {
-  background: #9ca3af;
+  /* ✅ ĐỔI MÀU: Màu chấm offline */
+  background: var(--theme-text-secondary); 
 }
 
 /* Class dùng chung */
@@ -65,19 +93,21 @@
   background: #10b981;
 }
 .offline {
-  background: #9ca3af;
+  background: var(--theme-text-secondary);
 }
 
 .userName {
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  /* ✅ ĐỔI MÀU: Tên người dùng */
+  color: var(--theme-text-primary);
   margin: 0 0 4px 0;
 }
 
 .userStatus {
   font-size: 13px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Trạng thái text */
+  color: var(--theme-text-secondary);
   margin: 0;
   min-height: 1.5em;
 }
@@ -85,11 +115,14 @@
 .divider {
   border: none;
   height: 1px;
-  background-color: #f0f0f0;
+  /* ✅ ĐỔI MÀU: Đường kẻ ngang */
+  background-color: var(--theme-border-color);
   margin: 24px 0;
 }
 
-/* Actions Section */
+/* ========================================= */
+/* --- ACTIONS SECTION --- */
+/* ========================================= */
 .actionsSection {
   display: flex;
   flex-direction: column;
@@ -109,7 +142,7 @@
   transition: background-color 0.2s;
   text-align: left;
 
-  /* 💎 ĐÃ THÊM: Font-family hiện đại */
+  /* 💎 Font-family hiện đại */
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
@@ -120,28 +153,44 @@
 /* Nút Chặn */
 .blockButton {
   background-color: transparent;
-  color: #222222;
+  /* ✅ ĐỔI MÀU: Chữ nút chặn */
+  color: var(--theme-text-primary);
 }
 .blockButton:hover {
-  background-color: #fef2f2;
+  /* ✅ ĐỔI MÀU: Hover nút chặn (Đỏ nhạt) */
+  background-color: rgba(254, 242, 242, 0.1); /* Dùng rgba để xuyên thấu nền tối */
+}
+/* Fix hover màu đỏ rõ hơn ở chế độ sáng nếu cần, hoặc giữ rgba */
+[data-theme='light'] .blockButton:hover {
+    background-color: #fef2f2;
 }
 
 /* Nút Gỡ Chặn */
 .unblockButton {
   background-color: transparent;
-  color: #222222;
+  /* ✅ ĐỔI MÀU: Chữ nút gỡ chặn */
+  color: var(--theme-text-primary);
 }
 .unblockButton:hover {
-  background-color: #ecfdf5;
+  /* ✅ ĐỔI MÀU: Hover nút gỡ chặn (Xanh nhạt) */
+  background-color: rgba(236, 253, 245, 0.1);
+}
+[data-theme='light'] .unblockButton:hover {
+    background-color: #ecfdf5;
 }
 
 /* Nút Báo xấu */
 .reportButton {
   background-color: transparent;
-  color: #222222;
+  /* ✅ ĐỔI MÀU: Chữ nút báo xấu */
+  color: var(--theme-text-primary);
 }
 .reportButton:hover {
-  background-color: #fef3c7;
+  /* ✅ ĐỔI MÀU: Hover nút báo xấu (Vàng nhạt) */
+  background-color: rgba(254, 243, 199, 0.1);
+}
+[data-theme='light'] .reportButton:hover {
+    background-color: #fef3c7;
 }
 
 /* Thông báo bị chặn */
@@ -151,14 +200,16 @@
   gap: 10px;
   padding: 12px 16px;
   border-radius: 8px;
-  background-color: #f3f4f6;
-  color: #4b5563;
+  /* ✅ ĐỔI MÀU: Nền thông báo bị chặn */
+  background-color: var(--theme-bg-secondary);
+  /* ✅ ĐỔI MÀU: Chữ thông báo bị chặn */
+  color: var(--theme-text-secondary);
   font-size: 14px;
   font-weight: 500;
 }
 .isBlockedNotice svg {
   font-size: 18px;
-  color: #6b7280;
+  color: var(--theme-text-secondary);
 }
 
 /* ✅ Nút "Xem trang cá nhân" */
@@ -169,27 +220,33 @@
   gap: 8px;
   margin-top: 10px;
   padding: 8px 14px;
-  border: 1px solid #e5e7eb;
+  /* ✅ ĐỔI MÀU: Viền nút profile */
+  border: 1px solid var(--theme-border-color);
   border-radius: 8px;
-  background-color: #f2f2f2;
-  color: #222222;
+  /* ✅ ĐỔI MÀU: Nền nút profile */
+  background-color: var(--theme-bg-secondary);
+  /* ✅ ĐỔI MÀU: Chữ nút profile */
+  color: var(--theme-text-primary);
   font-weight: 700;
   font-size: 14px;
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
 
-  /* 💎 Font hiện đại - dùng mặc định của hệ thống */
+  /* 💎 Font hiện đại */
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .profileButton:hover {
-  background-color: #e8e8e8;
-  border-color: #d1d5db;
+  /* ✅ ĐỔI MÀU: Hover nút profile */
+  background-color: var(--theme-bg-hover);
+  border-color: var(--theme-border-color);
 }
 
-/* --- PHẦN MEDIA MỚI --- */
+/* ========================================= */
+/* --- MEDIA SECTION --- */
+/* ========================================= */
 
 .mediaSection {
   /* ⚠️ BỎ PADDING: Bỏ padding ở đây để nút "Xem tất cả"
@@ -200,13 +257,15 @@
 .mediaSectionTitle {
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  /* ✅ ĐỔI MÀU: Tiêu đề Media */
+  color: var(--theme-text-primary);
   margin: 0 0 16px 0;
 }
 
 .mediaLoading {
   font-size: 13px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Text loading */
+  color: var(--theme-text-secondary);
   text-align: center;
   padding: 20px 0;
 }
@@ -226,7 +285,8 @@
   padding-top: 100%; /* Tạo tỷ lệ vuông */
   border-radius: 8px;
   overflow: hidden;
-  background-color: #f3f4f6;
+  /* ✅ ĐỔI MÀU: Nền ô media khi chưa load */
+  background-color: var(--theme-bg-secondary);
 }
 
 /* Ảnh/Video bên trong ô */
@@ -272,8 +332,10 @@
   width: 100%;
   padding: 12px;
   margin-top: 16px; /* Khoảng cách với lưới media */
-  background-color: #e8e8e8;
-  color: #222222;
+  /* ✅ ĐỔI MÀU: Nền nút Xem tất cả */
+  background-color: var(--theme-bg-secondary);
+  /* ✅ ĐỔI MÀU: Chữ nút Xem tất cả */
+  color: var(--theme-text-primary);
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -285,7 +347,8 @@
 }
 
 .viewAllButton:hover {
-  background-color: #d6d6d6; /* Màu xám đậm hơn khi hover */
+  /* ✅ ĐỔI MÀU: Hover nút Xem tất cả */
+  background-color: var(--theme-bg-hover);
 }
 
 
@@ -297,14 +360,18 @@
   justify-content: center;
   text-align: center;
   padding: 24px 16px;
-  background-color: #f9fafb;
+  /* ✅ ĐỔI MÀU: Nền thông báo trống */
+  background-color: var(--theme-bg-secondary);
   border-radius: 8px;
-  color: #6b7280;
+  /* ✅ ĐỔI MÀU: Chữ thông báo trống */
+  color: var(--theme-text-secondary);
 }
 .mediaEmpty svg {
   font-size: 32px;
   margin-bottom: 12px;
-  color: #9ca3af;
+  /* ✅ ĐỔI MÀU: Icon trống */
+  color: var(--theme-icon-color); 
+  opacity: 0.5;
 }
 .mediaEmpty p {
   font-size: 13px;
