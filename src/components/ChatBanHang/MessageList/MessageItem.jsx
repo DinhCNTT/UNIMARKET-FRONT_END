@@ -1,19 +1,51 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { useChat } from "../context/ChatContext";
 import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
 import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand } from "react-icons/fa";
 import Swal from "sweetalert2";
+import useResizeObserver from "../../../hooks/useResizeObserver";
 
-const MessageItem = ({ message, showSeenStatus }) => {
+const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirstMessage }) => {
   const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } =
     useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const menuRef = useRef(null);
+  const menuTriggerRef = useRef(null);
+  const [menuStyle, setMenuStyle] = useState(null);
+  const menuContainerRef = useRef(null);
   const videoRef = useRef(null);
+  const wrapperRef = useRef(null);
+
+  useResizeObserver(wrapperRef, onResize);
 
   const isSentByMe = message.maNguoiGui === user?.id;
+
+  const handleMediaLoad = () => {
+    try {
+      if (typeof onMediaLoaded === "function") onMediaLoaded(message.maTinNhan);
+    } catch (e) {
+      /* ignore */
+    }
+
+    try {
+      if (typeof onResize === "function") onResize();
+    } catch (e) {
+      /* ignore */
+    }
+  };
+
+  // When a message is recalled or its content/type changes, ask parent to re-measure
+  useEffect(() => {
+    try {
+      if (typeof onResize === "function") onResize();
+    } catch (e) {
+      /* ignore */
+    }
+    // Intentionally watch these fields so layout changes trigger a re-measure
+  }, [message.isRecalled, message.noiDung, message.loaiTinNhan, onResize]);
 
   const formatTime = (time) => {
     return (
@@ -71,7 +103,29 @@ const MessageItem = ({ message, showSeenStatus }) => {
 
   const toggleMessageMenu = (e) => {
     e.stopPropagation();
-    setIsMenuOpen((prev) => !prev);
+    setIsMenuOpen((prev) => {
+      const next = !prev;
+      // If opening and this is the first message, compute fixed position
+      if (next && isFirstMessage && menuTriggerRef.current) {
+        try {
+          const rect = menuTriggerRef.current.getBoundingClientRect();
+          const MENU_W = 200; // approximate menu width (matches CSS max-width for menuBelow)
+          const padding = 8;
+          // Place the menu below the trigger and open to the left: align menu's right edge near trigger.right
+          let left = rect.right - MENU_W - padding;
+          // clamp left so menu fits in viewport
+          left = Math.min(Math.max(left, padding), window.innerWidth - MENU_W - padding);
+          const top = rect.bottom + 6; // show below trigger
+          setMenuStyle({ position: "fixed", left: `${left}px`, top: `${top}px` });
+        } catch (err) {
+          setMenuStyle(null);
+        }
+      } else {
+        setMenuStyle(null);
+      }
+
+      return next;
+    });
   };
 
   const closeMenu = () => setIsMenuOpen(false);
@@ -200,18 +254,29 @@ const MessageItem = ({ message, showSeenStatus }) => {
   useEffect(() => {
     if (!isMenuOpen) return;
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        closeMenu();
-      }
+      const t = event.target;
+      if (menuRef.current && menuRef.current.contains(t)) return;
+      if (menuContainerRef.current && menuContainerRef.current.contains(t)) return;
+      if (menuTriggerRef.current && menuTriggerRef.current.contains(t)) return;
+      closeMenu();
     };
     document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    // If menu is fixed (first message), close on resize to avoid mismatch
+    const handleResize = () => {
+      if (isFirstMessage) closeMenu();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [isMenuOpen]);
 
   const canRecall = canRecallMessage(message.thoiGianGui);
 
   return (
     <div
+      ref={wrapperRef}
       className={`${styles.messageWrapper} ${
         isSentByMe ? styles.sentWrapper : styles.receivedWrapper
       }`}
@@ -222,8 +287,9 @@ const MessageItem = ({ message, showSeenStatus }) => {
         } ${message.isRecalled ? styles.recalled : ""}`}
       >
         {!message.isRecalled && (
-          <div className={styles.menuContainer} ref={menuRef}>
+          <div className={styles.menuContainer} ref={menuContainerRef}>
             <button
+              ref={menuTriggerRef}
               className={`${styles.menuTrigger} ${
                 isMenuOpen ? styles.menuActive : ""
               }`}
@@ -233,49 +299,61 @@ const MessageItem = ({ message, showSeenStatus }) => {
               <FaEllipsisV />
             </button>
 
-            {isMenuOpen && (
-              <div className={styles.messageMenu}>
-                {isSentByMe ? (
-                  <>
-                    <button
-                      className={`${styles.menuItem} ${
-                        canRecall ? styles.recallItem : styles.disabledItem
-                      }`}
-                      onClick={canRecall ? handleRecall : null}
-                      disabled={!canRecall}
-                    >
-                      <FaUndo className={styles.menuIcon} />
-                      <span className={styles.menuText}>Thu hồi</span>
-                      {canRecall && (
-                        <span className={styles.timer}>
-                          <FaClock />
-                          {Math.floor(timeRemaining)}:
-                          {Math.floor((timeRemaining % 1) * 60)
-                            .toString()
-                            .padStart(2, "0")}
-                        </span>
-                      )}
-                    </button>
-                    <div className={styles.menuDivider} />
+            {isMenuOpen && (() => {
+              const menu = (
+                <div
+                  ref={menuRef}
+                  className={`${styles.messageMenu} ${isFirstMessage ? styles.menuBelow : ""}`}
+                  style={menuStyle || undefined}
+                >
+                  {isSentByMe ? (
+                    <>
+                      <button
+                        className={`${styles.menuItem} ${
+                          canRecall ? styles.recallItem : styles.disabledItem
+                        }`}
+                        onClick={canRecall ? handleRecall : null}
+                        disabled={!canRecall}
+                      >
+                        <FaUndo className={styles.menuIcon} />
+                        <span className={styles.menuText}>Thu hồi</span>
+                        {canRecall && (
+                          <span className={styles.timer}>
+                            <FaClock />
+                            {Math.floor(timeRemaining)}:
+                            {Math.floor((timeRemaining % 1) * 60)
+                              .toString()
+                              .padStart(2, "0")}
+                          </span>
+                        )}
+                      </button>
+                      <div className={styles.menuDivider} />
+                      <button
+                        className={`${styles.menuItem} ${styles.deleteItem}`}
+                        onClick={handleDelete}
+                      >
+                        <FaTrash className={styles.menuIcon} />
+                        <span className={styles.menuText}>Xóa</span>
+                      </button>
+                    </>
+                  ) : (
                     <button
                       className={`${styles.menuItem} ${styles.deleteItem}`}
                       onClick={handleDelete}
                     >
                       <FaTrash className={styles.menuIcon} />
-                      <span className={styles.menuText}>Xóa</span>
+                      <span className={styles.menuText}>Xóa tin nhắn</span>
                     </button>
-                  </>
-                ) : (
-                  <button
-                    className={`${styles.menuItem} ${styles.deleteItem}`}
-                    onClick={handleDelete}
-                  >
-                    <FaTrash className={styles.menuIcon} />
-                    <span className={styles.menuText}>Xóa tin nhắn</span>
-                  </button>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              );
+
+              if (isFirstMessage && typeof document !== "undefined") {
+                return ReactDOM.createPortal(menu, document.body);
+              }
+
+              return menu;
+            })()}
           </div>
         )}
 
@@ -291,6 +369,7 @@ const MessageItem = ({ message, showSeenStatus }) => {
                 src={message.noiDung}
                 alt="img-chat"
                 className={styles.mediaContent}
+                onLoad={handleMediaLoad}
                 onClick={() => openImageModal(message.noiDung)}
               />
               <div className={styles.mediaOverlay}>
@@ -306,6 +385,7 @@ const MessageItem = ({ message, showSeenStatus }) => {
                 ref={videoRef}
                 src={message.noiDung}
                 className={styles.mediaContent}
+                onLoadedData={handleMediaLoad}
               />
               <div className={styles.mediaOverlay}>
                 <span className={styles.zoomIcon}>

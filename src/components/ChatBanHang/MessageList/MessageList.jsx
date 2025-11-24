@@ -60,22 +60,6 @@ const MessageList = () => {
   });
 
   // Khi media load xong → đo lại item
-  const handleMediaLoaded = useCallback(
-    (maTinNhan) => {
-      const index = danhSachTin.findIndex((msg) => msg.maTinNhan === maTinNhan);
-      if (index !== -1 && parentRef.current) {
-        requestAnimationFrame(() => {
-          const element = parentRef.current.querySelector(
-            `[data-index="${index}"]`
-          );
-          if (element) {
-            rowVirtualizer.measureElement(element);
-          }
-        });
-      }
-    },
-    [danhSachTin, rowVirtualizer]
-  );
 
   // Xử lý scroll để load thêm
   const handleScroll = useCallback(() => {
@@ -153,6 +137,20 @@ const MessageList = () => {
     }
   }, [isLoadingMore]);
 
+  const onItemResize = useCallback(
+    (index) => {
+      if (parentRef.current) {
+        const element = parentRef.current.querySelector(
+          `[data-index="${index}"]`
+        );
+        if (element) {
+          rowVirtualizer.measureElement(element);
+        }
+      }
+    },
+    [rowVirtualizer]
+  );
+
   // Tin nhắn cuối đã xem
   const lastSeenMsgId = useMemo(() => {
     if (!user) return null;
@@ -218,7 +216,8 @@ const MessageList = () => {
                   <MessageItem
                     message={msg}
                     showSeenStatus={msg.maTinNhan === lastSeenMsgId}
-                    onMediaLoaded={handleMediaLoaded}
+                    onResize={() => onItemResize(virtualItem.index)}
+                    isFirstMessage={virtualItem.index === 0}
                   />
                 </div>
               );
