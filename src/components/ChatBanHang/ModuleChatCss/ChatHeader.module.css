@@ -1,6 +1,9 @@
 .header {
-  background: #fff;
-  color: #000;
+  /* ✅ ĐỔI MÀU: Nền header */
+  background: var(--theme-bg-primary);
+  /* ✅ ĐỔI MÀU: Chữ mặc định */
+  color: var(--theme-text-primary);
+  
   padding: 10px 16px 0px 5px;
   display: flex;
   flex-direction: column;
@@ -8,16 +11,23 @@
   position: relative;
   overflow-x: hidden;
   overflow-y: visible;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  
+  /* ✅ ĐỔI MÀU: Shadow (giữ nguyên logic nhưng dùng màu biến nếu cần, ở đây giữ rgba đen cho nổi) */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
+  
   width: 100%;
   max-width: 100%;
   max-height: 180px;
+  
+  /* Thêm transition để đổi màu mượt */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .divider {
   width: 100%;
   height: 1px;
-  background: #e5e7eb;
+  /* ✅ ĐỔI MÀU: Đường kẻ */
+  background: var(--theme-border-color);
   margin: 4px 0 4px 0;
   border: none;
 }
@@ -43,9 +53,11 @@
   height: 45px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  /* ✅ ĐỔI MÀU: Viền avatar (trùng màu nền để tạo khoảng cách) */
+  border: 3px solid var(--theme-bg-primary); 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  background: #ddd;
+  /* ✅ ĐỔI MÀU: Nền avatar khi chưa load ảnh */
+  background: var(--theme-bg-secondary);
   object-fit: cover;
 }
 
@@ -56,7 +68,8 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  /* ✅ ĐỔI MÀU: Viền chấm trạng thái (cắt vào nền) */
+  border: 2px solid var(--theme-bg-primary);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -95,7 +108,8 @@
 .sellerName {
   font-size: 15px;
   font-weight: 700;
-  color: #000;
+  /* ✅ ĐỔI MÀU: Tên người bán */
+  color: var(--theme-text-primary);
   margin: 0;
   letter-spacing: 0.5px;
   overflow: hidden;
@@ -105,7 +119,8 @@
 
 .lastOnline {
   font-size: 11px;
-  color: #000;
+  /* ✅ ĐỔI MÀU: Thời gian online */
+  color: var(--theme-text-secondary);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -126,7 +141,8 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #374151;
+  /* ✅ ĐỔI MÀU: Chữ trong nút menu */
+  color: var(--theme-text-secondary);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -134,26 +150,32 @@
 }
 
 .headerMenuButton:hover {
-  background: #e5e7eb;
+  /* ✅ ĐỔI MÀU: Hover nút menu */
+  background: var(--theme-bg-hover);
+  color: var(--theme-text-primary);
 }
 
+/* Nút Unblock đặc biệt */
 .headerMenuButton.unblock {
-  background: #dbeafe;
-  color: #2563eb;
+  /* ✅ ĐỔI MÀU: Nền xanh nhạt (dùng rgba để hợp cả sáng/tối) */
+  background: rgba(37, 99, 235, 0.1); 
+  /* ✅ ĐỔI MÀU: Chữ xanh */
+  color: var(--theme-text-highlight, #2563eb);
 }
 
 .headerMenuButton.unblock:hover {
-  background: #bfdbfe;
+  /* ✅ ĐỔI MÀU: Hover xanh đậm hơn chút */
+  background: rgba(37, 99, 235, 0.2); 
 }
 
 /* Standalone unblock class so JSX can use styles.unblock */
 .unblock {
-  background: #dbeafe;
-  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--theme-text-highlight, #2563eb);
 }
 
 .unblock:hover {
-  background: #bfdbfe;
+  background: rgba(37, 99, 235, 0.2);
 }
 
 .lastOnline::before {

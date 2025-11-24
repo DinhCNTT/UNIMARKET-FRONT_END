@@ -12,6 +12,8 @@
   animation: fadeIn 0.3s ease forwards;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  /* Giữ màu overlay tối bán trong suốt để tập trung vào ảnh */
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 .mediaModalContent {
@@ -25,8 +27,13 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  
+  /* Giữ nguyên vị trí margin */
   margin-top: 90px;
   margin-left: 200px;
+  
+  /* ✅ ĐỔI MÀU: Nền modal (quan trọng nếu ảnh trong suốt hoặc nhỏ hơn khung) */
+  background-color: var(--theme-bg-primary);
 }
 
 @keyframes fadeIn {
@@ -49,9 +56,10 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0, 0, 0, 0.7);
+  /* ✅ ĐỔI MÀU: Nền nút đóng (bán trong suốt) */
+  background: rgba(0, 0, 0, 0.7); 
   border: none;
-  color: white;
+  color: white; /* Icon giữ màu trắng vì nền nút luôn tối */
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -67,7 +75,7 @@
 }
 
 .mediaModalClose:hover {
-  background: rgba(255, 59, 48, 0.8);
+  background: rgba(255, 59, 48, 0.8); /* Màu đỏ khi hover */
   transform: scale(1.1);
   box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
 }
@@ -82,6 +90,8 @@
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  /* ✅ ĐỔI MÀU: Thêm nền trắng/đen phía sau ảnh nếu ảnh là PNG trong suốt */
+  background-color: var(--theme-bg-secondary);
 }
 
 .mediaModalVideo {
@@ -90,6 +100,7 @@
   border-radius: 8px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   outline: none;
+  background-color: black; /* Video thường nền đen */
 }
 
 .closeButton {
@@ -99,6 +110,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  /* ✅ ĐỔI MÀU: Nút đóng lớn */
   background: rgba(0, 0, 0, 0.7);
   border: none;
   color: white;
@@ -130,18 +142,23 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  /* ✅ ĐỔI MÀU: Nút điều hướng (Next/Prev) */
+  background: rgba(255, 255, 255, 0.2); /* Giữ bán trong suốt */
   border: none;
-  color: white;
+  color: white; /* Mũi tên trắng */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  z-index: 10002; /* Đảm bảo nằm trên ảnh */
 }
 
+/* Điều chỉnh nút điều hướng khi hover */
 .navigationButton:hover {
-  background: rgba(255, 255, 255, 0.3);
+  /* ✅ ĐỔI MÀU: Sáng hơn khi hover */
+  background: rgba(255, 255, 255, 0.4); 
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .prevButton {
@@ -200,6 +217,16 @@
     width: 18px;
     height: 18px;
   }
+  
+  /* Điều chỉnh nút điều hướng trên mobile */
+  .prevButton {
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .nextButton {
+    right: 10px;
+    background: rgba(0, 0, 0, 0.5);
+  }
 }
 
 @media (max-width: 480px) {
@@ -221,9 +248,7 @@
     height: 35px;
     font-size: 14px;
   }
-}
-
-@media (max-width: 480px) {
+  
   .modalContent {
     max-width: 98vw;
     max-height: 80vh;

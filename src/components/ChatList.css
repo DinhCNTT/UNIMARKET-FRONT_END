@@ -1,8 +1,13 @@
+/* src/components/ChatList.css */
+
 .chatlist-container {
   display: flex;
   flex-direction: column;
   height: 100vh; /* fit viewport */
-  background-color: white;
+  /* ✅ THAY ĐỔI: Dùng biến màu nền và màu chữ */
+  background-color: var(--theme-bg-primary);
+  color: var(--theme-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Header wrapper cho search + filter button */
@@ -10,8 +15,10 @@
   display: flex;
   align-items: center;
   padding: 8px 10px;
-  border-bottom: 1px solid #ccc;
+  /* ✅ THAY ĐỔI: Viền đổi màu theo theme */
+  border-bottom: 1px solid var(--theme-border-color);
   gap: 8px;
+  background-color: var(--theme-bg-primary);
 }
 
 /* Phần tìm kiếm */
@@ -26,15 +33,24 @@
 .chatlist-search input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  /* ✅ THAY ĐỔI: Nền input và màu chữ */
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border-color);
   border-radius: 20px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .chatlist-search input:focus {
-  border-color: #999;
+  /* ✅ THAY ĐỔI: Viền khi focus */
+  border-color: var(--theme-text-secondary);
+  background-color: var(--theme-bg-primary);
+}
+
+.chatlist-search input::placeholder {
+  color: var(--theme-text-secondary);
 }
 
 /* Nút filter ba chấm */
@@ -47,7 +63,8 @@
   border-radius: 50%;
   transition: all 0.2s ease;
   opacity: 0.6;
-  color: #666;
+  /* ✅ THAY ĐỔI: Màu icon */
+  color: var(--theme-icon-color);
   width: 32px;
   height: 32px;
   display: flex;
@@ -57,7 +74,8 @@
 }
 
 .chatlist-filter-menu-btn:hover {
-  background-color: #f0f0f0;
+  /* ✅ THAY ĐỔI: Nền khi hover */
+  background-color: var(--theme-bg-hover);
   opacity: 1;
   transform: scale(1.1);
 }
@@ -69,7 +87,7 @@
 /* Phần tìm kiếm + filter cũ (deprecated) */
 .chatlist-filter-dropdown {
   padding: 8px 10px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--theme-border-color);
   display: none; /* ẩn dropdown cũ */
 }
 
@@ -77,7 +95,8 @@
 .chatlist-item {
   padding: 10px;
   cursor: pointer;
-  border-bottom: 1px solid #ccc;
+  /* ✅ THAY ĐỔI: Viền ngăn cách */
+  border-bottom: 1px solid var(--theme-border-color);
   display: flex;
   align-items: center;
   background-color: transparent;
@@ -86,11 +105,13 @@
 }
 
 .chatlist-item:hover {
-  background-color: #f5f5f5;
+  /* ✅ THAY ĐỔI: Màu nền khi di chuột vào tin nhắn */
+  background-color: var(--theme-bg-hover);
 }
 
 .chatlist-item-selected {
-  background-color: #e0e0e0;
+  /* ✅ THAY ĐỔI: Màu nền khi đang chọn */
+  background-color: var(--theme-bg-hover);
 }
 
 .chatlist-item-image {
@@ -99,6 +120,8 @@
   border-radius: 5px;
   margin-right: 10px;
   object-fit: cover;
+  /* Thêm nền cho ảnh chưa load */
+  background-color: var(--theme-bg-secondary);
 }
 
 .chatlist-item-content {
@@ -109,47 +132,48 @@
 }
 
 .chatlist-item-title {
-  font-family: "Inter", "Segoe UI", "Roboto", sans-serif; /* ✅ font hiện đại */
-  font-weight: 600;          /* ✅ đậm vừa, không bị thô */
-  font-size: 15px;           /* ✅ vừa phải, cân đối */
-  line-height: 1.4;          /* ✅ thoáng hơn */
-  letter-spacing: 0.2px;     /* ✅ chữ tinh tế hơn */
-  color: inherit;            /* ✅ giữ màu gốc */
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+  /* ✅ THAY ĐỔI: Màu chữ tiêu đề */
+  color: var(--theme-text-primary);
 }
 
 .chatlist-item-title-text {
-  display: -webkit-box;           /* 👈 Đổi từ inline-block */
-  -webkit-line-clamp: 2;          /* 👈 Cho phép tối đa 2 dòng */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  line-height: 1.4;               /* 👈 Khoảng cách giữa các dòng */
-  word-break: break-word;         /* 👈 Ngắt từ dài nếu cần */
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .chatlist-item-price {
   font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
-  font-size: 13.5px;         /* ✅ nhỏ gọn hơn */
+  font-size: 13.5px;
   font-weight: 500;
-  color: red;                /* ✅ giữ nguyên màu đỏ */
+  color: #ff4444; /* Giữ màu đỏ cho giá, hoặc dùng biến nếu muốn */
   margin-top: 2px;
 }
 
 .chatlist-item-info {
   font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
   font-size: 12.5px;
-  color: #666;               /* ✅ tinh tế hơn #777 */
+  /* ✅ THAY ĐỔI: Màu chữ tin nhắn cuối */
+  color: var(--theme-text-secondary);
   margin-top: 4px;
   line-height: 1.4;
-  white-space: nowrap;       /* không tràn dòng */
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;   /* nếu dài sẽ hiện "..." */
+  text-overflow: ellipsis;
   max-width: 100%;
 }
 
-
-/* Nút menu ba chấm */
+/* Nút menu ba chấm trên item */
 .chatlist-menu-btn {
   background: none;
   border: none;
@@ -161,7 +185,8 @@
   margin-left: 8px;
   margin-right: 6px;
   opacity: 0.6;
-  color: #666;
+  /* ✅ THAY ĐỔI: Màu icon */
+  color: var(--theme-icon-color);
   width: 32px;
   height: 32px;
   display: flex;
@@ -169,13 +194,14 @@
   justify-content: center;
 }
 
-/* Expanded menu buttons */
+/* Expanded menu buttons (Nút Ẩn/Gỡ ẩn trong menu con) */
 .chatlist-hide-btn-expanded {
   width: 100%;
   padding: 10px 16px;
   border: none;
-  background: #f3f4f6;
-  color: #111;
+  /* ✅ THAY ĐỔI: Nền trong suốt để ăn theo popover */
+  background: transparent;
+  color: var(--theme-text-primary);
   cursor: pointer;
   font-size: 14px;
   display: flex;
@@ -183,13 +209,15 @@
   justify-content: center;
   gap: 8px;
 }
+
 .chatlist-hide-btn-expanded:hover {
-  background: #e5e7eb;
+  /* ✅ THAY ĐỔI: Màu hover */
+  background: var(--theme-bg-hover);
   transform: translateY(-1px);
 }
 
 .chatlist-menu-btn:hover {
-  background-color: #f0f0f0;
+  background-color: var(--theme-bg-hover);
   opacity: 1;
   transform: scale(1.1);
 }
@@ -202,8 +230,8 @@
 .chatlist-delete-expanded {
   width: 100%;
   padding: 0;
-  border-bottom: 1px solid #ccc;
-  background-color: #fff5f5;
+  border-bottom: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-secondary);
   animation: slideDown 0.2s ease-out;
 }
 
@@ -223,8 +251,9 @@
 .chatlist-delete-btn-expanded {
   width: 100%;
   padding: 12px 20px;
-  background-color: #ff4444;
-  color: white;
+  /* Nút xóa màu đỏ giữ nguyên hoặc chỉnh nhẹ */
+  background-color: transparent; 
+  color: var(--theme-text-primary);
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -236,7 +265,9 @@
   gap: 8px;
 }
 
-/* Old rule - removed to use new popover-specific styling */
+.chatlist-delete-btn-expanded:hover {
+    background-color: var(--theme-bg-hover);
+}
 
 .chatlist-delete-btn-expanded:active {
   transform: translateY(0);
@@ -252,13 +283,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
- /* vẫn giữ mờ đen nhẹ */
-  backdrop-filter: blur(6px);  
+  /* Giữ overlay tối màu */
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
   z-index: 1000;
 }
 
 .chatlist-delete-confirm-modal {
-  background-color: white;
+  /* ✅ THAY ĐỔI: Nền modal */
+  background-color: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
   border-radius: 10px;
   padding: 20px;
   width: 90%;
@@ -281,21 +315,23 @@
 
 .chatlist-delete-confirm-content h3 {
   margin: 0 0 15px 0;
-  color: #333;
+  /* ✅ THAY ĐỔI: Màu tiêu đề modal */
+  color: var(--theme-text-primary);
   font-size: 18px;
   text-align: center;
 }
 
 .chatlist-delete-confirm-content p {
   margin: 10px 0;
-  color: #666;
+  /* ✅ THAY ĐỔI: Màu chữ nội dung modal */
+  color: var(--theme-text-secondary);
   text-align: center;
   line-height: 1.5;
 }
 
 .chatlist-delete-note {
   font-size: 14px;
-  color: #999;
+  color: var(--theme-text-secondary);
   font-style: italic;
 }
 
@@ -328,20 +364,24 @@
 }
 
 .chatlist-btn-delete-cancel {
-  background-color: #ccc;
-  color: #333;
+  /* ✅ THAY ĐỔI: Nút hủy theo theme */
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
 }
 
 .chatlist-btn-delete-cancel:hover {
-  background-color: #bbb;
+  background-color: var(--theme-border-color);
   transform: translateY(-1px);
 }
 
 .chatlist-search input {
+  /* (Đã style ở trên rồi nhưng giữ lại rule width/max-width của bạn) */
   width: 90%;
   max-width: 320px;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border-color);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -359,7 +399,9 @@
   padding: 8px 10px;
   font-size: 14px;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
@@ -381,8 +423,9 @@
 /* Nút ẩn chat cố định phía dưới */
 .chatlist-hide-button-container {
   padding: 10px;
-  border-top: 1px solid #ccc;
-  background-color: white;
+  /* ✅ THAY ĐỔI: Nền và viền thanh dưới cùng */
+  border-top: 1px solid var(--theme-border-color);
+  background-color: var(--theme-bg-primary);
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -394,7 +437,6 @@
 
 /* When a menu is open, push the hide-bar down so it doesn't cover the popover */
 .chatlist-hide-button-container.menu-open {
-  /* Don't push the hide bar — let the popover overlay it. */
   transform: none !important;
   transition: none !important;
   box-shadow: 0 -2px 5px rgba(0,0,0,0.08);
@@ -464,14 +506,15 @@
 .chatlist-empty {
   padding: 14px;
   text-align: center;
-  color: #555;
-  font-family: "Inter", "Segoe UI", "Roboto", sans-serif; /* ✅ font hiện đại */
-  font-size: 14px;       /* ✅ vừa phải, dễ đọc */
-  font-weight: 500;      /* ✅ trung bình, không quá mảnh */
-  font-style: italic;    /* ✅ giữ nét tinh tế */
-  letter-spacing: 0.2px; /* ✅ chữ thoáng hơn */
+  /* ✅ THAY ĐỔI: Màu chữ thông báo trống */
+  color: var(--theme-text-secondary);
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.2px;
   line-height: 1.5;
-  opacity: 0.85;         /* ✅ màu dịu hơn */
+  opacity: 0.85;
 }
 
 
@@ -500,6 +543,18 @@
   overflow-y: auto; /* show scrollbar only when content overflows */
 }
 
+/* Tùy chỉnh thanh cuộn cho Dark mode */
+.chatlist-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.chatlist-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chatlist-scrollable::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border-color);
+  border-radius: 10px;
+}
+
 /* Ngăn highlight text khi drag */
 .chatlist-item * {
   -webkit-user-select: none;
@@ -511,21 +566,21 @@
 /* Popover menu (small floating card like Zalo) */
 .chatlist-menu-wrapper {
   position: relative; /* anchor for popover */
-  z-index: 9999; /* ensure wrapper and popover sit above everything (overlay behavior) */
+  z-index: 9999; /* ensure wrapper and popover sit above everything */
 }
 .chatlist-menu-popover {
   position: absolute;
-  /* anchor under the 3-dot button (aligned to its right edge) */
   right: 0;
   top: calc(100% + 6px);
   transform: translateY(0) scale(1);
   opacity: 0;
-  background: #ffffff; /* clean white card */
-  border: 1px solid #e5e7eb;
+  /* ✅ THAY ĐỔI: Nền và viền Popover */
+  background: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;
-  z-index: 2000; /* high so it can overlap the chatbox */
+  z-index: 2000;
   min-width: 240px;
   max-width: 340px;
   display: flex;
@@ -563,14 +618,16 @@
   font-size: 14px;
   font-weight: 500;
   transition: all 0.12s ease;
-  color: #1f2937;
+  /* ✅ THAY ĐỔI: Chữ trong menu */
+  color: var(--theme-text-primary);
   position: relative;
   height: 44px;
   min-height: 44px;
 }
 
 .menu-icon-svg {
-  color: #374151;
+  /* ✅ THAY ĐỔI: Icon trong menu */
+  color: var(--theme-icon-color);
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -580,92 +637,32 @@
 }
 
 .chatlist-menu-popover-btn.active {
-  background: #eff6ff;
-  color: #0284c7;
+  background: var(--theme-bg-hover);
+  color: var(--theme-text-highlight, #0284c7);
   font-weight: 600;
 }
 
 .chatlist-menu-popover-btn.active .menu-icon-svg {
-  color: #0284c7;
+  color: var(--theme-text-highlight, #0284c7);
 }
 
 .chatlist-menu-popover-btn:hover {
-  background: #f9fafb;
+  background: var(--theme-bg-hover);
 }
 
 .chatlist-menu-popover-btn:hover .menu-icon-svg {
-  color: #0284c7;
+  color: var(--theme-text-highlight, #0284c7);
 }
 
 /* Divider line trong popover menu */
 .chatlist-menu-divider {
   height: 1px;
-  background-color: #f3f4f6;
+  background-color: var(--theme-border-color);
   margin: 8px 0;
 }
 
-/* Small caret to visually attach popover to button */
-.chatlist-menu-popover::before {
-  content: "";
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%) rotate(45deg);
-  width: 12px;
-  height: 12px;
-  background: inherit;
-  border-left: 1px solid rgba(0,0,0,0.08);
-  border-top: 1px solid rgba(0,0,0,0.08);
-}
-
-/* Remove caret/diamond for popover (user requested no triangle/shape) */
+/* Remove caret/diamond for popover */
 .chatlist-menu-popover::before { display: none !important; }
-
-/* Delete (red) button - simple text style on white background */
-.chatlist-delete-btn-expanded {
-  background: transparent;
-  color: #111827;
-  padding: 12px 14px;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 500;
-  border-radius: 0;
-  font-size: 14px;
-  transition: all 0.15s ease;
-}
-.chatlist-delete-btn-expanded svg {
-  color: #111827;
-  flex-shrink: 0;
-}
-.chatlist-delete-btn-expanded:hover {
-  background: #f5f5f5;
-}
-
-/* Hide (orange) button - simple text style on white background */
-.chatlist-hide-btn-expanded {
-  background: transparent;
-  color: #111827;
-  padding: 12px 14px;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 500;
-  border-radius: 0;
-  font-size: 14px;
-  transition: all 0.15s ease;
-}
-.chatlist-hide-btn-expanded svg {
-  color: #111827;
-  flex-shrink: 0;
-}
-.chatlist-hide-btn-expanded:hover {
-  background: #f5f5f5;
-}
 
 /* Remove default focus/active background on popover buttons */
 .chatlist-menu-popover-btn:focus, .chatlist-menu-popover-btn:active {
@@ -675,6 +672,7 @@
 
 /* Ensure menu wrapper sits above chat items */
 .chatlist-scrollable .chatlist-item { z-index: 1; }
+
 /* --- Header quay lại khi ở màn hình Bạn bè --- */
 .chatlist-back-header {
   display: flex;
@@ -682,39 +680,40 @@
   justify-content: flex-start;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #eaeaea;
+  /* ✅ THAY ĐỔI: Nền header FriendList */
+  background-color: var(--theme-bg-primary);
+  border-bottom: 1px solid var(--theme-border-color);
   cursor: pointer;
   transition: all 0.25s ease;
   user-select: none;
 }
 
 .chatlist-back-header:hover {
-  background-color: #f8f9fa; /* nhẹ hơn, không chói */
+  background-color: var(--theme-bg-hover);
   transform: translateY(-1px);
 }
 
 .chatlist-back-header .icon {
-  color: #2563eb; /* xanh dương tinh tế */
+  color: var(--theme-text-highlight, #2563eb);
   font-size: 20px;
   transition: color 0.2s ease;
 }
 
 .chatlist-back-header:hover .icon {
-  color: #1e40af; /* đậm hơn khi hover */
+  color: #1e40af; /* Hoặc biến highlight đậm hơn */
 }
 
 .chatlist-back-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: var(--theme-text-primary);
   letter-spacing: 0.3px;
   transition: color 0.2s ease;
 }
 
 .chatlist-back-header:hover h3 {
-  color: #0f172a;
+  color: var(--theme-text-primary);
 }
 
 /* --- Icon “Bạn bè” trong danh sách --- */
@@ -723,10 +722,10 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #1d4ed8; /* màu xanh hiện đại */
+  color: var(--theme-text-highlight, #1d4ed8);
 }
 
-/* Ensure the title text truncates correctly when the title is a flex container (special item) */
+/* Ensure the title text truncates correctly */
 .special-item .chatlist-item-title-text {
   flex: 1 1 auto;
   min-width: 0;
@@ -738,7 +737,7 @@
 
 .special-item .chatlist-item-title .icon {
   font-size: 18px;
-  color: #1d4ed8;
+  color: var(--theme-text-highlight, #1d4ed8);
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -746,5 +745,3 @@
   transform: scale(1.1);
   color: #1e3a8a;
 }
-
-
