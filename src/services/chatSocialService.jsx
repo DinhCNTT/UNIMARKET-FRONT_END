@@ -1,6 +1,7 @@
 import * as signalR from "@microsoft/signalr";
 
-const hubUrl = "http://localhost:5133/SocialChatHub"; // ⚙️ đổi sang https nếu server có SSL
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5133';
+const hubUrl = `${API_BASE.replace(/\/$/, '')}/SocialChatHub`; // use VITE_API_URL when available
 let connection = null;
 let connectionPromise = null;
 
@@ -235,7 +236,7 @@ const callConversationApi = async (maCuocTroChuyen, action) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5133/api/SocialShare/conversation/${maCuocTroChuyen}/${action}`,
+      `${API_BASE.replace(/\/$/, '')}/api/SocialShare/conversation/${maCuocTroChuyen}/${action}`,
       {
         method: "POST",
         headers: {
@@ -284,7 +285,7 @@ export const deleteConversation = async (maCuocTroChuyen) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5133/api/SocialShare/conversation/${maCuocTroChuyen}`,
+      `${API_BASE.replace(/\/$/, '')}/api/SocialShare/conversation/${maCuocTroChuyen}`,
       {
         method: "DELETE",
         headers: {
@@ -315,7 +316,7 @@ export const deleteMessageForMe = async (conversationId, messageId) => {
 
   try {
     const response = await fetch(
-      `http://localhost:5133/api/SocialShare/message/delete-for-me`,
+      `${API_BASE.replace(/\/$/, '')}/api/SocialShare/message/delete-for-me`,
       {
         method: "POST",
         headers: {

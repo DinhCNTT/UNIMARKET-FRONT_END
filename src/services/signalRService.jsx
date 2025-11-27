@@ -1,6 +1,7 @@
 import * as signalR from "@microsoft/signalr";
 
-const hubUrl = "http://localhost:5133/hub/chat";
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5133';
+const hubUrl = `${API_BASE.replace(/\/$/, '')}/hub/chat`;
 
 class SignalRService {
   constructor() {

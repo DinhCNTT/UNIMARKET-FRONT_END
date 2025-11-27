@@ -42,7 +42,10 @@ export const VideoHubProvider = ({ children }) => {
 
     const newConnection = new HubConnectionBuilder()
       .withUrl(`${API_BASE}/videoHub`, {
-        accessTokenFactory: () => token,
+        accessTokenFactory: () => {
+          // Read latest token from storage to avoid stale closure tokens
+          return localStorage.getItem("token") || sessionStorage.getItem("token") || token || "";
+        },
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
@@ -52,6 +55,7 @@ export const VideoHubProvider = ({ children }) => {
 
     const startConnection = async () => {
       try {
+        console.log("VideoHub connecting; tokenPresent=", Boolean(localStorage.getItem("token") || sessionStorage.getItem("token") || token));
         await newConnection.start();
         console.log("✅ VideoHub Connected!");
         setVideoConnection(newConnection);

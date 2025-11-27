@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import styles from "./PostDetailsInfo.module.css";
+import ReportButton from "./ReportModals/ReportButton";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5"; 
 import { MdOutlineLocationOn, MdOutlineCalendarToday } from "react-icons/md"; 
 // Import icon trái tim (Outline: chưa lưu, Filled: đã lưu)
 import { IoHeartOutline, IoHeart } from "react-icons/io5"; 
 import { formatDate } from "../utils/formatters";
 
-const PostDetailsInfo = ({ post, formattedPrice, onChat, currentUserId, isSaved, onToggleSave }) => {
-  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-  const handleShowPhoneNumber = () => setShowPhoneNumber(!showPhoneNumber);
+const PostDetailsInfo = ({ post, formattedPrice, onChat, currentUserId, isSaved, onToggleSave, showPhoneNumber: showPhoneNumberProp, onTogglePhone }) => {
+  const [localShowPhoneNumber, setLocalShowPhoneNumber] = useState(false);
+  const handleShowPhoneNumber = () => {
+    if (typeof onTogglePhone === 'function') return onTogglePhone();
+    setLocalShowPhoneNumber((s) => !s);
+  };
+  const showPhoneNumber = typeof showPhoneNumberProp === 'boolean' ? showPhoneNumberProp : localShowPhoneNumber;
 
   const isOwner = currentUserId === post.maNguoiBan;
 
@@ -18,6 +23,11 @@ const PostDetailsInfo = ({ post, formattedPrice, onChat, currentUserId, isSaved,
       <h1>{post.tieuDe}</h1>
 
       {/* Nút Lưu tin - Góc phải trên cùng */}
+      {/* Report button (small, circular) positioned left of save - only show to non-owners */}
+      {!isOwner && (
+        <ReportButton targetType="Post" targetId={post.maTinDang} className={styles.reportBtnAbsolute} />
+      )}
+
       <button 
         className={`${styles.saveBtn} ${isSaved ? styles.saved : ''}`} 
         onClick={onToggleSave}

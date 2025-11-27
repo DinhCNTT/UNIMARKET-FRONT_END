@@ -21,18 +21,32 @@ const login = async (email, password) => {
     if (response.data.token) {
       const user = response.data;
 
-      // Lưu thông tin vào localStorage
+      // Lưu thông tin vào localStorage + sessionStorage for tab consistency
       localStorage.setItem("token", user.token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("userRole", user.role);
-      localStorage.setItem("userFullName", user.fullName || "");
-      localStorage.setItem("userId", user.id);
-      localStorage.setItem("userEmail", user.email || "");
-      localStorage.setItem("userPhoneNumber", user.phoneNumber || "");
+      sessionStorage.setItem("token", user.token);
 
-      // ✅ Lưu avatarUrl nếu có
+      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("user", JSON.stringify(user));
+
+      localStorage.setItem("userRole", user.role);
+      sessionStorage.setItem("userRole", user.role);
+
+      localStorage.setItem("userFullName", user.fullName || "");
+      sessionStorage.setItem("userFullName", user.fullName || "");
+
+      localStorage.setItem("userId", user.id);
+      sessionStorage.setItem("userId", user.id);
+
+      localStorage.setItem("userEmail", user.email || "");
+      sessionStorage.setItem("userEmail", user.email || "");
+
+      localStorage.setItem("userPhoneNumber", user.phoneNumber || "");
+      sessionStorage.setItem("userPhoneNumber", user.phoneNumber || "");
+
+      // ✅ Lưu avatarUrl nếu có (both stores)
       if (user.avatarUrl) {
         localStorage.setItem("userAvatar", user.avatarUrl);
+        sessionStorage.setItem("userAvatar", user.avatarUrl);
       }
     }
 

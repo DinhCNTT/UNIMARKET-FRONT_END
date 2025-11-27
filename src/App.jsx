@@ -13,6 +13,7 @@ import { VideoHubProvider } from "./context/VideoHubContext";
 
 // ✅ Thêm ThemeProvider (đúng yêu cầu)
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./components/NotificationsModals/context/NotificationContext";
 
 import AppRoutes from "./routes/AppRoutes";
 
@@ -61,7 +62,7 @@ function App() {
     <GoogleOAuthProvider clientId={clientId}>
       <BrowserRouter>
         <AuthProvider>
-
+          <NotificationProvider>
           {/* ✅ Bọc ThemeProvider (yêu cầu của bạn) */}
           <ThemeProvider>
 
@@ -86,36 +87,24 @@ function App() {
                         toastOptions={{ duration: 2500 }}
                       />
 
-                      {/* Sonner Toast */}
+                      {/* Sonner Toast (single right-side panel) */}
                       <SonnerToaster
-                        position="top-center"
+                        position="top-right"
                         richColors
                         reverseOrder={false}
                       />
 
-                      {/* React Toastify */}
-                      <ToastContainer
-                        position="top-center"
-                        autoClose={2500}
-                        hideProgressBar={false}
-                        newestOnTop={false}
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
-                        transition={Slide}
-                        className="um-toast-container"
-                      />
+                      {/* React Toastify removed: Sonner used as single notification panel */}
 
                     </VideoHubProvider>
                   </VideoProvider>
                 </LocationProvider>
               </CategoryProvider>
             </SearchProvider>
-
           </ThemeProvider>
-        </AuthProvider>
+        </NotificationProvider>
+      </AuthProvider>
+
       </BrowserRouter>
     </GoogleOAuthProvider>
   );

@@ -1,6 +1,7 @@
 import * as signalR from "@microsoft/signalr";
 
-const apiBaseUrl = "http://localhost:5133/api";
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5133';
+const apiBaseUrl = `${API_BASE.replace(/\/$/, '')}/api`;
 let connection = null;
 
 // Helper function to get auth token
@@ -55,11 +56,8 @@ export const connectToChatHub = async (maCuocTroChuyen, onReceiveMessage) => {
   }
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5133/hub/chat", {
-      // 🔧 THÊM TOKEN AUTHENTICATION
+    .withUrl(`${API_BASE.replace(/\/$/, '')}/hub/chat`, {
       accessTokenFactory: () => token,
-      skipNegotiation: true,
-      transport: signalR.HttpTransportType.WebSockets
     })
     .withAutomaticReconnect({
       nextRetryDelayInMilliseconds: retryContext => {

@@ -8,8 +8,9 @@ import { formatPrice, getMediaUrl } from "../utils/formatters";
 // Import các component con
 import TopNavbar from "../components/TopNavbar";
 import FloatingProductBox from "../components/FloatingProductBox";
+import ReportButton from "../components/ReportModals/ReportButton";
 import PostImageCarousel from "../components/PostImageCarousel";
-import PostDetailsInfo from "../components/PostDetailsInfo";
+import PostDetailsInfo from "./PostDetailsInfo";
 import PostDescription from "../components/PostDescription";
 import SimilarPostsSection from "../components/SimilarPostsSection";
 import Lightbox from "../components/Lightbox";
@@ -40,6 +41,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
 
   // State giao diện (Floating box, Lightbox)
   const [showFloatingBox, setShowFloatingBox] = useState(false);
+  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -82,7 +84,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
 
       {/* Floating Product Box */}
       {showFloatingBox && (
-        <FloatingProductBox
+          <FloatingProductBox
           image={getMediaUrl(post.images?.[0])}
           title={post.tieuDe}
           price={formattedPrice}
@@ -93,12 +95,14 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           </>}
           // Xử lý mô tả ngắn gọn, loại bỏ HTML tags
           description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
-          onShowPhone={() => {}} 
+          onShowPhone={() => setShowPhoneNumber((s) => !s)}
           onChat={handleChatClick} // Truyền hàm chat
-          showPhone={false} 
+          showPhone={showPhoneNumber} 
           phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
+          phone={post.phoneNumber}
           currentUserId={user?.id}
           sellerId={post.maNguoiBan}
+          targetId={post.maTinDang || id}
         />
       )}
 
@@ -121,11 +125,14 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             formattedPrice={formattedPrice}
             onChat={handleChatClick} 
             currentUserId={user?.id}
+            showPhoneNumber={showPhoneNumber}
+            onTogglePhone={() => setShowPhoneNumber((s) => !s)}
             
             // ✅ QUAN TRỌNG: Truyền props Lưu tin xuống (Logic Code 1)
             isSaved={isSaved} 
             onToggleSave={handleToggleSave}
           />
+          {/* NOTE: Report button is rendered inside PostDetailsInfo as a pill near the Save button */}
         </div>
       </div>
 
