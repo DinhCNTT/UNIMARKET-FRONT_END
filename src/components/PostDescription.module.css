@@ -1,8 +1,9 @@
-/* --- src/components/PostDescription.module.css --- */
-/* Chứa style cho phần mô tả và nút "Xem thêm" */
+/* Import font Reddit Sans từ Google Fonts (nếu chưa có trong dự án) */
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
 .moTaChiTiet {
-  margin-top: 40px;
+  /* Áp dụng font cho toàn bộ khối này */
+  font-family: 'Reddit Sans', sans-serif; 
   font-size: 16px;
   line-height: 1.6;
   color: #333;
@@ -27,6 +28,8 @@
 }
 
 .moTaNdToggle {
+  /* Nút bấm (button) thường không tự kế thừa font, nên cần khai báo lại */
+  font-family: 'Reddit Sans', sans-serif;
   margin-top: 10px;
   padding: 6px 12px;
   font-size: 14px;

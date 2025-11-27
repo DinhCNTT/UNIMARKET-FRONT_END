@@ -1,67 +1,141 @@
-/* --- src/pages/ChiTietTinDang.module.css --- */
-/* Chứa layout chính của trang, wrapper, và bố cục flexbox */
+/* src/pages/ChiTietTinDang.module.css */
 
+/* --- 1. CONTAINER TỔNG: CHUYỂN VỀ DẠNG TRONG SUỐT/NỀN XÁM --- */
 .chiTietTinDang {
-  width: 1150px; /* tăng độ rộng */
-  margin: 120px auto 0; /* căn giữa đều 2 bên */
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  width: 1150px; 
+  margin: 120px auto 40px; /* Cách top 120px, bottom 40px */
+  background-color: transparent; /* Bỏ màu trắng tổng */
+  box-shadow: none; /* Bỏ bóng tổng */
+  padding: 0; /* Bỏ padding tổng để các khối con tự lo */
   box-sizing: border-box;
-  overflow-x: hidden;
 }
 
-/* Bố cục phần ảnh + thông tin */
+/* --- 2. KHỐI HEADER (ẢNH + THÔNG TIN): LÀM THÀNH 1 CARD --- */
 .tinDangHeader {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
+  gap: 30px;
   flex-wrap: wrap;
+
+  /* Card Style */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px; /* Khoảng cách với khối bên dưới */
 }
 
-/* Wrapper cho component Carousel */
 .imageContainer {
   width: 38%;
   min-width: 320px;
   max-width: 600px;
 }
 
-/* Wrapper cho component Info */
 .chiTietTinDangInfoWrapper {
   flex: 1;
 }
 
-/* Các style cho trạng thái (thêm mới) */
+/* --- 3. LAYOUT MÔ TẢ & BÌNH LUẬN --- */
+.descriptionAndCommentsWrapper {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+/* --- 4. KHỐI MÔ TẢ (BÊN TRÁI): LÀM THÀNH 1 CARD --- */
+.descriptionContainer {
+  flex: 7;
+  
+  /* Card Style */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  min-height: 200px; /* Chiều cao tối thiểu cho đẹp */
+}
+
+/* --- 5. KHỐI BÌNH LUẬN (BÊN PHẢI) --- */
+.commentsContainer {
+  flex: 4;
+  position: sticky;
+  top: 100px;
+  
+  /* Lưu ý: Component <PostComments /> bên trong đã có style Card (nền trắng, bóng) 
+     từ bước trước rồi, nên ở đây ta KHÔNG cần thêm background-color nữa 
+     để tránh bị 2 lớp viền. */
+}
+
+/* --- 6. CÁC KHỐI TIN LIÊN QUAN: LÀM THÀNH CARD RIÊNG --- */
+#cac-tin-dang-khac,
+#tin-dang-tuong-tu {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* --- STYLE CHUNG --- */
 .loading,
 .notFound {
   padding: 40px;
   text-align: center;
   font-size: 18px;
   color: #555;
+  background: #fff;
+  border-radius: 8px;
+  margin-top: 120px;
 }
 
-/* --- Responsive cho layout chính --- */
+/* --- RESPONSIVE --- */
+
+/* Tablet & Mobile: Rớt dòng */
+@media (max-width: 992px) {
+  .descriptionAndCommentsWrapper {
+    flex-direction: column;
+  }
+  
+  .descriptionContainer, 
+  .commentsContainer {
+    width: 100%;
+    flex: none;
+    position: static; /* Bỏ sticky trên mobile */
+  }
+
+  /* Trên mobile, khối bình luận cần margin top để tách khỏi mô tả */
+  .commentsContainer {
+    margin-top: 0; 
+  }
+}
+
+/* Mobile nhỏ */
 @media (max-width: 768px) {
+  .chiTietTinDang {
+    width: 100%;
+    margin-top: 80px;
+    padding: 0 10px; /* Thêm chút padding lề cho mobile */
+  }
+
   .imageContainer {
     width: 100%;
     min-width: 100%;
   }
+
+  .tinDangHeader {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
-/* Ensure anchors aren't hidden behind the floating sticky box */
+
+/* --- Scroll Anchors (Để khi click menu không bị che khuất) --- */
 #tong-quan,
-#mo-ta-chi-tiet {
-  /* Match the JS offset used in FloatingProductBox / StickyInfoBar */
-  scroll-margin-top: 144px;
+#mo-ta-chi-tiet,
+#binh-luan {
+  scroll-margin-top: 140px;
 }
 
-/* The Similar posts section has extra controls (scroll buttons),
-   push its anchor a bit higher so content isn't hidden under them */
-#tin-dang-tuong-tu {
-  scroll-margin-top: 510px;
-}
-
-/* Seller's other posts wrapper - align with similar section controls */
+#tin-dang-tuong-tu,
 #cac-tin-dang-khac {
-  scroll-margin-top: 510px;
+  scroll-margin-top: 140px;
 }
