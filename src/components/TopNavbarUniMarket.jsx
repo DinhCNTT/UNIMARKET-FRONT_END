@@ -11,6 +11,8 @@ import {
 } from "react-icons/fi";
 import VideoSearchOverlay from "./VideoSearchOverlay";
 import "./TopNavbarUniMarket.css";
+import { NotificationContext } from "./NotificationsModals/context/NotificationContext";
+import NotificationsDropdown from "./NotificationsModals/NotificationsDropdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import { VideoContext } from "../context/VideoContext";
 import MorePanel from "./MorePanel";
@@ -23,6 +25,7 @@ export default function TopNavbarUniMarket() {
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
   const [profile, setProfile] = useState(null);
+  const { unreadCount, fetchNotifications } = useContext(NotificationContext);
 
   const isChatRoute = location.pathname.startsWith("/chat");
   const [isMini, setIsMini] = useState(isChatRoute);
@@ -90,6 +93,10 @@ export default function TopNavbarUniMarket() {
       return;
     }
     setActiveTab(tab);
+    if (tab === 'activity') {
+      // fetch latest notifications when opening the panel
+      try { fetchNotifications(); } catch (e) { console.warn('fetchNotifications error', e); }
+    }
   };
 
   // ==========================================================
@@ -224,6 +231,7 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("activity")}
           >
             <FiBell size={20} />
+            {unreadCount > 0 && <span className="um-tn-badge">{unreadCount}</span>}
             {activeTab !== "search" && activeTab !== "more" && (
               <span>Activity</span>
             )}
@@ -296,8 +304,7 @@ export default function TopNavbarUniMarket() {
 
         {activeTab === "activity" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <h3>Notifications</h3>
-            <p>Chưa có thông báo mới</p>
+            <NotificationsDropdown />
           </div>
         )}
 
