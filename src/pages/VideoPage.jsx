@@ -1,3 +1,4 @@
+// src/components/VideoPage.jsx
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,7 +18,7 @@ import { AuthContext } from "../context/AuthContext";
 // ========================================
 
 const getCloudinaryThumbnail = (videoUrl) => {
-  if (!videoUrl.includes('/upload/')) return '';
+  if (!videoUrl || !videoUrl.includes('/upload/')) return '';
   return videoUrl
     .replace('/upload/', '/upload/so_2,q_auto/')
     .replace('.mp4', '.jpg');
@@ -119,9 +120,14 @@ const VideoPage = () => {
           params.append("maxPrice", filters.maxPrice);
         }
 
-        // Call API
+        // 🔥 CẬP NHẬT THEO YÊU CẦU: Lấy Token và gửi Header
+        const authToken = getAuthToken();
+        const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+
+        // Call API kèm Headers để Backend nhận diện user cho thuật toán AI
         const res = await axios.get(
-          `http://localhost:5133/api/video?${params.toString()}`
+          `http://localhost:5133/api/video?${params.toString()}`,
+          { headers } 
         );
         const data = res.data;
 
@@ -146,7 +152,8 @@ const VideoPage = () => {
     };
 
     fetchVideos();
-  }, [currentPage, filters]);
+    // 🔥 Thêm user và token vào dependency để refresh khi trạng thái đăng nhập thay đổi
+  }, [currentPage, filters, user, token]);
 
   // Fetch saved videos
   useEffect(() => {
@@ -181,7 +188,7 @@ const VideoPage = () => {
     if (video) {
       video.style.opacity = 1;
       video.currentTime = 0;
-      video.play();
+      video.play().catch(e => console.log("Auto-play prevented:", e));
       setTimeout(() => {
         video.pause();
         video.style.opacity = 0;
@@ -240,10 +247,12 @@ const VideoPage = () => {
   };
 
   // Navigation handler
-  const handleVideoClick = (video, index) => {
-    const globalIndex = (currentPage - 1) * videosPerPage + index;
-    navigate(`/video/${video.maTinDang}?index=${globalIndex}`);
-  };
+  const handleVideoClick = (video) => {
+    // 🔥 FIX: Truyền thêm state chứa toàn bộ thông tin video sang trang kia
+    navigate(`/video/${video.maTinDang}`, { 
+      state: { seedVideo: video } 
+    });
+  }
 
   // Pagination handler
   const handlePageChange = (newPage) => {
@@ -337,7 +346,7 @@ const VideoPage = () => {
         className={styles.card}
         onMouseEnter={() => handleMouseEnter(index)}
         onMouseLeave={() => handleMouseLeave(index)}
-        onClick={() => handleVideoClick(video, index)}
+        onClick={() => handleVideoClick(video)}
       >
         {/* Save Button */}
         <div 

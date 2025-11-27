@@ -120,14 +120,14 @@ function AppRoutes() {
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
 
        {/* Route video - Đã sắp xếp lại thứ tự để tránh conflict */}
-       <Route path="/video/:maTinDang" element={<VideoDetailViewer />} />
+       <Route path="/video/:id" element={<VideoDetailViewer />} />
        <Route path="/search/:keyword" element={<VideoSearchPage />} />
        <Route path="/video-search-detail/:maTinDang" element={
          <ErrorBoundary>
            <VideoSearchDetailViewer />
          </ErrorBoundary>
        } />
-       <Route path="/video-da-tym" element={<VideoLikedPage />} />
+       <Route path="/video-da-tym" element={<VideoLikedPage />} /><Route path="/video/:maTinDang" element={<VideoDetailViewer />} />
        <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
        
         {/* Route trang hồ sơ người dùng */}
