@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "./PostDescription.module.css"; // Tạo file CSS riêng
+import styles from "./PostDescription.module.css"; 
 
 const PostDescription = ({ description }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -8,13 +8,18 @@ const PostDescription = ({ description }) => {
 
   return (
     <div className={styles.moTaChiTiet}>
-      <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>Mô tả chi tiết</div>
+      {/* Thẻ div này sẽ tự động kế thừa font từ .moTaChiTiet */}
+      <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>
+        Mô tả chi tiết
+      </div>
+      
       <div
         className={`${styles.moTaNdWrapper} ${
           !needsTruncation || showFullDescription ? styles.moTaNdFull : styles.moTaNdClamp
         }`}
         dangerouslySetInnerHTML={{ __html: descriptionHtml }}
       />
+      
       {needsTruncation && (
         <button
           className={styles.moTaNdToggle}

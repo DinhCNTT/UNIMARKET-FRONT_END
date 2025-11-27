@@ -1,44 +1,43 @@
-/* Container chính */
+/* Container chính - Mở rộng chiều ngang */
 .capnhat-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 15px;
   background-color: #fff;
-  width: 720px;
+  width: 90%;
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 20px auto 0;
   position: relative;
-  left: -125px; /* dịch sang trái 20px */
+  font-family: 'Reddit Sans', sans-serif;
 }
 
-/* Form chính */
+/* Form chính - Điều chỉnh lấp đầy container */
 .capnhat-form {
   display: flex;
   flex-direction: column;
   align-items: center;
   background: white !important;
-  padding: 90px;
-  border-radius: 8px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 150%;
-  max-width: 130%;
-  margin-left: -10%;
-  margin-right: auto;
-  min-height: 1300px;
-  position: relative; /* Thêm để kiểm soát z-index */
+  padding: 60px;
+  border-radius: 6px;
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; 
+  max-width: 100%;
+  min-height: 1100px;
+  position: relative; 
 }
 
 /* Thông báo trạng thái */
 .capnhat-status {
-  padding: 12px 20px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
   font-weight: 500;
   text-align: center;
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
+  font-size: 0.9rem;
 }
 
 .capnhat-status.error {
@@ -50,69 +49,72 @@
 /* Nhóm form cơ bản */
 .capnhat-group {
   width: 60%;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   margin-left: 45%;
   margin-right: 0;
   position: relative;
-  z-index: 10; /* Đảm bảo nằm trên media-box */
+  z-index: 10;
 }
 
 .capnhat-group-ViTri1{
-  width: 570px;
-  margin-bottom: 20px;
+  width: 480px;
+  margin-bottom: 16px;
   margin-left: 38%;
   margin-right: 0;
-  position: absolute; /* Thay đổi thành absolute */
+  position: absolute;
   z-index: 10;
-  top: 635px; /* Đặt vị trí cố định */
+  top: 540px;
 }
 
 .capnhat-group-ViTri2{
-  width: 570px;
-  margin-bottom: 20px;
+  width: 480px;
+  margin-bottom: 16px;
   margin-left: 38%;
   margin-right: 0;
-  position: absolute; /* Thay đổi thành absolute */
+  position: absolute;
   z-index: 10;
-  top: 725px; /* Đặt vị trí cố định, cách group 1 khoảng 90px */
+  top: 615px;
 }
 
 .capnhat-label {
   font-weight: bold;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: #333;
+  font-size: 0.9rem;
 }
 
 .capnhat-TinhThanh-label {
   font-weight: bold;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: #333;
+  font-size: 0.9rem;
 }
 
 .capnhat-QuanHuyen-label {
   font-weight: bold;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: #333;
+  font-size: 0.9rem;
 }
 
 .capnhat-TinhThanh-select{
-   width: 100%;
-  padding: 12px;
-  border-radius: 5px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
   border: 1px solid #ddd;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: border-color 0.3s ease;
 }
 
 .capnhat-QuanHuyen-select{
-   width: 100%;
-  padding: 12px;
-  border-radius: 5px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
   border: 1px solid #ddd;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: border-color 0.3s ease;
 }
 
@@ -120,10 +122,10 @@
 .capnhat-select,
 .capnhat-textarea {
   width: 100%;
-  padding: 12px;
-  border-radius: 5px;
+  padding: 10px;
+  border-radius: 4px;
   border: 1px solid #ddd;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: border-color 0.3s ease;
 }
 
@@ -134,43 +136,42 @@
 .capnhat-QuanHuyen-select:focus {
   outline: none;
   border-color: #f76c0d;
-  box-shadow: 0 0 5px rgba(247, 108, 13, 0.3);
+  box-shadow: 0 0 4px rgba(247, 108, 13, 0.3);
 }
 
 .capnhat-textarea {
   width: 80%;
-  height: 100px;
-  padding: 20px;
+  height: 80px;
+  padding: 16px;
   resize: vertical;
-  min-height: 80px;
+  min-height: 70px;
 }
 
-/* Media box - ảnh và video */
 .capnhat-media-box {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  margin: 20px auto;
-  width: 400px;
-  max-width: 600px;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  margin: 16px auto;
+  width: 360px;
+  max-width: 90%;
   position: relative;
-  left: -320px;
-  top: -670px; /* Giữ nguyên như cũ */
+  left: -280px;
+  top: -430px;
   z-index: 1;
 }
 
 .capnhat-media-header {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .capnhat-camera-icon,
 .capnhat-video-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -186,26 +187,26 @@
 
 .capnhat-media-title {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
 }
 
 .capnhat-note {
   font-weight: normal;
-  font-size: 13px;
+  font-size: 12px;
   color: #888;
-  margin-left: 8px;
+  margin-left: 6px;
 }
 
 /* Upload area */
 .capnhat-upload-area {
   position: relative;
   border: 2px dashed #f76c0d;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 16px;
   text-align: center;
   background-color: #fcfcfc;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -226,9 +227,9 @@
 }
 
 .capnhat-upload-text {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .capnhat-highlight {
@@ -237,26 +238,26 @@
 }
 
 .capnhat-sub-note {
-  font-size: 12px;
+  font-size: 11px;
   color: #777;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 /* Preview list */
 .capnhat-preview-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 15px;
+  gap: 12px;
+  margin-left: 16px; 
 }
 
 .capnhat-preview-item {
   position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: 8px;
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
 }
 
@@ -274,28 +275,28 @@
 /* Cover badge */
 .capnhat-cover-badge {
   position: absolute;
-  top: 5px;
-  left: 5px;
+  top: 4px;
+  left: 4px;
   background-color: #f76c0d;
   color: white;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
 }
 
 /* Remove button */
 .capnhat-remove-btn {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -5px;
+  right: -5px;
   background-color: #ff4d4f;
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
   line-height: 0;
   cursor: pointer;
   display: flex;
@@ -313,11 +314,11 @@
 /* Move controls */
 .capnhat-move-controls {
   position: absolute;
-  bottom: 5px;
+  bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 5px;
+  gap: 4px;
 }
 
 .capnhat-move-btn {
@@ -325,9 +326,9 @@
   color: white;
   border: none;
   border-radius: 3px;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -354,13 +355,13 @@
 
 /* Counter */
 .capnhat-counter {
-  font-size: 12px;
+  font-size: 11px;
   color: #666;
   text-align: center;
-  margin-top: 10px;
-  padding: 5px;
+  margin-top: 8px;
+  padding: 4px;
   background-color: #f8f9fa;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* Button group */
@@ -370,8 +371,8 @@
   left: 0;
   right: 0;
   background-color: #fff;
-  padding: 10px 20px;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -381,21 +382,21 @@
 .capnhat-submit-btn {
   background-color: #f76c0d;
   color: white;
-  padding: 12px 40px;
+  padding: 10px 32px;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 4px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 300px;
-  margin-left: 480px;
+  width: 250px;
+  margin-left: 400px;
 }
 
 .capnhat-submit-btn:hover {
   background-color: #e68900;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 .capnhat-submit-btn:active {
@@ -408,13 +409,13 @@
   .capnhat-container {
     width: 100%;
     margin-left: 0;
-    padding: 10px;
+    padding: 8px;
   }
   
   .capnhat-form {
     width: 100%;
     margin-left: 0;
-    padding: 20px;
+    padding: 16px;
   }
   
   .capnhat-group,
@@ -432,7 +433,7 @@
   }
   
   .capnhat-button-group {
-    padding: 15px;
+    padding: 12px;
   }
   
   .capnhat-submit-btn {
@@ -441,11 +442,11 @@
   }
   
   .capnhat-preview-item {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
   }
   
   .capnhat-preview-list {
-    gap: 10px;
+    gap: 8px;
   }
 }
