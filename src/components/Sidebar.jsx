@@ -50,6 +50,9 @@ const Sidebar = () => {
                 <li onClick={() => navigate("/admin/manage-posts")}>
                     <MdPostAdd className="menu-icon" /> <span className="menu-label">Quản Lý Tin Đăng</span>
                 </li>
+                <li onClick={() => navigate("/admin/reports")}>
+                    <MdPostAdd className="menu-icon" /> <span className="menu-label">Quản Lý Báo Cáo</span>
+                </li>
             </ul>
 
             {/* Nút Đăng Xuất */}

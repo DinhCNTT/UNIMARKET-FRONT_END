@@ -18,6 +18,7 @@ import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import LocTinDang from "../components/LocTinDang";
 import QuanLyTin from "../components/QuanLyTin";
 import ManagePosts from "../components/ManagePosts";
+import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
 import CapNhatTin from "../components/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
 import TrangChat from "../pages/TrangChat";
@@ -95,6 +96,7 @@ function AppRoutes() {
       <Route path="/admin/manage-categories" element={<AdminRoute><ManageParentCategories /></AdminRoute>} />
       <Route path="/admin/manage-subcategories" element={<AdminRoute><ManageCategories /></AdminRoute>} />
       <Route path="/admin/manage-posts" element={<AdminRoute><ManagePosts /></AdminRoute>} />
+      <Route path="/admin/reports" element={<AdminRoute><QuanLyBaoCao /></AdminRoute>} />
 
       {/* Các route khác */}
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />

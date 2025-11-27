@@ -54,6 +54,29 @@
   border-color: #bbb;
 }
 
+/* Report small circular button positioned to left of save button */
+.reportBtnAbsolute {
+  position: absolute;
+  top: 6px;
+  right: 110px; /* sits left of .saveBtn */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 20px; /* pill */
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 11;
+}
+
+.reportBtnAbsolute:hover {
+  background-color: #fff5f5;
+}
+
 /* Trạng thái khi đã lưu */
 .saved {
   border-color: #e5193b;

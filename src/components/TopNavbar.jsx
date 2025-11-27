@@ -7,6 +7,8 @@ import SearchBar from "./SearchBar";
 import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
 import { AuthContext } from "../context/AuthContext";
+import { NotificationContext } from "./NotificationsModals/context/NotificationContext";
+import NotificationsDropdown from "./NotificationsModals/NotificationsDropdown";
 import {
   FaRegBell,
   FaShoppingBag,
@@ -27,6 +29,7 @@ const TopNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const connectionRef = useRef(null);
   // Use a small hysteresis window to avoid flicker when the hero is hidden/reshown
@@ -57,6 +60,7 @@ const TopNavbar = () => {
   } = useContext(CategoryContext);
   const { setSearchTerm } = useContext(SearchContext);
   const { user, avatarUrl, logout, getStoredToken } = useContext(AuthContext);
+  const { fetchNotifications, unreadCount: notifUnread } = useContext(NotificationContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -389,9 +393,17 @@ const TopNavbar = () => {
       </div>
 
       <div className="nav-right">
-        <button className="icon-btn" title="Thông báo" aria-label="Thông báo">
-          <FaRegBell size={18} />
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button className="icon-btn" title="Thông báo" aria-label="Thông báo" onClick={() => { setShowNotifPanel(s => !s); if (!showNotifPanel) try { fetchNotifications(); } catch (e) { console.warn(e); } }}>
+            <FaRegBell size={18} />
+            {(notifUnread || 0) > 0 && <span className="unread-count-badge">{(notifUnread>99)?'99+':notifUnread}</span>}
+          </button>
+          {showNotifPanel && (
+            <div style={{ position: 'absolute', right: 0, top: '40px', zIndex: 1200 }} onMouseLeave={() => setShowNotifPanel(false)}>
+              <NotificationsDropdown />
+            </div>
+          )}
+        </div>
         <button
           className="icon-btn"
           title="Tin nhắn"

@@ -156,6 +156,22 @@
   height: 18px;
 }
 
+/* Report button in floating box */
+.fpb-btn-report {
+  background-color: #fff;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+.fpb-btn-report svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* (removed duplicate old tab styles) */
 /* FloatingProductBox.css - PHẦN TỐI ƯU HÓA TAB */
 
