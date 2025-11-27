@@ -1,6 +1,6 @@
 // src/components/VideoDetailViewer.jsx
 import React, { useEffect, useState, useRef, useContext } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 
 // 🔥 Icons
@@ -12,7 +12,8 @@ import CommentDrawer from "./CommentDrawer";
 import VideoDetailsPanel from "./VideoDetailsPanel";
 import SharePanel from "./SharePanel";
 import { AuthContext } from "../context/AuthContext";
-import { useVideoHub } from "../context/VideoHubContext"; 
+import { useVideoHub } from "../context/VideoHubContext";
+import { VideoContext } from "../context/VideoContext"; 
 
 // 🔥 Theme
 import { useTheme } from "../context/ThemeContext";
@@ -33,7 +34,7 @@ const API_BASE = "http://localhost:5133";
 const SLIDE_DURATION = 650;
 
 // ======================================================
-//  COMPONENT CON — TOÀN BỘ NỘI DUNG CHÍNH ĐƯỢC ĐẶT Ở ĐÂY
+//  COMPONENT CHÍNH
 // ======================================================
 const VideoDetailViewer = () => {
 
@@ -45,20 +46,46 @@ const VideoDetailViewer = () => {
   // =======================
   // STATE & DATA
   // =======================
-  const { videoList, setVideoList, loading } = useVideoFeed();
-  const [searchParams] = useSearchParams();
-  const initialIndexFromUrl = parseInt(searchParams.get("index")) || 0;
+  // Lấy ID video từ URL (VD: /video/15)
+  const { id } = useParams();
+  const location = useLocation();
+  const seedVideoFromRouter = location.state?.seedVideo;
 
-  const [currentIndex, setCurrentIndex] = useState(initialIndexFromUrl);
+  // Lấy refreshSignal từ VideoContext
+  const { refreshSignal } = useContext(VideoContext);
+
+  // ✅ Lấy thêm initializeWithVideo từ hook
+  const { 
+    videoList, 
+    setVideoList, 
+    loading, 
+    fetchMore, 
+    hasMore, 
+    initializeWithVideo,
+    reloadForYou // <--- THÊM DÒNG NÀY
+  } = useVideoFeed({ manualMode: !!id });
+  
+  // Mặc định bắt đầu từ 0
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  console.log("-----------------------------------");
+  console.log("1️⃣ [DetailViewer] Render");
+  console.log("   👉 URL ID:", id);
+  console.log("   👉 Router State (Seed Video):", seedVideoFromRouter?.maTinDang);
+  console.log("   👉 Current Index:", currentIndex); // Giờ thì OK rồi
+  console.log("   👉 Video List Length:", videoList.length);
+
   const [showHeart, setShowHeart] = useState(false);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
 
+  // UI Panels State
   const [showComments, setShowComments] = useState(false);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
   const [showSharePanel, setShowSharePanel] = useState(false);
 
+  // Video State
   const [isFollowing, setIsFollowing] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -93,6 +120,105 @@ const VideoDetailViewer = () => {
     setVideoList
   );
 
+  // ======================================================
+  // ✅ LOGIC KHỞI TẠO TỪ URL ID (Code 2 Integration)
+  // ======================================================
+  useEffect(() => {
+    if (id) {
+       const videoIdNum = parseInt(id);
+       const currentFirstVideo = videoList.length > 0 ? videoList[0] : null;
+
+       // Chỉ khởi tạo lại nếu video đầu tiên KHÔNG khớp với ID trên URL
+       // 🔥 FIX 3: Dùng String() để so sánh an toàn
+       const isMismatch = !currentFirstVideo || String(currentFirstVideo.maTinDang) !== String(id);
+
+       if (isMismatch) {
+          console.log("🛠 Init video:", videoIdNum);
+          
+          setCurrentIndex(0); // Reset về 0 ngay lập tức
+          
+          // Logic chọn nguồn dữ liệu (Router State hoặc Fetch ID)
+          // 🔥 FIX 4: Dùng so sánh lỏng (==) hoặc ép kiểu String để đảm bảo khớp
+          if (seedVideoFromRouter && String(seedVideoFromRouter.maTinDang) === String(id)) {
+             console.log("✅ Using Seed Video from Router");
+             initializeWithVideo(seedVideoFromRouter);
+          } else {
+             console.log("⚠️ Fetching Seed Video by ID");
+             initializeWithVideo(id);
+          }
+       }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, seedVideoFromRouter]); // Bỏ videoList khỏi dependency để tránh loop vô hạn
+
+  // 🔴 LOG 2: Theo dõi biến động State
+  useEffect(() => {
+    if (videoList.length > 0) {
+        console.log(`2️⃣ [State Change] VideoList updated. Length: ${videoList.length}`);
+        console.log(`   👉 Video[0] ID: ${videoList[0].maTinDang}`);
+        console.log(`   👉 Current Index is: ${currentIndex}`);
+        
+        // Kiểm tra xem video đầu tiên có khớp với ID trên URL không
+        if (parseInt(id) !== videoList[0].maTinDang) {
+            console.error(`🚨 LỖI LỚN: ID trên URL (${id}) KHÁC ID video đầu tiên (${videoList[0].maTinDang})`);
+        } else {
+            console.log(`✅ Video đầu tiên khớp với URL.`);
+        }
+    }
+  }, [videoList, currentIndex, id]);
+
+  // ======================================================
+  // ✅ LOGIC RESET KHI RELOAD (Code 1)
+  // ======================================================
+  // ✅ CODE MỚI: Dừng video cũ trước khi load cái mới
+const prevRefreshSignalRef = useRef(refreshSignal);
+
+  useEffect(() => {
+    if (refreshSignal !== prevRefreshSignalRef.current) {
+        console.log("🔄 RefreshSignal received → Cleaning up...");
+
+        // 1. Dừng video cũ
+        if (videoElsRef.current) {
+            videoElsRef.current.forEach(video => {
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            });
+        }
+
+        // 🔥 FIX QUAN TRỌNG 1: Xóa sạch bộ nhớ tỷ lệ khung hình cũ
+        // Giúp video mới không bị áp dụng nhầm khung hình của video cũ
+        setAspectRatios({}); 
+
+        // 🔥 FIX QUAN TRỌNG 2: Xóa tạm danh sách video
+        // Giúp ngăn chặn hiệu ứng "trượt ngược" về video cũ
+        // Màn hình sẽ hiển thị loading trong tích tắc rồi hiện video mới ngay
+        setVideoList([]); 
+
+        // Reset Index về 0
+        setCurrentIndex(0);
+        if (containerRef.current) {
+            containerRef.current.scrollTop = 0;
+        }
+
+        // Tải video mới
+        reloadForYou();
+
+        prevRefreshSignalRef.current = refreshSignal;
+    }
+  }, [refreshSignal, reloadForYou, setVideoList]);
+
+
+  // ======================================================
+  // ✅ LOGIC INFINITE SCROLL (Code 1)
+  // ======================================================
+  useEffect(() => {
+    if (!loading && hasMore && videoList.length > 0 && currentIndex >= videoList.length - 2) {
+      fetchMore();
+    }
+  }, [currentIndex, videoList.length, hasMore, loading, fetchMore]);
+
   // =======================
   // UTILS
   // =======================
@@ -113,6 +239,8 @@ const VideoDetailViewer = () => {
         })
         .then((res) => setIsFollowing(res.data.isFollowing))
         .catch(() => setIsFollowing(false));
+    } else {
+      setIsFollowing(false);
     }
   }, [videoData?.nguoiDang?.id, token]);
 
@@ -137,6 +265,7 @@ const VideoDetailViewer = () => {
     if (!token) return alert("Bạn cần đăng nhập để tym video!");
     if (!videoToLike) return;
     try {
+      // Optimistic Update
       setVideoList((prevList) =>
         prevList.map((v) => {
           if (v.maTinDang === videoToLike.maTinDang) {
@@ -291,7 +420,11 @@ const VideoDetailViewer = () => {
   // ======================================================
   const goToIndex = (nextIndex) => {
     if (isAnimatingRef.current) return;
-    if (nextIndex < 0 || nextIndex >= videoList.length) return;
+    
+    // Chặn lướt quá giới hạn
+    if (nextIndex < 0) return;
+    if (nextIndex >= videoList.length) return;
+
     if (nextIndex === currentIndex) return;
 
     isAnimatingRef.current = true;
@@ -309,6 +442,7 @@ const VideoDetailViewer = () => {
     }, SLIDE_DURATION + 80);
   };
 
+  // WHEEL
   useEffect(() => {
     const handleWheel = (e) => {
       if (showComments || showDetailPanel || showSharePanel) return;
@@ -323,7 +457,7 @@ const VideoDetailViewer = () => {
     return () => window.removeEventListener("wheel", handleWheel);
   }, [currentIndex, videoList.length, showComments, showDetailPanel, showSharePanel]);
 
-  // TOUCH SWIPE
+  // TOUCH
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -362,20 +496,34 @@ const VideoDetailViewer = () => {
     };
   }, [currentIndex, videoList.length]);
 
-  // Autoplay video
-  useEffect(() => {
-    videoElsRef.current.forEach((v, i) => {
-      if (!v) return;
-      if (i === currentIndex) {
-        v.play().catch(() => {});
-      } else {
-        v.pause();
-        v.currentTime = 0;
-      }
-    });
-  }, [currentIndex]);
+  // Autoplay
+  // ✅ CODE MỚI: Thêm videoList vào để biết khi nào có video mới về thì chạy
+useEffect(() => {
+    // Delay 100ms để React kịp vẽ video mới ra màn hình
+    const timer = setTimeout(() => {
+        videoElsRef.current.forEach((v, i) => {
+            if (!v) return;
+            
+            if (i === currentIndex) {
+                // Video hiện tại -> CHẠY
+                const playPromise = v.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch((err) => console.log("Autoplay block:", err));
+                }
+            } else {
+                // Video khác -> DỪNG
+                v.pause();
+                v.currentTime = 0;
+            }
+        });
+    }, 100);
 
-  // Body style cleanup
+    return () => clearTimeout(timer);
+    
+    // 👇 QUAN TRỌNG: Phải có videoList ở đây
+}, [currentIndex, videoList]);
+
+  // Cleanup body style
   useEffect(() => {
     originalBodyStyle.current.className = document.body.className;
     document.body.style.overflow = "hidden";
@@ -389,7 +537,7 @@ const VideoDetailViewer = () => {
   }, []);
 
   // ======================================================
-  // REALTIME: JOIN/LEAVE VIDEO ROOM
+  // REALTIME
   // ======================================================
   useEffect(() => {
     if (!isConnected || !connection || !videoData) return;
@@ -418,42 +566,20 @@ const VideoDetailViewer = () => {
     };
   }, [isConnected, connection]);
 
-  // ======================================================
-  // REALTIME: LẮNG NGHE SỰ KIỆN
-  // ======================================================
   useEffect(() => {
     if (!connection || !isConnected) return;
 
     const handleUpdateLike = (maTinDang, soTym) => {
-      setVideoList((list) =>
-        list.map((v) =>
-          v.maTinDang === maTinDang ? { ...v, soTym } : v
-        )
-      );
+      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soTym } : v)));
     };
-
     const handleUpdateSave = (maTinDang, totalSaves) => {
-      setVideoList((list) =>
-        list.map((v) =>
-          v.maTinDang === maTinDang ? { ...v, soNguoiLuu: totalSaves } : v
-        )
-      );
+      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soNguoiLuu: totalSaves } : v)));
     };
-
     const handleUpdateShare = (maTinDang, totalShares) => {
-      setVideoList((list) =>
-        list.map((v) =>
-          v.maTinDang === maTinDang ? { ...v, soLuotChiaSe: totalShares } : v
-        )
-      );
+      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soLuotChiaSe: totalShares } : v)));
     };
-
     const handleUpdateCommentCount = (maTinDang, totalComments) => {
-      setVideoList((list) =>
-        list.map((v) =>
-          v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v
-        )
-      );
+      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v)));
     };
 
     connection.on("UpdateLikeCount", handleUpdateLike);
@@ -472,19 +598,26 @@ const VideoDetailViewer = () => {
   // ======================================================
   // RENDER
   // ======================================================
+  // 🔥 Code 2: Sửa lại điều kiện loading để tránh màn hình đen khi đang init
   if (loading && videoList.length === 0) {
     return (
-      <div className="loading-overlay">
+      <div className="loading-overlay" style={{background: 'black', zIndex: 99999}}>
         <div className="spinner"></div>
-        <span>Đang tải video...</span>
+        <p style={{marginTop: 10, color: '#fff'}}>Đang tải video...</p>
       </div>
     );
   }
 
-  if (!videoData) return <div>Không có video nào.</div>;
+  if (!videoData && !loading) {
+    return (
+        <div style={{ color: "white", display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "black" }}>
+            Không có video nào.
+        </div>
+    );
+  }
 
-  let videoThumbnail = videoData.hinhAnh;
-  if (videoData.videoUrl?.includes("cloudinary")) {
+  let videoThumbnail = videoData?.hinhAnh;
+  if (videoData?.videoUrl?.includes("cloudinary")) {
     const lastDot = videoData.videoUrl.lastIndexOf(".");
     if (lastDot !== -1) {
       videoThumbnail = videoData.videoUrl.substring(0, lastDot) + ".jpg";
@@ -492,15 +625,24 @@ const VideoDetailViewer = () => {
   }
 
   return (
-    <div
-      className="vdv-wrapper vdv-full-screen-scroll"
-      data-theme={effectiveTheme}
-    >
+    <div className="vdv-wrapper vdv-full-screen-scroll" data-theme={effectiveTheme}>
       <TopNavbarUniMarket />
 
-      {loading && videoList.length > 0 && (
+      {loading && videoList.length === 0 && (
         <div className="loading-overlay" style={{ zIndex: 10000 }}>
           <div className="spinner"></div>
+        </div>
+      )}
+
+      {loading && videoList.length > 0 && (
+         <div className="loading-indicator-bottom" style={{
+             position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', 
+             zIndex: 20, pointerEvents: 'none' 
+         }}>
+           <div className="spinner-small" style={{
+               width: '24px', height: '24px', border: '3px solid rgba(255,255,255,0.3)', 
+               borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite'
+           }}></div>
         </div>
       )}
 
@@ -525,15 +667,8 @@ const VideoDetailViewer = () => {
             }
 
             return (
-              <div
-                key={video.maTinDang || index}
-                className={`video-item ${ratioClass}`}
-              >
-                <div
-                  className={`vdv-container ${ratioClass} ${
-                    showComments ? "comment-open" : ""
-                  }`}
-                >
+              <div key={video.maTinDang || index} className={`video-item ${ratioClass}`}>
+                <div className={`vdv-container ${ratioClass} ${showComments ? "comment-open" : ""}`}>
                   <VideoPlayer
                     video={video}
                     index={index}
@@ -580,7 +715,7 @@ const VideoDetailViewer = () => {
 
       {showComments && (
         <CommentDrawer
-          maTinDang={videoData.maTinDang}
+          maTinDang={videoData?.maTinDang}
           onClose={() => setShowComments(false)}
         />
       )}
@@ -604,9 +739,7 @@ const VideoDetailViewer = () => {
           previewImage={videoThumbnail}
           previewVideo={videoData.videoUrl}
           disableBodyScrollLock={true}
-          onShareSuccess={() =>
-            handleOptimisticShareUpdate(videoData.maTinDang)
-          }
+          onShareSuccess={() => handleOptimisticShareUpdate(videoData.maTinDang)}
         />
       )}
     </div>

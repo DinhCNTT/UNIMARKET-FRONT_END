@@ -1,3 +1,4 @@
+// src/components/TopNavbarUniMarket.js
 import React, { useRef, useEffect, useContext, useState } from "react";
 import {
   FiSearch,
@@ -20,6 +21,8 @@ export default function TopNavbarUniMarket() {
   const panelRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // ✅ Lấy triggerReload từ Context để reset feed khi bấm Home
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
   const [profile, setProfile] = useState(null);
@@ -38,7 +41,9 @@ export default function TopNavbarUniMarket() {
 
   const PANEL_TABS = new Set(["search", "upload", "activity", "more"]);
 
-  // Logic giữ "For You" active (Giữ nguyên)
+  // ==========================================================
+  // LOGIC GIỮ "FOR YOU" ACTIVE KHI Ở TRANG VIDEO
+  // ==========================================================
   useEffect(() => {
     const path = location.pathname;
     const floatingTabs = new Set([
@@ -48,17 +53,21 @@ export default function TopNavbarUniMarket() {
     ]);
 
     if (path.startsWith("/video/")) {
+      // Nếu đang xem video và không mở tab nào khác -> Active For You
       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
         setActiveTab("forYou");
       }
     } else {
+      // Nếu rời khỏi trang video -> Bỏ active For You
       if (activeTab === "forYou") {
         setActiveTab(null);
       }
     }
   }, [location.pathname, activeTab, setActiveTab]);
 
-  // Fetch profile (Giữ nguyên)
+  // ==========================================================
+  // FETCH PROFILE
+  // ==========================================================
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
@@ -75,34 +84,44 @@ export default function TopNavbarUniMarket() {
       .catch(console.error);
   }, []);
 
-  // toggleTab (Giữ nguyên)
+  // ==========================================================
+  // ✅ TOGGLE TAB (QUAN TRỌNG: XỬ LÝ RELOAD FEED)
+  // ==========================================================
   const toggleTab = (tab) => {
+    // Nếu bấm lại vào tab đang mở (trừ For You) -> Đóng tab
     if (activeTab === tab && tab !== "forYou") {
       setActiveTab(null);
       return;
     }
+
+    // Nếu bấm vào For You (Home)
     if (tab === "forYou") {
       setActiveTab("forYou");
-      triggerReload();
+      
+      // 🔥 Gọi triggerReload để useVideoFeed reset lại danh sách video & page
+      triggerReload(); 
+
+      // Nếu đang ở trang khác (không phải xem video) thì điều hướng về trang video
       if (!location.pathname.startsWith("/video/")) {
-        navigate("/video/1");
+        navigate("/video/1"); // Hoặc đường dẫn mặc định của bạn
       }
       return;
     }
+    
+    // Các tab khác
     setActiveTab(tab);
   };
 
   // ==========================================================
-  // ✅ SỬA LỖI CHÍNH NẰM Ở ĐÂY
+  // ✅ XỬ LÝ TAB MESSAGE KHI Ở TRANG CHAT (FIX LỖI MORE PANEL)
   // ==========================================================
   useEffect(() => {
     if (location.pathname.startsWith("/chat")) {
-      // Chúng ta thêm "activeTab !== 'more'" vào điều kiện
-      // để báo cho hook này "đừng làm gì cả nếu 'more' đang mở"
+      // Chỉ set active 'messages' nếu không đang mở Search hoặc More
       if (
         activeTab !== "messages" &&
         activeTab !== "search" &&
-        activeTab !== "more" // <-- DÒNG SỬA LỖI
+        activeTab !== "more" 
       ) {
         setActiveTab("messages");
       }
@@ -110,7 +129,6 @@ export default function TopNavbarUniMarket() {
       setActiveTab(null);
     }
   }, [location.pathname, activeTab, setActiveTab]);
-  // ==========================================================
 
   const handleChatClick = () => {
     navigate("/chat");
@@ -120,7 +138,9 @@ export default function TopNavbarUniMarket() {
 
   const isPanelOpen = PANEL_TABS.has(activeTab);
 
-  // Click Outside (Giữ nguyên)
+  // ==========================================================
+  // CLICK OUTSIDE TO CLOSE PANEL
+  // ==========================================================
   useEffect(() => {
     const handleClickOutside = (e) => {
       const nav = navRef.current;
@@ -131,16 +151,20 @@ export default function TopNavbarUniMarket() {
 
       if (!(clickedOutsideNav && clickedOutsidePanel)) return;
       if (isChatRoute && activeTab !== "search") return;
+      
       if (PANEL_TABS.has(activeTab)) {
-        setActiveTab(null); // Khi đóng 'more', useEffect trên sẽ tự động set về 'messages'
+        setActiveTab(null); 
         return;
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [activeTab, isChatRoute]); // Đã bỏ PANEL_TABS khỏi dependency vì nó là const
+  }, [activeTab, isChatRoute]);
 
+  // ==========================================================
+  // RENDER
+  // ==========================================================
   return (
     <div className="um-tn-root">
       <nav
@@ -153,10 +177,13 @@ export default function TopNavbarUniMarket() {
         }`}
         ref={navRef}
       >
+        {/* LOGO */}
         <div
           className="um-tn-logo"
           onClick={() => {
+            // Click Logo tương tự click For You
             setActiveTab("forYou");
+            triggerReload();
             navigate("/market");
           }}
           style={{ cursor: "pointer" }}
@@ -170,6 +197,7 @@ export default function TopNavbarUniMarket() {
           )}
         </div>
 
+        {/* SEARCH BUTTON */}
         <button
           className={`um-tn-icon-btn search-btn ${
             activeTab === "search" ? "active" : ""
@@ -180,6 +208,7 @@ export default function TopNavbarUniMarket() {
           {activeTab !== "search" && activeTab !== "more" && <span>Search</span>}
         </button>
 
+        {/* MAIN ICONS */}
         <div className="um-tn-icons">
           <button
             className={`um-tn-icon-btn ${
@@ -267,6 +296,7 @@ export default function TopNavbarUniMarket() {
           </button>
         </div>
 
+        {/* MORE BUTTON */}
         <div className="um-tn-more-section">
           <button
             className={`um-tn-icon-btn um-tn-more-btn ${
@@ -280,7 +310,7 @@ export default function TopNavbarUniMarket() {
         </div>
       </nav>
 
-      {/* PANEL WRAPPER (Giữ nguyên) */}
+      {/* PANEL WRAPPER */}
       <div
         className={`um-tn-panel-wrapper ${isPanelOpen ? "open" : ""}`}
         aria-hidden={isPanelOpen ? "false" : "true"}
