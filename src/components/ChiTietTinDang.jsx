@@ -2,46 +2,50 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./ChiTietTinDang.module.css";
 import { AuthContext } from "../context/AuthContext";
-import { usePostDetails } from "../hooks/usePostDetails"; 
-import { formatPrice, getMediaUrl } from "../utils/formatters"; 
+import { usePostDetails } from "../hooks/usePostDetails";
+import { formatPrice, getMediaUrl } from "../utils/formatters";
 
-// Import các component con
+// --- IMPORTS TỪ CẢ 2 CODE ---
 import TopNavbar from "../components/TopNavbar";
 import FloatingProductBox from "../components/FloatingProductBox";
 import PostImageCarousel from "../components/PostImageCarousel";
-import PostDetailsInfo from "../components/PostDetailsInfo";
+import PostDetailsInfo from "../components/PostDetailsInfo"; // Check lại đường dẫn import đúng file của bạn
 import PostDescription from "../components/PostDescription";
 import SimilarPostsSection from "../components/SimilarPostsSection";
 import Lightbox from "../components/Lightbox";
-// ✅ IMPORT MỚI
+import ReportButton from "../components/ReportModals/ReportButton"; // Từ Code 2
+
+// ✅ FEATURE MỚI TỪ CODE 1
 import PostComments from "../components/PostComments";
 
 /**
- * Trang Chi Tiết Tin Đăng (Merged Version)
- * - Kết hợp logic Chat, hiển thị chi tiết.
- * - Kết hợp logic Lưu tin/Yêu thích.
- * - Kết hợp logic Bình luận (Bên phải mô tả).
+ * Trang Chi Tiết Tin Đăng (Final Merged Version)
+ * 1. Layout: Header -> Mô tả + Bình luận (Side-by-side) -> Tin liên quan.
+ * 2. Logic: Chat, Lưu tin, Report, Ẩn/Hiện SĐT, Lightbox.
  */
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
-  // ✅ LOGIC GỘP:
-  const { 
-    post, 
-    similarPostsByCategory, 
-    similarPostsBySeller, 
-    loading, 
+  // ✅ LOGIC GỘP (Data & Actions):
+  const {
+    post,
+    similarPostsByCategory,
+    similarPostsBySeller,
+    loading,
     handleChatWithSeller,
-    isSaved,          
-    handleToggleSave  
+    isSaved,           // Feature Lưu tin
+    handleToggleSave   // Feature Lưu tin
   } = usePostDetails(id, onOpenChat);
 
-  // State giao diện
+  // --- STATE QUẢN LÝ GIAO DIỆN ---
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  
+  // ✅ State từ Code 2 (Để quản lý việc ẩn/hiện SĐT)
+  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
 
   // Effect quản lý box nổi khi cuộn trang
   useEffect(() => {
@@ -64,7 +68,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     handleChatWithSeller();
   };
 
-  // --- Render ---
+  // --- RENDER ---
 
   if (loading) return <div className={styles.loading}>Đang tải thông tin...</div>;
   if (!post) return <div className={styles.notFound}>Không tìm thấy tin đăng.</div>;
@@ -75,7 +79,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     <div className={styles.chiTietTinDang}>
       <TopNavbar />
 
-      {/* Floating Product Box */}
+      {/* --- FLOATING BOX (Ưu tiên logic Code 2 vì có xử lý SĐT tốt hơn) --- */}
       {showFloatingBox && (
         <FloatingProductBox
           image={getMediaUrl(post.images?.[0])}
@@ -86,19 +90,26 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             {post.dungLuong && <span> | {post.dungLuong}</span>}
             {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
           </>}
+          // Xử lý mô tả: cắt ngắn, bỏ HTML tags
           description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
-          onShowPhone={() => {}} 
-          onChat={handleChatClick}
-          showPhone={false} 
+          
+          // Logic SĐT (Từ Code 2)
+          onShowPhone={() => setShowPhoneNumber((s) => !s)}
+          showPhone={showPhoneNumber}
           phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
+          phone={post.phoneNumber}
+          
+          // Logic Chat & ID
+          onChat={handleChatClick}
           currentUserId={user?.id}
           sellerId={post.maNguoiBan}
+          targetId={post.maTinDang || id}
         />
       )}
 
-      {/* Layout chính của tin đăng (Header) */}
+      {/* --- HEADER TIN ĐĂNG (Ảnh + Info) --- */}
       <div className={styles.tinDangHeader} id="tong-quan">
-        {/* Phần Carousel Ảnh */}
+        {/* Carousel Ảnh */}
         <div className={styles.imageContainer}>
           <PostImageCarousel 
             images={post.images} 
@@ -106,20 +117,30 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           />
         </div>
 
-        {/* Phần Thông Tin Tin Đăng */}
+        {/* Thông tin chi tiết (Giá, Nút bấm) */}
         <div className={styles.chiTietTinDangInfoWrapper}>
           <PostDetailsInfo
             post={post}
             formattedPrice={formattedPrice}
-            onChat={handleChatClick} 
             currentUserId={user?.id}
+            
+            // Logic Chat
+            onChat={handleChatClick} 
+            
+            // Logic Lưu tin (Từ Code 1 & 2)
             isSaved={isSaved} 
             onToggleSave={handleToggleSave}
+
+            // Logic SĐT (Từ Code 2)
+            showPhoneNumber={showPhoneNumber}
+            onTogglePhone={() => setShowPhoneNumber((s) => !s)}
           />
+          {/* Note: ReportButton thường nằm trong PostDetailsInfo, nếu không thì đặt ở đây */}
         </div>
       </div>
 
-      {/* --- ✅ PHẦN MỚI: LAYOUT MÔ TẢ & BÌNH LUẬN NGANG HÀNG --- */}
+      {/* --- ✅ MAIN CONTENT: MÔ TẢ & BÌNH LUẬN (CẤU TRÚC CODE 1) --- */}
+      {/* Giữ cấu trúc này để hiển thị Bình luận bên phải */}
       <div className={styles.descriptionAndCommentsWrapper}>
         
         {/* Cột trái: Mô Tả */}
@@ -127,15 +148,16 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           <PostDescription description={post.moTa} />
         </div>
 
-        {/* Cột phải: Bình Luận */}
+        {/* Cột phải: Bình Luận (Feature Code 1) */}
         <div className={styles.commentsContainer} id="binh-luan">
-          {/* Truyền maTinDang vào để gọi API lấy comment */}
           <PostComments maTinDang={post.maTinDang} />
         </div>
 
       </div>
-      {/* ----------------------------------------------------- */}
+      {/* ----------------------------------------------------------- */}
 
+      {/* --- CÁC TIN ĐĂNG LIÊN QUAN (Giữ ID neo trang của Code 2) --- */}
+      
       {/* Tin Đăng Cùng Người Bán */}
       <div id="cac-tin-dang-khac">
         <SimilarPostsSection
@@ -152,7 +174,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         />
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox (Xem ảnh phóng to) */}
       {showLightbox && (
         <Lightbox
           images={post.images}
