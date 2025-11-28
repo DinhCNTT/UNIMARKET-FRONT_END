@@ -52,7 +52,9 @@ export const NotificationProvider = ({ children }) => {
         url: payload.url ?? payload.Url,
         createdAt: payload.createdAt ?? payload.CreatedAt,
         isRead: payload.isRead ?? payload.IsRead ?? false,
+        isFromAdmin: payload.isFromAdmin ?? false,
       }));
+      // Keep all notifications in state, filtering will happen at UI level (NotificationsDropdown)
       setNotifications(unique);
       const unread = unique.filter((n) => !n.isRead).length;
       setUnreadCount(unread);
@@ -96,6 +98,7 @@ export const NotificationProvider = ({ children }) => {
         url: payload.url || payload.Url,
         createdAt: payload.createdAt || payload.CreatedAt,
         isRead: payload.isRead || payload.IsRead || false,
+        isFromAdmin: payload.isFromAdmin ?? false,
       };
 
       setNotifications((prev) => {
@@ -111,7 +114,7 @@ export const NotificationProvider = ({ children }) => {
             try {
               const eDate = new Date(existing.createdAt || 0).getTime();
               const nDate = new Date(it.createdAt || 0).getTime();
-              if (nDate > eDate) map.set(key, it);
+              if (nDate > eDate) map.set(key, { ...it, isFromAdmin: it.isFromAdmin ?? existing.isFromAdmin });
             } catch (e) {
               map.set(key, it);
             }
@@ -131,7 +134,13 @@ export const NotificationProvider = ({ children }) => {
           const titleText = (incoming.title || "").toString();
           const msgText = (incoming.message || "").toString();
           const isReportNotification = titleText.includes("Cảnh báo về tin đăng") || msgText.includes("bị báo cáo") || msgText.includes("vừa bị báo cáo");
-          if (!existedBefore && !isReportNotification) {
+          // also treat legacy owner-warning titles as report-type for suppression
+          const titleLc = titleText.toLowerCase();
+          const isLegacyOwnerWarn = titleLc.includes('cảnh báo: tin đăng của bạn') || titleLc.includes('cảnh báo: tin đăng của bạn bị báo cáo');
+          // Suppress toast for admin-sent notifications
+          const isAdminSent = incoming.isFromAdmin === true;
+
+          if (!existedBefore && !(isReportNotification || isLegacyOwnerWarn || isAdminSent)) {
             toast(`${incoming.title}: ${incoming.message}`, { duration: 4000 });
           }
         } catch (e) {
