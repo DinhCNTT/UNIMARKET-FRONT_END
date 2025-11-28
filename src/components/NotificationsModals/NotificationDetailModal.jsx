@@ -1,7 +1,7 @@
 import React from 'react';
 import './NotificationDetailModal.css';
 
-export default function NotificationDetailModal({ open, notification, postTitle, onClose, onGoToPost }) {
+export default function NotificationDetailModal({ open, notification, postTitle, postImageUrl, onClose, onGoToPost }) {
   if (!open || !notification) return null;
 
   const msg = (notification.message || '').toString();
@@ -12,23 +12,34 @@ export default function NotificationDetailModal({ open, notification, postTitle,
   const reason = reasonMatch ? reasonMatch[1] : null;
   const details = detailsMatch ? detailsMatch[1] : null;
 
+  const mapReason = (v) => {
+    if (!v) return v;
+    const key = (v||'').toString();
+    const map = {
+      'rac': 'Spam/Tin rác',
+      'noidungkhongphuhop': 'Nội Dung Không Phù Hợp',
+      'quayroi': 'Quấy Rối / Lăng Mạ',
+      'khac': 'Khác'
+    };
+    return map[key] || key;
+  };
+
   // If we extracted reason/details, avoid repeating the full message body which already contains them.
   const showFullMessage = !reason && !details;
 
   return (
     <div className="um-notif-modal-overlay" role="dialog" aria-modal="true">
       <div className="um-notif-modal">
+        {postImageUrl && (
+          <div style={{ marginBottom: 12 }}>
+            <img src={postImageUrl} alt="" className="um-notif-modal-thumb" />
+          </div>
+        )}
         <h3 className="um-notif-modal-title">{postTitle ? `Tin đăng: ${postTitle}` : notification.title}</h3>
         <div className="um-notif-modal-body">
-          {reason && (
-            <div className="um-notif-reason"><strong>Lý do báo cáo:</strong> {reason}</div>
-          )}
-          {details && (
-            <div className="um-notif-details"><strong>Chi tiết:</strong> {details}</div>
-          )}
-          {showFullMessage && (
-            <p className="um-notif-message-full">{notification.message}</p>
-          )}
+          {/* Always show a Reason + Detailed Description section for report notifications */}
+          <div className="um-notif-reason"><strong>Lý do:</strong> {mapReason(reason || (notification.reason || ''))}</div>
+          <div className="um-notif-details"><strong>Mô tả chi tiết lý do báo cáo:</strong> {details || notification.details || (notification.message || '').toString()}</div>
           <div className="um-notif-modal-time">{new Date(notification.createdAt).toLocaleString()}</div>
         </div>
         <div className="um-notif-modal-actions">

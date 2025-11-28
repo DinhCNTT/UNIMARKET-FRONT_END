@@ -14,6 +14,11 @@ export default function NotificationsDropdown() {
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Filter to show ONLY admin-sent notifications in dropdown (report warnings and deletions)
+  const displayedNotifications = notifications.filter(n => n.isFromAdmin === true);
+  // Calculate unread count for only displayed notifications
+  const displayedUnreadCount = displayedNotifications.filter(n => !n.isRead).length;
+
   // Pre-fetch titles for post notifications (so we can show post title instead of 'Mã')
   useEffect(() => {
     const toFetch = [];
@@ -87,31 +92,49 @@ export default function NotificationsDropdown() {
     <div className="um-notif-dropdown">
       <div className="um-notif-header">
         <strong>Thông báo</strong>
-        <span className="um-notif-count">{unreadCount || 0}</span>
+        <span className="um-notif-count">{displayedUnreadCount || 0}</span>
       </div>
 
       {loading && <div className="um-notif-loading">Đang tải...</div>}
 
-      {!loading && notifications.length === 0 && (
+      {!loading && displayedNotifications.length === 0 && (
         <div className="um-notif-empty">Chưa có thông báo</div>
       )}
 
       <ul className="um-notif-list">
-        {notifications.map((n) => {
+        {displayedNotifications.map((n) => {
+
           let displayTitle = n.title;
-          if (n.url && typeof n.url === 'string' && n.url.startsWith('/posts/')) {
+          // prefer snapshot title from server if present
+          if (n.postTitle) {
+            displayTitle = n.postTitle;
+          } else if (n.url && typeof n.url === 'string' && n.url.startsWith('/posts/')) {
             const id = n.url.split('/posts/')[1];
-            if (titles[id]) displayTitle = `Tin đăng: ${titles[id]}`;
-            else displayTitle = `Tin đăng`;
+            if (titles[id]) displayTitle = titles[id];
+            else displayTitle = 'Tin đăng';
           }
-          // For the dropdown list we only show a short summary: strip any 'Chi tiết:' portion
+          // For the dropdown list we only show a short summary: strip any 'Lý do:' and 'Chi tiết:' portions
           const rawMessage = (n.message || '').toString();
-          const summary = rawMessage.split(/Chi tiết:/i)[0].trim();
+          let summary = rawMessage.split(/Lý do:/i)[0].trim();
+          summary = summary.split(/Chi tiết:/i)[0].trim();
+
+          // detect notification 'type' by message/title content so we can style
+          const lcTitle = (n.title || '').toString().toLowerCase();
+          const lcMsg = rawMessage.toLowerCase();
+          let typeClass = '';
+          if (lcTitle.includes('cảnh báo') || lcMsg.includes('cảnh báo') || lcMsg.includes('báo cáo')) {
+            typeClass = 'warning';
+          } else if (lcMsg.includes('đã xóa') || lcMsg.includes('bị xóa') || lcMsg.includes('xoá') || lcMsg.includes('xóa')) {
+            typeClass = 'deleted';
+          }
+
           return (
-              <li key={n.id} className={`um-notif-item ${n.isRead ? "read" : "unread"}`} onClick={() => handleClick(n)}>
-                <div className="um-notif-title">{displayTitle}</div>
-                <div className="um-notif-message">{summary}</div>
-                <div className="um-notif-time">{new Date(n.createdAt).toLocaleString()}</div>
+              <li key={n.id} className={`um-notif-item ${n.isRead ? "read" : "unread"} ${typeClass}`} onClick={() => handleClick(n)}>
+                {n.postImageUrl && <img src={n.postImageUrl} alt="" className="um-notif-thumb" />}
+                <div className="um-notif-body">
+                  <div className="um-notif-message">{summary}</div>
+                  <div className="um-notif-time">{new Date(n.createdAt).toLocaleString()}</div>
+                </div>
               </li>
             );
         })}
@@ -120,7 +143,8 @@ export default function NotificationsDropdown() {
       <NotificationDetailModal
         open={modalOpen}
         notification={selected}
-        postTitle={selected && selected.url && selected.url.startsWith('/posts/') ? titles[selected.url.split('/posts/')[1]] : null}
+        postTitle={selected ? (selected.postTitle || (selected.url && selected.url.startsWith('/posts/') ? titles[selected.url.split('/posts/')[1]] : null)) : null}
+        postImageUrl={selected ? selected.postImageUrl : null}
         onClose={() => setModalOpen(false)}
         onGoToPost={() => handleGoToPostFromModal(selected)}
       />

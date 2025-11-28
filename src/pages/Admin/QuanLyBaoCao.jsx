@@ -120,7 +120,19 @@ export default function QuanLyBaoCao() {
                       <td>{idVal}</td>
                       <td>{r.targetId}</td>
                       <td>{r.reporter?.fullName || r.reporter?.email || r.reporterId}</td>
-                      <td>{r.reason}</td>
+                      <td>{(function displayReason(v){
+                        if(!v) return '';
+                        const map = {
+                          'rac': 'Spam/Tin rác',
+                          'noidungkhongphuhop': 'Nội Dung Không Phù Hợp',
+                          'quayroi': 'Quấy Rối / Lăng Mạ',
+                          'khac': 'Khác'
+                        };
+                        const key = (v||'').toString();
+                        // Try direct map (slug) or exact Vietnamese value; prefer map result
+                        if(map[key]) return map[key];
+                        return key;
+                      })(r.reason)}</td>
                       <td style={{ maxWidth: 260, whiteSpace: 'pre-wrap' }}>{r.details}</td>
                       <td>{new Date(r.createdAt).toLocaleString('vi-VN')}</td>
                       <td>{r.isResolved ? 'Đã xử lý' : 'Chưa xử lý'}</td>

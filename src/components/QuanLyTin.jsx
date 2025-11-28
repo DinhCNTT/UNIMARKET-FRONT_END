@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
@@ -16,6 +16,7 @@ import {
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import "./QuanLyTin.css";
 import TopNavbar from "../components/TopNavbar";
+import { NotificationContext } from "./NotificationsModals/context/NotificationContext";
 
 const trangThaiMap = {
   0: "ChoDuyet",
@@ -174,7 +175,19 @@ const QuanLyTin = () => {
       axios
         .delete(`http://localhost:5133/api/TinDang/${postId}`)
         .then(() => {
+          // remove from local list
+          const removed = posts.find((p) => String(p.maTinDang) === String(postId));
           setPosts(posts.filter((post) => post.maTinDang !== postId));
+          // If the current user is the owner of the post (they deleted their own post),
+          // add a local notification so it shows up in the bell icon immediately.
+          try {
+            const ownerId = removed?.maNguoiBan || removed?.maNguoiDang || removed?.ownerId || null;
+            const me = sessionStorage.getItem("userId");
+            if (ownerId && String(ownerId) === String(me)) {
+              // Use NotificationContext if available
+              try { addLocalNotification({ title: 'Tin đăng đã xóa', message: 'Tin đăng của bạn đã được xóa.', url: '/' }); } catch (e) {}
+            }
+          } catch (e) { /* ignore */ }
         })
         .catch((error) => {
           console.error("Lỗi khi xóa tin đăng:", error);
