@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react"; // Thêm hook
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./PreviewModal.module.css";
 
 const PreviewModal = ({
@@ -28,7 +28,7 @@ const PreviewModal = ({
   useEffect(() => {
     const listEl = listRef.current;
     if (!listEl) return;
-    
+
     // Kiểm tra ban đầu
     checkScroll();
 
@@ -90,7 +90,6 @@ const PreviewModal = ({
 
             {/* Danh sách thumbnail */}
             {previewData.images.length > 1 && (
-              // BỌC MỚI: Thêm container cho các nút mũi tên
               <div className={styles.thumbnailContainer}>
                 {/* NÚT TRÁI */}
                 {showLeftArrow && (
@@ -103,7 +102,7 @@ const PreviewModal = ({
                   </button>
                 )}
 
-                {/* THÊM REF: Thêm ref vào đây */}
+                {/* List ảnh nhỏ */}
                 <div className={styles.previewThumbnailList} ref={listRef}>
                   {previewData.images.map((media, idx) => (
                     <div
@@ -145,7 +144,6 @@ const PreviewModal = ({
 
           {/* Cột 2: Thông tin chi tiết */}
           <div className={styles.previewMainInfo}>
-            {/* ... (Toàn bộ nội dung cột 2 giữ nguyên) ... */}
             <h2 className={styles.previewTitle}>{previewData.title}</h2>
             <p className={styles.previewPrice}>
               {previewData.price} VNĐ
@@ -153,6 +151,7 @@ const PreviewModal = ({
                 <span className={styles.negotiateTag}> (Có thương lượng)</span>
               )}
             </p>
+
             <h3 className={styles.previewSectionTitle}>Mô tả chi tiết</h3>
             <div
               className={styles.previewDescription}
@@ -160,8 +159,10 @@ const PreviewModal = ({
                 __html: previewData.description.replace(/\n/g, "<br>"),
               }}
             />
+
             <h3 className={styles.previewSectionTitle}>Thông tin thêm</h3>
             <div className={styles.previewDetailGrid}>
+              {/* Các thông tin cơ bản */}
               <div className={styles.previewDetailItem}>
                 <span className={styles.previewDetailKey}>Danh mục:</span>
                 <span className={styles.previewDetailValue}>
@@ -178,7 +179,20 @@ const PreviewModal = ({
                 <span className={styles.previewDetailKey}>Khu vực:</span>
                 <span className={styles.previewDetailValue}>{`${previewData.district}, ${previewData.province}`}</span>
               </div>
+
+              {/* 👇👇👇 PHẦN MỚI: Hiển thị thông tin động (Hãng, Màu, v.v...) 👇👇👇 */}
+              {previewData.details &&
+                Object.entries(previewData.details).map(([key, value]) => (
+                  value ? (
+                    <div className={styles.previewDetailItem} key={key}>
+                      <span className={styles.previewDetailKey}>{key}:</span>
+                      <span className={styles.previewDetailValue}>{value}</span>
+                    </div>
+                  ) : null
+                ))}
+              {/* 👆👆👆 KẾT THÚC PHẦN MỚI 👆👆👆 */}
             </div>
+
             <div className={styles.previewContactInfo}>
               <h3 className={styles.previewSectionTitle}>Thông tin liên hệ</h3>
               <p>{previewData.contactInfo}</p>
