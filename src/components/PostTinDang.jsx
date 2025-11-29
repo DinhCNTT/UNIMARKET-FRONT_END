@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar";
 import styles from "./PostTinDang.module.css";
-import PreviewModal from "./PreviewModal";  // 👈 THÊM DÒNG NÀY
+import PreviewModal from "./PreviewModal";
+import MobileForm from "./CategoryForms/MobileForm";
 const PostTinDang = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -29,6 +30,18 @@ const PostTinDang = () => {
   const [previewData, setPreviewData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [activePreviewMedia, setActivePreviewMedia] = useState(0);
+  const [dynamicData, setDynamicData] = useState({});
+
+  // Kiểm tra xem có phải danh mục điện thoại không
+  const isMobileCategory = categoryName?.toLowerCase().includes("điện thoại");
+
+  // Hàm nhận dữ liệu từ MobileForm
+  const handleDynamicDataChange = (key, value) => {
+    setDynamicData((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   const TITLE_MAX_LENGTH = 80;
   const DESCRIPTION_MAX_LENGTH = 900;
@@ -189,6 +202,17 @@ const PostTinDang = () => {
       return;
     }
 
+    let detailsDisplay = null;
+    if (isMobileCategory) {
+        detailsDisplay = {
+            "Hãng": dynamicData.Hang,
+            "Màu sắc": dynamicData.MauSac,
+            "Dung lượng": dynamicData.DungLuong,
+            "Xuất xứ": dynamicData.XuatXu,
+            "Bảo hành": dynamicData.BaoHanh
+        };
+    }
+
     const allMedia = [...previewImages, ...previewVideos];
 
     setPreviewData({
@@ -201,6 +225,7 @@ const PostTinDang = () => {
       district: getDistrictName(district),
       canNegotiate,
       categoryName,
+      details: detailsDisplay,
       images: allMedia, // 'images' bây giờ chứa cả ảnh và video
     });
 
@@ -221,6 +246,13 @@ const PostTinDang = () => {
       return;
     }
 
+    if (isMobileCategory) {
+        if (!dynamicData.Hang || !dynamicData.MauSac || !dynamicData.DungLuong) {
+            alert("Vui lòng điền đầy đủ Hãng, Màu sắc và Dung lượng!");
+            return;
+        }
+    }
+
     const rawPrice = price.replace(/[^\d]/g, "");
 
     const formData = new FormData();
@@ -235,6 +267,10 @@ const PostTinDang = () => {
     formData.append("categoryId", categoryId);
     formData.append("categoryName", categoryName);
     formData.append("canNegotiate", canNegotiate);
+
+    if (isMobileCategory && Object.keys(dynamicData).length > 0) {
+        formData.append("thongTinChiTiet", JSON.stringify(dynamicData));
+    }
 
     [...imageFiles, ...videoFiles].forEach((file) => formData.append("images", file));
 
@@ -270,6 +306,13 @@ const PostTinDang = () => {
             <label>Danh mục con đã chọn</label>
             <textarea value={`Danh mục con đã chọn: ${categoryName}`} readOnly rows="4" cols="50" />
           </div>
+        )}
+
+        {isMobileCategory && (
+            <MobileForm 
+                data={dynamicData} 
+                onChange={handleDynamicDataChange} 
+            />
         )}
 
         <div className={styles.formGroup}>
