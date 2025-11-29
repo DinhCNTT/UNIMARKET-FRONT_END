@@ -1,5 +1,6 @@
+import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
-import "./TrangChuNav.css";
+import styles from "./TrangChuNav.module.css"; // Import styles từ module
 
 const TrangChuNav = ({ onTabChange, activeTab }) => {
   const location = useLocation();
@@ -54,7 +55,7 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
   ];
 
   return (
-    <div className="TrangChuNav">
+    <div className={styles.container}>
       {tabs.map((tab) => {
         if (tab.onClick) {
           // Các tab không chuyển URL - chỉ thay đổi state
@@ -62,21 +63,19 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
             <button
               key={tab.key}
               onClick={tab.onClick}
-              className={`TrangChuNav__tab ${
-                tab.isActive ? "TrangChuNav__tab--active" : ""
-              }`}
+              className={`${styles.tab} ${tab.isActive ? styles.active : ""}`}
             >
               {tab.label}
             </button>
           );
         } else {
-          // Tab Video - chuyển URL bình thường
+          // Tab Video - chuyển URL bình thường (sử dụng NavLink)
           return (
             <NavLink
               key={tab.path}
               to={tab.path}
               className={({ isActive }) =>
-                `TrangChuNav__tab ${isActive ? "TrangChuNav__tab--active" : ""}`
+                `${styles.tab} ${isActive ? styles.active : ""}`
               }
             >
               {tab.label}

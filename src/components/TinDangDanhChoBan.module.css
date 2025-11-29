@@ -1,0 +1,67 @@
+/* src/components/TinDangDanhChoBan.module.css */
+.container {
+  padding: 20px;
+  background-color: #Ffff;
+  margin: 5px auto;
+  width: 100%;      
+  max-width: 95%; 
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+/* Reset Link chung cho container (để tránh gạch chân thừa) */
+.container a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Grid Lưới chứa các thẻ tin */
+.postList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+
+/* Container cho thanh điều hướng */
+.navContainer {
+  margin-bottom: 24px;
+  padding: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Nút Xem thêm */
+.viewMoreBtn {
+  display: block;
+  width: 180px;
+  text-align: center;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #333;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.viewMoreBtn:hover {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+/* Responsive cho Grid */
+@media screen and (max-width: 1024px) {
+  .postList { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media screen and (max-width: 768px) {
+  .postList { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media screen and (max-width: 480px) {
+  .postList { grid-template-columns: 1fr; }
+}
