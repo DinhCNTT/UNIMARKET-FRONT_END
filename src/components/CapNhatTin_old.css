@@ -1,0 +1,333 @@
+/* Container chính */
+.capnhat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f4f5f7; /* Nền xám nhẹ hiện đại hơn */
+  width: 100%;
+  min-height: 100vh;
+  font-family: 'Reddit Sans', sans-serif;
+  box-sizing: border-box;
+}
+
+/* Form chính */
+.capnhat-form {
+  background: white;
+  padding: 40px;
+  border-radius: 12px; /* Bo góc mềm mại hơn */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 1100px; /* Giới hạn chiều rộng chuẩn */
+  margin-top: 30px;
+  padding-bottom: 100px; /* Chừa chỗ cho nút submit */
+  position: relative;
+}
+
+/* --- LAYOUT CHIA 2 CỘT (QUAN TRỌNG NHẤT) --- */
+.capnhat-layout-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; /* Căn hàng trên cùng */
+  gap: 40px; /* Khoảng cách giữa 2 cột */
+  width: 100%;
+}
+
+/* 1. CỘT TRÁI: Media (Ảnh/Video) */
+.capnhat-left-column {
+  width: 360px; /* Cố định chiều rộng cột ảnh */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky; /* Trượt theo khi cuộn trang */
+  top: 90px; 
+}
+
+/* 2. CỘT PHẢI: Form nhập liệu */
+.capnhat-right-column {
+  flex: 1; /* Chiếm hết phần còn lại */
+  width: 100%;
+}
+
+/* --- STYLE CHO CÁC Ô NHẬP LIỆU (Reset style cũ) --- */
+.capnhat-group {
+  width: 100%;
+  margin-bottom: 20px;
+  margin-left: 0 !important; /* Ghi đè style cũ */
+}
+
+/* Riêng 2 ô Tỉnh/Huyện cho nằm ngang hàng (Tùy chọn, để dọc cũng được) */
+.capnhat-group-ViTri1, 
+.capnhat-group-ViTri2 {
+  width: 100% !important;
+  margin-left: 0 !important;
+  position: static !important; /* Bỏ absolute cũ */
+  margin-bottom: 20px;
+}
+
+.capnhat-label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+/* Input, Select, Textarea */
+.capnhat-input,
+.capnhat-select,
+.capnhat-textarea,
+.capnhat-TinhThanh-select,
+.capnhat-QuanHuyen-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.capnhat-input:focus,
+.capnhat-select:focus,
+.capnhat-textarea:focus,
+.capnhat-TinhThanh-select:focus,
+.capnhat-QuanHuyen-select:focus {
+  outline: none;
+  border-color: #f76c0d;
+  box-shadow: 0 0 0 3px rgba(247, 108, 13, 0.1);
+}
+
+.capnhat-textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --- PHẦN MEDIA BOX (Đã reset style lỗi cũ) --- */
+.capnhat-media-box {
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  width: 100% !important; /* Full width cột trái */
+  box-sizing: border-box;
+  position: static !important; /* Bỏ absolute/relative âm */
+  margin: 0 !important;
+}
+
+.capnhat-media-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed #eee;
+  padding-bottom: 8px;
+}
+
+.capnhat-camera-icon,
+.capnhat-video-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.capnhat-camera-icon { background-image: url('https://img.icons8.com/ios-filled/50/ffa500/camera--v1.png'); }
+.capnhat-video-icon { background-image: url('https://img.icons8.com/ios-filled/50/ffa500/video-call.png'); }
+
+.capnhat-media-title { font-weight: 600; font-size: 14px; color: #333; }
+.capnhat-note { font-weight: normal; font-size: 12px; color: #888; margin-left: 5px; }
+
+/* Upload Area */
+.capnhat-upload-area {
+  position: relative;
+  border: 2px dashed #f76c0d;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  background-color: #fff9f5;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.capnhat-upload-area:hover { background-color: #fff0e0; }
+.capnhat-file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.capnhat-upload-text { font-size: 14px; color: #555; margin-bottom: 4px; }
+.capnhat-highlight { color: #f76c0d; font-weight: 600; }
+.capnhat-sub-note { font-size: 12px; color: #999; }
+
+/* Preview Images Grid */
+.capnhat-preview-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 ảnh 1 hàng */
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.capnhat-preview-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1; /* Vuông */
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.capnhat-preview-item img,
+.capnhat-preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Badges (Ảnh bìa, Mới, Cũ) */
+.capnhat-cover-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: rgba(247, 108, 13, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+/* Nút Xóa (X) */
+.capnhat-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(0,0,0,0.5);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+.capnhat-remove-btn:hover { background-color: #ff4d4f; }
+
+/* Nút di chuyển (< >) */
+.capnhat-move-controls {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  z-index: 2;
+}
+.capnhat-move-btn {
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.capnhat-move-btn:hover:not(:disabled) { background: #f76c0d; }
+.capnhat-move-btn:disabled { opacity: 0; }
+
+.capnhat-counter { font-size: 12px; color: #666; text-align: center; margin-top: 10px; }
+
+/* --- PHẦN THÔNG TIN CHI TIẾT (Điện thoại) --- */
+.capnhat-dynamic-box {
+  width: 100%;
+  margin-bottom: 24px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.capnhat-dynamic-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f76c0d;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #ddd;
+  display: block;
+  text-transform: uppercase;
+}
+
+.capnhat-dynamic-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 cột */
+  gap: 15px;
+}
+
+/* Nút Submit Footer */
+.capnhat-button-group {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  padding: 15px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.capnhat-submit-btn {
+  background-color: #f76c0d;
+  color: white;
+  padding: 12px 48px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  box-shadow: 0 2px 5px rgba(247, 108, 13, 0.3);
+}
+.capnhat-submit-btn:hover { background-color: #e06000; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+  /* Tablet: chuyển về 1 cột dọc */
+  .capnhat-layout-wrapper {
+    flex-direction: column;
+  }
+  .capnhat-left-column {
+    width: 100%;
+    position: static; /* Bỏ sticky */
+    flex-direction: row; /* Ảnh và Video nằm ngang */
+  }
+  .capnhat-media-box {
+    flex: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Mobile */
+  .capnhat-left-column {
+    flex-direction: column;
+  }
+  .capnhat-dynamic-grid {
+    grid-template-columns: 1fr; /* 1 cột cho dynamic info */
+  }
+  .capnhat-form {
+    padding: 20px;
+  }
+}

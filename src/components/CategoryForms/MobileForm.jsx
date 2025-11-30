@@ -1,6 +1,5 @@
 import React from "react";
-// Import CSS module từ file cha (để dùng chung style cho đẹp và đỡ phải viết lại CSS)
-// Lưu ý đường dẫn: từ folder CategoryForms nhảy ra ngoài 1 cấp (..) để tìm PostTinDang.module.css
+// Import CSS module từ file cha
 import styles from "../PostTinDang.module.css"; 
 
 const MobileForm = ({ data, onChange }) => {
@@ -15,13 +14,14 @@ const MobileForm = ({ data, onChange }) => {
   };
 
   return (
-    <div style={{ width: "60%", marginLeft: "45%", marginBottom: "20px" }}>
+    // Đã xóa style width/margin cứng, dùng width 100% theo layout cha
+    <div style={{ width: "100%", marginBottom: "20px" }}>
       <h3 style={{ marginBottom: "15px", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>
         Thông tin chi tiết điện thoại
       </h3>
 
       {/* Hãng sản xuất */}
-      <div className={styles.formGroup} style={{ width: "100%", marginLeft: 0 }}>
+      <div className={styles.formGroup}>
         <label>Hãng sản xuất <span style={{ color: "red" }}>*</span></label>
         <select
           value={data.Hang || ""}
@@ -35,7 +35,7 @@ const MobileForm = ({ data, onChange }) => {
 
       {/* Màu sắc & Dung lượng */}
       <div style={{ display: "flex", gap: "20px" }}>
-        <div className={styles.formGroup} style={{ width: "50%", marginLeft: 0 }}>
+        <div className={styles.formGroup} style={{ width: "50%" }}>
           <label>Màu sắc <span style={{ color: "red" }}>*</span></label>
           <select
             value={data.MauSac || ""}
@@ -46,7 +46,7 @@ const MobileForm = ({ data, onChange }) => {
             {colors.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div className={styles.formGroup} style={{ width: "50%", marginLeft: 0 }}>
+        <div className={styles.formGroup} style={{ width: "50%" }}>
           <label>Dung lượng <span style={{ color: "red" }}>*</span></label>
           <select
             value={data.DungLuong || ""}
@@ -61,7 +61,7 @@ const MobileForm = ({ data, onChange }) => {
 
       {/* Bảo hành & Xuất xứ */}
       <div style={{ display: "flex", gap: "20px" }}>
-        <div className={styles.formGroup} style={{ width: "50%", marginLeft: 0 }}>
+        <div className={styles.formGroup} style={{ width: "50%" }}>
           <label>Chính sách bảo hành</label>
           <select
             value={data.BaoHanh || ""}
@@ -71,7 +71,7 @@ const MobileForm = ({ data, onChange }) => {
             {warranties.map((w) => <option key={w} value={w}>{w}</option>)}
           </select>
         </div>
-        <div className={styles.formGroup} style={{ width: "50%", marginLeft: 0 }}>
+        <div className={styles.formGroup} style={{ width: "50%" }}>
           <label>Xuất xứ</label>
           <input
             type="text"

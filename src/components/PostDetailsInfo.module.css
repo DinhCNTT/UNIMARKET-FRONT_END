@@ -5,48 +5,44 @@
   flex-direction: column;
   justify-content: flex-start;
   font-family: 'Reddit Sans', sans-serif;
-  padding-right: 10px; 
+  padding-right: 10px;
 }
 
-/* --- KHU VỰC HEADER MỚI (FIX LỖI ĐÈ CHỮ) --- */
 .headerRow {
   display: flex;
-  justify-content: space-between; /* Đẩy tiêu đề sang trái, nút sang phải */
-  align-items: flex-start; /* Căn đỉnh trên cùng (quan trọng khi tiêu đề nhiều dòng) */
-  gap: 15px; /* Khoảng cách an toàn giữa tiêu đề và nút */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
   margin-bottom: 15px;
 }
 
-/* Tiêu đề */
 .title {
-  font-size: 22px; 
+  font-size: 22px;
   font-weight: bold;
   color: #222;
   line-height: 1.3;
-  flex: 1; /* Chiếm hết khoảng trống còn lại */
-  margin: 0; /* Reset margin để flexbox xử lý */
-  word-wrap: break-word; /* Đảm bảo xuống dòng nếu từ quá dài */
+  flex: 1;
+  margin: 0;
+  word-wrap: break-word;
 }
 
-/* Nút Lưu tin */
 .saveBtn {
-  /* Xóa position: absolute cũ */
-  position: static; 
+  position: static;
   display: flex;
   align-items: center;
   gap: 6px;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 20px;
-  padding: 6px 12px; /* Giảm nhẹ padding ngang cho gọn hơn */
-  font-size: 14px; /* Giảm font một chút cho cân đối */
+  padding: 6px 12px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap; /* Giữ chữ "Lưu tin" luôn trên 1 dòng */
-  flex-shrink: 0; /* QUAN TRỌNG: Ngăn nút bị co lại khi tiêu đề quá dài */
-  height: fit-content; /* Chỉ cao bằng nội dung bên trong */
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: fit-content;
 }
 
 .saveBtn:hover {
@@ -54,36 +50,11 @@
   border-color: #bbb;
 }
 
-/* Report small circular button positioned to left of save button */
-.reportBtnAbsolute {
-  position: absolute;
-  top: 6px;
-  right: 110px; /* sits left of .saveBtn */
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #fff;
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  border-radius: 20px; /* pill */
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 11;
-}
-
-.reportBtnAbsolute:hover {
-  background-color: #fff5f5;
-}
-
-/* Trạng thái khi đã lưu */
 .saved {
   border-color: #e5193b;
   color: #e5193b;
   background-color: #fff5f5;
 }
-/* ------------------------------------------- */
 
 .chiTietTinDangInfo p {
   font-size: 15px;
@@ -94,7 +65,7 @@
 .price {
   font-size: 24px;
   font-weight: bold;
-  color: #d0021b; 
+  color: #d0021b;
 }
 
 .infoLine {
@@ -112,66 +83,99 @@
   flex-shrink: 0;
 }
 
-/* Nút Chat & Phone */
 .actionButtons {
   margin-top: 20px;
   display: flex;
-  align-items: stretch; 
-  gap: 12px; 
+  align-items: stretch;
+  gap: 12px;
   width: 100%;
 }
 
 .btnPhone, .btnChat {
-  flex: 1; 
-  height: 44px; 
-  border-radius: 10px; 
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
   font-size: 15px;
-  font-weight: 700; 
+  font-weight: 700;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: filter 0.2s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .btnPhone:hover, .btnChat:hover {
-  filter: brightness(0.95); 
+  filter: brightness(0.95);
+  transform: translateY(-1px);
 }
 
 .btnPhone {
-  background-color: #f5f6f8;
-  color: #222222;
+  background-color: #f0f2f5;
+  color: #222;
 }
 
 .btnChat {
-  background-color: #ffcc00; 
-  color: #222222;
-  gap: 8px; 
+  background-color: #ffcc00;
+  color: #111;
+  gap: 8px;
 }
 
+/* --- PHẦN STYLE CHO NGƯỜI BÁN (NEW) --- */
 .sellerInfo {
   background-color: #fff;
-  padding: 10px 0;
-  margin-top: 20px;
+  padding: 15px 0;
+  margin-top: 25px;
   border-top: 1px solid #eee;
+}
+
+.sellerContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sellerAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+}
+
+.sellerText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sellerLabel {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
 }
 
 .sellerName {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #222;
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .chiTietTinDangInfo {
     min-height: auto;
+    padding-right: 0;
   }
   
   .btnPhone, .btnChat {
-    height: 44px; 
+    height: 44px;
     font-size: 15px;
+  }
+  
+  .title {
+    font-size: 20px;
   }
 }
