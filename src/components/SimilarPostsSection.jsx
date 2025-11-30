@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaVideo, FaRegImage } from "react-icons/fa"; // Import icon
 import styles from "./SimilarPostsSection.module.css";
 import { formatPrice, getMediaUrl } from "../utils/formatters";
-import { formatRelativeTime } from "../utils/dateUtils"; // Import hàm tính thời gian
+import { formatRelativeTime } from "../utils/dateUtils"; 
 
 /**
  * @param {string} mode - "grid" (Lưới) hoặc "carousel" (Trượt ngang)
@@ -118,8 +118,13 @@ const SimilarPostsSection = ({ title, posts, mode = "carousel", onViewShop }) =>
   );
 };
 
-// Component Card đã cập nhật logic
+// ==========================================================
+// COMPONENT CARD ĐÃ FIX ĐẦY ĐỦ (VIDEO PREVIEW & BADGE)
+// ==========================================================
 const PostCard = ({ post, onClick, isGrid }) => {
+  // State quản lý việc hover chuột
+  const [isHovering, setIsHovering] = useState(false);
+
   // 1. Logic đếm ảnh
   const imageCount = post.images ? post.images.length : 0;
   
@@ -130,9 +135,27 @@ const PostCard = ({ post, onClick, isGrid }) => {
     <div
       className={`${styles.postCard} ${isGrid ? styles.cardGridItem : styles.cardCarouselItem}`}
       onClick={() => onClick(post.maTinDang)}
+      // 👇 Bắt sự kiện chuột để chạy video preview
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <div className={styles.cardImageWrapper}>
-        <img src={getMediaUrl(post.images?.[0])} alt={post.tieuDe} loading="lazy" />
+        
+        {/* ⭐ LOGIC VIDEO PREVIEW: 
+            Nếu có video VÀ đang di chuột -> hiện Video, ngược lại hiện Ảnh 
+        */}
+        {hasVideo && isHovering ? (
+            <video
+                src={post.videoUrl}
+                className={styles.previewVideo} // Cần thêm class này trong CSS (xem bên dưới)
+                autoPlay
+                muted
+                loop
+                playsInline
+            />
+        ) : (
+            <img src={getMediaUrl(post.images?.[0])} alt={post.tieuDe} loading="lazy" />
+        )}
         
         {/* --- LOGIC HIỂN THỊ THỜI GIAN TRÊN ẢNH --- */}
         {formatRelativeTime(post.ngayDang) ? (
@@ -141,13 +164,16 @@ const PostCard = ({ post, onClick, isGrid }) => {
             </span>
         ) : null}
 
-        {/* --- LOGIC HIỂN THỊ ICON VIDEO & SỐ ẢNH --- */}
+        {/* --- LOGIC HIỂN THỊ ICON VIDEO & SỐ ẢNH (ĐÃ CẬP NHẬT) --- */}
         <div className={styles.mediaBadgesContainer}>
+            {/* 1. Nếu có video -> Hiện icon máy quay riêng */}
             {hasVideo && (
               <div className={`${styles.badgeItem} ${styles.videoBadge}`}>
                 <FaVideo size={10} />
               </div>
             )}
+
+            {/* 2. Nếu có ảnh -> Hiện icon ảnh + số lượng */}
             {imageCount > 0 && (
               <div className={styles.badgeItem}>
                 <FaRegImage size={10} style={{ marginRight: 4 }} />
@@ -162,7 +188,6 @@ const PostCard = ({ post, onClick, isGrid }) => {
         <div className={styles.postPrice}>{formatPrice(post.gia)}</div>
         <div className={styles.postMeta}>
           <div className={styles.metaLocation}><span>{post.diaChi}</span></div>
-          {/* Đã đưa thời gian lên ảnh nên ở đây ẩn đi cho gọn */}
         </div>
       </div>
     </div>

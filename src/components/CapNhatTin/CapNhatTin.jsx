@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext"; // Lưu ý đường dẫn import
-import TopNavbar from "../../components/TopNavbar"; // Lưu ý đường dẫn import
+import { AuthContext } from "../../context/AuthContext";
+import TopNavbar from "../../components/TopNavbar";
 import styles from "./CapNhatTin.module.css";
 
 // Import components con
@@ -14,7 +14,13 @@ const CapNhatTin = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // State thông tin cơ bản
+  // --- UX States ---
+  const [isLoading, setIsLoading] = useState(true); // Load trang
+  const [isSubmitting, setIsSubmitting] = useState(false); // Submit form
+  const [toast, setToast] = useState({ show: false, message: "", type: "" }); // Thay alert
+  const [errors, setErrors] = useState({}); // Lưu lỗi validation
+
+  // --- Data States ---
   const [categoryId, setCategoryId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
   const [title, setTitle] = useState("");
@@ -25,22 +31,30 @@ const CapNhatTin = () => {
   const [condition, setCondition] = useState("Moi");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
+  
   const [tinhThanhList, setTinhThanhList] = useState([]);
   const [quanHuyenList, setQuanHuyenList] = useState([]);
 
-  // State Media
+  // --- Media States ---
   const [imagePreviewList, setImagePreviewList] = useState([]);
   const [videoPreviewList, setVideoPreviewList] = useState([]);
   const [oldImagesToDelete, setOldImagesToDelete] = useState([]);
   const [oldVideosToDelete, setOldVideosToDelete] = useState([]);
 
-  // State Dynamic
+  // --- Dynamic Data ---
   const [dynamicData, setDynamicData] = useState({});
+
+  // --- Helper: Toast Notification ---
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  };
 
   // --- Handlers ---
   const handleDynamicChange = (key, value) => {
     setDynamicData(prev => ({ ...prev, [key]: value }));
+    // Xóa lỗi khi người dùng chọn lại
+    if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
   };
 
   const formatPrice = (value) => {
@@ -53,69 +67,75 @@ const CapNhatTin = () => {
     const rawValue = e.target.value.replace(/[^\d]/g, '');
     setPrice(rawValue);
     setDisplayPrice(formatPrice(rawValue));
+    if (errors.price) setErrors(prev => ({ ...prev, price: null }));
   };
 
   // --- Fetch Data ---
   useEffect(() => {
-    if (id) {
-      axios.get(`http://localhost:5133/api/TinDang/get-post/${id}`)
-        .then((response) => {
-          const tinDang = response.data;
-          setTitle(tinDang.tieuDe);
-          setDescription(tinDang.moTa);
-          setPrice(tinDang.gia);
-          setDisplayPrice(formatPrice(tinDang.gia));
-          setContactInfo(tinDang.diaChi);
-          setCondition(tinDang.tinhTrang);
-          setProvince(tinDang.maTinhThanh);
-          setDistrict(tinDang.maQuanHuyen);
-          setCategoryId(tinDang.maDanhMuc);
-          setCategoryName(tinDang.danhMuc?.tenDanhMuc);
+    const fetchData = async () => {
+      if (!id) return;
+      setIsLoading(true);
+      try {
+        const [postRes, tinhRes] = await Promise.all([
+          axios.get(`http://localhost:5133/api/TinDang/get-post/${id}`),
+          fetch("http://localhost:5133/api/tindang/tinhthanh").then(res => res.json())
+        ]);
 
-          if (tinDang.thongTinChiTiet) {
-            try {
-              const parsed = typeof tinDang.thongTinChiTiet === 'string' 
-                ? JSON.parse(tinDang.thongTinChiTiet) 
-                : tinDang.thongTinChiTiet;
-              setDynamicData(parsed || {});
-            } catch (e) {
-              console.error("Lỗi parse thông tin chi tiết:", e);
-            }
-          }
+        setTinhThanhList(tinhRes);
 
-          if (tinDang.anhTinDangs && tinDang.anhTinDangs.length > 0) {
-            const images = [];
-            const videos = [];
-            const sortedMedia = tinDang.anhTinDangs.sort((a, b) => (a.order || 0) - (b.order || 0));
-            
-            sortedMedia.forEach(media => {
-              const url = media.duongDan.startsWith('http') ? media.duongDan : `http://localhost:5133${media.duongDan}`;
-              const mediaItem = {
-                type: 'old',
-                url: url,
-                id: media.maAnh,
-                originalOrder: media.order || 0,
-                fileName: media.duongDan.split('/').pop()
-              };
-              
-              const isVideo = media.loaiMedia === 1 || /\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i.test(media.duongDan);
-              if (isVideo) videos.push(mediaItem);
-              else images.push(mediaItem);
-            });
-            setImagePreviewList(images);
-            setVideoPreviewList(videos);
+        const tinDang = postRes.data;
+        setTitle(tinDang.tieuDe);
+        setDescription(tinDang.moTa);
+        setPrice(tinDang.gia);
+        setDisplayPrice(formatPrice(tinDang.gia));
+        setContactInfo(tinDang.diaChi);
+        setCondition(tinDang.tinhTrang);
+        setProvince(tinDang.maTinhThanh);
+        setDistrict(tinDang.maQuanHuyen);
+        setCategoryId(tinDang.maDanhMuc);
+        setCategoryName(tinDang.danhMuc?.tenDanhMuc);
+
+        if (tinDang.thongTinChiTiet) {
+          try {
+            const parsed = typeof tinDang.thongTinChiTiet === 'string' 
+              ? JSON.parse(tinDang.thongTinChiTiet) 
+              : tinDang.thongTinChiTiet;
+            setDynamicData(parsed || {});
+          } catch (e) {
+            console.error("Lỗi parse thông tin chi tiết:", e);
           }
-        })
-        .catch((error) => {
-          console.error("Lỗi lấy tin:", error);
-          alert("Không thể lấy thông tin tin đăng.");
-        });
-    }
+        }
+
+        if (tinDang.anhTinDangs?.length > 0) {
+          const images = [];
+          const videos = [];
+          const sortedMedia = tinDang.anhTinDangs.sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+          sortedMedia.forEach(media => {
+            const url = media.duongDan.startsWith('http') ? media.duongDan : `http://localhost:5133${media.duongDan}`;
+            const mediaItem = {
+              type: 'old',
+              url: url,
+              id: media.maAnh,
+              originalOrder: media.order || 0,
+              fileName: media.duongDan.split('/').pop()
+            };
+            const isVideo = media.loaiMedia === 1 || /\.(mp4|avi|mov|wmv|flv|webm|mkv)$/i.test(media.duongDan);
+            if (isVideo) videos.push(mediaItem);
+            else images.push(mediaItem);
+          });
+          setImagePreviewList(images);
+          setVideoPreviewList(videos);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy dữ liệu:", error);
+        showToast("Không thể tải thông tin tin đăng", "error");
+      } finally {
+        setTimeout(() => setIsLoading(false), 500); // Giả lập delay nhỏ cho mượt
+      }
+    };
+    fetchData();
   }, [id]);
-
-  useEffect(() => {
-    fetch("http://localhost:5133/api/tindang/tinhthanh").then(res => res.json()).then(setTinhThanhList);
-  }, []);
 
   useEffect(() => {
     if (province) {
@@ -123,71 +143,71 @@ const CapNhatTin = () => {
     }
   }, [province]);
 
-  // --- Media Handlers ---
+  // --- Media Handlers (Giữ nguyên logic cũ, chỉ rút gọn) ---
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files).slice(0, 7 - imagePreviewList.length);
-    const newItems = files.map(file => ({
-      type: 'new',
-      file,
-      url: URL.createObjectURL(file),
-      fileName: file.name
-    }));
-    setImagePreviewList(prev => [...prev, ...newItems]);
+    setImagePreviewList(prev => [...prev, ...files.map(file => ({ type: 'new', file, url: URL.createObjectURL(file), fileName: file.name }))]);
   };
-
   const handleVideoChange = (e) => {
     const files = Array.from(e.target.files).slice(0, 1 - videoPreviewList.length);
-    const newItems = files.map(file => ({
-      type: 'new',
-      file,
-      url: URL.createObjectURL(file),
-      fileName: file.name
-    }));
-    setVideoPreviewList(prev => [...prev, ...newItems]);
+    setVideoPreviewList(prev => [...prev, ...files.map(file => ({ type: 'new', file, url: URL.createObjectURL(file), fileName: file.name }))]);
   };
-
   const handleRemoveImage = (idx) => {
     setImagePreviewList(prev => {
       const removed = prev[idx];
-      if (removed.type === 'old') {
-        setOldImagesToDelete(ids => [...ids, removed.id]);
-      }
+      if (removed.type === 'old') setOldImagesToDelete(ids => [...ids, removed.id]);
       return prev.filter((_, i) => i !== idx);
     });
   };
-
   const handleRemoveVideo = (idx) => {
     setVideoPreviewList(prev => {
       const removed = prev[idx];
-      if (removed.type === 'old') {
-        setOldVideosToDelete(ids => [...ids, removed.id]);
-      }
+      if (removed.type === 'old') setOldVideosToDelete(ids => [...ids, removed.id]);
       return prev.filter((_, i) => i !== idx);
     });
   };
-
-  const moveImage = (fromIdx, toIdx) => {
+  const moveImage = (from, to) => {
     setImagePreviewList(prev => {
-      if (toIdx < 0 || toIdx >= prev.length) return prev;
+      if (to < 0 || to >= prev.length) return prev;
       const updated = [...prev];
-      const [moved] = updated.splice(fromIdx, 1);
-      updated.splice(toIdx, 0, moved);
+      const [moved] = updated.splice(from, 1);
+      updated.splice(to, 0, moved);
       return updated;
     });
+  };
+
+  // --- Validation ---
+  const validateForm = () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Vui lòng nhập tiêu đề";
+    if (!price) newErrors.price = "Vui lòng nhập giá";
+    if (!description.trim()) newErrors.description = "Vui lòng nhập mô tả";
+    if (!province) newErrors.province = "Chọn Tỉnh/Thành";
+    if (!district) newErrors.district = "Chọn Quận/Huyện";
+
+    // Validate Dynamic (Mobile)
+    if (categoryName?.toLowerCase().includes("điện thoại")) {
+      if (!dynamicData.Hang) newErrors.Hang = true;
+      if (!dynamicData.MauSac) newErrors.MauSac = true;
+      if (!dynamicData.DungLuong) newErrors.DungLuong = true;
+      if (!dynamicData.BaoHanh) newErrors.BaoHanh = true;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user?.id) return alert("Vui lòng đăng nhập!");
-
-    // Validate Mobile đơn giản (có thể chuyển vào renderer nếu muốn)
-    if (categoryName?.toLowerCase().includes("điện thoại")) {
-        if (!dynamicData.Hang || !dynamicData.MauSac || !dynamicData.DungLuong) {
-            alert("Vui lòng điền đầy đủ Hãng, Màu sắc và Dung lượng!");
-            return;
-        }
+    if (!user?.id) return showToast("Vui lòng đăng nhập!", "error");
+    
+    if (!validateForm()) {
+        showToast("Vui lòng kiểm tra lại thông tin còn thiếu!", "error");
+        return;
     }
+
+    setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append("title", title);
@@ -200,68 +220,75 @@ const CapNhatTin = () => {
     formData.append("district", district);
     formData.append("categoryId", categoryId);
     formData.append("userId", user.id);
+    if (Object.keys(dynamicData).length > 0) formData.append("thongTinChiTiet", JSON.stringify(dynamicData));
 
-    // Gửi JSON thông tin chi tiết
-    if (Object.keys(dynamicData).length > 0) {
-        formData.append("thongTinChiTiet", JSON.stringify(dynamicData));
-    }
-
-    // Logic Order Map
+    // Logic Map Order (Giữ nguyên logic cũ)
     const imageOrderMap = [];
     const videoOrderMap = [];
-
     imagePreviewList.forEach((img, index) => {
-      if (img.type === 'old') {
-        imageOrderMap.push({ type: 'old', id: img.id, position: index });
-      } else {
-        const newFileIndex = imagePreviewList.filter((item, idx) => item.type === 'new' && idx <= index).length - 1;
-        imageOrderMap.push({ type: 'new', id: -1, fileIndex: newFileIndex, position: index });
-      }
+      if (img.type === 'old') imageOrderMap.push({ type: 'old', id: img.id, position: index });
+      else imageOrderMap.push({ type: 'new', id: -1, fileIndex: imagePreviewList.filter((item, idx) => item.type === 'new' && idx <= index).length - 1, position: index });
     });
-
     videoPreviewList.forEach((vid, index) => {
-      if (vid.type === 'old') {
-        videoOrderMap.push({ type: 'old', id: vid.id, position: index });
-      } else {
-        const newFileIndex = videoPreviewList.filter((item, idx) => item.type === 'new' && idx <= index).length - 1;
-        videoOrderMap.push({ type: 'new', id: -1, fileIndex: newFileIndex, position: index });
-      }
+       if (vid.type === 'old') videoOrderMap.push({ type: 'old', id: vid.id, position: index });
+       else videoOrderMap.push({ type: 'new', id: -1, fileIndex: videoPreviewList.filter((item, idx) => item.type === 'new' && idx <= index).length - 1, position: index });
     });
 
     formData.append('imageOrderMap', JSON.stringify(imageOrderMap));
     formData.append('videoOrderMap', JSON.stringify(videoOrderMap));
 
-    // Append files
-    const newImageFiles = imagePreviewList.filter(i => i.type === 'new');
-    newImageFiles.forEach((img) => formData.append('newImages', img.file));
-    const newVideoFiles = videoPreviewList.filter(i => i.type === 'new');
-    newVideoFiles.forEach((vid) => formData.append('newVideos', vid.file));
-
-    // Delete lists
+    imagePreviewList.filter(i => i.type === 'new').forEach(img => formData.append('newImages', img.file));
+    videoPreviewList.filter(i => i.type === 'new').forEach(vid => formData.append('newVideos', vid.file));
     if (oldImagesToDelete.length > 0) formData.append('oldImagesToDelete', JSON.stringify(oldImagesToDelete));
     if (oldVideosToDelete.length > 0) formData.append('oldVideosToDelete', JSON.stringify(oldVideosToDelete));
 
     try {
       await axios.put(`http://localhost:5133/api/TinDang/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-      setStatusMessage("✅ Tin bạn đã được cập nhật!");
-      alert("Tin bạn đã được cập nhật!");
-      navigate("/quan-ly-tin");
+      showToast("Cập nhật tin thành công!", "success");
+      setTimeout(() => navigate("/quan-ly-tin"), 1500);
     } catch (error) {
       console.error("Lỗi cập nhật:", error);
-      setStatusMessage("❌ Cập nhật thất bại!");
-      alert(`Lỗi: ${error.response?.data?.message || error.message}`);
+      showToast(`Lỗi: ${error.response?.data?.message || error.message}`, "error");
+      setIsSubmitting(false);
     }
   };
+
+  // --- Render Skeleton Loading ---
+  if (isLoading) {
+      return (
+          <div className={styles.container}>
+              <TopNavbar />
+              <div className={styles.form}>
+                  <div className={styles.layoutWrapper}>
+                      <div className={styles.leftColumn}>
+                          <div className={`${styles.skeleton} ${styles.skeletonBox}`}></div>
+                          <div className={`${styles.skeleton} ${styles.skeletonBox}`}></div>
+                      </div>
+                      <div className={styles.rightColumn}>
+                          <div className={`${styles.skeleton} ${styles.skeletonInput}`}></div>
+                          <div className={`${styles.skeleton} ${styles.skeletonInput}`}></div>
+                          <div className={`${styles.skeleton} ${styles.skeletonInput}`} style={{height: '150px'}}></div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className={styles.container}>
       <TopNavbar />
-      {statusMessage && <p className={`${styles.statusMessage} ${statusMessage.includes("thất bại") ? styles.error : ""}`}>{statusMessage}</p>}
       
+      {/* Toast Notification */}
+      {toast.show && (
+          <div className={`${styles.floatingToast} ${toast.type === 'error' ? styles.errorToast : styles.successToast}`}>
+              {toast.message}
+          </div>
+      )}
+
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.layoutWrapper}>
-
-          {/* === CỘT TRÁI: QUẢN LÝ MEDIA === */}
+          {/* Media Manager */}
           <MediaManager 
             imagePreviewList={imagePreviewList}
             videoPreviewList={videoPreviewList}
@@ -272,63 +299,99 @@ const CapNhatTin = () => {
             moveImage={moveImage}
           />
 
-          {/* === CỘT PHẢI: INPUTS === */}
+          {/* Inputs Column */}
           <div className={styles.rightColumn}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Tiêu đề</label>
-              <input type="text" className={styles.input} value={title} onChange={e => setTitle(e.target.value)} required />
+              <label className={styles.label}>Tiêu đề <span style={{color:'red'}}>*</span></label>
+              <input 
+                type="text" 
+                className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
+                value={title} 
+                onChange={e => {setTitle(e.target.value); if(errors.title) setErrors({...errors, title: null})}} 
+                placeholder="VD: iPhone 14 Pro Max 256GB VNA..."
+              />
+              {errors.title && <span className={styles.errorText}>{errors.title}</span>}
             </div>
 
-            {/* 🔥 RENDER FORM CHI TIẾT DỰA VÀO DANH MỤC 🔥 */}
+            {/* Renderer Spec - Truyền thêm errors */}
             <CategorySpecRenderer 
               categoryName={categoryName}
               dynamicData={dynamicData}
               onDynamicChange={handleDynamicChange}
+              errors={errors} 
             />
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Mô tả</label>
-              <textarea className={styles.textarea} value={description} onChange={e => setDescription(e.target.value)} required />
+              <label className={styles.label}>Mô tả chi tiết <span style={{color:'red'}}>*</span></label>
+              <textarea 
+                className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+                value={description} 
+                onChange={e => {setDescription(e.target.value); if(errors.description) setErrors({...errors, description: null})}}
+                placeholder="Mô tả chi tiết về sản phẩm, tình trạng, lý do bán..."
+              />
+              {errors.description && <span className={styles.errorText}>{errors.description}</span>}
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Giá (VNĐ)</label>
-              <input type="text" className={styles.input} value={displayPrice} onChange={handlePriceChange} placeholder="Ví dụ: 200.000" required />
+            <div className={styles.formGroup} style={{position: 'relative'}}>
+              <label className={styles.label}>Giá mong muốn <span style={{color:'red'}}>*</span></label>
+              <input 
+                type="text" 
+                className={`${styles.input} ${errors.price ? styles.inputError : ''}`}
+                value={displayPrice} 
+                onChange={handlePriceChange} 
+                placeholder="0" 
+                style={{paddingRight: '50px', fontWeight: 'bold', color: '#d0021b'}}
+              />
+              <span className={styles.suffix}>VNĐ</span>
+              {errors.price && <span className={styles.errorText}>{errors.price}</span>}
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Địa chỉ cụ thể</label>
-              <input type="text" className={styles.input} value={contactInfo} onChange={e => setContactInfo(e.target.value)} required />
+              <input type="text" className={styles.input} value={contactInfo} onChange={e => setContactInfo(e.target.value)} />
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Tình trạng sản phẩm</label>
-              <select className={styles.select} value={condition} onChange={e => setCondition(e.target.value)} required>
-                <option value="Moi">Mới</option>
-                <option value="DaSuDung">Đã Sử Dụng</option>
+              <label className={styles.label}>Tình trạng</label>
+              <select className={styles.select} value={condition} onChange={e => setCondition(e.target.value)}>
+                <option value="Moi">Mới 100%</option>
+                <option value="DaSuDung">Đã qua sử dụng</option>
               </select>
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Tỉnh/Thành phố</label>
-              <select className={styles.select} value={province} onChange={e => setProvince(e.target.value)} required>
-                <option value="">Chọn tỉnh/thành phố</option>
-                {tinhThanhList.map(tinh => <option key={tinh.maTinhThanh} value={tinh.maTinhThanh}>{tinh.tenTinhThanh}</option>)}
-              </select>
-            </div>
+            <div className={styles.gridRow}>
+                <div className={styles.formGroup}>
+                <label className={styles.label}>Tỉnh/Thành phố <span style={{color:'red'}}>*</span></label>
+                <select 
+                    className={`${styles.select} ${errors.province ? styles.inputError : ''}`}
+                    value={province} 
+                    onChange={e => {setProvince(e.target.value); if(errors.province) setErrors({...errors, province: null})}}
+                >
+                    <option value="">Chọn tỉnh/thành</option>
+                    {tinhThanhList.map(t => <option key={t.maTinhThanh} value={t.maTinhThanh}>{t.tenTinhThanh}</option>)}
+                </select>
+                </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Quận/Huyện</label>
-              <select className={styles.select} value={district} onChange={e => setDistrict(e.target.value)} required>
-                <option value="">Chọn quận/huyện</option>
-                {quanHuyenList.map(quan => <option key={quan.maQuanHuyen} value={quan.maQuanHuyen}>{quan.tenQuanHuyen}</option>)}
-              </select>
+                <div className={styles.formGroup}>
+                <label className={styles.label}>Quận/Huyện <span style={{color:'red'}}>*</span></label>
+                <select 
+                    className={`${styles.select} ${errors.district ? styles.inputError : ''}`}
+                    value={district} 
+                    onChange={e => {setDistrict(e.target.value); if(errors.district) setErrors({...errors, district: null})}}
+                >
+                    <option value="">Chọn quận/huyện</option>
+                    {quanHuyenList.map(q => <option key={q.maQuanHuyen} value={q.maQuanHuyen}>{q.tenQuanHuyen}</option>)}
+                </select>
+                </div>
             </div>
           </div>
         </div>
 
         <div className={styles.buttonGroup}>
-          <button type="submit" className={styles.submitBtn}>Cập nhật Tin</button>
+          <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+             {isSubmitting && <span className={styles.spinner}></span>}
+             {isSubmitting ? "Đang cập nhật..." : "Cập nhật Tin"}
+          </button>
         </div>
       </form>
     </div>

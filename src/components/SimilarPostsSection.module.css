@@ -284,3 +284,66 @@
   border-color: #d0d0d0;
   text-decoration: none;
 }
+.previewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Đảm bảo video full khung hình như ảnh */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; /* Nằm trên ảnh nền (ảnh nền mặc định z-index 0) */
+  background-color: #000; /* Màu nền đen trong lúc load video */
+}
+
+/* Cập nhật lại container chứa ảnh để hỗ trợ video absolute */
+.cardImageWrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #f8f8f8;
+  overflow: hidden;
+  position: relative; 
+}
+
+/* Cập nhật z-index cho Badge và Time để nó luôn nổi trên video */
+.timeOverlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 10; /* ⭐ Quan trọng: Cao hơn video */
+}
+
+.mediaBadgesContainer {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px; /* Tăng khoảng cách giữa icon video và số lượng ảnh */
+  z-index: 10; /* ⭐ Quan trọng: Cao hơn video */
+}
+
+.badgeItem {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  height: 20px; /* Cố định chiều cao cho đều */
+  min-width: 24px;
+}
+
+/* Style riêng cho badge Video để giống thiết kế */
+.videoBadge {
+    /* Có thể thêm màu đỏ hoặc giữ đen tùy thích */
+    background-color: rgba(0, 0, 0, 0.7); 
+}

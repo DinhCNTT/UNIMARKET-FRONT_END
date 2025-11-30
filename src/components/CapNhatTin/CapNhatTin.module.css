@@ -300,3 +300,136 @@
   .dynamicGrid { grid-template-columns: 1fr; }
   .form { padding: 20px; }
 }
+/* 1. Loading Skeleton */
+.skeleton {
+  background: #eee;
+  background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+  border-radius: 6px;
+  background-size: 200% 100%;
+  animation: shine 1.5s linear infinite;
+}
+@keyframes shine { to { background-position-x: -200%; } }
+
+.skeletonInput { height: 45px; width: 100%; margin-bottom: 20px; }
+.skeletonBox { height: 200px; width: 100%; margin-bottom: 20px; }
+/*2*/
+.floatingToast {
+  position: fixed;
+  top: 30px;                /* Cách mép trên 30px */
+  left: 50%;                /* Căn giữa chiều ngang */
+  transform: translateX(-50%); /* Căn chính giữa chuẩn xác */
+  
+  display: flex;
+  align-items: center;
+  gap: 12px;                /* Khoảng cách giữa icon và chữ */
+  
+  min-width: 300px;         /* Độ rộng tối thiểu gọn gàng */
+  padding: 10px 20px;       /* Padding nhỏ gọn */
+  
+  background-color: white;
+  border-radius: 50px;      /* Bo tròn dạng viên thuốc (Pill shape) */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); /* Đổ bóng mềm, sâu */
+  
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  z-index: 9999;
+  
+  opacity: 0;
+  animation: slideDownFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Hiệu ứng xuất hiện: Trượt từ trên xuống + Fade in */
+@keyframes slideDownFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Style cho Success (Thành công) */
+.successToast {
+  border-left: none; /* Bỏ viền cũ */
+}
+.successToast::before {
+  content: "✓";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Style cho Error (Lỗi) */
+.errorToast {
+  border-left: none;
+}
+.errorToast::before {
+  content: "!";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* 3. Spinner Loading */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* 4. Validation Errors */
+.inputError {
+  border-color: #dc3545 !important;
+  background-color: #fff8f8 !important;
+}
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+}
+.errorText {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+/* 5. Utility Layouts */
+.gridRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.suffix {
+  position: absolute;
+  right: 15px;
+  top: 40px; /* Căn chỉnh tùy thuộc vào label height */
+  color: #666;
+  font-weight: 600;
+  pointer-events: none;
+}
+.submitBtn:disabled {
+  background-color: #ffbca8;
+  cursor: not-allowed;
+  transform: none;
+}
