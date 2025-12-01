@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import TopNavbar from "../components/TopNavbar";
+import TopNavbar from "./TopNavbar/TopNavbar";
 import { useNavigate } from "react-router-dom";
 import styles from "./PostForm.module.css";
 

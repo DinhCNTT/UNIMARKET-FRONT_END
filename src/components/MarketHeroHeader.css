@@ -1,239 +1,572 @@
+/* src/components/MarketHeroHeader/MarketHeroHeader.css */
+
+/* =========================================
+   1. WRAPPER & ANIMATION LOGIC (Giữ nguyên)
+   ========================================= */
 .mp-hero-wrapper {
   position: relative;
   width: 100%;
   transition: opacity 200ms ease, transform 200ms ease;
 }
 
-/* Instead of removing the hero from the layout (display:none) we hide it visually
-   to prevent layout shifts that can change scroll position and cause flicker.
-   Keep it in the DOM but invisible and non-interactive when not active. */
 body:not(.mp-hero-active) .mp-hero-wrapper {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transform: translateY(-6px);
 }
+
 body.mp-hero-active .mp-hero-wrapper {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: none;
 }
-.mp-top-info{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 24px;
-  background: #e02749;
-  color:#fff;
-  position: fixed; /* keep top info like TopNavbar */
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  z-index: 1202; /* above other hero elements */
-}
-.mp-logo{font-weight:800;font-size:20px}
-.mp-main-menu{display:flex;gap:16px}
-.mp-link{color:#fff;text-decoration:none}
-.mp-right{display:flex;gap:10px}
 
-.mp-search-row{
-  --mp-search-offset: 340px; /* tuned value so search bar sits nicely below the top header */
-  background: transparent; /* let the banner show through */
-  padding: 0 24px 0 24px;
-  margin-top: 64px; /* sits below the fixed top header */
-  position: relative;
-  z-index: 1200; /* ensure search sits above banner */
-}
-.mp-search-inner{max-width:1200px;margin:0 auto;display:flex;gap:12px;align-items:center}
-.mp-search-input{flex:1}
-.mp-search-input .SearchBarContainer{box-shadow:0 12px 36px rgba(0,0,0,0.12);border-radius:10px;overflow:hidden}
-.mp-search-inner{
-  /* pull the search inner up so it overlaps the banner below. Uses CSS var for easy tuning */
-  position: relative;
-  top: var(--mp-search-offset);
-  z-index: 1300;
-}
-
-/* ===== Chotot-like prefixed styles (aw__*) for hero search visual ===== */
-.mp-search-inner .aw__i12y333q {
+/* =========================================
+   2. TOP HEADER (LOGO)
+   ========================================= */
+.mp-hero-top {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 8px 10px;
-  box-shadow: 0 8px 24px rgba(15, 15, 15, 0.12);
-  border: 1px solid rgba(0,0,0,0.06);
-}
-
-.mp-search-inner .aw__c2ebkom {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-right: 1px solid rgba(0,0,0,0.04);
-  color: #333;
-  font-weight: 600;
-  font-size: 13px;
-  background: transparent;
-  border-radius: 8px;
-}
-
-/* Target the actual button element inside the category wrapper so the visible
-   control gets the dark background and white text like the top navbar style. */
-.mp-search-inner .aw__c2ebkom > button.aw__ss0v7ub,
-.mp-search-inner .aw__c2ebkom > button.aw__c1deuj6q {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: #ffffff ; /* white background */
-  color: #111 ; /* black text */
-  border: 1px solid #ffffff ; /* white frame */
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.mp-search-inner .aw__c2ebkom > button.aw__ss0v7ub:hover,
-.mp-search-inner .aw__c2ebkom > button.aw__c1deuj6q:hover {
-  background: #f7f7f7 ;
-}
-
-.mp-search-inner .aw__ss0v7ub {
-  line-height: 1;
-}
-
-.mp-search-inner .aw__cf5h6c0 {
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  color: #888;
-}
-
-.mp-search-inner .aw__tknn46t {
-  flex: 1;
-  display: block;
-}
-
-/* When SearchBar is rendered inside the hero we WANT the location selector and search button
-   to be visible and functional (they reuse SearchBar's existing logic). So ensure they are shown.
-   We will still hide the decorative duplicate buttons provided in the aw__ wrapper. */
-.mp-search-inner .aw__tknn46t .SearchBarLocation {
-  display: flex ;
-  align-items: center;
-  gap: 6px;
-  position: relative; /* so its dropdown anchors correctly */
-}
-.mp-search-inner .aw__tknn46t .SearchBarBtn {
-  display: flex ;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 36px;
-  border-radius: 8px;
-}
-
-/* Expand the input inside SearchBar to take available space within our aw__ wrapper */
-.mp-search-inner .aw__tknn46t .SearchBarContainer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  background: transparent;
-  box-shadow: none;
-}
-
-.mp-search-inner .aw__tknn46t .SearchBarContainer input {
-  font-size: 15px;
-  padding: 8px 10px;
-  color: #222;
-}
-
-.mp-search-inner .aw__tknn46t .SearchBarSuggestionsDropdown {
-  left: 0 ;
-  right: 0 ;
-  margin-top: 10px;
-  border-radius: 8px;
-  box-shadow: 0 12px 40px rgba(20,20,20,0.14);
-}
-
-.mp-search-inner .aw__a6j9p2u { display: none; /* decorative duplicate controls in wrapper - hidden visually */ }
-
-/* primary search button on right (decorative wrapper) kept hidden because SearchBar.Btn exists */
-.mp-search-inner .aw__s1vpqu7q { display: none; }
-
-/* small responsive tweaks */
-@media (max-width:900px){
-  .mp-search-inner .aw__i12y333q{padding:8px}
-  .mp-search-inner .aw__c2ebkom{display:none}
-}
-/* ===== end prefixed styles ===== */
-.mp-location-btn{padding:10px 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:#fff}
-.mp-search-btn{padding:12px 18px;border-radius:8px;background:#ff9900;color:#fff;border:none;font-weight:700}
-/* small visual lift to make the search row clearly visible */
-.mp-search-row .mp-search-inner{background:transparent}
-
-body.mp-hero-active .top-navbar {
-  opacity: 1;
-  pointer-events: auto;
-  z-index: 1400;
-  padding-bottom: 26px;
-}
-
-body.mp-hero-active .top-navbar .dropdown,
-body.mp-hero-active .top-navbar .nav-search {
-  display: none ;
-}
-
-.mp-hero-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 24px;
-  color:#fff;
+  padding: 12px 24px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 64px;
   z-index: 1202;
+  /* background: #fff; (Thêm nếu cần nền trắng khi cuộn) */
 }
-.mp-hero-top .nav-left{display:flex;align-items:center;gap:16px}
-.mp-hero-top .logo-link{display:inline-flex;align-items:center}
-.mp-hero-top .logo-img{height:44px;width:auto;display:block}
-.mp-hero-top .nav-left{align-items:center;gap:18px}
 
-/* Ensure the top navbar area has space for a visible logo on the left */
-.mp-hero-top .logo-link{display:inline-flex;align-items:center}
-.mp-hero-top .logo{font-weight:800;font-size:20px}
-.mp-hero-top .main-menu{display:flex;gap:12px}
-.mp-hero-top .menu-link{color:#fff;text-decoration:none}
-.mp-hero-top .nav-right{display:flex;align-items:center;gap:10px}
+.mp-hero-top .logo-link {
+  display: inline-flex;
+  align-items: center;
+}
+.mp-hero-top .logo-img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
 
-/* ensure banner (slideshow) starts after search-row when header is fixed */
+/* =========================================
+   3. SEARCH ROW LAYOUT
+   ========================================= */
+.mp-search-row {
+  --mp-search-offset: 120px; 
+  background: transparent;
+  padding: 0 24px;
+  margin-top: 64px;
+  position: relative;
+  
+  /* Z-index cao để đè lên TopNavbar */
+  z-index: 2200; 
+  
+  top: var(--mp-search-offset);
+}
+
+.mp-search-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* --- HERO SEARCH BAR CONTAINER --- */
+.hero-search-bar {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0 8px 0 16px; 
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  height: 66px; 
+  gap: 12px;
+  position: relative; /* Để dropdown không bị che */
+}
+
+/* =========================================
+   4. NÚT DANH MỤC & DROPDOWN DANH MỤC
+   ========================================= */
+.search-category-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.search-category-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  white-space: nowrap;
+  height: 100%;
+}
+
+.icon-chevron {
+  display: flex;
+  margin-top: 2px;
+}
+
+/* Dropdown Content */
+.hero-dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  min-width: 240px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 8px 0;
+  margin-top: 14px;
+  z-index: 2300; 
+}
+
+.hero-dropdown-content::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 30px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.hero-parent-item { position: relative; }
+.hero-parent-link {
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.hero-parent-link:hover { background-color: #f7f7f7; color: #ffba00; }
+.hero-cat-icon { width: 22px; height: 22px; object-fit: contain; }
+
+.hero-sub-menu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: #fff;
+  min-width: 220px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 8px 0;
+  display: none;
+}
+.hero-parent-item:hover .hero-sub-menu { display: block; }
+.hero-sub-link { padding: 10px 16px; font-size: 14px; color: #555; cursor: pointer; }
+.hero-sub-link:hover { background-color: #f7f7f7; color: #ffba00; }
+
+/* Vạch ngăn cách */
+.search-divider {
+  width: 1px;
+  height: 32px;
+  background-color: #e0e0e0;
+  margin: 0 6px;
+}
+
+/* =========================================
+   5. KHU VỰC INPUT & GỢI Ý (Đã cập nhật mới)
+   ========================================= */
+.search-input-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+  position: relative; /* Quan trọng để định vị dropdown gợi ý */
+}
+
+.search-icon {
+  display: flex;
+  align-items: center;
+  color: #777;
+  margin-left: 4px;
+  transform: scale(1.1);
+}
+
+/* Input field style trực tiếp */
+.hero-input-field {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  padding: 0;
+}
+.hero-input-field::placeholder {
+  color: #999;
+  font-weight: 400;
+}
+
+/* --- DROPDOWN GỢI Ý & LỊCH SỬ (Styles mới thay thế SearchBar.css) --- */
+.SearchBarSuggestionsDropdown {
+  position: absolute;
+  /* Top và Left đã được set inline trong JSX, nhưng set ở đây làm fallback */
+  top: 60px; 
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 2500;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+}
+
+.SearchBarSuggestionsHeader {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  background-color: #f9f9f9;
+  margin-bottom: 4px;
+}
+
+.SearchBarSuggestionItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  gap: 12px;
+}
+
+.SearchBarSuggestionItem:hover {
+  background-color: #f5f5f5;
+}
+
+.SearchBarSuggestionIcon {
+  color: #888;
+  font-size: 14px;
+  min-width: 16px;
+}
+
+.SearchBarSuggestionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.SearchBarSuggestionTitle {
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.SearchBarSuggestionCategory {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Highlight text */
+.SearchBarSuggestionHighlight {
+  font-weight: 700;
+  color: #333;
+}
+
+/* Lịch sử tìm kiếm & Nút xóa */
+.SearchBarHistoryItem {
+  justify-content: space-between;
+}
+.SearchBarHistoryIcon {
+  color: #aaa;
+}
+.SearchBarHistoryDelete {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.SearchBarHistoryDelete:hover {
+  color: #ff4d4f;
+}
+
+/* Trạng thái Empty/Loading */
+.SearchBarSuggestionEmpty, .SearchBarSuggestionLoading {
+  padding: 20px;
+  text-align: center;
+  color: #777;
+  font-size: 14px;
+}
+
+/* =========================================
+   6. NÚT ĐỊA ĐIỂM & DROPDOWN (Đã cập nhật mới)
+   ========================================= */
+.search-location-wrapper {
+  margin-right: 4px;
+  position: relative; /* Để định vị dropdown địa điểm */
+}
+
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 16px;
+  height: 50px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.location-btn:hover {
+  border-color: #bbb;
+  background: #f9f9f9;
+}
+
+.loc-text {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dropdown chọn thành phố */
+.SearchBarLocationDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  z-index: 2400;
+  margin-top: 8px;
+}
+
+.SearchBarLocationOption {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.SearchBarLocationOption:hover {
+  background-color: #fff9e6; /* Màu vàng nhạt khi hover */
+  color: #dfa400;
+}
+
+/* =========================================
+   7. NÚT TÌM KIẾM
+   ========================================= */
+.hero-search-btn {
+  background-color: #FFD600;
+  color: #111;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  padding: 0 30px;
+  height: 50px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.hero-search-btn:hover { background-color: #ffca00; }
+
+/* Banner Spacer */
 .mp-search-row + .banner-container,
-.mp-search-row + .banner-slider,
-.mp-search-row + .banner {
-  /* push the banner down slightly so it doesn't sit too close to the search row */
-  margin-top: -100px; /* adjust this value if you want more/less spacing */
+.mp-search-row + .banner-slider { margin-top: -100px; }
+
+/* =========================================
+   8. RESPONSIVE
+   ========================================= */
+@media (max-width: 900px) {
+  .mp-search-inner { max-width: 100%; }
+  .hero-search-bar { padding: 8px; height: auto; flex-wrap: wrap; }
+  .search-category-btn { display: none; }
+  .search-divider { display: none; }
+  .search-location-wrapper { display: none; }
+  
+  .hero-search-btn { width: 100%; margin-top: 10px; height: 46px; }
+  
+  .search-input-area { 
+    height: 46px; 
+    border-bottom: 1px solid #eee; 
+    width: 100%; 
+  }
+  
+  /* Điều chỉnh dropdown trên mobile */
+  .SearchBarSuggestionsDropdown {
+    width: 100% !important; /* Ghi đè inline style */
+    left: 0 !important;
+    top: 50px !important;
+  }
 }
 
-/* when user scrolls down, body.mp-hero-active removed and TopNavbar (existing) will re-appear with its scrolled styles */
+/* Logic ẩn hiện TopNavbar cũ khi Hero Active */
+body.mp-hero-active .top-navbar {
+  opacity: 1; pointer-events: auto; z-index: 1400; padding-bottom: 26px;
+}
+body.mp-hero-active .top-navbar .dropdown,
+body.mp-hero-active .top-navbar .nav-search { display: none; }
 
-@media (max-width:900px){
-  .mp-search-inner{flex-direction:column;align-items:stretch}
-  .mp-category,.mp-location-btn{width:100%}
+.LocationPopupCard {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px; /* Độ rộng thoải mái hơn */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  padding: 0; /* Padding xử lý bên trong */
+  z-index: 2400;
+  margin-top: 12px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* Responsive adjustments: reduce overlap on smaller screens */
-@media (max-width:600px){
-  .mp-search-row{--mp-search-offset: -32px}
+/* Header: Back btn + Title */
+.LocationPopupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Căn giữa tiêu đề */
+  position: relative;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-@media (max-width:400px){
-  .mp-search-row{--mp-search-offset: -18px}
-  .mp-search-inner .SearchBarContainer{box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+.LocationBackBtn {
+  position: absolute;
+  left: 16px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.LocationPopupTitleText {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+}
+
+/* Search Box */
+.LocationSearchWrapper {
+  padding: 12px 16px;
+  position: relative;
+}
+
+.LocationSearchIcon {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 14px;
+}
+
+.LocationSearchInput {
+  width: 100%;
+  height: 40px;
+  background-color: #f5f5f5; /* Màu nền xám nhạt giống ảnh */
+  border: none;
+  border-radius: 20px; /* Bo tròn pill shape */
+  padding: 0 16px 0 36px; /* Padding left né icon */
+  font-size: 14px;
+  color: #333;
+  outline: none;
+}
+
+.LocationSearchInput:focus {
+  background-color: #eee;
+}
+
+/* List Items Container */
+.LocationListWrapper {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0 8px 8px 8px;
+}
+
+/* Individual Item */
+.LocationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.LocationItem:hover {
+  background-color: #f9f9f9;
+}
+
+.LocationItemName {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+
+.LocationItemName.active {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Check Icon (Selected) */
+.LocationCheckIcon {
+  background-color: #FFD600; /* Vàng chuẩn */
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* Radio Circle (Unselected) */
+.LocationRadioCircle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+}
+
+.LocationEmpty {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
 }

@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import PasswordChange from "./PasswordChange";
 import PersonalInfo from "./PersonalInfo";
 import "./AccountSettings.css";
-import TopNavbar from "../TopNavbar";
+import TopNavbar from "../TopNavbar/TopNavbar";
 import { useNavigate } from "react-router-dom";
 
 const AccountSettings = () => {

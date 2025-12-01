@@ -6,7 +6,7 @@ import { usePostDetails } from "../hooks/usePostDetails";
 import { formatPrice, getMediaUrl } from "../utils/formatters";
 
 // --- IMPORTS TỪ CẢ 2 CODE ---
-import TopNavbar from "../components/TopNavbar";
+import TopNavbar from "./TopNavbar/TopNavbar";
 import FloatingProductBox from "../components/FloatingProductBox";
 import PostImageCarousel from "../components/PostImageCarousel";
 import PostDetailsInfo from "../components/PostDetailsInfo"; // Check lại đường dẫn import đúng file của bạn

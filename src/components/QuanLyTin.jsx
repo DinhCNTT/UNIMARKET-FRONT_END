@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fa';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import "./QuanLyTin.css";
-import TopNavbar from "../components/TopNavbar";
+import TopNavbar from "./TopNavbar/TopNavbar";
 import { NotificationContext } from "./NotificationsModals/context/NotificationContext";
 
 const trangThaiMap = {

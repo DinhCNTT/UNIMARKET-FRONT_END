@@ -5,7 +5,7 @@ import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
 import { LocationContext } from "../context/LocationContext";
 import { Link } from "react-router-dom";
-import TopNavbar from "../components/TopNavbar";
+import TopNavbar from "./TopNavbar/TopNavbar";
 import LocMoRong from "../components/LocMoRong";
 
 const timeAgo = (dateString) => {

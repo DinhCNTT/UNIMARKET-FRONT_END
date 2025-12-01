@@ -1,14 +1,16 @@
 .category-container {
-  width: 100%;
-  margin: 415px auto 20px auto; /* thêm 20px cách dưới */
+  width: 95%;           
+  max-width: 1300px;    
+  margin: 150px auto 20px auto; 
   text-align: center;
   position: relative;
   padding: 20px;
-  background-color: #FFFAFA;
+  background-color: #FFF; 
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transform: translateX(7px);
+  transform: translateX(4px); /* đẩy qua trái 7px */
 }
+
 
 .category-title {  
     font-size: 20px;

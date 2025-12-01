@@ -1,0 +1,229 @@
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: auto; 
+  margin-top: 1px; 
+}
+
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.logoImg {
+  height: 44px;
+  width: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.logoImg:hover {
+  transform: scale(1.05);
+}
+
+/* Main Menu Container */
+.mainMenu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- STYLE CHO MENU DANH MỤC (CŨ) --- */
+.dropdown {
+  position: relative;
+  cursor: pointer;
+}
+.dropdownTitle {
+  font-family: "Inter", "Poppins", "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFB800;
+  padding: 10px 20px;
+  background: #fff;
+  border-radius: 30px;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.1);
+}
+
+.dropdownTitle:hover {
+  background: #f8f8f8;
+  transform: translateY(-1px);
+}
+
+.scrolledText {
+  color: #333 !important;
+  background: #f5f5f5 !important;
+  border: 1px solid #eee;
+}
+
+.dropdownContent {
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  transition: opacity 0.3s ease, visibility 0.3s;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  opacity: 0;
+  visibility: hidden;
+  width: 260px;
+  max-height: 500px;
+  overflow: visible;
+  z-index: 2000;
+  margin-top: 10px;
+}
+
+.dropdown:hover .dropdownContent {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- STYLE CHO MENU NGƯỜI BÁN (ĐÃ SỬA GỌN GÀNG) --- */
+.sellerDropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.sellerTitle {
+  font-family: "Inter", "Poppins", "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  padding: 10px 20px;
+  background: transparent;
+  border-radius: 30px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+.sellerTitle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #000;
+}
+
+/* --- ĐÂY LÀ PHẦN QUAN TRỌNG ĐỂ MENU HIỂN THỊ --- */
+.sellerContent {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  border: 1px solid #eee;
+  padding: 8px 0;
+  width: 220px;
+  font-family: "Inter", "Roboto", "SF Pro Display", "Arial", sans-serif;
+  animation: fadeInSeller 0.2s ease-out;
+}
+
+/* --- ANIMATION --- */
+@keyframes fadeInSeller {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- MENU ITEM --- */
+.sellerItem {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #222;
+  font-weight: 600;           
+  font-size: 15px;
+  letter-spacing: -0.2px;      
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.sellerItem:hover {
+  background-color: #fff7ed;
+  color: #ff8800;
+}
+
+/* --- ICONS --- */
+.itemIcon {
+  font-size: 18px;
+  color: #666;                 
+  transition: color 0.18s ease;
+}
+
+.sellerItem:hover .itemIcon {
+  color: #ff8800;
+}
+
+
+/* --- CÁC STYLE CON CỦA DANH MỤC (GIỮ NGUYÊN) --- */
+.parentCategory {
+  padding: 10px;
+  font-weight: bold;
+  color: #333333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  position: relative;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.parentCategory:hover {
+  background-color: #fff7ed;
+  color: #ff9900;
+}
+
+.categoryIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  object-fit: contain;
+}
+
+.subMenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: white;
+  width: 220px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  display: none;
+  z-index: 2001;
+  border-radius: 6px;
+  white-space: nowrap;
+  padding: 5px 0;
+}
+
+.parentCategory:hover .subMenu {
+  display: block;
+}
+
+.subLink {
+  padding: 10px 15px;
+  text-decoration: none;
+  display: block;
+  color: #555;
+  font-weight: normal;
+  font-size: 14px;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.2s;
+}
+
+.subLink:last-child {
+  border-bottom: none;
+}
+
+.subLink:hover {
+  background-color: #f4f4f4;
+  color: #ff9900;
+}

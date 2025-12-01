@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import TopNavbar from "../components/TopNavbar";
+import TopNavbar from "./TopNavbar/TopNavbar";
 import "./CapNhatTin.css";
 
 const CapNhatTin = () => {
