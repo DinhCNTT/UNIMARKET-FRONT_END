@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaPlay, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import axios from "axios";
 import { toast } from 'react-hot-toast';
 import defaultAvatar from "../assets/default-avatar.png";
 import { AuthContext } from '../context/AuthContext';
-import "./VideoSearchDetailViewer.css";
+import styles from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer.module.css";
+import commentStyles from "./CommentSection/CommentSection.module.css";
 export default function VideoSearchDetailViewer() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,17 +33,15 @@ export default function VideoSearchDetailViewer() {
   const [totalCommentCount, setTotalCommentCount] = useState(0);
   const [hideUserInfo, setHideUserInfo] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [showCharCount, setShowCharCount] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const [showReplyCharCount, setShowReplyCharCount] = useState(false);
   const [activeMenuCommentId, setActiveMenuCommentId] = useState(null);
   const [replyContentMap, setReplyContentMap] = useState({});
   const [activeReplyMap, setActiveReplyMap] = useState({});
   const [expandedComments, setExpandedComments] = useState({});
-  const [volume, setVolume] = useState(1);
+  // Start at 50% volume by default (avoid auto-muting on open)
+  const [volume, setVolume] = useState(0.5);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [expandedRepliesMap, setExpandedRepliesMap] = useState({});
   const [loading, setLoading] = useState(false);
   
@@ -63,6 +62,37 @@ export default function VideoSearchDetailViewer() {
   const replyTextareaRef = useRef(null);
   const mainCommentRef = useRef(null);
   const hideVolumeTimeoutRef = useRef(null);
+  const savedVolumeRef = useRef(0.5);
+
+  // Keep actual media elements (video/audio) in sync with React state
+  // ✅ Current video with error handling (moved up so dependencies are initialized)
+  const video = videoList && videoList.length > 0 && currentIndex >= 0 && currentIndex < videoList.length 
+    ? videoList[currentIndex] 
+    : null;
+  const videoUrl = video?.videoUrl;
+
+  useEffect(() => {
+    if (playerRef.current) {
+      try {
+        playerRef.current.volume = volume;
+        playerRef.current.muted = isMuted;
+      } catch (e) {
+        // ignore if not ready
+      }
+    }
+    if (bgPlayerRef.current) {
+      try {
+        // background blur should remain muted always
+        bgPlayerRef.current.muted = true;
+      } catch (e) {}
+    }
+    if (audioRef.current) {
+      try {
+        audioRef.current.volume = volume;
+        audioRef.current.muted = isMuted;
+      } catch (e) {}
+    }
+  }, [volume, isMuted, videoUrl]);
   
   // Context
   const { user } = useContext(AuthContext) || {};
@@ -94,21 +124,19 @@ export default function VideoSearchDetailViewer() {
         setLoading(false);
       }
     };
-
     fetchSingleVideo();
   }, [maTinDang, token, navigate, safeVideoList.length]);
 
-  // ✅ Current video với error handling
-  const video = videoList && videoList.length > 0 && currentIndex >= 0 && currentIndex < videoList.length 
-    ? videoList[currentIndex] 
-    : null;
-  const videoUrl = video?.videoUrl;
+  // ✅ Current video với error handling (declaration moved above)
 
   // ✅ Ẩn mô tả video khi cuộn comment xuống, giống TikTok
   useEffect(() => {
     const handleScroll = () => {
-      if (!scrollRef.current) return;
-      const scrollY = scrollRef.current.scrollTop;
+      const el = scrollRef.current;
+      if (!el) return;
+      // Ignore programmatic scrolls initiated by our reply-open logic
+      if (el.dataset && el.dataset.programmaticScroll === '1') return;
+      const scrollY = el.scrollTop;
       setHideUserInfo(scrollY > 60);
     };
     
@@ -257,6 +285,17 @@ export default function VideoSearchDetailViewer() {
 
     if (!confirmed) return;
 
+    // ✅ Check token trước delete
+    if (!token) {
+      toast.error("Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.", {
+        style: {
+          background: "#ef4444",
+          color: "#fff",
+        },
+      });
+      return;
+    }
+
     const loadingToast = toast.loading("Đang xoá bình luận...");
 
     try {
@@ -283,19 +322,42 @@ export default function VideoSearchDetailViewer() {
       });
     } catch (err) {
       toast.dismiss(loadingToast);
-      toast.error("Lỗi khi xoá bình luận!", {
-        style: {
-          background: "#ef4444",
-          color: "#fff",
-        },
-      });
+      
+      // ✅ Show chi tiết lỗi
+      if (err.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.", {
+          style: {
+            background: "#ef4444",
+            color: "#fff",
+          },
+        });
+      } else if (err.response?.status === 403) {
+        toast.error("Bạn không có quyền xoá bình luận này!", {
+          style: {
+            background: "#ef4444",
+            color: "#fff",
+          },
+        });
+      } else {
+        toast.error("Lỗi khi xoá bình luận!", {
+          style: {
+            background: "#ef4444",
+            color: "#fff",
+          },
+        });
+      }
       fetchComments();
     }
   };
 
   // ✅ Handle submit comment
   const submitComment = async () => {
-    if (!token || !newComment.trim() || !video?.maTinDang) return;
+    if (!token || !newComment.trim() || !video?.maTinDang) {
+      if (!token) {
+        toast.error("Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.");
+      }
+      return;
+    }
     
     try {
       await axios.post(
@@ -305,19 +367,86 @@ export default function VideoSearchDetailViewer() {
       );
       setNewComment("");
       fetchComments();
+      toast.success("Bình luận thành công! ✅");
     } catch (err) {
       console.error('Lỗi khi gửi bình luận:', err);
-      toast.error("Lỗi khi gửi bình luận");
+      
+      if (err.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.");
+      } else if (err.response?.status === 400) {
+        toast.error("Bình luận không được để trống!");
+      } else {
+        toast.error("Lỗi khi gửi bình luận");
+      }
     }
   };
 
   // ✅ Toggle hiển thị ô nhập reply cho từng comment
   const toggleChildReplyInput = (commentId) => {
-    setActiveReplyMap((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
+    // Toggle state and scroll into view when opening
+    setActiveReplyMap((prev) => {
+      const opening = !prev[commentId];
+      const next = { ...prev, [commentId]: !prev[commentId] };
+      if (opening) {
+        // wait a tick so DOM renders the reply node
+        setTimeout(() => {
+            const el = document.getElementById(`reply-${commentId}`);
+            const parent = scrollRef.current;
+            if (el && parent) {
+              // Smooth scroll using manual animation (easeOutQuad) + immediate focus when done
+              const elRect = el.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              const offset = elRect.top - parentRect.top + parent.scrollTop;
+              const paddingAbove = 140;
+              const target = Math.max(0, offset - paddingAbove);
+              const start = parent.scrollTop;
+              const diff = target - start;
+              const duration = 350; // ms
+              const startTime = Date.now();
+
+              try { parent.dataset.programmaticScroll = '1'; } catch (e) {}
+
+              const animate = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                // easeOutQuad: 1 - (1 - t)^2
+                const eased = 1 - Math.pow(1 - progress, 2);
+                parent.scrollTop = start + diff * eased;
+
+                if (progress < 1) {
+                  requestAnimationFrame(animate);
+                } else {
+                  // Scroll finished, now focus and resize
+                  try {
+                    const ta = el.querySelector('textarea');
+                    if (ta) {
+                      try { ta.focus({ preventScroll: true }); } catch (e) {}
+                      ta.style.height = 'auto';
+                      ta.style.height = ta.scrollHeight + 'px';
+                    }
+                  } catch (e) {}
+                  try { delete parent.dataset.programmaticScroll; } catch (e) {}
+                }
+              };
+              animate();
+            } else if (el) {
+              // fallback if no parent
+              el.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+              const ta = el.querySelector('textarea');
+              if (ta) {
+                try { ta.focus({ preventScroll: true }); } catch (e) {}
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+              }
+            }
+          }, 80);
+      }
+      return next;
+    });
   };
 
   // ✅ Gửi reply cho comment
-  const handleReplySubmit = async (parentCommentId, replyContent) => {
+  const handleReplySubmit = useCallback(async (parentCommentId, replyContent) => {
     if (!token || !replyContent?.trim() || !video?.maTinDang) return;
     
     // Optimistic UI
@@ -354,7 +483,7 @@ export default function VideoSearchDetailViewer() {
       toast.error("Lỗi khi gửi phản hồi");
       fetchComments();
     }
-  };
+  }, [token, video?.maTinDang, currentUserId, user?.fullName, user?.userName, user?.avatarUrl, fetchComments]);
 
   // ✅ Hàm làm phẳng replies
   const flattenReplies = (replies, parentUser) => {
@@ -371,33 +500,50 @@ export default function VideoSearchDetailViewer() {
     return flat;
   };
 
-  // ✅ Render comments cha và replies phẳng
-  const renderCommentsFlat = (commentList) => {
-    return commentList.map((comment) => {
-      const isMenuOpen = activeMenuCommentId === comment.id;
-      const hasReplies = comment.replies?.length > 0;
-      const flatReplies = flattenReplies(comment.replies, comment.userName);
-      const isExpanded = expandedRepliesMap[comment.id];
-      const showReplies = flatReplies.length > 1 && !isExpanded ? flatReplies.slice(0, 1) : flatReplies;
+  // ✅ Render comments cha và replies phẳng (memoized to prevent unnecessary re-renders)
+  const renderCommentsFlat = useMemo(() => {
+    return (commentList) => {
+      // Show all comments (no pagination)
+      return (
+        <>
+          {commentList.map((comment) => {
+            const isMenuOpen = activeMenuCommentId === comment.id;
+            const hasReplies = comment.replies?.length > 0;
+            const flatReplies = flattenReplies(comment.replies, comment.userName);
+            const isExpanded = expandedRepliesMap[comment.id];
+            const showReplies = flatReplies.length > 1 && !isExpanded ? flatReplies.slice(0, 1) : flatReplies;
       
       return (
-        <div key={comment.id} className="lvv-comment-item" style={{ marginLeft: 0 }}>
-          <div className="lvv-comment-wrapper">
-            <div className="lvv-comment-user-header">
-              <img src={comment.avatarUrl || defaultAvatar} className="lvv-avatar" alt="user" />
-              <div className="lvv-comment-main">
-                <div className="lvv-comment-header">
-                  <strong className="lvv-username">{comment.userName}</strong>
+        <div key={comment.id} className="comment-item" style={{ marginLeft: 0 }}>
+          <div className="comment-wrapper">
+            <div className="comment-user-header">
+              <img src={comment.avatarUrl || defaultAvatar} className="avatar" alt="user" />
+              <div className="comment-main">
+                <div className="comment-header">
+                  <strong className="username">{comment.userName}</strong>
+                  {comment.userId === currentUserId && (
+                    <div className="menu-wrapper-parent">
+                      <button
+                        className="menu-btn"
+                        onClick={() => setActiveMenuCommentId((prevId) => prevId === comment.id ? null : comment.id)}
+                      >⋯</button>
+                      {activeMenuCommentId === comment.id && (
+                        <div className="popup-menu">
+                          <button className="delete-btn" onClick={() => { handleDeleteComment(comment.id); setActiveMenuCommentId(null); }}>Xoá</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="lvv-comment-content">{comment.content}</div>
-                <div className="lvv-comment-meta">
-                  <span className="lvv-time">{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("vi-VN") : ""}</span>
-                  <button className="lvv-reply-toggle-btn" onClick={() => toggleChildReplyInput(comment.id)}>Trả lời</button>
+                <div className="comment-content">{comment.content}</div>
+                <div className="comment-meta">
+                  <span className="time">{comment.createdAt ? new Date(comment.createdAt).toLocaleDateString("vi-VN") : ""}</span>
+                  <button className="reply-toggle-btn" onClick={() => toggleChildReplyInput(comment.id)}>Trả lời</button>
                 </div>
                 {/* Ô nhập trả lời */}
                 {activeReplyMap[comment.id] && (
-                  <div className="lvv-reply-input-inline">
-                    <div className="lvv-reply-input-wrapper">
+                  <div id={`reply-${comment.id}`} className="reply-input-inline">
+                    <div className="reply-input-wrapper">
                       <textarea
                         value={replyContentMap[comment.id] || ""}
                         onChange={(e) => {
@@ -407,24 +553,27 @@ export default function VideoSearchDetailViewer() {
                           }
                         }}
                         placeholder="Trả lời..."
-                        className="lvv-reply-input textarea"
+                        className="reply-input textarea"
                         rows={1}
                         ref={(el) => {
                           if (el) {
-                            el.style.height = "auto";
-                            el.style.height = el.scrollHeight + "px";
+                            // delay resize to avoid reflow during scroll/focus
+                                setTimeout(() => {
+                              el.style.height = "auto";
+                              el.style.height = el.scrollHeight + "px";
+                            }, 700);
                           }
                         }}
                       />
-                      <div className="lvv-reply-footer">
-                        <div className="lvv-reply-actions">
+                      <div className="reply-footer">
+                        <div className="reply-actions">
                           <button
                             onClick={() => handleReplySubmit(comment.id, replyContentMap[comment.id])}
-                            className="lvv-reply-submit-btn"
+                            className="reply-submit-btn"
                             disabled={!replyContentMap[comment.id]?.trim()}
                           >Gửi</button>
                           <button
-                            className="lvv-reply-cancel-btn"
+                            className="reply-cancel-btn"
                             onClick={() => {
                               setReplyContentMap((prev) => ({ ...prev, [comment.id]: "" }));
                               setActiveReplyMap((prev) => ({ ...prev, [comment.id]: false }));
@@ -434,69 +583,54 @@ export default function VideoSearchDetailViewer() {
                       </div>
                     </div>
                     {replyContentMap[comment.id]?.length >= 30 && (
-                      <div className="lvv-char-count">{replyContentMap[comment.id].length}/150</div>
+                      <div className="char-count">{replyContentMap[comment.id].length}/150</div>
                     )}
                   </div>
                 )}
               </div>
             </div>
-            {/* Nút menu */}
-            {comment.userId === currentUserId && (
-              <div className="lvv-menu-wrapper-parent">
-                <button
-                  className="lvv-menu-btn"
-                  onClick={() => setActiveMenuCommentId((prevId) => prevId === comment.id ? null : comment.id)}
-                >⋯</button>
-                {isMenuOpen && (
-                  <div className="lvv-popup-menu">
-                    <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(comment.id); setActiveMenuCommentId(null); }}>Xoá</button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          {/* Replies phẳng với xem thêm/thu gọn */}
-          {hasReplies && (
-            <div className="lvv-replies">
+            {/* Replies phẳng với xem thêm/thu gọn */}
+            {hasReplies && (
+            <div className="replies">
               {showReplies.map((reply) => {
                 const isReplyMenuOpen = activeMenuCommentId === reply.id;
                 return (
                   <div
                     key={reply.id}
-                    className="lvv-comment-item"
+                    className="comment-item"
                     style={{ marginLeft: "1px" }}
                   >
-                    <div className="lvv-comment-wrapper" style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
-                      <img src={reply.avatarUrl || defaultAvatar} className="lvv-avatar" alt="user" style={{ marginRight: 8 }} />
-                      <div className="lvv-comment-main" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <div className={styles.commentWrapper} style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
+                      <img src={reply.avatarUrl || defaultAvatar} className="avatar" alt="user" style={{ marginRight: 8 }} />
+                      <div className="comment-main" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <strong className="lvv-username">{reply.userName}</strong>
+                          <strong className="username">{reply.userName}</strong>
                           {reply.replyTo && (
-                            <span className="lvv-reply-to" style={{ color: '#888', fontSize: 13, marginLeft: 4 }}>trả lời {reply.replyTo}</span>
+                            <span className="reply-to" style={{ color: '#888', fontSize: 13, marginLeft: 4 }}>trả lời {reply.replyTo}</span>
                           )}
                           {reply.userId === currentUserId && (
-                            <div className="lvv-menu-wrapper-child" style={{ marginLeft: '-30px' }}>
+                            <div className="menu-wrapper-child" style={{ marginLeft: '-30px' }}>
                               <button
-                                className="lvv-menu-btn"
+                                className="menu-btn"
                                 onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
                               >⋯</button>
                               {isReplyMenuOpen && (
-                                <div className="lvv-popup-menu">
-                                  <button className="lvv-delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
+                                <div className="popup-menu">
+                                  <button className="delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
                                 </div>
                               )}
                             </div>
                           )}
                         </div>
-                        <div className="lvv-comment-content">{reply.content}</div>
-                        <div className="lvv-comment-meta">
-                          <span className="lvv-time">{reply.createdAt ? new Date(reply.createdAt).toLocaleDateString("vi-VN") : ""}</span>
-                          <button className="lvv-reply-toggle-btn" onClick={() => toggleChildReplyInput(reply.id)}>Trả lời</button>
+                        <div className="comment-content">{reply.content}</div>
+                        <div className="comment-meta">
+                          <span className="time">{reply.createdAt ? new Date(reply.createdAt).toLocaleDateString("vi-VN") : ""}</span>
+                          <button className="reply-toggle-btn" onClick={() => toggleChildReplyInput(reply.id)}>Trả lời</button>
                         </div>
                         {/* Ô nhập trả lời cho reply */}
                         {activeReplyMap[reply.id] && (
-                          <div className="lvv-reply-input-inline">
-                            <div className="lvv-reply-input-wrapper">
+                          <div id={`reply-${reply.id}`} className={styles.replyInputInline}>
+                            <div className={styles.replyInputWrapper}>
                               <textarea
                                 value={replyContentMap[reply.id] || ""}
                                 onChange={(e) => {
@@ -506,24 +640,27 @@ export default function VideoSearchDetailViewer() {
                                   }
                                 }}
                                 placeholder="Trả lời..."
-                                className="lvv-reply-input textarea"
+                                className={styles.replyInput}
                                 rows={1}
                                 ref={(el) => {
                                   if (el) {
-                                    el.style.height = "auto";
-                                    el.style.height = el.scrollHeight + "px";
+                                    // delay resize to avoid reflow during scroll/focus
+                                    setTimeout(() => {
+                                      el.style.height = "auto";
+                                      el.style.height = el.scrollHeight + "px";
+                                    }, 700);
                                   }
                                 }}
                               />
-                              <div className="lvv-reply-footer">
-                                <div className="lvv-reply-actions">
+                              <div className={styles.replyFooter}>
+                                <div className={styles.replyActions}>
                                   <button
                                     onClick={() => handleReplySubmit(reply.id, replyContentMap[reply.id])}
-                                    className="lvv-reply-submit-btn"
+                                    className={styles.replySubmitBtn}
                                     disabled={!replyContentMap[reply.id]?.trim()}
                                   >Gửi</button>
                                   <button
-                                    className="lvv-reply-cancel-btn"
+                                    className={styles.replyCancelBtn}
                                     onClick={() => {
                                       setReplyContentMap((prev) => ({ ...prev, [reply.id]: "" }));
                                       setActiveReplyMap((prev) => ({ ...prev, [reply.id]: false }));
@@ -533,7 +670,7 @@ export default function VideoSearchDetailViewer() {
                               </div>
                             </div>
                             {replyContentMap[reply.id]?.length >= 30 && (
-                              <div className="lvv-char-count">{replyContentMap[reply.id].length}/150</div>
+                              <div className={styles.charCount}>{replyContentMap[reply.id].length}/150</div>
                             )}
                           </div>
                         )}
@@ -545,7 +682,7 @@ export default function VideoSearchDetailViewer() {
               {/* Nút xem thêm/thu gọn nếu có nhiều hơn 1 reply */}
               {flatReplies.length > 1 && (
                 <button
-                  className="lvv-replies-toggle-btn"
+                  className={styles.repliesToggleBtn}
                   style={{ marginLeft: -10, marginTop: 4, color: '#ffffffff', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, padding: '2px 8px', width: 'auto'}}
                   onClick={() => setExpandedRepliesMap(prev => ({ ...prev, [comment.id]: !isExpanded }))}
                 >
@@ -553,11 +690,15 @@ export default function VideoSearchDetailViewer() {
                 </button>
               )}
             </div>
-          )}
+            )}
+          </div>
         </div>
       );
-    });
-  };
+        })}
+      </>
+    );
+    };
+  }, [activeMenuCommentId, expandedRepliesMap, replyContentMap, activeReplyMap, currentUserId]);
 
   // ✅ Chuyển video khi lăn chuột trên video (chỉ trong videoList)
   useEffect(() => {
@@ -615,10 +756,41 @@ export default function VideoSearchDetailViewer() {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
+    if (newVolume > 0) savedVolumeRef.current = newVolume;
     if (playerRef.current) {
       playerRef.current.volume = newVolume;
       playerRef.current.muted = newVolume === 0;
     }
+  };
+
+  const handleToggleMute = (e) => {
+    e.stopPropagation();
+    // If currently muted or volume is 0 => unmute (restore saved volume)
+    if (isMuted || volume === 0) {
+      const restore = savedVolumeRef.current || 1;
+      setVolume(restore);
+      setIsMuted(false);
+      if (playerRef.current) {
+        playerRef.current.volume = restore;
+        playerRef.current.muted = false;
+      }
+      setShowVolumeSlider(true);
+      if (hideVolumeTimeoutRef.current) clearTimeout(hideVolumeTimeoutRef.current);
+      hideVolumeTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 4000);
+      return;
+    }
+
+    // Muting: remember current volume then set to 0
+    savedVolumeRef.current = volume || savedVolumeRef.current || 1;
+    setVolume(0);
+    setIsMuted(true);
+    if (playerRef.current) {
+      playerRef.current.volume = 0;
+      playerRef.current.muted = true;
+    }
+    setShowVolumeSlider(true);
+    if (hideVolumeTimeoutRef.current) clearTimeout(hideVolumeTimeoutRef.current);
+    hideVolumeTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 4000);
   };
 
   // ✅ Loading state
@@ -703,27 +875,22 @@ export default function VideoSearchDetailViewer() {
   }
 
   return (
-    <div className="lvv-container" onClick={() => setIsInteracted(true)}>
+    <div className={styles.container} onClick={() => setIsInteracted(true)}>
       {/* Nút quay lại */}
-      <button className="lvv-back-btn" onClick={(e) => { e.stopPropagation(); navigate(-1); }}>
+      <button className={styles.backBtn} onClick={(e) => { e.stopPropagation(); navigate(-1); }}>
         ←
       </button>
       
       {videoUrl ? (
         <>
           {/* Video nền blur */}
-          <video ref={bgPlayerRef} className="lvv-bg-blur" src={videoUrl} autoPlay loop muted playsInline />
+          <video ref={bgPlayerRef} className="bg-blur" src={videoUrl} autoPlay loop muted playsInline />
           
           {/* Nút âm lượng + thanh trượt */}
-          <div style={{ position: "fixed", bottom: 100, right: 16, zIndex: 100, display: 'flex', alignItems: 'center', gap: '12px', height: '40px' }}>
+          <div className={styles.volumeWrapper}>
             <button
-              className="lvv-volume-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMuted(!isMuted);
-                setVolume(isMuted ? 1 : volume);
-                if (playerRef.current) playerRef.current.muted = !isMuted;
-              }}
+              className="volume-btn"
+              onClick={handleToggleMute}
               onMouseEnter={() => {
                 setShowVolumeSlider(true);
                 if (volumeSliderTimeoutRef.current) clearTimeout(volumeSliderTimeoutRef.current);
@@ -736,20 +903,20 @@ export default function VideoSearchDetailViewer() {
               {isMuted || volume === 0 ? <FaVolumeMute size={22} color="#fff" /> : <FaVolumeUp size={22} color="#fff" />}
             </button>
             {showVolumeSlider && (
-              <input
+                <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.01"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="lvv-volume-slider"
+                className="volume-slider"
                 style={{ 
                   writingMode: 'bt-lr', 
                   WebkitAppearance: 'slider-vertical', 
                   height: '120px', 
                   width: '18px', 
-                  marginLeft: '10px', 
+                  marginLeft: 0, 
                   borderRadius: '8px', 
                   background: 'linear-gradient(180deg, #ff7a00 0%, #ff9500 100%)', 
                   accentColor: '#ff7a00' 
@@ -767,7 +934,7 @@ export default function VideoSearchDetailViewer() {
           </div>
           
           {/* Video chính */}
-          <div className="lvv-video-wrapper" style={{ position: "relative" }}>
+          <div className="video-wrapper" style={{ position: "relative" }}>
             <video
               ref={playerRef}
               src={videoUrl}
@@ -790,9 +957,9 @@ export default function VideoSearchDetailViewer() {
               style={{ width: "100%", height: "100%" }}
               onClick={handleVideoClick}
             />
-            {showHeartEffect && <FaHeart className="lvv-heart-effect" />}
+            {showHeartEffect && <FaHeart className="heart-effect" />}
             {!isPlaying && (
-              <div className="lvv-play-icon" onClick={() => { if (playerRef.current) playerRef.current.play(); }}>
+              <div className="play-icon" onClick={() => { if (playerRef.current) playerRef.current.play(); }}>
                 <FaPlay size={48} color="#fff" />
               </div>
             )}
@@ -804,21 +971,21 @@ export default function VideoSearchDetailViewer() {
       )}
       
       {/* OVERLAY */}
-      <div className="lvv-overlay">
+      <div className={styles.overlay}>
         {/* USER INFO */}
         {!hideUserInfo && video && (
-          <div className="lvv-user-info-wrapper">
-            <div className="lvv-user-info">
+          <div className="user-info-wrapper">
+            <div className="user-info">
               <img 
                 src={video.nguoiDang?.avatarUrl || defaultAvatar} 
                 alt="avatar" 
-                className="lvv-avatar" 
+                className="avatar" 
               />
-              <div className="lvv-user-details">
-                <strong className="lvv-user-name">
+              <div className="user-details">
+                <strong className="user-name">
                   {video.nguoiDang?.fullName || 'Người dùng'}
                 </strong>
-                <div className="lvv-location">
+                <div className={styles.location}>
                   {video.diaChi && video.quanHuyen && video.tinhThanh 
                     ? `${video.diaChi}, ${video.quanHuyen}, ${video.tinhThanh}`
                     : 'Vị trí không xác định'
@@ -826,15 +993,15 @@ export default function VideoSearchDetailViewer() {
                 </div>
               </div>
             </div>
-            <div className="lvv-video-info">
-              <h2 className="lvv-title">{video.tieuDe || 'Tiêu đề video'}</h2>
-              <p className={`lvv-description ${expanded ? "expanded" : ""}`}>
+            <div className={styles.videoInfo}>
+              <h2 className={styles.title}>{video.tieuDe || 'Tiêu đề video'}</h2>
+              <p className={`description ${expanded ? "expanded" : ""}`}>
                 {video.moTa || 'Không có mô tả'}
               </p>
               {video.moTa && video.moTa.length > 120 && (
                 <button 
                   onClick={() => setExpanded((prev) => !prev)} 
-                  className="lvv-read-more"
+                  className={styles.readMore}
                 >
                   {expanded ? "Thu gọn" : "Xem thêm"}
                 </button>
@@ -845,8 +1012,8 @@ export default function VideoSearchDetailViewer() {
         
         {/* Nút tym & comment */}
         {!hideUserInfo && (
-          <div className="lvv-actions">
-            <button onClick={handleLike} className={`lvv-like-btn ${isLiked ? "liked" : ""}`}> 
+          <div className="actions">
+            <button onClick={handleLike} className={`like-btn ${isLiked ? "liked" : ""}`}> 
               <span className="icon-circle" ref={iconCircleRef}>
                 {isLiked && showHeartEffect && <div className="heart-pulse-circle" />}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill={isLiked ? "#ff2e63" : "#ccc"}>
@@ -859,43 +1026,44 @@ export default function VideoSearchDetailViewer() {
               </span>
               <span className="count">{soTym}</span>
             </button>
-            <button onClick={() => setShowComments(!showComments)} className="lvv-comment-toggle-btn">
+            <button onClick={() => setShowComments(!showComments)} className="comment-toggle-btn">
               <svg width="24" height="24" fill="#FF7A00" viewBox="0 0 24 24">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
-              <span className="lvv-comment-count">{totalCommentCount}</span>
+              <span className={styles.commentCount}>{totalCommentCount}</span>
             </button>
           </div>
         )}
         
         {/* COMMENT SECTION */}
-        <div className={`lvv-comment-section ${hideUserInfo ? "pull-up" : ""}`}>
-          <div className="lvv-comments-title-header">
+        <div className={`comment-section ${hideUserInfo ? "pull-up" : ""} ${expanded ? "desc-expanded" : video?.moTa?.length > 120 ? "desc-long" : "desc-collapsed"}`}>
+          <div className="comments-title-header">
             <strong>Comments ({totalCommentCount})</strong>
           </div>
-          <div ref={scrollRef} className="lvv-comment-scrollable" style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}>
+          <div ref={scrollRef} className="comment-scrollable" style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}>
             {renderCommentsFlat(comments)}
+            <div className="comment-bottom-spacer" />
             
             {/* Ô nhập bình luận mới */}
-            <div className="lvv-comment-input-fixed">
-              <div className="lvv-comment-input-wrapper">
-                <div className="lvv-textarea-group">
-                  <textarea 
-                    ref={mainCommentRef} 
-                    value={newComment} 
-                    onChange={(e) => { 
-                      const text = e.target.value; 
-                      if (text.length <= 150) setNewComment(text); 
-                    }} 
-                    placeholder="Nhập bình luận..." 
-                    className="lvv-comment-input" 
-                    rows={1} 
+            <div className="comment-input-fixed">
+              <div className="comment-input-wrapper">
+                <div className="textarea-group">
+                  <textarea
+                    ref={mainCommentRef}
+                    value={newComment}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      if (text.length <= 150) setNewComment(text);
+                    }}
+                    placeholder="Nhập bình luận..."
+                    className="comment-input"
+                    rows={1}
                   />
                   {newComment.length > 50 && (
-                    <div className="lvv-char-counter">{newComment.length}/150</div>
+                    <div className="char-counter">{newComment.length}/150</div>
                   )}
                 </div>
-                <button onClick={submitComment} className="lvv-comment-submit-btn">Gửi</button>
+                <button onClick={submitComment} className="comment-submit-btn">Gửi</button>
               </div>
             </div>
           </div>

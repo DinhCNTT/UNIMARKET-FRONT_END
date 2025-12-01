@@ -1,5 +1,6 @@
 // src/components/CommentSection/CommentThread.jsx
 import React, { useState, useRef } from "react";
+import styles from "./CommentSection.module.css";
 
 // Component con để xử lý từng comment và reply của nó
 export default function CommentThread({
@@ -9,6 +10,7 @@ export default function CommentThread({
   onDelete,
   level = 0,
   parentUserName = null,
+  showMenuInline = false,
 }) {
   const [activeMenuCommentId, setActiveMenuCommentId] = useState(null);
   const [expandedComments, setExpandedComments] = useState({});
@@ -16,10 +18,74 @@ export default function CommentThread({
   const [activeReplyMap, setActiveReplyMap] = useState({});
 
   const toggleChildReplyInput = (replyId) => {
-    setActiveReplyMap((prev) => ({
-      ...prev,
-      [replyId]: !prev[replyId],
-    }));
+      setActiveReplyMap((prev) => {
+        const opening = !prev[replyId];
+        const next = { ...prev, [replyId]: !prev[replyId] };
+        if (opening) {
+          // wait a tick for DOM to render the reply input, then compute scroll target
+        setTimeout(() => {
+          const el = document.getElementById(`reply-${replyId}`);
+          // find scrollable container (prefer explicit container if available)
+          const container = document.querySelector('.comment-scrollable');
+          if (el && container) {
+            // Manual smooth scroll with easeOutQuad + immediate focus when done
+            const elRect = el.getBoundingClientRect();
+            const contRect = container.getBoundingClientRect();
+            const offset = elRect.top - contRect.top + container.scrollTop;
+            const padding = 140;
+            const target = Math.max(0, offset - padding);
+            const start = container.scrollTop;
+            const diff = target - start;
+            const duration = 350; // ms
+            const startTime = Date.now();
+            let animationId = null;
+
+            const handleUserScroll = () => {
+              if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+              }
+              try { delete container.dataset.programmaticScroll; } catch (e) {}
+              container.removeEventListener('scroll', handleUserScroll);
+            };
+
+            container.addEventListener('scroll', handleUserScroll);
+
+            const animate = () => {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(1, elapsed / duration);
+              const eased = 1 - Math.pow(1 - progress, 2); // easeOutQuad
+              container.scrollTop = start + diff * eased;
+
+              if (progress < 1) {
+                animationId = requestAnimationFrame(animate);
+              } else {
+                container.removeEventListener('scroll', handleUserScroll);
+                try {
+                  const ta = el.querySelector('textarea');
+                  if (ta) {
+                    try { ta.focus({ preventScroll: true }); } catch (e) {}
+                    ta.style.height = 'auto';
+                    ta.style.height = ta.scrollHeight + 'px';
+                  }
+                } catch (e) {}
+                try { delete container.dataset.programmaticScroll; } catch (e) {}
+              }
+            };
+            animate();
+          } else if (el) {
+            el.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+            const ta = el.querySelector('textarea');
+            if (ta) {
+              try { ta.focus({ preventScroll: true }); } catch (e) {}
+              ta.style.height = 'auto';
+              ta.style.height = ta.scrollHeight + 'px';
+            }
+          }
+        }, 60);
+        }
+        return next;
+      });
   };
 
   const toggleExpandReplies = (commentId) => {
@@ -55,30 +121,58 @@ export default function CommentThread({
   return (
     <div
       key={comment.id}
-      className="lvv-comment-item"
+      className="comment-item"
       style={{ marginLeft: `${Math.min(level, 2) * -24}px` }}
     >
       {/* Comment chính */}
-      <div className="lvv-comment-wrapper">
-        <div className="lvv-comment-user-header">
-          <img src={comment.avatarUrl} className="lvv-avatar" alt="user" />
-          <div className="lvv-comment-main">
-            <div className="lvv-comment-header">
-              <strong className="lvv-username">{comment.userName}</strong>
+      <div className="comment-wrapper">
+        <div className="comment-user-header">
+          <img src={comment.avatarUrl} className="avatar" alt="user" />
+          <div className="comment-main">
+            <div className="comment-header">
+              <strong className="username">{comment.userName}</strong>
               {level > 0 && parentUserName && (
-                <span className="lvv-reply-to">
+                <span className="reply-to">
                   trả lời <strong>{parentUserName}</strong>
                 </span>
               )}
+              {showMenuInline && comment.userId === currentUserId && (
+                <div className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}>
+                  <button
+                    className="menu-btn"
+                    onClick={() =>
+                      setActiveMenuCommentId((prevId) =>
+                        prevId === comment.id ? null : comment.id
+                      )
+                    }
+                  >
+                    ⋯
+                  </button>
+
+                  {isMenuOpen && (
+                    <div className="popup-menu">
+                      <button
+                        className="delete-btn"
+                        onClick={() => {
+                          onDelete(comment.id);
+                          setActiveMenuCommentId(null);
+                        }}
+                      >
+                        Xoá
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="lvv-comment-content">{comment.content}</div>
-            <div className="lvv-comment-meta">
-              <span className="lvv-time">
+            <div className="comment-content">{comment.content}</div>
+            <div className="comment-meta">
+              <span className={styles.time}>
                 {new Date(comment.createdAt).toLocaleDateString("vi-VN")}
               </span>
               <button
-                className="lvv-reply-toggle-btn"
+                className="reply-toggle-btn"
                 onClick={() => toggleChildReplyInput(comment.id)}
               >
                 Trả lời
@@ -87,8 +181,8 @@ export default function CommentThread({
 
             {/* Ô nhập trả lời */}
             {activeReplyMap[comment.id] && (
-              <div className="lvv-reply-input-inline">
-                <div className="lvv-reply-input-wrapper">
+                <div id={`reply-${comment.id}`} className={styles.replyInputInline}>
+                <div className={styles.replyInputWrapper}>
                   <textarea
                     value={replyContentMap[comment.id] || ""}
                     onChange={(e) => {
@@ -101,7 +195,7 @@ export default function CommentThread({
                       }
                     }}
                     placeholder="Trả lời..."
-                    className="lvv-reply-input textarea"
+                    className="reply-input textarea"
                     rows={1}
                     ref={(el) => {
                       if (el) {
@@ -111,18 +205,18 @@ export default function CommentThread({
                     }}
                   />
 
-                  <div className="lvv-reply-actions">
+                  <div className="reply-actions">
                     <button
                       onClick={() =>
                         handleReplySubmit(comment.id, replyContentMap[comment.id])
                       }
-                      className="lvv-reply-submit-btn"
+                      className="reply-submit-btn"
                       disabled={!replyContentMap[comment.id]?.trim()}
                     >
                       Gửi
                     </button>
                     <button
-                      className="lvv-reply-cancel-btn"
+                      className="reply-cancel-btn"
                       onClick={() => {
                         setReplyContentMap((prev) => ({
                           ...prev,
@@ -140,7 +234,7 @@ export default function CommentThread({
                 </div>
 
                 {replyContentMap[comment.id]?.length >= 30 && (
-                  <div className="lvv-char-count">
+                  <div className="char-count">
                     {replyContentMap[comment.id].length}/150
                   </div>
                 )}
@@ -151,16 +245,10 @@ export default function CommentThread({
         </div>
 
         {/* Nút menu (nếu là chủ comment) */}
-        {comment.userId === currentUserId && (
-          <div
-            className={
-              level === 0
-                ? "lvv-menu-wrapper-parent"
-                : "lvv-menu-wrapper-child"
-            }
-          >
+        {!showMenuInline && comment.userId === currentUserId && (
+          <div className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}>
             <button
-              className="lvv-menu-btn"
+              className="menu-btn"
               onClick={() =>
                 setActiveMenuCommentId((prevId) =>
                   prevId === comment.id ? null : comment.id
@@ -171,9 +259,9 @@ export default function CommentThread({
             </button>
 
             {isMenuOpen && (
-              <div className="lvv-popup-menu">
-                <button
-                  className="lvv-delete-btn"
+                    <div className="popup-menu">
+                      <button
+                        className="delete-btn"
                   onClick={() => {
                     onDelete(comment.id); // Gọi hàm xóa từ hook
                     setActiveMenuCommentId(null);
@@ -189,7 +277,7 @@ export default function CommentThread({
 
       {/* Replies (Đệ quy) */}
       {hasReplies && (
-        <div className="lvv-replies">
+        <div className="replies">
           {visibleReplies.map((reply) => (
             <CommentThread
               key={reply.id}
@@ -199,13 +287,14 @@ export default function CommentThread({
               onDelete={onDelete}
               level={level + 1}
               parentUserName={comment.userName}
+              showMenuInline={showMenuInline}
             />
           ))}
 
           {isTopLevel && comment.replies.length > 1 && (
             <button
               onClick={() => toggleExpandReplies(comment.id)}
-              className="lvv-expand-replies-btn"
+              className="expand-replies-btn"
             >
               {isExpanded
                 ? "Thu gọn"

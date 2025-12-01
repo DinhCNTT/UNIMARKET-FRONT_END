@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import "./VideoLikedPage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import EditProfileModal from "../components/EditProfileModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
+import { VideoHubContext } from "../context/VideoHubContext";
 
 const VideoLikedPage = () => {
   const [videos, setVideos] = useState([]);
@@ -14,6 +15,8 @@ const VideoLikedPage = () => {
   const [activeTab, setActiveTab] = useState("liked");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { videoConnection } = useContext(VideoHubContext);
 
   // Lấy thông tin user
   const fetchUser = async () => {
@@ -65,6 +68,44 @@ const VideoLikedPage = () => {
     fetchUser();
     fetchVideos(activeTab);
   }, [activeTab]);
+
+  // ✅ Refetch khi quay lại từ video detail page
+  useEffect(() => {
+    fetchVideos(activeTab);
+  }, [location.pathname]);
+
+  // ✅ Lắng nghe SignalR updates cho like/save realtime
+  useEffect(() => {
+    if (!videoConnection || videoConnection.state !== "Connected") return;
+
+    const handleUpdateLike = (tinDangId, count, likedByCurrentUser) => {
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.maTinDang === tinDangId
+            ? { ...v, soTym: count, isLiked: likedByCurrentUser }
+            : v
+        )
+      );
+    };
+
+    const handleUpdateSave = (tinDangId, count, savedByCurrentUser) => {
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.maTinDang === tinDangId
+            ? { ...v, soNguoiLuu: count, isSaved: savedByCurrentUser }
+            : v
+        )
+      );
+    };
+
+    videoConnection.on("UpdateLikeCount", handleUpdateLike);
+    videoConnection.on("UpdateSaveCount", handleUpdateSave);
+
+    return () => {
+      videoConnection.off("UpdateLikeCount", handleUpdateLike);
+      videoConnection.off("UpdateSaveCount", handleUpdateSave);
+    };
+  }, [videoConnection, activeTab]);
 
   return (
     <div className="vlp-page">

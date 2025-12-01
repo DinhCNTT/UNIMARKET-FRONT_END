@@ -9,6 +9,9 @@ export const useComments = (maTinDang) => {
   const { user, token } = useContext(AuthContext);
   const currentUserId = user?.userId || localStorage.getItem("userId");
 
+  console.log("Current User ID:", currentUserId);
+  console.log("Current User from Context:", user);
+
   const [comments, setComments] = useState([]);
   const [totalCommentCount, setTotalCommentCount] = useState(0);
 
@@ -22,8 +25,21 @@ export const useComments = (maTinDang) => {
         `http://localhost:5133/api/video/${maTinDang}/comments`
       );
       const data = res.data || [];
-      setComments(data);
-      setTotalCommentCount(countAllComments(data));
+      console.log("Comments API Response:", data);
+      console.log("First comment:", data[0]);
+      
+      // ✅ Map userId from response (could be userId, user.id, etc)
+      const mappedData = data.map(comment => ({
+        ...comment,
+        userId: comment.userId || comment.user?.id,
+        replies: (comment.replies || []).map(reply => ({
+          ...reply,
+          userId: reply.userId || reply.user?.id,
+        }))
+      }));
+      
+      setComments(mappedData);
+      setTotalCommentCount(countAllComments(mappedData));
     } catch (err) {
       console.error("Fetch comments error", err);
     }
@@ -52,6 +68,13 @@ export const useComments = (maTinDang) => {
     // --- Nhận comment mới ---
     const handleReceiveComment = (newComment, parentId) => {
       console.log("SignalR: Nhận comment", newComment);
+      
+      // ✅ Map userId from response
+      const mappedNewComment = {
+        ...newComment,
+        userId: newComment.userId || newComment.user?.id,
+      };
+      
       setComments((prevComments) => {
         // Nếu là reply
         if (parentId) {
@@ -59,13 +82,13 @@ export const useComments = (maTinDang) => {
             return list.map((comment) => {
               if (comment.id === parentId) {
                 const existingReply = comment.replies?.find(
-                  (r) => r.id === newComment.id
+                  (r) => r.id === mappedNewComment.id
                 );
                 return {
                   ...comment,
                   replies: existingReply
                     ? comment.replies
-                    : [newComment, ...(comment.replies || [])],
+                    : [mappedNewComment, ...(comment.replies || [])],
                 };
               }
               if (comment.replies && comment.replies.length > 0) {
@@ -82,11 +105,11 @@ export const useComments = (maTinDang) => {
 
         // Nếu là comment gốc
         const existingComment = prevComments.find(
-          (c) => c.id === newComment.id
+          (c) => c.id === mappedNewComment.id
         );
         return existingComment
           ? prevComments
-          : [newComment, ...prevComments];
+          : [...prevComments, mappedNewComment];
       });
       setTotalCommentCount((prev) => prev + 1);
     };

@@ -1,5 +1,6 @@
 // src/components/CommentSection/CommentSection.jsx
 import React from "react"; // XÓA: useRef
+import styles from "./CommentSection.module.css";
 import CommentThread from "./CommentThread";
 import CommentInput from "./CommentInput";
 // XÓA: import { useVideoScroll } from "../../hooks/useVideoScroll";
@@ -10,28 +11,28 @@ export default function CommentSection({
   currentUserId,
   submitComment,
   deleteComment,
-  scrollRef, // <-- THÊM prop: scrollRef
-  hideUserInfo, // <-- THÊM prop: hideUserInfo
+  scrollRef,
+  hideUserInfo,
+  expanded,
+  video,
+  showMenuInline = false,
 }) {
   // XÓA: const scrollRef = useRef(null);
   // XÓA: const hideUserInfo = useVideoScroll(scrollRef);
 
   return (
     <div
-      // SỬA: Dùng prop `hideUserInfo` từ cha
-      className={`lvv-comment-section ${hideUserInfo ? "pull-up" : ""}`}
+      className={`comment-section ${hideUserInfo ? "pull-up" : ""} ${expanded ? "desc-expanded" : video?.moTa?.length > 120 ? "desc-long" : ""}`}
       onClick={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
-      onWheel={(e) => e.stopPropagation()}
     >
-      <div className="lvv-comments-title-header">
+      <div className={styles.commentsTitleHeader}>
         <strong>Comments ({totalCommentCount})</strong>
       </div>
 
       <div
-        ref={scrollRef} // <-- SỬA: Gắn ref từ cha vào đây
-        className="lvv-comment-scrollable"
-        // SỬA: Dùng prop `hideUserInfo` từ cha
+        ref={scrollRef}
+        className="comment-scrollable"
         style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}
       >
         {/* Render danh sách comment */}
@@ -43,12 +44,16 @@ export default function CommentSection({
             onReplySubmit={submitComment}
             onDelete={deleteComment}
             level={0}
+            showMenuInline={showMenuInline}
           />
         ))}
 
-        {/* Ô nhập bình luận mới */}
-        <CommentInput onSubmit={submitComment} />
+        {/* Spacer để input không bị che */}
+        <div className="comment-bottom-spacer"></div>
       </div>
+
+      {/* Ô nhập bình luận mới - fixed position */}
+      <CommentInput onSubmit={submitComment} />
     </div>
   );
 }

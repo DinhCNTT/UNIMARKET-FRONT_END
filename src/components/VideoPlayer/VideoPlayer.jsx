@@ -1,5 +1,6 @@
 // src/components/VideoPlayer/VideoPlayer.jsx
 import React from "react";
+import styles from "./VideoPlayer.module.css";
 import { FaHeart, FaPlay } from "react-icons/fa";
 import VideoVolumeControl from "./VideoVolumeControl";
 
@@ -25,7 +26,7 @@ export default function VideoPlayer({
       {/* Video nền blur */}
       <video
         ref={bgPlayerRef}
-        className="lvv-bg-blur"
+        className="bg-blur"
         src={videoUrl}
         autoPlay
         loop
@@ -41,7 +42,7 @@ export default function VideoPlayer({
       />
 
       {/* Video chính */}
-      <div className="lvv-video-wrapper" style={{ position: "relative" }}>
+      <div className="video-wrapper" style={{ position: "relative" }}>
         <video
           ref={playerRef}
           src={videoUrl}
@@ -54,10 +55,10 @@ export default function VideoPlayer({
           style={{ width: "100%", height: "100%" }}
         />
 
-        {showHeartEffect && <FaHeart className="lvv-heart-effect" />}
+        {showHeartEffect && <FaHeart className="heart-effect" />}
 
         {!isPlaying && (
-          <div className="lvv-play-icon">
+          <div className="play-icon">
             <FaPlay size={48} color="#fff" />
           </div>
         )}

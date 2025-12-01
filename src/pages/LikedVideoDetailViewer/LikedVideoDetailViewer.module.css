@@ -1,0 +1,496 @@
+:global {
+  position: fixed; /* ✅ Bám cố định toàn màn hình */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Local classes exported by the module for JSX mapping */
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading {
+  color: #fff;
+  padding: 12px;
+}
+
+.backBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.overlay {
+  position: fixed;
+  top: 50%;
+  right: 0px;
+  transform: translateY(-50%);
+  background-color: #1c1c1e;
+  border-radius: 20px;
+  padding: 20px;
+  width: 460px;
+  height: 800px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  z-index: 10;
+  overflow: hidden;
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+/* Local aliases for formerly global lvv- classes used by components */
+.location {
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.videoInfo {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  margin-top: -4px;
+  color: #ffffff;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.3px;
+}
+
+.readMore {
+  display: inline-block;
+  color: #aaa;
+  background-color: transparent;
+  border: none;
+  padding: 2px 4px;
+  margin-top: 4px;
+  margin-left: 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  max-width: fit-content;
+}
+
+.commentCount {
+  color: #f5f6fa;
+  font-weight: bold;
+}
+
+/* Reply input group local classes */
+.replyInputInline {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin-top: 8px;
+  padding-left: 3px;
+  width: 100%;
+}
+
+.replyInputWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.replyInput {
+  flex: 0 1 55%;
+  max-width: 240px;
+  min-width: 160px;
+  resize: none;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: white;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.replyFooter {
+  display: contents;
+  margin-left: 4px;
+}
+
+.replyActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+.replySubmitBtn {
+  background: linear-gradient(135deg, #ff7a00, #ff3c00);
+  color: white;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.replySubmitBtn:hover { transform: scale(1.02); }
+
+.replyCancelBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 15px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.charCount {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  color: #888;
+  padding-left: 4px;
+  margin-top: 4px;
+}
+
+.repliesToggleBtn {
+  display: inline-block;
+}
+
+.commentWrapper {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+
+:global .overlay {
+  position: fixed; /* Cố định khi cuộn và resize */
+  top: 50%;
+  right: 0px; /* ✅ Sát mép phải */
+  transform: translateY(-50%);
+  background-color: #1c1c1e;
+  border-radius: 20px;
+  padding: 20px;
+  width: 460px;
+  height: 800px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  z-index: 10;
+  overflow: hidden;
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+/* Thông tin người đăng */
+:global .user-info-wrapper {
+  position: sticky;         /* 👈 Mấu chốt giúp mượt */
+  top: 0px; 
+  z-index: 99;
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 16px;
+  padding: 12px 16px;
+  color: #fff;
+  width: 95%;
+  max-width: 800px;
+  margin: 0 auto 12px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+:global .user-info-wrapper.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+:global .hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+:global .pull-up {
+  bottom: 18vh; /* Kéo lên thêm nếu user info đã bị ẩn */
+  transition: bottom 0.3s ease;
+}
+
+:global .user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+:global .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 10px; /* tạo khoảng cách giữa avatar và tên */
+  flex-shrink: 0;
+}
+:global .user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+:global .user-name {
+  font-weight: bold;
+  font-size: 16px;
+  color: #fff;
+}
+
+:global .location {
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+:global .video-info {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+:global .title {
+  font-size: 18px;                  /* Lớn hơn một chút cho nổi bật */
+  font-weight: 700;                 /* Chữ đậm rõ nét hơn */
+  margin-bottom: 10px;             /* Tăng khoảng cách với phần dưới */
+  margin-top: -4px;                /* 🔼 Đẩy cao lên một chút */
+  color: #ffffff;
+  line-height: 1.4;                /* Tăng khoảng cách dòng, chuyên nghiệp hơn */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* 👁 Tạo chiều sâu */
+  letter-spacing: 0.3px;           /* Cách chữ nhẹ, dễ đọc hơn */
+}
+
+:global .description {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: -7px; /* ✅ Giảm từ 6px xuống 2px */
+
+  word-wrap: break-word;
+  white-space: pre-line;
+
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  transition: all 0.3s ease;
+}
+
+:global .description.expanded {
+  display: block;
+  overflow-y: auto;
+  max-height: 120px;
+  padding-right: 8px;
+  margin-top: -8px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+  white-space: pre-line;
+}
+
+:global .description.expanded::-webkit-scrollbar {
+  width: 6px;
+}
+
+:global .description.expanded::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:global .description.expanded::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+:global .description.expanded::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+:global .read-more {
+  display: inline-block;
+  color: #aaa;
+  background-color: transparent;
+  border: none;                    /* ❌ bỏ viền */
+  padding: 2px 4px;                /* 👉 padding gọn để không dư không gian */
+  margin-top: 4px;
+  margin-left: 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: left;
+  max-width: fit-content;
+}
+
+:global .read-more:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* hoặc bỏ luôn nếu muốn kiểu text thuần */
+  color: #fff;
+}
+
+:global .actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+:global .actions button {
+  all: unset; /* Reset toàn bộ mặc định */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e5e5;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+:global .actions button:hover {
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+
+:global .actions .icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+:global .actions button:hover .icon-circle {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+:global .actions .count,
+:global .actions .comment-count {
+  color: #f8f8f8;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+:global .actions .like-btn .icon-circle svg {
+  fill: #ccc;
+  transition: fill 0.3s ease;
+}
+
+:global .actions .comment-btn .icon-circle svg {
+  width: 20px;
+  height: 26px;
+  fill: #555;
+}
+
+:global .actions .count {
+  font-weight: bold;
+  color: #f5f6fa;
+}
+
+:global .actions .like-btn.liked .icon-circle svg {
+  fill: #ff2e63;
+}
+
+:global .actions .like-btn:active .icon-circle {
+  transform: scale(1.2);
+  background: #ffe9ef;
+}
+
+:global .heart-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 90px;
+  color: #ff0033;
+  transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  opacity: 0;
+  animation: popHeart 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: 999;
+  filter: drop-shadow(0 0 12px rgba(255, 46, 99, 0.9)) brightness(1.3);
+  transition: all 0.3s ease-in-out;
+  will-change: transform, opacity;
+}
+
+@keyframes popHeart {
+  0% {}
+  15% {}
+  30% {}
+  45% {}
+  60% {}
+  100% {}
+}
+
+.volumeWrapper {
+  position: fixed;
+  bottom: 20px;
+  right: calc(460px + 20px);
+  left: auto;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  pointer-events: auto;
+}
+

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeftCircle } from "react-icons/fi";
-import "./LikedVideoDetailViewer.css";
+import styles from "./LikedVideoDetailViewer.module.css";
 
 // Import Hooks
 import { useVideoScroll } from "../../hooks/useVideoScroll";
@@ -37,6 +37,7 @@ export default function LikedVideoDetailViewer() {
   const [videoList, setVideoList] = useState(initialVideos);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { videoConnection } = useContext(VideoHubContext);
 
   // ✅ Tạo shallowVideo ban đầu (có thể chỉ chứa maTinDang nếu load từ URL)
@@ -179,14 +180,14 @@ export default function LikedVideoDetailViewer() {
 
   // ✅ Khi load trực tiếp từ URL mà chưa có dữ liệu
   if (!videoToDisplay?.maTinDang)
-    return <div className="lvv-loading">Đang tải video...</div>;
+    return <div className={styles.loading}>Đang tải video...</div>;
 
   // --- JSX TRẢ VỀ ---
   return (
-    <div className="lvv-container" onClick={handleClick}>
+    <div className={styles.container} onClick={handleClick}>
       {/* Nút quay lại */}
       <button
-        className="lvv-back-btn"
+        className={styles.backBtn}
         onClick={(e) => {
           e.stopPropagation();
           navigate(-1);
@@ -212,14 +213,14 @@ export default function LikedVideoDetailViewer() {
 
       {/* Overlay thông tin & bình luận */}
       <div
-        className="lvv-overlay"
+        className={styles.overlay}
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
         {/* Ẩn thông tin khi cuộn */}
         {!hideUserInfo && (
           <>
-            <VideoInfo video={videoToDisplay} />
+            <VideoInfo video={videoToDisplay} onExpandedChange={setExpanded} />
             <VideoActions
               video={videoToDisplay}
               isLiked={isLiked}
@@ -242,6 +243,9 @@ export default function LikedVideoDetailViewer() {
           currentUserId={currentUserId}
           submitComment={submitComment}
           deleteComment={deleteComment}
+          expanded={expanded}
+          video={fullVideo || shallowVideo}
+          showMenuInline={true}
         />
 
         {/* Thanh điều khiển âm lượng */}

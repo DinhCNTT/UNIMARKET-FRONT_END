@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { VideoHubContext } from "../context/VideoHubContext"; // Hub SignalR
+import vpStyles from "../components/VideoPlayer/VideoPlayer.module.css";
 
 export const useVideoInteractions = (video, currentIndex) => {
   const { user, token } = useContext(AuthContext);
@@ -15,6 +16,10 @@ export const useVideoInteractions = (video, currentIndex) => {
 
   const iconCircleRef = useRef(null);
   const maTinDang = video?.maTinDang;
+  
+  // ✅ Flag để track optimistic updates và skip SignalR conflict
+  const optimisticLikeRef = useRef(null);
+  const optimisticSaveRef = useRef(null);
 
   // ==========================================================
   // 1️⃣ Lấy thông tin ban đầu (Like, Save, toàn bộ video)
@@ -74,6 +79,11 @@ export const useVideoInteractions = (video, currentIndex) => {
     // Khi có người like/unlike video
     const handleUpdateLike = (tinDangId, count, likedByCurrentUser) => {
       if (tinDangId === fetchedMaTinDang) {
+        // ✅ Skip nếu vừa optimistic update (tránh giật)
+        if (optimisticLikeRef.current) {
+          optimisticLikeRef.current = null;
+          return;
+        }
         setFullVideo((prev) => ({
           ...prev,
           soTym: count,
@@ -85,6 +95,11 @@ export const useVideoInteractions = (video, currentIndex) => {
     // Khi có người save/unsave video
     const handleUpdateSave = (tinDangId, count, savedByCurrentUser) => {
       if (tinDangId === fetchedMaTinDang) {
+        // ✅ Skip nếu vừa optimistic update (tránh giật)
+        if (optimisticSaveRef.current) {
+          optimisticSaveRef.current = null;
+          return;
+        }
         setSoNguoiLuu(count);
         setIsSaved(savedByCurrentUser);
       }
@@ -118,11 +133,20 @@ export const useVideoInteractions = (video, currentIndex) => {
       showHeartCallback?.();
       if (iconCircleRef.current) {
         const circle = document.createElement("div");
-        circle.className = "heart-pulse-circle";
+        // Use module class so CSS Modules hashing applies
+        circle.className = vpStyles.heartEffect || "heart-effect";
         iconCircleRef.current.appendChild(circle);
         setTimeout(() => circle.remove(), 600);
       }
     }
+
+    // ✅ Optimistic update - update UI ngay lập tức
+    optimisticLikeRef.current = true;
+    setFullVideo((prev) => ({
+      ...prev,
+      isLiked: !prev.isLiked,
+      soTym: prev.isLiked ? prev.soTym - 1 : prev.soTym + 1,
+    }));
 
     try {
       await axios.post(
@@ -130,10 +154,17 @@ export const useVideoInteractions = (video, currentIndex) => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Không cần setState ở đây — backend sẽ broadcast realtime
+      // Backend sẽ broadcast realtime để verify
     } catch (err) {
       console.error("Lỗi khi tym video:", err);
       toast.error("Không thể tym video.");
+      optimisticLikeRef.current = null; // Reset flag
+      // Revert nếu lỗi
+      setFullVideo((prev) => ({
+        ...prev,
+        isLiked: !prev.isLiked,
+        soTym: prev.isLiked ? prev.soTym - 1 : prev.soTym + 1,
+      }));
     }
   };
 
@@ -145,6 +176,14 @@ export const useVideoInteractions = (video, currentIndex) => {
       toast.error("Bạn cần đăng nhập để lưu video!");
       return;
     }
+
+    // ✅ Optimistic update - update UI ngay lập tức
+    optimisticSaveRef.current = true;
+    const previousIsSaved = isSaved;
+    const previousSoNguoiLuu = soNguoiLuu;
+    
+    setIsSaved((prev) => !prev);
+    setSoNguoiLuu((prev) => previousIsSaved ? prev - 1 : prev + 1);
 
     try {
       const { data } = await axios.post(
@@ -159,6 +198,10 @@ export const useVideoInteractions = (video, currentIndex) => {
     } catch (err) {
       console.error("Lỗi khi lưu video:", err);
       toast.error("Không thể lưu video.");
+      optimisticSaveRef.current = null; // Reset flag
+      // Revert nếu lỗi
+      setIsSaved(previousIsSaved);
+      setSoNguoiLuu(previousSoNguoiLuu);
     }
   };
 

@@ -9,7 +9,11 @@ export const useVideoScroll = (scrollRef) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = scrollRef.current?.scrollTop || 0;
+      const el = scrollRef.current;
+      if (!el) return;
+      // Ignore programmatic scrolls from other code paths
+      if (el.dataset && el.dataset.programmaticScroll === '1') return;
+      const scrollTop = el.scrollTop || 0;
 
       if (scrollTop > 100) {
         clearTimeout(scrollStopTimer.current);

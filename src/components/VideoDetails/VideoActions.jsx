@@ -1,5 +1,6 @@
 // src/components/VideoDetails/VideoActions.jsx
 import React from "react";
+import "../../pages/LikedVideoDetailViewer/LikedVideoDetailViewer.module.css";
 // ✅ Import các icon mới từ react-icons
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaRegComment } from "react-icons/fa";
 
@@ -15,14 +16,14 @@ export default function VideoActions({
   handleToggleSave,
 }) {
   return (
-    <div className="lvv-actions">
+    <div className="actions">
       {/* Nút Like */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           handleLike();
         }}
-        className={`lvv-like-btn ${isLiked ? "liked" : ""}`}
+        className={`like-btn ${isLiked ? "liked" : ""}`}
       >
         <span className="icon-circle" ref={iconCircleRef}>
           {/* ✅ THAY THẾ SVG BẰNG ICON ĐỘNG */}
@@ -41,7 +42,7 @@ export default function VideoActions({
           e.stopPropagation();
           handleToggleSave();
         }}
-        className="lvv-save-btn"
+        className="save-btn"
       >
         <span className="icon-circle">
           {/* ✅ THAY THẾ SVG BẰNG ICON ĐỘNG */}
@@ -57,13 +58,13 @@ export default function VideoActions({
       {/* Nút Comment */}
       <button
         onClick={(e) => e.stopPropagation()}
-        className="lvv-comment-toggle-btn"
+        className="comment-toggle-btn"
       >
         <span className="icon-circle"> {/* Thêm span cho đồng bộ */}
           {/* ✅ THAY THẾ SVG BẰNG ICON MỚI */}
           <FaRegComment size={24} color="#ccc" />
         </span>
-        <span className="lvv-comment-count">{totalCommentCount}</span>
+        <span className="comment-count">{totalCommentCount}</span>
       </button>
     </div>
   );
