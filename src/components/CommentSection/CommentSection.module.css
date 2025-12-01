@@ -45,6 +45,7 @@
   margin-bottom: 6px;
   min-height: unset;
   position: relative;
+  overflow: visible; /* allow absolutely-positioned children (menu) to show */
 }
 
 :global .comment-user-header {
@@ -460,6 +461,8 @@
   z-index: 100;
 }
 
+
+
 :global .delete-btn {
   background: none;
   border: none;
@@ -531,15 +534,17 @@
 }
 
 .menuWrapperParent {
-  display: inline-block;
-  position: relative;
-  margin-left: 8px;
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  left: 410px;
 }
 
 .menuWrapperChild {
-  display: inline-block;
-  position: relative;
-  margin-left: 8px;
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  left: 386px;
 }
 
 .replyInputInline {
@@ -567,4 +572,27 @@
 .time {
   color: #888;
   font-size: 12px;
+}
+
+.repliesToggleBtn {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0px 8px;
+  margin-top: -65px;
+  margin-left: -8px;
+  display: inline-block;
+  transition: color 0.2s ease;
+  text-align: left;
+  width: auto;
+  z-index: 10;
+  line-height: 1;
+}
+
+.repliesToggleBtn:hover {
+  color: #ffffff;
+  text-decoration: underline;
 }

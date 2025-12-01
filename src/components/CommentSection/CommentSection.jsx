@@ -1,9 +1,8 @@
 // src/components/CommentSection/CommentSection.jsx
-import React from "react"; // XÓA: useRef
+import React, { useState, useEffect } from "react";
 import styles from "./CommentSection.module.css";
 import CommentThread from "./CommentThread";
 import CommentInput from "./CommentInput";
-// XÓA: import { useVideoScroll } from "../../hooks/useVideoScroll";
 
 export default function CommentSection({
   comments,
@@ -17,6 +16,29 @@ export default function CommentSection({
   video,
   showMenuInline = false,
 }) {
+  // Không cần logic chia trang - hiển thị tất cả comment
+  // Chỉ dùng state để quản lý expand/collapse replies
+  const [expandedReplies, setExpandedReplies] = useState({});
+
+  // Reset expandedReplies chỉ khi danh sách comment thực sự đổi (ví dụ đổi video hoặc lần load đầu)
+  // Tránh reset khi chỉ có thêm reply mới (SignalR cập nhật comments) để giữ trạng thái mở.
+  const prevCommentsRef = React.useRef(null);
+  useEffect(() => {
+    const prevFirstId = prevCommentsRef.current?.[0]?.id;
+    const newFirstId = comments?.[0]?.id;
+    // Nếu first comment id khác (ví dụ load thread mới), reset expanded state
+    if (prevFirstId !== newFirstId) {
+      setExpandedReplies({});
+    }
+    prevCommentsRef.current = comments;
+  }, [comments]);
+
+  const handleExpandReplies = (commentId) => {
+    setExpandedReplies((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
   // XÓA: const scrollRef = useRef(null);
   // XÓA: const hideUserInfo = useVideoScroll(scrollRef);
 
@@ -35,7 +57,7 @@ export default function CommentSection({
         className="comment-scrollable"
         style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}
       >
-        {/* Render danh sách comment */}
+        {/* Render tất cả comment - không chia trang */}
         {comments.map((comment) => (
           <CommentThread
             key={comment.id}
@@ -45,6 +67,8 @@ export default function CommentSection({
             onDelete={deleteComment}
             level={0}
             showMenuInline={showMenuInline}
+            expandedReplies={expandedReplies}
+            onExpandReplies={handleExpandReplies}
           />
         ))}
 

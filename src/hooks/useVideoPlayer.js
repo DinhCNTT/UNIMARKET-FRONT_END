@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 export const useVideoPlayer = (videoUrl) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true); // Bắt đầu nên Mute
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(0.5);
   const [showHeartEffect, setShowHeartEffect] = useState(false);
 
   const playerRef = useRef(null);
@@ -33,9 +33,9 @@ export const useVideoPlayer = (videoUrl) => {
       const video = playerRef.current;
       if (video) {
         video.muted = false;
-        video.volume = 1.0;
+        video.volume = 0.5;
         setIsMuted(false);
-        setVolume(1.0);
+        setVolume(0.5);
         video.play().catch((err) => console.warn("Không thể play lại:", err));
       }
     };

@@ -9,9 +9,6 @@ export const useComments = (maTinDang) => {
   const { user, token } = useContext(AuthContext);
   const currentUserId = user?.userId || localStorage.getItem("userId");
 
-  console.log("Current User ID:", currentUserId);
-  console.log("Current User from Context:", user);
-
   const [comments, setComments] = useState([]);
   const [totalCommentCount, setTotalCommentCount] = useState(0);
 
@@ -25,8 +22,6 @@ export const useComments = (maTinDang) => {
         `http://localhost:5133/api/video/${maTinDang}/comments`
       );
       const data = res.data || [];
-      console.log("Comments API Response:", data);
-      console.log("First comment:", data[0]);
       
       // ✅ Map userId from response (could be userId, user.id, etc)
       const mappedData = data.map(comment => ({
@@ -67,20 +62,22 @@ export const useComments = (maTinDang) => {
 
     // --- Nhận comment mới ---
     const handleReceiveComment = (newComment, parentId) => {
-      console.log("SignalR: Nhận comment", newComment);
-      
+      // Try to derive parent id from various possible fields if backend doesn't send it as separate arg
+      const derivedParentId = parentId || newComment.parentCommentId || newComment.parentId || newComment.parent?.id || newComment.parentComment?.id || null;
+      console.log("SignalR: Nhận comment", newComment, "derivedParentId:", derivedParentId);
+
       // ✅ Map userId from response
       const mappedNewComment = {
         ...newComment,
         userId: newComment.userId || newComment.user?.id,
       };
-      
+
       setComments((prevComments) => {
         // Nếu là reply
-        if (parentId) {
+        if (derivedParentId) {
           const addReplyRecursive = (list) => {
             return list.map((comment) => {
-              if (comment.id === parentId) {
+              if (comment.id === derivedParentId) {
                 const existingReply = comment.replies?.find(
                   (r) => r.id === mappedNewComment.id
                 );
@@ -111,6 +108,8 @@ export const useComments = (maTinDang) => {
           ? prevComments
           : [...prevComments, mappedNewComment];
       });
+
+      // Cập nhật tổng comment count
       setTotalCommentCount((prev) => prev + 1);
     };
 

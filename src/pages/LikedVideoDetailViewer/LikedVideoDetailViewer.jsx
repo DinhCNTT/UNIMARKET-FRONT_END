@@ -88,6 +88,70 @@ export default function LikedVideoDetailViewer() {
     setIsPlaying,
   } = useVideoPlayer(fullVideo?.videoUrl || shallowVideo?.videoUrl);
 
+  // If navigation came from a click on VideoLikedPage, that page stores a flag
+  // so we can immediately unmute/set volume and try to play on mount.
+  useEffect(() => {
+    try {
+      const shouldUnmute = sessionStorage.getItem('unmuteOnOpen');
+      if (shouldUnmute) {
+        sessionStorage.removeItem('unmuteOnOpen');
+        // set desired volume and unmute via hook handler
+        handleVolumeChange(0.5);
+        // try to play player/background/audio
+        setTimeout(() => {
+          try { playerRef.current?.play()?.catch(() => {}); } catch(e) {}
+          try { bgPlayerRef.current?.play()?.catch(() => {}); } catch(e) {}
+          try { audioRef.current?.play()?.catch(() => {}); } catch(e) {}
+        }, 50);
+      }
+    } catch (e) {}
+  }, []); // run once on mount
+
+  // Keep background and main video synchronized (time + play/pause)
+  useEffect(() => {
+    const main = playerRef.current;
+    const bg = bgPlayerRef.current;
+    if (!main || !bg) return;
+
+    let raf = null;
+    const syncIfNeeded = () => {
+      try {
+        const diff = Math.abs((main.currentTime || 0) - (bg.currentTime || 0));
+        if (diff > 0.15) {
+          bg.currentTime = main.currentTime;
+        }
+      } catch (e) {}
+    };
+
+    const onTime = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        syncIfNeeded();
+        raf = null;
+      });
+    };
+
+    const onPlay = () => { try { if (bg.paused) bg.play(); } catch (e) {} };
+    const onPause = () => { try { if (!bg.paused) bg.pause(); } catch (e) {} };
+    const onSeeked = () => { try { bg.currentTime = main.currentTime; } catch (e) {} };
+
+    main.addEventListener('timeupdate', onTime);
+    main.addEventListener('play', onPlay);
+    main.addEventListener('pause', onPause);
+    main.addEventListener('seeked', onSeeked);
+
+    try { bg.currentTime = main.currentTime; } catch (e) {}
+    if (!main.paused && bg.paused) { try { bg.play(); } catch (e) {} }
+
+    return () => {
+      main.removeEventListener('timeupdate', onTime);
+      main.removeEventListener('play', onPlay);
+      main.removeEventListener('pause', onPause);
+      main.removeEventListener('seeked', onSeeked);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [playerRef, bgPlayerRef]);
+
   // ✅ Hook bình luận
   const {
     comments,

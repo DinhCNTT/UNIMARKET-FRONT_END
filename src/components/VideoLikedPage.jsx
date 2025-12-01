@@ -177,15 +177,18 @@ const VideoLikedPage = () => {
             <div
               key={video.maTinDang}
               className="vlp-video-card"
-              onClick={() =>
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('unmuteOnOpen', '1');
+                } catch (e) {}
                 navigate(`/liked-videos/${video.maTinDang}`, {
                   state: {
                     videos,
                     initialIndex: index,
                     tabType: activeTab, // gửi kèm loại tab
                   },
-                })
-              }
+                });
+              }}
             >
               <video
                 src={video.videoUrl}

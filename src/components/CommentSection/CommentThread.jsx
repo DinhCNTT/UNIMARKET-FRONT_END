@@ -1,5 +1,5 @@
 // src/components/CommentSection/CommentThread.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./CommentSection.module.css";
 
 // Component con để xử lý từng comment và reply của nó
@@ -11,8 +11,11 @@ export default function CommentThread({
   level = 0,
   parentUserName = null,
   showMenuInline = false,
+  expandedReplies = {},
+  onExpandReplies = null,
 }) {
   const [activeMenuCommentId, setActiveMenuCommentId] = useState(null);
+  const rootRef = useRef(null);
   const [expandedComments, setExpandedComments] = useState({});
   const [replyContentMap, setReplyContentMap] = useState({});
   const [activeReplyMap, setActiveReplyMap] = useState({});
@@ -89,10 +92,10 @@ export default function CommentThread({
   };
 
   const toggleExpandReplies = (commentId) => {
-    setExpandedComments((prev) => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
+    // Sử dụng callback từ parent component (CommentSection)
+    if (level === 0) {
+      // Top-level comment: gọi parent's expandedReplies handler
+    }
   };
 
   const handleReplySubmit = (commentId, content) => {
@@ -108,19 +111,42 @@ export default function CommentThread({
 
   // ----- Render -----
   const isMenuOpen = activeMenuCommentId === comment.id;
-  const hasReplies = comment.replies?.length > 0;
-  const isExpanded = expandedComments[comment.id];
+  const hasReplies = comment.replies && comment.replies.length > 0;
+  const countNestedReplies = (list) => {
+    let total = 0;
+    for (const c of list || []) {
+      total += 1;
+      if (c.replies && c.replies.length > 0) total += countNestedReplies(c.replies);
+    }
+    return total;
+  };
+  const replyCount = countNestedReplies(comment.replies || []);
+  const isExpanded = expandedReplies[comment.id];
   const isTopLevel = level === 0;
 
-  const visibleReplies = isTopLevel
+  const visibleReplies = isTopLevel && hasReplies
     ? isExpanded
       ? comment.replies
-      : comment.replies?.slice(0, 1)
-    : comment.replies;
+      : (comment.replies || []).slice(0, 1).map(r => ({ ...r, replies: [] }))
+    : comment.replies || [];
+
+  // Close menu when clicking outside this comment block
+  useEffect(() => {
+    if (!activeMenuCommentId) return;
+    const handleDown = (e) => {
+      const root = rootRef.current;
+      if (!root) return;
+      if (root.contains(e.target)) return;
+      setActiveMenuCommentId(null);
+    };
+    document.addEventListener('mousedown', handleDown);
+    return () => document.removeEventListener('mousedown', handleDown);
+  }, [activeMenuCommentId]);
 
   return (
     <div
       key={comment.id}
+      ref={rootRef}
       className="comment-item"
       style={{ marginLeft: `${Math.min(level, 2) * -24}px` }}
     >
@@ -136,34 +162,7 @@ export default function CommentThread({
                   trả lời <strong>{parentUserName}</strong>
                 </span>
               )}
-              {showMenuInline && comment.userId === currentUserId && (
-                <div className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}>
-                  <button
-                    className="menu-btn"
-                    onClick={() =>
-                      setActiveMenuCommentId((prevId) =>
-                        prevId === comment.id ? null : comment.id
-                      )
-                    }
-                  >
-                    ⋯
-                  </button>
-
-                  {isMenuOpen && (
-                    <div className="popup-menu">
-                      <button
-                        className="delete-btn"
-                        onClick={() => {
-                          onDelete(comment.id);
-                          setActiveMenuCommentId(null);
-                        }}
-                      >
-                        Xoá
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* menu (moved out of header so we can absolute-position it) */}
             </div>
 
             <div className="comment-content">{comment.content}</div>
@@ -244,10 +243,16 @@ export default function CommentThread({
           </div>
         </div>
 
-        {/* Nút menu (nếu là chủ comment) */}
-        {!showMenuInline && comment.userId === currentUserId && (
-          <div className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}>
+        {/* Nút 3 chấm: render một lần ở đây (bên trong .comment-item)
+          Nếu parent truyền `showMenuInline=true` thì ép hiển thị nút (dùng cho VideoLikePage)
+        */}
+        {(showMenuInline || comment.userId === currentUserId) && (
+          <div
+            className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}
+            style={{ right: '20px' }}
+          >
             <button
+              id={`menu-btn-${comment.id}`}
               className="menu-btn"
               onClick={() =>
                 setActiveMenuCommentId((prevId) =>
@@ -259,9 +264,9 @@ export default function CommentThread({
             </button>
 
             {isMenuOpen && (
-                    <div className="popup-menu">
-                      <button
-                        className="delete-btn"
+              <div className="popup-menu" style={{ top: '36px', right: 0 }}>
+                <button
+                  className="delete-btn"
                   onClick={() => {
                     onDelete(comment.id); // Gọi hàm xóa từ hook
                     setActiveMenuCommentId(null);
@@ -288,21 +293,35 @@ export default function CommentThread({
               level={level + 1}
               parentUserName={comment.userName}
               showMenuInline={showMenuInline}
+              expandedReplies={expandedReplies}
+              onExpandReplies={onExpandReplies}
             />
           ))}
-
-          {isTopLevel && comment.replies.length > 1 && (
-            <button
-              onClick={() => toggleExpandReplies(comment.id)}
-              className="expand-replies-btn"
-            >
-              {isExpanded
-                ? "Thu gọn"
-                : `Xem thêm (${comment.replies.length - 1})`}
-            </button>
-          )}
         </div>
       )}
+
+      {/* Toggle button nằm ngoài .replies để margin-top hoạt động độc lập */}
+      {isTopLevel && hasReplies && (() => {
+        const collapsedShown = (comment.replies || []).slice(0, 1).length;
+        const remaining = Math.max(0, replyCount - collapsedShown);
+        return (
+          <button
+            onClick={() => {
+              onExpandReplies && onExpandReplies(comment.id);
+            }}
+            className={styles.repliesToggleBtn}
+            style={{
+              marginTop: isExpanded ? '-60px' : '-4px'
+            }}
+          >
+            {isExpanded
+              ? "Thu gọn"
+              : remaining > 0
+                ? `Xem thêm ${remaining} phản hồi khác`
+                : `Xem thêm ${replyCount} phản hồi`}
+          </button>
+        );
+      })()}
     </div>
   );
 }

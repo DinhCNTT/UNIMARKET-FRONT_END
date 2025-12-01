@@ -7,6 +7,7 @@ import defaultAvatar from "../assets/default-avatar.png";
 import { AuthContext } from '../context/AuthContext';
 import styles from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer.module.css";
 import commentStyles from "./CommentSection/CommentSection.module.css";
+// inline popup — removed PortalMenu usage
 export default function VideoSearchDetailViewer() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -71,6 +72,17 @@ export default function VideoSearchDetailViewer() {
     : null;
   const videoUrl = video?.videoUrl;
 
+  useEffect(() => {
+    // Close menu when clicking outside any popup or menu button
+    if (!activeMenuCommentId) return;
+    const onDocDown = (e) => {
+      const target = e.target;
+      if (target.closest && (target.closest('.popup-menu') || target.closest('.menu-btn'))) return;
+      setActiveMenuCommentId(null);
+    };
+    document.addEventListener('mousedown', onDocDown);
+    return () => document.removeEventListener('mousedown', onDocDown);
+  }, [activeMenuCommentId]);
   useEffect(() => {
     if (playerRef.current) {
       try {
@@ -522,13 +534,14 @@ export default function VideoSearchDetailViewer() {
                 <div className="comment-header">
                   <strong className="username">{comment.userName}</strong>
                   {comment.userId === currentUserId && (
-                    <div className="menu-wrapper-parent">
+                    <div className="menu-wrapper-parent" style={{ position: 'absolute', right: '20px', left: '388px',top: '15px' }}>
                       <button
+                        id={`menu-btn-${comment.id}`}
                         className="menu-btn"
                         onClick={() => setActiveMenuCommentId((prevId) => prevId === comment.id ? null : comment.id)}
                       >⋯</button>
                       {activeMenuCommentId === comment.id && (
-                        <div className="popup-menu">
+                        <div className="popup-menu" style={{ top: '36px', right: 0 }}>
                           <button className="delete-btn" onClick={() => { handleDeleteComment(comment.id); setActiveMenuCommentId(null); }}>Xoá</button>
                         </div>
                       )}
@@ -609,13 +622,14 @@ export default function VideoSearchDetailViewer() {
                             <span className="reply-to" style={{ color: '#888', fontSize: 13, marginLeft: 4 }}>trả lời {reply.replyTo}</span>
                           )}
                           {reply.userId === currentUserId && (
-                            <div className="menu-wrapper-child" style={{ marginLeft: '-30px' }}>
+                            <div className="menu-wrapper-child" style={{ position: 'absolute', right: '20px', left: '340px', top: '15px' }}>
                               <button
+                                id={`menu-btn-${reply.id}`}
                                 className="menu-btn"
                                 onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
                               >⋯</button>
                               {isReplyMenuOpen && (
-                                <div className="popup-menu">
+                                <div className="popup-menu" style={{ top: '36px', right: 0 }}>
                                   <button className="delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
                                 </div>
                               )}
@@ -792,6 +806,53 @@ export default function VideoSearchDetailViewer() {
     if (hideVolumeTimeoutRef.current) clearTimeout(hideVolumeTimeoutRef.current);
     hideVolumeTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 4000);
   };
+
+  // === Sync background and main video timing and play state ===
+  useEffect(() => {
+    const main = playerRef.current;
+    const bg = bgPlayerRef.current;
+    if (!main || !bg) return;
+
+    let raf = null;
+    const syncIfNeeded = () => {
+      try {
+        const diff = Math.abs((main.currentTime || 0) - (bg.currentTime || 0));
+        if (diff > 0.15) {
+          bg.currentTime = main.currentTime;
+        }
+      } catch (e) {}
+    };
+
+    const onTime = () => {
+      // Throttle with rAF to avoid heavy writes
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        syncIfNeeded();
+        raf = null;
+      });
+    };
+
+    const onPlay = () => { try { if (bg.paused) bg.play(); } catch (e) {} };
+    const onPause = () => { try { if (!bg.paused) bg.pause(); } catch (e) {} };
+    const onSeeked = () => { try { bg.currentTime = main.currentTime; } catch (e) {} };
+
+    main.addEventListener('timeupdate', onTime);
+    main.addEventListener('play', onPlay);
+    main.addEventListener('pause', onPause);
+    main.addEventListener('seeked', onSeeked);
+
+    // initial alignment
+    try { bg.currentTime = main.currentTime; } catch (e) {}
+    if (!main.paused && bg.paused) { try { bg.play(); } catch (e) {} }
+
+    return () => {
+      main.removeEventListener('timeupdate', onTime);
+      main.removeEventListener('play', onPlay);
+      main.removeEventListener('pause', onPause);
+      main.removeEventListener('seeked', onSeeked);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [playerRef, bgPlayerRef, currentIndex]);
 
   // ✅ Loading state
   if (loading) {
