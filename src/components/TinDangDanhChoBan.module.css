@@ -1,13 +1,15 @@
 /* src/components/TinDangDanhChoBan.module.css */
 .container {
   padding: 20px;
-  background-color: #Ffff;
+  background-color: #ffffff;
   margin: 5px auto;
   width: 100%;      
   max-width: 95%; 
   box-sizing: border-box;
   border-radius: 10px;
+  position: relative; /* Thêm position relative để context rõ ràng hơn */
 }
+
 /* Reset Link chung cho container (để tránh gạch chân thừa) */
 .container a {
   text-decoration: none;
@@ -21,13 +23,30 @@
   gap: 15px;
 }
 
-/* Container cho thanh điều hướng */
+/* --- ĐÂY LÀ PHẦN ĐÃ CHỈNH SỬA --- */
 .navContainer {
+/* --- KÍCH HOẠT DÍNH --- */
+  position: -webkit-sticky;
+  position: sticky;
+  
+  /* QUAN TRỌNG: Tăng lên 85px (hoặc 90px) để chắc chắn nó nằm dưới đáy của TopNavbar */
+  top: 70px; 
+  
+  /* Lớp thứ tự: 1000 là đủ để nổi trên tin đăng, nhưng vẫn nằm dưới Navbar (2100) */
+  z-index: 1000;
+  
+  /* Màu nền: Bắt buộc màu trắng đục để che nội dung trượt bên dưới */
+  background-color: #ffffff;
+  
+  /* --- CĂN CHỈNH --- */
   margin-bottom: 24px;
-  padding: 0;
+  padding: 15px 0; /* Tăng padding chút nhìn cho thoáng */
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  
+  /* Mẹo: Thêm border bottom nhẹ để bạn dễ nhìn thấy nó đang nằm đâu */
+  border-bottom: 1px solid #f0f0f0;
 }
 
 /* Nút Xem thêm */
