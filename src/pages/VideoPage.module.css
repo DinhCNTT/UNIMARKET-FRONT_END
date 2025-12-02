@@ -1,19 +1,20 @@
 .page {
   min-height: 100vh;
   background-color: #f5f5f5;
+  overflow: visible !important;
 }
 
 .content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  overflow: visible !important;
 }
 
 .navContainer {
   margin-bottom: 20px;
   background: white;
   border-radius: 8px;
-  padding: 15px 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -23,6 +24,7 @@
   border-radius: 0;
   box-shadow: none;
   margin-left: -10px; /* Dịch sang trái 10px */
+  margin-bottom: -10px;
 }
 
 .title {
@@ -363,7 +365,22 @@
   background: #f8f9fa;
 }
 .filterContainer {
- margin-bottom: 10px;
- background: transparent; /* Đổi nền thành trong suốt */
- box-shadow: none; /* Xóa bóng đổ (viền) */
+/* 1. Kích hoạt dính */
+  position: -webkit-sticky;
+  position: sticky;
+  
+  /* 2. Vị trí: Nằm ngay dưới TopNavbar (cách đỉnh 85px) */
+  top: 67px; 
+  
+  /* 3. Thứ tự lớp: Đè lên video */
+  z-index: 999;
+  
+  /* 4. MÀU NỀN: Bắt buộc đục (#f5f5f5) để che nội dung bên dưới */
+  background-color: #f5f5f5; 
+  
+  /* 5. Giao diện */
+  margin-bottom: 5px;
+  padding-top: 5px;    
+  padding-bottom: 5px; 
+  box-shadow: none;
 }

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./PostDetailsInfo.module.css";
 import ReportButton from "./ReportModals/ReportButton";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { MdOutlineLocationOn, MdOutlineCalendarToday } from "react-icons/md";
 import { IoHeartOutline, IoHeart } from "react-icons/io5";
-import { formatDate } from "../utils/formatters"; // Giả sử file này vẫn ở đây
-
-// ✅ IMPORT ẢNH MẶC ĐỊNH (Theo cấu trúc thư mục bạn gửi)
+import { formatDate } from "../utils/formatters"; 
+import axios from "axios"; 
 import defaultAvatar from "../assets/default-avatar.png";
+import MarketPriceChart from "./MarketPriceChart"; 
 
 const PostDetailsInfo = ({
   post,
@@ -20,6 +20,7 @@ const PostDetailsInfo = ({
   onTogglePhone
 }) => {
   const [localShowPhoneNumber, setLocalShowPhoneNumber] = useState(false);
+  const [marketData, setMarketData] = useState(null);
 
   const handleShowPhoneNumber = () => {
     if (typeof onTogglePhone === 'function') return onTogglePhone();
@@ -28,22 +29,37 @@ const PostDetailsInfo = ({
 
   const showPhoneNumber = typeof showPhoneNumberProp === 'boolean' ? showPhoneNumberProp : localShowPhoneNumber;
   const isOwner = currentUserId === post.maNguoiBan;
-
-  // ✅ Logic chọn Avatar: Ưu tiên ảnh từ API (post.avatar), nếu không có dùng default
-  // Lưu ý: Backend C# trả về 'Avatar', JSON thường convert thành camelCase 'avatar'
   const sellerAvatarUrl = post.avatar || post.Avatar || defaultAvatar;
+
+  // --- LOGIC LẤY GIÁ THỊ TRƯỜNG ---
+  useEffect(() => {
+    if (post && post.maTinDang) {
+      // Đảm bảo URL đúng với port backend của bạn (5133)
+      const apiUrl = `http://localhost:5133/api/tindang/market-price-analysis/${post.maTinDang}`;
+      
+      axios.get(apiUrl)
+        .then(response => {
+           if (response.data && response.data.isSuccess) {
+               console.log("✅ Đã lấy được giá thị trường:", response.data);
+               setMarketData(response.data);
+           } else {
+               console.warn("⚠️ AI không tìm thấy đủ dữ liệu để so sánh.");
+               setMarketData(null);
+           }
+        })
+        .catch(err => {
+            console.error("❌ Lỗi API giá:", err);
+        });
+    }
+  }, [post]);
 
   return (
     <div className={styles.chiTietTinDangInfo}>
-      {/* --- HEADER: TIÊU ĐỀ + REPORT + LƯU TIN --- */}
       <div className={styles.headerRow}>
         <h1 className={styles.title}>{post.tieuDe}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {!isOwner && (
-            <ReportButton
-              targetType="Post"
-              targetId={post.maTinDang}
-            />
+            <ReportButton targetType="Post" targetId={post.maTinDang} />
           )}
           <button
             className={`${styles.saveBtn} ${isSaved ? styles.saved : ''}`}
@@ -56,11 +72,14 @@ const PostDetailsInfo = ({
         </div>
       </div>
 
-      {/* --- THÔNG TIN GIÁ + ĐỊA CHỈ + NGÀY ĐĂNG --- */}
       <p className={styles.infoLine}>
         <span className={styles.price}>{formattedPrice}</span>
       </p>
-      <p className={styles.infoLine}>
+
+      {/* --- HIỂN THỊ BIỂU ĐỒ NẾU CÓ DATA --- */}
+      {marketData && <MarketPriceChart data={marketData} />}
+      
+      <p className={styles.infoLine} style={{ marginTop: '15px' }}>
         <MdOutlineLocationOn className={styles.icon} />
         {post.diaChi}
       </p>
@@ -69,7 +88,6 @@ const PostDetailsInfo = ({
         Đăng ngày {formatDate(post.ngayDang)}
       </p>
 
-      {/* --- NÚT ACTION (GỌI ĐIỆN / CHAT) --- */}
       <div className={styles.actionButtons}>
         <button className={styles.btnPhone} onClick={handleShowPhoneNumber}>
           {showPhoneNumber ? post.phoneNumber : `Hiện số ${post.phoneNumber?.substring(0, 6)}****`}
@@ -82,14 +100,13 @@ const PostDetailsInfo = ({
         )}
       </div>
 
-      {/* --- ✅ PHẦN NGƯỜI BÁN (ĐÃ SỬA ĐỂ CÓ AVATAR) --- */}
       <div className={styles.sellerInfo}>
         <div className={styles.sellerContainer}>
           <img 
             src={sellerAvatarUrl} 
             alt="Avatar người bán" 
             className={styles.sellerAvatar}
-            onError={(e) => { e.target.src = defaultAvatar; }} // Fallback nếu link ảnh lỗi
+            onError={(e) => { e.target.src = defaultAvatar; }} 
           />
           <div className={styles.sellerText}>
             <span className={styles.sellerLabel}>Người bán</span>
@@ -97,7 +114,6 @@ const PostDetailsInfo = ({
           </div>
         </div>
       </div>
-
     </div>
   );
 };
