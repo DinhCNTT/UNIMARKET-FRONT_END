@@ -309,7 +309,7 @@ export default function LikedVideoDetailViewer() {
           deleteComment={deleteComment}
           expanded={expanded}
           video={fullVideo || shallowVideo}
-          showMenuInline={true}
+          showMenuInline={false}
         />
 
         {/* Thanh điều khiển âm lượng */}

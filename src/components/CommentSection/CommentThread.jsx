@@ -124,6 +124,17 @@ export default function CommentThread({
   const isExpanded = expandedReplies[comment.id];
   const isTopLevel = level === 0;
 
+  // Decide whether to render the 3-dot menu for this comment
+  const shouldShowMenu = Boolean(showMenuInline) || comment.userId === currentUserId;
+
+  // Debug: log when a comment decides whether to show the menu
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.debug(`[CommentThread] commentId=${comment.id} shouldShowMenu=${shouldShowMenu} currentUserId=${currentUserId} showMenuInline=${showMenuInline}`);
+    } catch (e) {}
+  }, [comment.id, shouldShowMenu, currentUserId, showMenuInline]);
+
   const visibleReplies = isTopLevel && hasReplies
     ? isExpanded
       ? comment.replies
@@ -246,14 +257,15 @@ export default function CommentThread({
         {/* Nút 3 chấm: render một lần ở đây (bên trong .comment-item)
           Nếu parent truyền `showMenuInline=true` thì ép hiển thị nút (dùng cho VideoLikePage)
         */}
-        {(showMenuInline || comment.userId === currentUserId) && (
+        {shouldShowMenu && (
           <div
             className={level === 0 ? styles.menuWrapperParent : styles.menuWrapperChild}
-            style={{ right: '20px' }}
+            style={{ right: '20px', display: 'inline-block', zIndex: 1200 }}
           >
             <button
               id={`menu-btn-${comment.id}`}
               className="menu-btn"
+              style={{ display: 'inline-block', visibility: 'visible' }}
               onClick={() =>
                 setActiveMenuCommentId((prevId) =>
                   prevId === comment.id ? null : comment.id
@@ -264,7 +276,7 @@ export default function CommentThread({
             </button>
 
             {isMenuOpen && (
-              <div className="popup-menu" style={{ top: '36px', right: 0 }}>
+              <div className="popup-menu" style={{  top: '30px', right: 0 , left: '-20px'  }}>
                 <button
                   className="delete-btn"
                   onClick={() => {

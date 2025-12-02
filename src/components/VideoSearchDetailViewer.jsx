@@ -541,7 +541,7 @@ export default function VideoSearchDetailViewer() {
                         onClick={() => setActiveMenuCommentId((prevId) => prevId === comment.id ? null : comment.id)}
                       >⋯</button>
                       {activeMenuCommentId === comment.id && (
-                        <div className="popup-menu" style={{ top: '36px', right: 0 }}>
+                        <div className="popup-menu" style={{ top: '30px', right: 0 , left: '-20px'  }}>
                           <button className="delete-btn" onClick={() => { handleDeleteComment(comment.id); setActiveMenuCommentId(null); }}>Xoá</button>
                         </div>
                       )}
@@ -629,7 +629,7 @@ export default function VideoSearchDetailViewer() {
                                 onClick={() => setActiveMenuCommentId((prevId) => prevId === reply.id ? null : reply.id)}
                               >⋯</button>
                               {isReplyMenuOpen && (
-                                <div className="popup-menu" style={{ top: '36px', right: 0 }}>
+                                <div className="popup-menu" style={{ top: '30px', right: 0 , left: '-20px' }}>
                                   <button className="delete-btn" onClick={() => { handleDeleteComment(reply.id); setActiveMenuCommentId(null); }}>Xoá</button>
                                 </div>
                               )}
