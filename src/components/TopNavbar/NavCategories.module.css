@@ -29,18 +29,17 @@
   gap: 15px;
 }
 
-/* --- STYLE CHO MENU DANH MỤC (CŨ) --- */
-.dropdown {
+/* --- BUTTON STYLE CHUNG --- */
+.dropdown, .sellerDropdown {
   position: relative;
   cursor: pointer;
 }
-.dropdownTitle {
+
+.dropdownTitle, .sellerTitle {
   font-family: "Inter", "Poppins", "Roboto", sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #FFB800;
   padding: 10px 20px;
-  background: #fff;
   border-radius: 30px;
   letter-spacing: 0.2px;
   cursor: pointer;
@@ -48,71 +47,38 @@
   align-items: center;
   white-space: nowrap;
   transition: all 0.25s ease;
-  box-shadow: 0 3px 7px rgba(0,0,0,0.1);
 }
 
+/* Màu riêng cho Danh mục */
+.dropdownTitle {
+  color: #FFB800;
+  background: #fff;
+  box-shadow: 0 3px 7px rgba(0,0,0,0.1);
+}
 .dropdownTitle:hover {
   background: #f8f8f8;
   transform: translateY(-1px);
 }
 
-.scrolledText {
-  color: #333 !important;
-  background: #f5f5f5 !important;
-  border: 1px solid #eee;
-}
-
-.dropdownContent {
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
-  padding: 10px;
-  transition: opacity 0.3s ease, visibility 0.3s;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  opacity: 0;
-  visibility: hidden;
-  width: 260px;
-  max-height: 500px;
-  overflow: visible;
-  z-index: 2000;
-  margin-top: 10px;
-}
-
-.dropdown:hover .dropdownContent {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* --- STYLE CHO MENU NGƯỜI BÁN (ĐÃ SỬA GỌN GÀNG) --- */
-.sellerDropdown {
-  position: relative;
-  cursor: pointer;
-}
-
+/* Màu riêng cho Người bán */
 .sellerTitle {
-  font-family: "Inter", "Poppins", "Roboto", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
   color: #111;
-  padding: 10px 20px;
   background: transparent;
-  border-radius: 30px;
-  letter-spacing: 0.3px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  transition: all 0.25s ease;
 }
 .sellerTitle:hover {
   background: rgba(255, 255, 255, 0.3);
   color: #000;
 }
 
-/* --- ĐÂY LÀ PHẦN QUAN TRỌNG ĐỂ MENU HIỂN THỊ --- */
-.sellerContent {
+/* Scrolled State */
+.scrolledText {
+  color: #333 !important;
+  background: #f5f5f5 !important;
+  border: 1px solid #eee;
+}
+
+/* --- PORTAL CONTENT (DÙNG CHUNG LOGIC STYLE) --- */
+.dropdownContent, .sellerContent {
   display: block;
   opacity: 1;
   visibility: visible;
@@ -121,18 +87,99 @@
   border-radius: 12px;
   border: 1px solid #eee;
   padding: 8px 0;
-  width: 220px;
-  font-family: "Inter", "Roboto", "SF Pro Display", "Arial", sans-serif;
-  animation: fadeInSeller 0.2s ease-out;
+  animation: fadeInMenu 0.2s ease-out;
+  /* Đảm bảo menu nằm trong khung nhìn */
+  max-height: 80vh; 
+  overflow-y: auto;
 }
 
-/* --- ANIMATION --- */
-@keyframes fadeInSeller {
+/* Animation */
+@keyframes fadeInMenu {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- MENU ITEM --- */
+/* Riêng cho Dropdown Content (Danh mục) rộng hơn chút */
+.dropdownContent {
+  width: 260px;
+  overflow: visible; /* Để hiển thị submenu */
+}
+
+.sellerContent {
+  width: 220px;
+}
+
+/* --- ITEMS TRONG DANH MỤC --- */
+.parentCategory {
+  padding: 10px 15px;
+  font-weight: 600;
+  color: #333333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f9f9f9;
+  position: relative; /* Quan trọng để neo Submenu */
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.parentCategory:hover {
+  background-color: #fff7ed;
+  color: #ff9900;
+}
+
+.categoryIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  object-fit: contain;
+}
+
+/* --- SUBMENU (HIỆN RA KHI HOVER VÀO PARENT) --- */
+.subMenu {
+  position: absolute;
+  top: 0;
+  left: 100%; /* Hiện bên phải */
+  background: white;
+  width: 220px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  display: none; /* Mặc định ẩn */
+  z-index: 2001;
+  border-radius: 8px;
+  white-space: nowrap;
+  padding: 5px 0;
+  border: 1px solid #eee;
+  margin-left: 5px; /* Cách parent 1 chút */
+}
+
+/* Submenu hiện khi hover vào parent (vẫn hoạt động tốt trong Portal) */
+.parentCategory:hover .subMenu {
+  display: block;
+  animation: fadeInMenu 0.2s ease-out;
+}
+
+.subLink {
+  padding: 10px 15px;
+  text-decoration: none;
+  display: block;
+  color: #555;
+  font-weight: 400;
+  font-size: 14px;
+  border-bottom: 1px solid #f9f9f9;
+  transition: background 0.2s;
+}
+
+.subLink:last-child {
+  border-bottom: none;
+}
+
+.subLink:hover {
+  background-color: #f4f4f4;
+  color: #ff9900;
+}
+
+/* --- ITEMS TRONG NGƯỜI BÁN --- */
 .sellerItem {
   padding: 12px 20px;
   display: flex;
@@ -151,7 +198,6 @@
   color: #ff8800;
 }
 
-/* --- ICONS --- */
 .itemIcon {
   font-size: 18px;
   color: #666;                 
@@ -160,70 +206,4 @@
 
 .sellerItem:hover .itemIcon {
   color: #ff8800;
-}
-
-
-/* --- CÁC STYLE CON CỦA DANH MỤC (GIỮ NGUYÊN) --- */
-.parentCategory {
-  padding: 10px;
-  font-weight: bold;
-  color: #333333;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  position: relative;
-  white-space: nowrap;
-  font-size: 14px;
-}
-
-.parentCategory:hover {
-  background-color: #fff7ed;
-  color: #ff9900;
-}
-
-.categoryIcon {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  object-fit: contain;
-}
-
-.subMenu {
-  position: absolute;
-  top: 0;
-  left: 100%;
-  background: white;
-  width: 220px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  display: none;
-  z-index: 2001;
-  border-radius: 6px;
-  white-space: nowrap;
-  padding: 5px 0;
-}
-
-.parentCategory:hover .subMenu {
-  display: block;
-}
-
-.subLink {
-  padding: 10px 15px;
-  text-decoration: none;
-  display: block;
-  color: #555;
-  font-weight: normal;
-  font-size: 14px;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background 0.2s;
-}
-
-.subLink:last-child {
-  border-bottom: none;
-}
-
-.subLink:hover {
-  background-color: #f4f4f4;
-  color: #ff9900;
 }

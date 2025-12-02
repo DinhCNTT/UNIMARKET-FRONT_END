@@ -128,28 +128,62 @@ const VideoDetailViewer = () => {
        const videoIdNum = parseInt(id);
        const currentFirstVideo = videoList.length > 0 ? videoList[0] : null;
 
-       // Chỉ khởi tạo lại nếu video đầu tiên KHÔNG khớp với ID trên URL
-       // 🔥 FIX 3: Dùng String() để so sánh an toàn
+       // Kiểm tra xem video đầu tiên hiện tại có khớp ID không
        const isMismatch = !currentFirstVideo || String(currentFirstVideo.maTinDang) !== String(id);
 
        if (isMismatch) {
           console.log("🛠 Init video:", videoIdNum);
           
-          setCurrentIndex(0); // Reset về 0 ngay lập tức
-          
-          // Logic chọn nguồn dữ liệu (Router State hoặc Fetch ID)
-          // 🔥 FIX 4: Dùng so sánh lỏng (==) hoặc ép kiểu String để đảm bảo khớp
+          // 1. Ưu tiên lấy dữ liệu từ Router (Seed) để hiển thị NGAY LẬP TỨC (tránh màn hình đen)
           if (seedVideoFromRouter && String(seedVideoFromRouter.maTinDang) === String(id)) {
-             console.log("✅ Using Seed Video from Router");
+             console.log("⚡ [Pha 1] Hiển thị ngay dữ liệu từ Router (có thể cũ/thiếu)");
+             
+             // Gọi hàm của bạn để setup list ban đầu
              initializeWithVideo(seedVideoFromRouter);
+
+             // 2. NGAY SAU ĐÓ: Gọi ngầm API để lấy số liệu chính xác (Lượt view, tim, share...)
+             // Việc này chạy song song, người dùng đang xem video thì số sẽ tự nhảy về đúng
+             axios.get(`${API_BASE}/api/video/detail/${id}`, { 
+                 headers: token ? { Authorization: `Bearer ${token}` } : {} 
+             })
+             .then(res => {
+                 console.log("✅ [Pha 2] Đã lấy được dữ liệu tươi từ Server");
+                 const freshVideo = res.data;
+
+                 // CẬP NHẬT LẠI LIST MỘT CÁCH ÂM THẦM (SILENT UPDATE)
+                 setVideoList(prevList => {
+                     // Nếu list chưa có gì hoặc video đầu khác ID (user đã lướt đi chỗ khác) -> Bỏ qua
+                     if (prevList.length === 0 || String(prevList[0].maTinDang) !== String(id)) {
+                         return prevList;
+                     }
+
+                     // Tạo mảng mới, giữ nguyên các video phía sau (đề xuất), chỉ thay thế video đầu
+                     const newList = [...prevList];
+                     
+                     // 🔥 KỸ THUẬT QUAN TRỌNG: 
+                     // Giữ nguyên các trường điều khiển player cũ (để video không bị reload/khựng lại)
+                     // Chỉ ghi đè các thông số (tim, share, comment...)
+                     newList[0] = {
+                         ...prevList[0], // Giữ lại state cũ (ví dụ đang play đến giây thứ 5)
+                         ...freshVideo,  // Ghi đè dữ liệu mới từ server vào
+                         // Đảm bảo ID không đổi để React không hủy component VideoPlayer
+                         maTinDang: prevList[0].maTinDang 
+                     };
+                     
+                     return newList;
+                 });
+             })
+             .catch(err => console.error("⚠️ Lỗi làm mới dữ liệu:", err));
+
           } else {
-             console.log("⚠️ Fetching Seed Video by ID");
+             // Nếu không có dữ liệu từ Router thì tải bình thường
+             console.log("⚠️ Không có Router State, tải mới từ đầu");
              initializeWithVideo(id);
           }
        }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, seedVideoFromRouter]); // Bỏ videoList khỏi dependency để tránh loop vô hạn
+  }, [id, seedVideoFromRouter]);
 
   // 🔴 LOG 2: Theo dõi biến động State
   useEffect(() => {
@@ -309,18 +343,21 @@ const prevRefreshSignalRef = useRef(refreshSignal);
         prevList.map((v) => {
           if (v.maTinDang === videoToSave.maTinDang) {
             const newIsSaved = !v.isSaved;
+            // 🔥 FIX: Đảm bảo dùng 'soNguoiLuu' và ép kiểu số để tránh lỗi cộng chuỗi
+            const currentSaveCount = typeof v.soNguoiLuu === 'number' ? v.soNguoiLuu : 0;
+            
             return {
               ...v,
               isSaved: newIsSaved,
-              soNguoiLuu: newIsSaved
-                ? (v.soNguoiLuu || 0) + 1
-                : (v.soNguoiLuu || 1) - 1,
+              // Tăng giảm dựa trên số hiện tại
+              soNguoiLuu: newIsSaved ? currentSaveCount + 1 : Math.max(0, currentSaveCount - 1),
             };
           }
           return v;
         })
       );
 
+      // Gọi API
       const { data } = await axios.post(
         `${API_BASE}/api/video/ToggleSave`,
         { maTinDang: videoToSave.maTinDang },
@@ -332,30 +369,26 @@ const prevRefreshSignalRef = useRef(refreshSignal);
         }
       );
 
+      // Cập nhật lại từ phản hồi server (chuẩn xác nhất)
       const { saved, totalSaves } = data;
       setVideoList((prevList) =>
         prevList.map((v) =>
           v.maTinDang === videoToSave.maTinDang
-            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
+            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves } // 🔥 FIX: Dùng soNguoiLuu
             : v
         )
       );
     } catch (err) {
       console.error("Lỗi khi lưu video:", err);
+      // Revert nếu lỗi (Optional)
     }
   };
 
   // =======================
-  // SHARE
+  // SHARE (SỬA LẠI LOGIC NÀY)
   // =======================
   const handleOptimisticShareUpdate = (maTinDang) => {
-    setVideoList((currentList) =>
-      currentList.map((video) =>
-        video.maTinDang === maTinDang
-          ? { ...video, soLuotChiaSe: (video.soLuotChiaSe || 0) + 1 }
-          : video
-      )
-    );
+    console.log("Share thành công! Đợi SignalR cập nhật số liệu...");
   };
 
   // =======================
@@ -498,20 +531,38 @@ const prevRefreshSignalRef = useRef(refreshSignal);
 
   // Autoplay
   // ✅ CODE MỚI: Thêm videoList vào để biết khi nào có video mới về thì chạy
-useEffect(() => {
-    // Delay 100ms để React kịp vẽ video mới ra màn hình
+  const lastPlayedVideoIdRef = useRef(null);
+
+  useEffect(() => {
+    // Delay 100ms để React kịp vẽ
     const timer = setTimeout(() => {
+        const currentVideo = videoList[currentIndex];
+        
+        // Kiểm tra xem có phải vẫn là video cũ không?
+        const isSameVideo = currentVideo && lastPlayedVideoIdRef.current === currentVideo.maTinDang;
+
+        // Cập nhật ID mới để lần sau so sánh
+        if (currentVideo) {
+            lastPlayedVideoIdRef.current = currentVideo.maTinDang;
+        }
+
         videoElsRef.current.forEach((v, i) => {
             if (!v) return;
             
             if (i === currentIndex) {
-                // Video hiện tại -> CHẠY
-                const playPromise = v.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch((err) => console.log("Autoplay block:", err));
+                // Video hiện tại (Active Slide)
+                
+                // 🔥 FIX QUAN TRỌNG:
+                // Nếu là video MỚI (isSameVideo === false) -> Thì mới ép chạy (Autoplay)
+                // Nếu là video CŨ (isSameVideo === true) -> Tức là chỉ bấm Tym/Lưu -> KHÔNG CAN THIỆP (đang Pause thì kệ Pause)
+                if (!isSameVideo) {
+                    const playPromise = v.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch((err) => console.log("Autoplay block:", err));
+                    }
                 }
             } else {
-                // Video khác -> DỪNG
+                // Video khác (Slide khác) -> Luôn luôn DỪNG và tua về 0
                 v.pause();
                 v.currentTime = 0;
             }
@@ -520,8 +571,7 @@ useEffect(() => {
 
     return () => clearTimeout(timer);
     
-    // 👇 QUAN TRỌNG: Phải có videoList ở đây
-}, [currentIndex, videoList]);
+  }, [currentIndex, videoList]);
 
   // Cleanup body style
   useEffect(() => {
@@ -567,26 +617,52 @@ useEffect(() => {
   }, [isConnected, connection]);
 
   useEffect(() => {
+    // Chỉ chạy khi có kết nối
     if (!connection || !isConnected) return;
 
+    // 1. Xử lý Like (Tym)
     const handleUpdateLike = (maTinDang, soTym) => {
-      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soTym } : v)));
-    };
-    const handleUpdateSave = (maTinDang, totalSaves) => {
-      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soNguoiLuu: totalSaves } : v)));
-    };
-    const handleUpdateShare = (maTinDang, totalShares) => {
-      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soLuotChiaSe: totalShares } : v)));
-    };
-    const handleUpdateCommentCount = (maTinDang, totalComments) => {
-      setVideoList((list) => list.map((v) => (v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v)));
+      setVideoList((list) => 
+        list.map((v) => (v.maTinDang === maTinDang ? { ...v, soTym } : v))
+      );
     };
 
+    // 2. Xử lý Save (Lưu) - 🔥 FIX: Gán vào `soNguoiLuu`
+    const handleUpdateSave = (maTinDang, totalSaves) => {
+      setVideoList((list) => 
+        list.map((v) => (v.maTinDang === maTinDang ? { ...v, soNguoiLuu: totalSaves } : v))
+      );
+    };
+
+    // 3. Xử lý Share (Chia sẻ) - 🔥 FIX QUAN TRỌNG
+    const handleUpdateShare = (maTinDang, totalShares) => {
+      setVideoList((list) => 
+        list.map((v) => {
+          if (v.maTinDang === maTinDang) {
+            // Server là chân lý (Source of Truth). 
+            // Nếu Server bảo 55 thì là 55, bất kể Client đang hiển thị 54 hay 56.
+            // Việc này giúp đồng bộ chính xác giữa người Share (User A) và người xem (User B).
+            return { ...v, soLuotChiaSe: totalShares };
+          }
+          return v;
+        })
+      );
+    };
+    // 4. Xử lý Comment (Bình luận)
+    const handleUpdateCommentCount = (maTinDang, totalComments) => {
+      setVideoList((list) => 
+        list.map((v) => (v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v))
+      );
+    };
+
+    // --- Đăng ký sự kiện ---
     connection.on("UpdateLikeCount", handleUpdateLike);
     connection.on("UpdateSaveCount", handleUpdateSave);
     connection.on("UpdateShareCount", handleUpdateShare);
     connection.on("UpdateCommentCount", handleUpdateCommentCount);
 
+    // --- 🔥 CLEANUP (BẮT BUỘC): Hủy đăng ký khi component unmount hoặc re-render ---
+    // Nếu thiếu đoạn này, sự kiện sẽ chạy 2 lần -> gây lỗi nhảy số đôi
     return () => {
       connection.off("UpdateLikeCount", handleUpdateLike);
       connection.off("UpdateSaveCount", handleUpdateSave);

@@ -59,7 +59,7 @@ export const useVideoFeed = ({ manualMode = false, initialVideo = null } = {}) =
       if (typeof videoOrId === 'object' && videoOrId !== null) {
         firstVideo = videoOrId;
         seedId = firstVideo.maTinDang;
-        // 🔥 FIX 1: Set ngay lập tức để UI hiển thị Video 1, không chờ API đề xuất
+        // 🔥 Set ngay lập tức để UI hiển thị, nhưng đây là dữ liệu có thể cũ
         setVideoList([firstVideo]); 
       } 
       // TH2: Có ID (từ URL)
@@ -68,14 +68,13 @@ export const useVideoFeed = ({ manualMode = false, initialVideo = null } = {}) =
         try {
             const seedRes = await axios.get(`${API_BASE}/api/video/detail/${seedId}`, { headers });
             firstVideo = seedRes.data;
-            if (firstVideo) setVideoList([firstVideo]); // Set ngay khi có data
+            if (firstVideo) setVideoList([firstVideo]); 
         } catch (e) {
             console.error("Lỗi tải video seed:", e);
         }
       }
 
       // --- TẢI ĐỀ XUẤT NỐI ĐUÔI ---
-      // Đảm bảo seedId luôn là số nguyên khi gửi lên server
       const excludeList = seedId ? [parseInt(seedId)] : [];
       
       const recRes = await axios.post(
@@ -85,19 +84,23 @@ export const useVideoFeed = ({ manualMode = false, initialVideo = null } = {}) =
       );
 
       setVideoList(prev => {
-         // 🔥 FIX 2: Logic ghép mảng chắc chắn
-         // Nếu firstVideo tồn tại (từ state hoặc mới fetch xong)
-         const seed = firstVideo || (prev.length > 0 ? prev[0] : null);
+         // 🔥 FIX QUAN TRỌNG TẠI ĐÂY:
+         // Kiểm tra xem trong 'prev' (State hiện tại) video đầu tiên có đúng là video mình đang xem không?
+         // Nếu đúng, hãy dùng 'prev[0]' vì nó có thể đã được component VideoDetailViewer cập nhật số liệu mới nhất (55 share).
+         // Đừng dùng 'firstVideo' vì nó là dữ liệu cũ lúc mới vào hàm (54 share).
+         
+         let seed = firstVideo;
+         if (prev.length > 0 && seedId && String(prev[0].maTinDang) === String(seedId)) {
+             seed = prev[0]; // Dùng bản mới nhất trong State
+         }
 
          if (seed) {
-             // Lọc đề xuất: So sánh String để tránh lỗi Type (10 !== "10")
              const validRecs = recRes.data.filter(v => 
                  String(v.maTinDang) !== String(seed.maTinDang)
              );
              return [seed, ...validRecs];
          }
          
-         // Trường hợp xấu nhất: Không có seed, hiển thị luôn đề xuất (Video 2 sẽ thành Video 1)
          return recRes.data;
       });
       
@@ -113,7 +116,6 @@ export const useVideoFeed = ({ manualMode = false, initialVideo = null } = {}) =
       isFetchingRef.current = false;
     }
   }, [token]);
-
   // =========================================================
   // 2. FETCH MORE (Scroll xuống)
   // =========================================================
