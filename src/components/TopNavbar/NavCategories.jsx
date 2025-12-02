@@ -34,12 +34,13 @@ const DropdownPortal = ({ children, coords, onClose }) => {
   return createPortal(
     <div
       ref={dropdownRef}
-      // Style này BẮT BUỘC phải ở đây vì nó chứa toạ độ động (Logic)
       style={{
         position: "fixed",
         top: coords.top,
         left: coords.left,
         zIndex: 999999,
+        // minWidth để đảm bảo menu không bị co quá nhỏ
+        minWidth: "200px", 
       }}
     >
       {children}
@@ -52,6 +53,12 @@ const NavCategories = ({ isScrolled }) => {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   
+  // --- STATE CHO MENU DANH MỤC (MỚI) ---
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [categoryCoords, setCategoryCoords] = useState({ top: 0, left: 0 });
+  const categoryRef = useRef(null);
+
+  // --- STATE CHO MENU NGƯỜI BÁN ---
   const [showSellerMenu, setShowSellerMenu] = useState(false);
   const [sellerCoords, setSellerCoords] = useState({ top: 0, left: 0 });
   const sellerRef = useRef(null);
@@ -78,6 +85,7 @@ const NavCategories = ({ isScrolled }) => {
     setSelectedSubCategory("");
     setSearchTerm("");
     navigate("/loc-tin-dang");
+    setShowCategoryMenu(false); // Đóng menu sau khi chọn
   };
 
   const handleSubCategoryClick = (e, parentCategory, subCategory) => {
@@ -86,6 +94,7 @@ const NavCategories = ({ isScrolled }) => {
     setSelectedSubCategory(subCategory);
     setSearchTerm("");
     navigate("/loc-tin-dang");
+    setShowCategoryMenu(false); // Đóng menu sau khi chọn
   };
 
   const handleLogoClick = (e) => {
@@ -96,12 +105,29 @@ const NavCategories = ({ isScrolled }) => {
     navigate("/market");
   };
 
+  // --- HANDLER TOGGLE DANH MỤC ---
+  const handleToggleCategoryMenu = () => {
+    if (showCategoryMenu) {
+      setShowCategoryMenu(false);
+      return;
+    }
+    if (categoryRef.current) {
+      const rect = categoryRef.current.getBoundingClientRect();
+      setCategoryCoords({
+        top: rect.bottom + 10,
+        left: rect.left 
+      });
+      setShowCategoryMenu(true);
+      setShowSellerMenu(false); // Đóng menu kia nếu đang mở
+    }
+  };
+
+  // --- HANDLER TOGGLE NGƯỜI BÁN ---
   const handleToggleSellerMenu = () => {
     if (showSellerMenu) {
       setShowSellerMenu(false);
       return;
     }
-
     if (sellerRef.current) {
       const rect = sellerRef.current.getBoundingClientRect();
       setSellerCoords({
@@ -109,6 +135,7 @@ const NavCategories = ({ isScrolled }) => {
         left: rect.left 
       });
       setShowSellerMenu(true);
+      setShowCategoryMenu(false); // Đóng menu kia nếu đang mở
     }
   };
 
@@ -119,39 +146,52 @@ const NavCategories = ({ isScrolled }) => {
       </a>
 
       <nav className={styles.mainMenu}>
-        {/* --- MENU 1: DANH MỤC --- */}
-        <div className={styles.dropdown}>
+        
+        {/* --- MENU 1: DANH MỤC (CLICK + PORTAL) --- */}
+        <div 
+            className={styles.dropdown} 
+            ref={categoryRef}
+            onClick={handleToggleCategoryMenu}
+        >
           <span className={`${styles.dropdownTitle} ${isScrolled ? styles.scrolledText : ""}`}>
             Danh mục <FaChevronDown size={12} style={{ marginLeft: 5 }} />
           </span>
-          
-          <div className={styles.dropdownContent}>
-            {categories.map((parent) => (
-              <div 
-                key={parent.id} 
-                className={styles.parentCategory} 
-                onClick={() => handleCategoryClick(parent.tenDanhMucCha)}
-              >
-                {parent.icon && <img src={parent.icon} alt="icon" className={styles.categoryIcon} />}
-                <span>{parent.tenDanhMucCha}</span>
-
-                {parent.danhMucCon && parent.danhMucCon.length > 0 && (
-                    <div className={styles.subMenu}>
-                        {parent.danhMucCon.map((sub) => (
-                            <div 
-                                key={sub.id} 
-                                className={styles.subLink}
-                                onClick={(e) => handleSubCategoryClick(e, parent.tenDanhMucCha, sub.tenDanhMucCon)}
-                            >
-                                {sub.tenDanhMucCon}
-                            </div>
-                        ))}
-                    </div>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
+
+        {/* Portal Danh Mục */}
+        {showCategoryMenu && (
+            <DropdownPortal 
+                coords={categoryCoords} 
+                onClose={() => setShowCategoryMenu(false)}
+            >
+                <div className={styles.dropdownContent}>
+                    {categories.map((parent) => (
+                    <div 
+                        key={parent.id} 
+                        className={styles.parentCategory} 
+                        onClick={() => handleCategoryClick(parent.tenDanhMucCha)}
+                    >
+                        {parent.icon && <img src={parent.icon} alt="icon" className={styles.categoryIcon} />}
+                        <span>{parent.tenDanhMucCha}</span>
+
+                        {parent.danhMucCon && parent.danhMucCon.length > 0 && (
+                            <div className={styles.subMenu}>
+                                {parent.danhMucCon.map((sub) => (
+                                    <div 
+                                        key={sub.id} 
+                                        className={styles.subLink}
+                                        onClick={(e) => handleSubCategoryClick(e, parent.tenDanhMucCha, sub.tenDanhMucCon)}
+                                    >
+                                        {sub.tenDanhMucCon}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    ))}
+                </div>
+            </DropdownPortal>
+        )}
 
         {/* --- MENU 2: DÀNH CHO NGƯỜI BÁN --- */}
         {!isScrolled && (
@@ -166,12 +206,12 @@ const NavCategories = ({ isScrolled }) => {
               </span>
             </div>
 
+            {/* Portal Người Bán */}
             {showSellerMenu && (
               <DropdownPortal 
                 coords={sellerCoords} 
                 onClose={() => setShowSellerMenu(false)}
               >
-                {/* JSX Sạch: Không còn style inline, tất cả class lo hết */}
                 <div className={styles.sellerContent}>
                   <div className={styles.sellerItem} onClick={() => { navigate("/quan-ly-tin"); setShowSellerMenu(false); }}>
                     <FaClipboardList className={styles.itemIcon} /> 
