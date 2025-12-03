@@ -22,9 +22,9 @@ export default function CommentInput({ onSubmit }) {
   };
 
   return (
-    <div className="lvv-comment-input-fixed">
-      <div className="lvv-comment-input-wrapper">
-        <div className="lvv-textarea-group">
+    <div className="comment-input-fixed">
+      <div className="comment-input-wrapper">
+        <div className="textarea-group">
           <textarea
             ref={mainCommentRef}
             value={newComment}
@@ -40,14 +40,14 @@ export default function CommentInput({ onSubmit }) {
               }
             }}
             placeholder="Nhập bình luận..."
-            className="lvv-comment-input"
+            className="comment-input"
             rows={1}
           />
           {newComment.length > 50 && (
-            <div className="lvv-char-counter">{newComment.length}/150</div>
+            <div className="char-counter">{newComment.length}/150</div>
           )}
         </div>
-        <button onClick={handleSubmit} className="lvv-comment-submit-btn">
+        <button onClick={handleSubmit} className="comment-submit-btn">
           Gửi
         </button>
       </div>

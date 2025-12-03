@@ -92,7 +92,10 @@ const VideoDetailViewer = () => {
   const [showControls, setShowControls] = useState(true);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [aspectRatios, setAspectRatios] = useState({});
-
+  // Volume state for synchronized control
+  const [volume, setVolume] = useState(0.5);
+  const [isMuted, setIsMuted] = useState(false);
+  const prevVolumeRef = React.useRef(0.5);
   // Refs
   const videoRef = useRef(null);
   const videoElsRef = useRef([]);
@@ -551,7 +554,10 @@ const prevRefreshSignalRef = useRef(refreshSignal);
             
             if (i === currentIndex) {
                 // Video hiện tại (Active Slide)
-                
+                try {
+                  v.volume = volume;
+                  v.muted = isMuted;
+                } catch (e) {}
                 // 🔥 FIX QUAN TRỌNG:
                 // Nếu là video MỚI (isSameVideo === false) -> Thì mới ép chạy (Autoplay)
                 // Nếu là video CŨ (isSameVideo === true) -> Tức là chỉ bấm Tym/Lưu -> KHÔNG CAN THIỆP (đang Pause thì kệ Pause)
@@ -585,7 +591,72 @@ const prevRefreshSignalRef = useRef(refreshSignal);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
   }, []);
+// Unmute / set default volume on first user interaction
+  useEffect(() => {
+    const onFirstInteraction = () => {
+      try {
+        // Set volume for current video element(s)
+        const vid = videoRef.current || (videoElsRef.current && videoElsRef.current[currentIndex]);
+        if (vid) {
+          // Use volume state handler if available
+          try {
+            vid.muted = false;
+            vid.volume = volume;
+          } catch (e) {}
+          const p = vid.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+      } catch (e) {
+        console.warn('Error setting volume on first interaction', e);
+      }
+    };
 
+    // If navigation came from a user click (VideoLikedPage), that page sets a flag
+    // so we can immediately unmute on mount. Otherwise wait for first user click.
+    let used = false;
+    try {
+      const shouldUnmute = sessionStorage.getItem('unmuteOnOpen');
+      if (shouldUnmute) {
+        sessionStorage.removeItem('unmuteOnOpen');
+        onFirstInteraction();
+        used = true;
+      }
+    } catch (e) {}
+
+    if (!used) {
+      window.addEventListener('click', onFirstInteraction, { once: true });
+      return () => window.removeEventListener('click', onFirstInteraction);
+    }
+    return () => {};
+  }, [currentIndex]);
+
+  // Volume handlers to sync with VideoVolumeControl
+  const handleVolumeChange = (newVolume) => {
+    try {
+      prevVolumeRef.current = newVolume;
+      setVolume(newVolume);
+      setIsMuted(newVolume === 0);
+      // apply to all known video elements
+      videoElsRef.current.forEach((v) => {
+        if (v) {
+          try {
+            v.volume = newVolume;
+            v.muted = newVolume === 0;
+          } catch (e) {}
+        }
+      });
+    } catch (e) {}
+  };
+
+  const toggleMute = () => {
+    if (isMuted || volume === 0) {
+      const restore = prevVolumeRef.current || 0.5;
+      handleVolumeChange(restore);
+    } else {
+      prevVolumeRef.current = volume || 0.5;
+      handleVolumeChange(0);
+    }
+  };
   // ======================================================
   // REALTIME
   // ======================================================
@@ -755,6 +826,9 @@ const prevRefreshSignalRef = useRef(refreshSignal);
                     handleVideoClick={handleVideoClick}
                     showControls={showControls}
                     handleDragStateChange={setIsDraggingVideo}
+                    volume={volume}
+                    toggleMute={toggleMute}
+                    handleVolumeChange={handleVolumeChange}
                   />
 
                   <VideoInfoOverlay

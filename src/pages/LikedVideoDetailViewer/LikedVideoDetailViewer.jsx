@@ -7,8 +7,7 @@ import React, {
 } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeftCircle } from "react-icons/fi";
-import "./LikedVideoDetailViewer.css";
-
+import styles from "./LikedVideoDetailViewer.module.css";
 // Import Hooks
 import { useVideoScroll } from "../../hooks/useVideoScroll";
 import { useVideoPlayer } from "../../hooks/useVideoPlayer";
@@ -37,6 +36,7 @@ export default function LikedVideoDetailViewer() {
   const [videoList, setVideoList] = useState(initialVideos);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { videoConnection } = useContext(VideoHubContext);
 
   // ✅ Tạo shallowVideo ban đầu (có thể chỉ chứa maTinDang nếu load từ URL)
@@ -86,7 +86,69 @@ export default function LikedVideoDetailViewer() {
     toggleMute,
     setIsPlaying,
   } = useVideoPlayer(fullVideo?.videoUrl || shallowVideo?.videoUrl);
+// If navigation came from a click on VideoLikedPage, that page stores a flag
+  // so we can immediately unmute/set volume and try to play on mount.
+  useEffect(() => {
+    try {
+      const shouldUnmute = sessionStorage.getItem('unmuteOnOpen');
+      if (shouldUnmute) {
+        sessionStorage.removeItem('unmuteOnOpen');
+        // set desired volume and unmute via hook handler
+        handleVolumeChange(0.5);
+        // try to play player/background/audio
+        setTimeout(() => {
+          try { playerRef.current?.play()?.catch(() => {}); } catch(e) {}
+          try { bgPlayerRef.current?.play()?.catch(() => {}); } catch(e) {}
+          try { audioRef.current?.play()?.catch(() => {}); } catch(e) {}
+        }, 50);
+      }
+    } catch (e) {}
+  }, []); // run once on mount
 
+  // Keep background and main video synchronized (time + play/pause)
+  useEffect(() => {
+    const main = playerRef.current;
+    const bg = bgPlayerRef.current;
+    if (!main || !bg) return;
+
+    let raf = null;
+    const syncIfNeeded = () => {
+      try {
+        const diff = Math.abs((main.currentTime || 0) - (bg.currentTime || 0));
+        if (diff > 0.15) {
+          bg.currentTime = main.currentTime;
+        }
+      } catch (e) {}
+    };
+
+    const onTime = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        syncIfNeeded();
+        raf = null;
+      });
+    };
+
+    const onPlay = () => { try { if (bg.paused) bg.play(); } catch (e) {} };
+    const onPause = () => { try { if (!bg.paused) bg.pause(); } catch (e) {} };
+    const onSeeked = () => { try { bg.currentTime = main.currentTime; } catch (e) {} };
+
+    main.addEventListener('timeupdate', onTime);
+    main.addEventListener('play', onPlay);
+    main.addEventListener('pause', onPause);
+    main.addEventListener('seeked', onSeeked);
+
+    try { bg.currentTime = main.currentTime; } catch (e) {}
+    if (!main.paused && bg.paused) { try { bg.play(); } catch (e) {} }
+
+    return () => {
+      main.removeEventListener('timeupdate', onTime);
+      main.removeEventListener('play', onPlay);
+      main.removeEventListener('pause', onPause);
+      main.removeEventListener('seeked', onSeeked);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [playerRef, bgPlayerRef]);
   // ✅ Hook bình luận
   const {
     comments,
@@ -179,14 +241,14 @@ export default function LikedVideoDetailViewer() {
 
   // ✅ Khi load trực tiếp từ URL mà chưa có dữ liệu
   if (!videoToDisplay?.maTinDang)
-    return <div className="lvv-loading">Đang tải video...</div>;
+    return <div className={styles.loading}>Đang tải video...</div>;
 
   // --- JSX TRẢ VỀ ---
   return (
-    <div className="lvv-container" onClick={handleClick}>
+    <div className={styles.container} onClick={handleClick}>
       {/* Nút quay lại */}
       <button
-        className="lvv-back-btn"
+        className={styles.backBtn}
         onClick={(e) => {
           e.stopPropagation();
           navigate(-1);
@@ -212,14 +274,14 @@ export default function LikedVideoDetailViewer() {
 
       {/* Overlay thông tin & bình luận */}
       <div
-        className="lvv-overlay"
+        className={styles.overlay}
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
       >
         {/* Ẩn thông tin khi cuộn */}
         {!hideUserInfo && (
           <>
-            <VideoInfo video={videoToDisplay} />
+            <VideoInfo video={videoToDisplay} onExpandedChange={setExpanded} />
             <VideoActions
               video={videoToDisplay}
               isLiked={isLiked}
@@ -242,6 +304,9 @@ export default function LikedVideoDetailViewer() {
           currentUserId={currentUserId}
           submitComment={submitComment}
           deleteComment={deleteComment}
+          expanded={expanded}
+          video={fullVideo || shallowVideo}
+          showMenuInline={false}
         />
 
         {/* Thanh điều khiển âm lượng */}
