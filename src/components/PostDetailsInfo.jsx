@@ -7,7 +7,7 @@ import { IoHeartOutline, IoHeart } from "react-icons/io5";
 import { formatDate } from "../utils/formatters"; 
 import axios from "axios"; 
 import defaultAvatar from "../assets/default-avatar.png";
-import MarketPriceChart from "./MarketPriceChart"; 
+import MarketWaveChart from "./MarketWaveChart";
 
 const PostDetailsInfo = ({
   post,
@@ -77,7 +77,7 @@ const PostDetailsInfo = ({
       </p>
 
       {/* --- HIỂN THỊ BIỂU ĐỒ NẾU CÓ DATA --- */}
-      {marketData && <MarketPriceChart data={marketData} />}
+      {marketData && <MarketWaveChart data={marketData} />}
       
       <p className={styles.infoLine} style={{ marginTop: '15px' }}>
         <MdOutlineLocationOn className={styles.icon} />

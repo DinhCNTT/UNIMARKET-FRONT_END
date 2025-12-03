@@ -188,6 +188,10 @@ const CapNhatTin = () => {
     // Validate Dynamic (Mobile)
     if (categoryName?.toLowerCase().includes("điện thoại")) {
       if (!dynamicData.Hang) newErrors.Hang = true;
+      
+      // 👉 THÊM DÒNG NÀY: Bắt buộc chọn dòng máy
+      if (!dynamicData.DongMay) newErrors.DongMay = true; 
+      
       if (!dynamicData.MauSac) newErrors.MauSac = true;
       if (!dynamicData.DungLuong) newErrors.DungLuong = true;
       if (!dynamicData.BaoHanh) newErrors.BaoHanh = true;
@@ -196,7 +200,6 @@ const CapNhatTin = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
