@@ -200,6 +200,7 @@ const usePostTinDang = () => {
     if (isMobileCategory) {
       detailsDisplay = {
         "Hãng": dynamicData.Hang,
+        "Dòng máy": dynamicData.DongMay,
         "Màu sắc": dynamicData.MauSac,
         "Dung lượng": dynamicData.DungLuong,
         "Xuất xứ": dynamicData.XuatXu,
@@ -237,8 +238,8 @@ const usePostTinDang = () => {
       return;
     }
     if (isMobileCategory) {
-      if (!dynamicData.Hang || !dynamicData.MauSac || !dynamicData.DungLuong) {
-        alert("Vui lòng điền đầy đủ Hãng, Màu sắc và Dung lượng!");
+      if (!dynamicData.Hang || !dynamicData.DongMay || !dynamicData.MauSac || !dynamicData.DungLuong) {
+        alert("Vui lòng điền đầy đủ Hãng, Dòng máy, Màu sắc và Dung lượng!");
         return;
       }
     }

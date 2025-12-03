@@ -20,6 +20,7 @@ const PostTechnicalSpecs = ({ detailsJson }) => {
   // 3. Bảng dịch từ khóa sang tiếng Việt có dấu
   const labelMapping = {
     "Hang": "Hãng",
+    "DongMay": "Dòng máy", // 👈 THÊM DÒNG NÀY VÀO
     "MauSac": "Màu sắc",
     "DungLuong": "Dung lượng",
     "BaoHanh": "Bảo hành",
@@ -40,7 +41,7 @@ const PostTechnicalSpecs = ({ detailsJson }) => {
           return (
             <div key={key} className={styles.specRow}>
               <span className={styles.specLabel}>
-                {labelMapping[key] || key} {/* Dùng tên tiếng Việt, nếu không có thì dùng key gốc */}
+                {labelMapping[key] || key} {/* Tự động map sang tiếng Việt */}
               </span>
               <span className={styles.specValue}>{value}</span>
             </div>
