@@ -27,10 +27,27 @@ export const useQuickMessages = (userId) => {
   /**
    * Tạo nút quick reply động
    */
-  const createQuickReplyButton = (text) => {
+  const createQuickReplyButton = (text, classNameFallback) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = '_quickReplyBtn_4u9j7_41';
+    // Use className passed from existing page buttons when possible to match styles.
+    // If not available, fall back to a neutral class name that we style via inline defaults.
+    if (classNameFallback) {
+      btn.className = classNameFallback;
+    } else {
+      btn.className = '_quickReplyBtn_fallback';
+      // apply some safe inline styles so it doesn't render as a plain rectangle
+      btn.style.flex = '0 0 auto';
+      btn.style.background = 'var(--theme-bg-secondary, #f3f4f6)';
+      btn.style.color = 'var(--theme-text-primary, #111827)';
+      btn.style.border = '1px solid transparent';
+      btn.style.padding = '6px 10px';
+      btn.style.borderRadius = '16px';
+      btn.style.fontSize = '13px';
+      btn.style.cursor = 'pointer';
+      btn.style.whiteSpace = 'nowrap';
+      btn.style.transition = 'background 0.15s ease, transform 0.12s ease';
+    }
     btn.textContent = text;
     btn.addEventListener('click', () => {
       try {
@@ -120,8 +137,11 @@ export const useQuickMessages = (userId) => {
 
     const toShow = Array.isArray(messages) ? messages : [];
     console.log('[QuickMessages] Creating', toShow.length, 'quick message buttons');
+    // try to reuse the className from an existing quick-reply button in the container
+    const sampleBtn = container.querySelector('button');
+    const sampleClass = sampleBtn ? sampleBtn.className : null;
     toShow.forEach((m) => {
-      const b = createQuickReplyButton(m.content || m.Content || String(m));
+      const b = createQuickReplyButton(m.content || m.Content || String(m), sampleClass);
       b.dataset.quickMessageId = m.id ?? '';
       managed.appendChild(b);
     });
