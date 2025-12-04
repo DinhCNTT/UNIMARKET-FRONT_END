@@ -2,87 +2,65 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5133/api/quickmessage';
 
-const getAuthToken = () => {
-  const token = localStorage.getItem('token');
-  console.log('[quickMessageService] Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'MISSING');
-  return token;
-};
+const getAuthToken = () => localStorage.getItem('token');
 
 const apiClient = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 });
 
-// Add token to requests
 apiClient.interceptors.request.use(config => {
   const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    console.log('[quickMessageService] Added Bearer token to request, first 30 chars:', `Bearer ${token.substring(0, 20)}...`);
-  } else {
-    console.warn('[quickMessageService] NO TOKEN FOUND - Request will likely fail with 401');
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 }, error => Promise.reject(error));
 
 export const quickMessageService = {
-  /**
-   * Lấy danh sách tin nhắn nhanh của user
-   */
   getMyQuickMessages: async () => {
     try {
-      const response = await apiClient.get('/');
+      console.log('📡 [API] Đang gọi GET list...');
+      const response = await apiClient.get('/', { params: { nocache: Date.now() } });
+      console.log('✅ [API] GET thành công, Data gốc:', response.data);
       return response.data.data || [];
     } catch (error) {
-      console.error('Lỗi lấy tin nhắn nhanh:', error);
+      console.error('❌ [API] GET thất bại:', error);
       throw error;
     }
   },
 
-  /**
-   * Thêm tin nhắn nhanh mới
-   */
   createQuickMessage: async (content, order) => {
     try {
-      const response = await apiClient.post('/', {
-        content: content.trim(),
-        order: order
-      });
-      return response.data.data;
+      console.log('📡 [API] Đang gọi POST:', { content, order });
+      const response = await apiClient.post('/', { content: content.trim(), order });
+      console.log('✅ [API] POST thành công, Data trả về:', response.data);
+      // Quan trọng: Log xem server trả về cái gì để Frontend dùng
+      return response.data.data; 
     } catch (error) {
-      console.error('Lỗi tạo tin nhắn nhanh:', error);
+      console.error('❌ [API] POST thất bại:', error);
       throw error;
     }
   },
 
-  /**
-   * Cập nhật tin nhắn nhanh
-   */
   updateQuickMessage: async (id, content, order) => {
     try {
-      const response = await apiClient.put(`/${id}`, {
-        id: id,
-        content: content.trim(),
-        order: order
-      });
+      console.log(`📡 [API] Đang gọi PUT ID=${id}:`, { content, order });
+      const response = await apiClient.put(`/${id}`, { id, content: content.trim(), order });
+      console.log('✅ [API] PUT thành công:', response.data);
       return response.data.data;
     } catch (error) {
-      console.error('Lỗi cập nhật tin nhắn nhanh:', error);
+      console.error('❌ [API] PUT thất bại:', error);
       throw error;
     }
   },
 
-  /**
-   * Xóa tin nhắn nhanh
-   */
   deleteQuickMessage: async (id) => {
     try {
+      console.log(`📡 [API] Đang gọi DELETE ID=${id}`);
       await apiClient.delete(`/${id}`);
+      console.log('✅ [API] DELETE thành công');
       return true;
     } catch (error) {
-      console.error('Lỗi xóa tin nhắn nhanh:', error);
+      console.error('❌ [API] DELETE thất bại:', error);
       throw error;
     }
   }
