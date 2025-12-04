@@ -9,7 +9,9 @@ import {
   ReferenceLine,
   Label,
 } from 'recharts';
-import { formatPrice } from '../utils/formatters'; // Import hàm format tiền của bạn
+// Import icons từ lucide-react
+import { TrendingUp, TrendingDown, CheckCircle2 } from 'lucide-react';
+import { formatPrice } from '../utils/formatters'; 
 import styles from './MarketWaveChart.module.css';
 
 const MarketWaveChart = ({ data }) => {
@@ -17,52 +19,73 @@ const MarketWaveChart = ({ data }) => {
 
   const { minPrice, maxPrice, averagePrice, currentPrice, status, differencePercent, sampleSize } = data;
 
-  // 1. Cấu hình màu sắc & Gradient (Xanh lá, Xanh dương, Đỏ)
+  // 1. Cấu hình màu sắc & ICON tương ứng
   const theme = useMemo(() => {
-    if (status === "Rẻ hơn thị trường") return { color: "#3b82f6", id: "colorBlue", rgb: "59, 130, 246" }; // Blue
-    if (status === "Cao hơn thị trường") return { color: "#ef4444", id: "colorRed", rgb: "239, 68, 68" };   // Red
-    return { color: "#10b981", id: "colorGreen", rgb: "16, 185, 129" };                                     // Green
+    if (status === "Rẻ hơn thị trường") {
+      return { 
+        color: "#3b82f6", 
+        id: "colorBlue", 
+        rgb: "59, 130, 246",
+        Icon: TrendingDown // Icon giảm
+      }; 
+    }
+    if (status === "Cao hơn thị trường") {
+      return { 
+        color: "#ef4444", 
+        id: "colorRed", 
+        rgb: "239, 68, 68",
+        Icon: TrendingUp // Icon tăng
+      }; 
+    }
+    return { 
+      color: "#10b981", 
+      id: "colorGreen", 
+      rgb: "16, 185, 129",
+      Icon: CheckCircle2 // Icon tích xanh
+    }; 
   }, [status]);
 
-  // 2. Tạo dữ liệu giả lập đường cong phân phối chuẩn (Bell Curve)
-  // Ta tạo 3 điểm: Đầu (Min), Đỉnh (Avg), Cuối (Max)
+  // 2. Tạo dữ liệu Bell Curve
   const chartData = useMemo(() => [
-    { price: minPrice, density: 0.1, label: 'thấp nhất' },       // Điểm thấp
-    { price: averagePrice, density: 1, label: 'hợp lý' },      // Đỉnh sóng 
-    { price: maxPrice, density: 0.1, label: 'cao nhất' },        // Điểm cao
+    { price: minPrice, density: 0.15, label: 'thấp nhất' },
+    { price: averagePrice, density: 1, label: 'hợp lý' },
+    { price: maxPrice, density: 0.15, label: 'cao nhất' },
   ], [minPrice, averagePrice, maxPrice]);
 
-  // 3. Mở rộng trục X để chứa cả giá hiện tại nếu nó nằm ngoài khoảng Min-Max
+  // 3. Mở rộng trục X
   const xDomain = [
-    Math.min(minPrice, currentPrice) * 0.95, // Giảm 5% để tạo lề trái
-    Math.max(maxPrice, currentPrice) * 1.05  // Tăng 5% để tạo lề phải
+    Math.min(minPrice, currentPrice) * 0.95,
+    Math.max(maxPrice, currentPrice) * 1.05
   ];
 
-  // Component Tooltip tùy chỉnh
+  // Tooltip
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
         <div className={styles.customTooltip}>
-          <p className={styles.tooltipLabel}>Mức giá {payload[0].payload.label || 'này'}</p>
-          <p className={styles.tooltipValue} style={{ color: theme.color }}>
+          <span className={styles.tooltipLabel}>Mức giá {payload[0].payload.label}: </span>
+          <span className={styles.tooltipValue} style={{ color: theme.color }}>
             {formatPrice(payload[0].payload.price)}
-          </p>
+          </span>
         </div>
       );
     }
     return null;
   };
 
+  // Lấy ra Icon Component để render
+  const StatusIcon = theme.Icon;
+
   return (
-    <div className={styles.chartContainer} style={{ '--color-rgb': theme.rgb }}>
+    <div className={styles.chartContainer} style={{ '--theme-color': theme.color }}>
       {/* --- HEADER --- */}
       <div className={styles.header}>
-        <span className={styles.title}>Định giá AI</span>
-        <div className={styles.badge} style={{ backgroundColor: theme.color }}>
-          {status === "Rẻ hơn thị trường" && <span>📉</span>}
-          {status === "Cao hơn thị trường" && <span>📈</span>}
-          {status === "Giá hợp lý" && <span>✅</span>}
-          {Math.abs(differencePercent)}%
+        <span className={styles.title}>Khoảng giá AI</span>
+        
+        {/* Badge trạng thái với Icon mới */}
+        <div className={styles.badge}>
+          <StatusIcon size={14} strokeWidth={2.5} /> {/* Render Icon ở đây */}
+          <span style={{ marginLeft: 4 }}>{Math.abs(differencePercent)}%</span>
         </div>
       </div>
 
@@ -71,66 +94,57 @@ const MarketWaveChart = ({ data }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+            margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
           >
-            {/* Định nghĩa Gradient màu */}
             <defs>
               <linearGradient id={theme.id} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={theme.color} stopOpacity={0.6} />
-                <stop offset="95%" stopColor={theme.color} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={theme.color} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={theme.color} stopOpacity={0} />
               </linearGradient>
             </defs>
 
-            {/* Trục X: Hiển thị giá */}
             <XAxis 
               dataKey="price" 
               type="number" 
               domain={xDomain} 
-              tickFormatter={(value) => {
-                 // Rút gọn số hiển thị trục X: 15.000.000 -> 15tr
-                 return value >= 1000000 ? `${(value/1000000).toFixed(1)}tr` : value;
-              }}
-              tick={{ fontSize: 10, fill: '#9ca3af' }}
+              tickFormatter={(value) => value >= 1000000 ? `${(value/1000000).toFixed(1)}tr` : value}
+              tick={{ fontSize: 9, fill: '#9ca3af' }}
+              tickMargin={4}
               axisLine={false}
               tickLine={false}
+              interval="preserveStartEnd"
             />
             
-            {/* Trục Y: Ẩn đi vì chỉ cần hình dáng sóng */}
-            <YAxis hide type="number" domain={[0, 'dataMax + 0.2']} />
+            <YAxis hide type="number" domain={[0, 1.2]} />
 
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: theme.color, strokeWidth: 1, strokeDasharray: '3 3' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: theme.color, strokeWidth: 1, strokeDasharray: '2 2' }} />
 
-            {/* VẼ SÓNG (AREA) */}
             <Area
-              type="monotone" // Tạo đường cong mềm mại
+              type="monotone"
               dataKey="density"
               stroke={theme.color}
-              strokeWidth={3}
+              strokeWidth={2}
               fill={`url(#${theme.id})`}
-              animationDuration={1500}
+              animationDuration={1000}
             />
 
-            {/* ĐƯỜNG KẺ CHỈ VỊ TRÍ GIÁ CỦA BẠN */}
-            <ReferenceLine x={currentPrice} stroke={theme.color} strokeDasharray="3 3">
+            <ReferenceLine x={currentPrice} stroke={theme.color} strokeDasharray="2 2">
               <Label 
                 value="Bạn ở đây" 
                 position="top" 
                 fill={theme.color} 
-                fontSize={11} 
-                fontWeight="bold"
-                offset={10}
+                fontSize={10} 
+                fontWeight="700"
+                offset={2}
               />
             </ReferenceLine>
 
-            {/* Điểm tròn đánh dấu giá hiện tại */}
             <ReferenceLine x={currentPrice} stroke="none">
                <Label 
                  content={({ viewBox }) => {
-                   const { x, y } = viewBox; 
-                   // Tính toán vị trí Y dựa trên đường cong (ước lượng)
-                   // Hoặc đặt cố định ở giữa sóng
+                   const { x, height } = viewBox; 
                    return (
-                     <circle cx={x} cy={100} r={6} fill="#fff" stroke={theme.color} strokeWidth={3} />
+                     <circle cx={x} cy={height - 15} r={3.5} fill="#fff" stroke={theme.color} strokeWidth={2} />
                    )
                  }}
                />
@@ -141,7 +155,7 @@ const MarketWaveChart = ({ data }) => {
       </div>
 
       <div className={styles.footer}>
-        Dựa trên phân tích {sampleSize} tin đăng tương tự 3 tháng qua
+        Dựa trên {sampleSize} tin đăng 3 tháng qua
       </div>
     </div>
   );
