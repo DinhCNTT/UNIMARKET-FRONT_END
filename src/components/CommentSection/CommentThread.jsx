@@ -1,7 +1,9 @@
-// src/components/CommentSection/CommentThread.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import styles from "./CommentItem.module.css";
 
-// Component con để xử lý từng comment và reply của nó
+// 🆕 Thêm icon
+import { FaFlag, FaTrashAlt } from "react-icons/fa";
+
 export default function CommentThread({
   comment,
   currentUserId,
@@ -10,207 +12,261 @@ export default function CommentThread({
   level = 0,
   parentUserName = null,
 }) {
-  const [activeMenuCommentId, setActiveMenuCommentId] = useState(null);
-  const [expandedComments, setExpandedComments] = useState({});
-  const [replyContentMap, setReplyContentMap] = useState({});
-  const [activeReplyMap, setActiveReplyMap] = useState({});
+  const [areRepliesExpanded, setAreRepliesExpanded] = useState(false);
+  const [isTextExpanded, setIsTextExpanded] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
 
-  const toggleChildReplyInput = (replyId) => {
-    setActiveReplyMap((prev) => ({
-      ...prev,
-      [replyId]: !prev[replyId],
-    }));
+  const textareaRef = useRef(null);
+  const MAX_LENGTH = 150;
+
+  // ===== MENU =====
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  // ================= Count replies ===================
+  const countTotalReplies = (replies) => {
+    if (!replies || replies.length === 0) return 0;
+    return replies.reduce((total, item) => {
+      return total + 1 + countTotalReplies(item.replies);
+    }, 0);
   };
 
-  const toggleExpandReplies = (commentId) => {
-    setExpandedComments((prev) => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
+  const totalReplyCount = useMemo(
+    () => countTotalReplies(comment.replies),
+    [comment.replies]
+  );
+
+  const isLongContent = comment.content && comment.content.length > 150;
+  const hasReplies = comment.replies && comment.replies.length > 0;
+  const isOwnComment =
+    currentUserId && String(comment.userId) === String(currentUserId);
+
+  // ===== CLICK OUTSIDE =====
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ===== Auto resize khi mở reply =====
+  useEffect(() => {
+    if (isReplying && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.focus();
+    }
+  }, [isReplying]);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+
+    if (val.length <= MAX_LENGTH) {
+      setReplyContent(val);
+
+      e.target.style.height = "auto";
+      e.target.style.height = `${e.target.scrollHeight}px`;
+    }
   };
 
-  const handleReplySubmit = (commentId, content) => {
-    // Gọi hàm submit từ hook (đã tích hợp SignalR)
-    onReplySubmit(content, commentId).then((success) => {
+  const handleReplySubmit = () => {
+    if (!replyContent.trim()) return;
+
+    onReplySubmit(replyContent, comment.id).then((success) => {
       if (success) {
-        // Reset input & UI state
-        setReplyContentMap((prev) => ({ ...prev, [commentId]: "" }));
-        setActiveReplyMap((prev) => ({ ...prev, [commentId]: false }));
+        setReplyContent("");
+        setIsReplying(false);
+        if (level === 0) setAreRepliesExpanded(true);
       }
     });
   };
 
-  // ----- Render -----
-  const isMenuOpen = activeMenuCommentId === comment.id;
-  const hasReplies = comment.replies?.length > 0;
-  const isExpanded = expandedComments[comment.id];
-  const isTopLevel = level === 0;
+  const handleReport = () => setShowMenu(false);
 
-  const visibleReplies = isTopLevel
-    ? isExpanded
-      ? comment.replies
-      : comment.replies?.slice(0, 1)
-    : comment.replies;
+  const handleDelete = () => {
+    onDelete(comment.id);
+    setShowMenu(false);
+  };
 
   return (
-    <div
-      key={comment.id}
-      className="lvv-comment-item"
-      style={{ marginLeft: `${Math.min(level, 2) * -24}px` }}
-    >
-      {/* Comment chính */}
-      <div className="lvv-comment-wrapper">
-        <div className="lvv-comment-user-header">
-          <img src={comment.avatarUrl} className="lvv-avatar" alt="user" />
-          <div className="lvv-comment-main">
-            <div className="lvv-comment-header">
-              <strong className="lvv-username">{comment.userName}</strong>
-              {level > 0 && parentUserName && (
-                <span className="lvv-reply-to">
-                  trả lời <strong>{parentUserName}</strong>
-                </span>
-              )}
-            </div>
+    <div className={styles.item}>
+      <div className={styles.mainContainer}>
+        <img src={comment.avatarUrl} className={styles.avatar} alt="user" />
 
-            <div className="lvv-comment-content">{comment.content}</div>
-            <div className="lvv-comment-meta">
-              <span className="lvv-time">
-                {new Date(comment.createdAt).toLocaleDateString("vi-VN")}
+        <div className={styles.contentWrapper}>
+          <span className={styles.username}>
+            {comment.userName}
+            {level > 0 && parentUserName && (
+              <span className={styles.replyTo}>
+                trả lời <b>{parentUserName}</b>
               </span>
-              <button
-                className="lvv-reply-toggle-btn"
-                onClick={() => toggleChildReplyInput(comment.id)}
-              >
-                Trả lời
-              </button>
-            </div>
+            )}
+          </span>
 
-            {/* Ô nhập trả lời */}
-            {activeReplyMap[comment.id] && (
-              <div className="lvv-reply-input-inline">
-                <div className="lvv-reply-input-wrapper">
-                  <textarea
-                    value={replyContentMap[comment.id] || ""}
-                    onChange={(e) => {
-                      const text = e.target.value;
-                      if (text.length <= 150) {
-                        setReplyContentMap((prev) => ({
-                          ...prev,
-                          [comment.id]: text,
-                        }));
-                      }
-                    }}
-                    placeholder="Trả lời..."
-                    className="lvv-reply-input textarea"
-                    rows={1}
-                    ref={(el) => {
-                      if (el) {
-                        el.style.height = "auto";
-                        el.style.height = el.scrollHeight + "px";
-                      }
-                    }}
-                  />
+          {/* --- CONTENT --- */}
+          <div
+            className={`${styles.content} ${
+              !isTextExpanded && isLongContent ? styles.contentCollapsed : ""
+            }`}
+          >
+            {comment.content}
+          </div>
 
-                  <div className="lvv-reply-actions">
+          {isLongContent && (
+            <button
+              className={styles.readMoreBtn}
+              onClick={() => setIsTextExpanded(!isTextExpanded)}
+            >
+              {isTextExpanded ? "Thu gọn" : "Xem thêm"}
+            </button>
+          )}
+
+          {/* --- Meta --- */}
+          <div className={styles.meta}>
+            <span>
+              {new Date(comment.createdAt).toLocaleDateString("vi-VN")}
+            </span>
+            <button
+              className={styles.replyActionBtn}
+              onClick={() => setIsReplying(!isReplying)}
+            >
+              Trả lời
+            </button>
+          </div>
+
+          {/* --- Reply Box --- */}
+          {isReplying && (
+            <div className={styles.replyInputContainer}>
+              <div className={styles.replyInputWrapper}>
+                <textarea
+                  ref={textareaRef}
+                  value={replyContent}
+                  onChange={handleInputChange}
+                  placeholder={`Trả lời ${comment.userName}...`}
+                  className={styles.replyInput}
+                  rows={1}
+                />
+
+                <div className={styles.inputFooter}>
+                  <span
+                    className={`${styles.charCounter} ${
+                      replyContent.length === MAX_LENGTH
+                        ? styles.limitReached
+                        : ""
+                    }`}
+                  >
+                    {replyContent.length}/{MAX_LENGTH}
+                  </span>
+
+                  <div className={styles.replyActions}>
                     <button
-                      onClick={() =>
-                        handleReplySubmit(comment.id, replyContentMap[comment.id])
-                      }
-                      className="lvv-reply-submit-btn"
-                      disabled={!replyContentMap[comment.id]?.trim()}
+                      className={styles.cancelBtn}
+                      onClick={() => setIsReplying(false)}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      className={styles.sendReplyBtn}
+                      onClick={handleReplySubmit}
+                      disabled={!replyContent.trim()}
                     >
                       Gửi
                     </button>
-                    <button
-                      className="lvv-reply-cancel-btn"
-                      onClick={() => {
-                        setReplyContentMap((prev) => ({
-                          ...prev,
-                          [comment.id]: "",
-                        }));
-                        setActiveReplyMap((prev) => ({
-                          ...prev,
-                          [comment.id]: false,
-                        }));
-                      }}
-                    >
-                      X
-                    </button>
                   </div>
                 </div>
-
-                {replyContentMap[comment.id]?.length >= 30 && (
-                  <div className="lvv-char-count">
-                    {replyContentMap[comment.id].length}/150
-                  </div>
-                )}
               </div>
-            )}
-
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Nút menu (nếu là chủ comment) */}
-        {comment.userId === currentUserId && (
-          <div
-            className={
-              level === 0
-                ? "lvv-menu-wrapper-parent"
-                : "lvv-menu-wrapper-child"
-            }
+        {/* ===== THREE DOT MENU ===== */}
+        <div ref={menuRef}>
+          <button
+            className={`${styles.moreBtn} ${
+              showMenu ? styles.active : ""
+            }`}
+            onClick={() => setShowMenu(!showMenu)}
           >
-            <button
-              className="lvv-menu-btn"
-              onClick={() =>
-                setActiveMenuCommentId((prevId) =>
-                  prevId === comment.id ? null : comment.id
-                )
-              }
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              ⋯
-            </button>
+              <circle cx="5" cy="12" r="2" fill="currentColor" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+              <circle cx="19" cy="12" r="2" fill="currentColor" />
+            </svg>
+          </button>
 
-            {isMenuOpen && (
-              <div className="lvv-popup-menu">
+          {showMenu && (
+            <div className={styles.menuWrapper}>
+              {isOwnComment ? (
                 <button
-                  className="lvv-delete-btn"
-                  onClick={() => {
-                    onDelete(comment.id); // Gọi hàm xóa từ hook
-                    setActiveMenuCommentId(null);
-                  }}
+                  className={`${styles.menuItem} ${styles.deleteOption}`}
+                  onClick={handleDelete}
                 >
-                  Xoá
+                  <FaTrashAlt size={14} />
+                  Xóa bình luận
                 </button>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <button
+                  className={`${styles.menuItem} ${styles.reportOption}`}
+                  onClick={handleReport}
+                >
+                  <FaFlag size={14} />
+                  Báo cáo
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Replies (Đệ quy) */}
+      {/* ===== REPLIES ===== */}
       {hasReplies && (
-        <div className="lvv-replies">
-          {visibleReplies.map((reply) => (
-            <CommentThread
-              key={reply.id}
-              comment={reply}
-              currentUserId={currentUserId}
-              onReplySubmit={onReplySubmit}
-              onDelete={onDelete}
-              level={level + 1}
-              parentUserName={comment.userName}
-            />
-          ))}
-
-          {isTopLevel && comment.replies.length > 1 && (
+        <div
+          className={styles.repliesContainer}
+          style={{ paddingLeft: level === 0 ? "48px" : "0px" }}
+        >
+          {!areRepliesExpanded && level === 0 && (
             <button
-              onClick={() => toggleExpandReplies(comment.id)}
-              className="lvv-expand-replies-btn"
+              className={styles.viewRepliesBtn}
+              onClick={() => setAreRepliesExpanded(true)}
+              style={{ marginTop: "2px" }}
             >
-              {isExpanded
-                ? "Thu gọn"
-                : `Xem thêm (${comment.replies.length - 1})`}
+              Xem {totalReplyCount} câu trả lời
             </button>
+          )}
+
+          {(areRepliesExpanded || level > 0) && (
+            <>
+              {level === 0 && (
+                <button
+                  className={styles.viewRepliesBtn}
+                  onClick={() => setAreRepliesExpanded(false)}
+                  style={{ marginTop: "6px", marginBottom: "5px" }}
+                >
+                  Thu gọn
+                </button>
+              )}
+
+              {comment.replies.map((reply) => (
+                <CommentThread
+                  key={reply.id}
+                  comment={reply}
+                  currentUserId={currentUserId}
+                  onReplySubmit={onReplySubmit}
+                  onDelete={onDelete}
+                  level={level + 1}
+                  parentUserName={comment.userName}
+                />
+              ))}
+            </>
           )}
         </div>
       )}

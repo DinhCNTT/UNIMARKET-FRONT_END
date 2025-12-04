@@ -5,12 +5,13 @@ import React, {
   useCallback,
   useContext,
 } from "react";
+// ✅ 1. Import createPortal để đưa giao diện ra ngoài khung chat
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeftCircle } from "react-icons/fi";
-import "./LikedVideoDetailViewer.css";
+import { FiArrowLeftCircle, FiChevronUp, FiChevronDown } from "react-icons/fi";
+import styles from "./LikedVideoDetailViewer.module.css";
 
 // Import Hooks
-import { useVideoScroll } from "../../hooks/useVideoScroll";
 import { useVideoPlayer } from "../../hooks/useVideoPlayer";
 import { useVideoInteractions } from "../../hooks/useVideoInteractions";
 import { useComments } from "../../hooks/useComments.jsx";
@@ -23,43 +24,72 @@ import VideoActions from "../../components/VideoDetails/VideoActions";
 import CommentSection from "../../components/CommentSection/CommentSection";
 import VideoVolumeControl from "../../components/VideoPlayer/VideoVolumeControl";
 
-export default function LikedVideoDetailViewer() {
+export default function LikedVideoDetailViewer({ 
+  isOverlay = false, 
+  passedVideoData = null, 
+  onClose 
+}) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { maTinDang } = useParams(); // ✅ Lấy maTinDang từ URL (nếu có)
+  const { maTinDang: paramMaTinDang } = useParams();
 
-  // ✅ Nhận danh sách và vị trí ban đầu (nếu được truyền qua state)
-  const { videos: initialVideos, initialIndex } = location.state || {
-    videos: null, // Đặt null thay vì []
-    initialIndex: 0,
-  };
+  // ==========================================
+  // 1. KHỞI TẠO DỮ LIỆU (HỖ TRỢ CẢ ROUTER VÀ OVERLAY)
+  // ==========================================
+  
+  // Lấy dữ liệu từ Router state (trường hợp không phải overlay)
+  const { 
+    videos: stateVideos, 
+    videoList: stateVideoList, 
+    initialIndex: stateInitialIndex = 0,
+    returnPath 
+  } = location.state || {};
+
+  // Xác định danh sách video ban đầu
+  const initialVideos = isOverlay && passedVideoData 
+      ? [passedVideoData] 
+      : (stateVideos || stateVideoList || null);
 
   const [videoList, setVideoList] = useState(initialVideos);
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  // Nếu là Overlay thì index luôn là 0, ngược lại lấy từ state
+  const [currentIndex, setCurrentIndex] = useState(isOverlay ? 0 : stateInitialIndex);
+  
+  // State quản lý chuyển cảnh (scroll debounce)
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
   const { videoConnection } = useContext(VideoHubContext);
 
-  // ✅ Tạo shallowVideo ban đầu (có thể chỉ chứa maTinDang nếu load từ URL)
+  // --- Logic lấy video hiện tại (Shallow Video) ---
   const getInitialShallowVideo = () => {
-    if (initialVideos && initialVideos[initialIndex]) {
-      return initialVideos[initialIndex];
+    if (initialVideos && initialVideos[currentIndex]) {
+      return initialVideos[currentIndex];
     }
-    if (maTinDang) {
-      return { maTinDang: maTinDang }; // chỉ cần id, hooks sẽ fetch chi tiết
+    // Fallback: Vào bằng link trực tiếp (Router)
+    if (paramMaTinDang && !isOverlay) {
+      return { maTinDang: paramMaTinDang };
     }
     return null;
   };
+
+  // Cập nhật nếu passedVideoData thay đổi (khi click tin nhắn khác lúc đang mở overlay)
+  useEffect(() => {
+    if (isOverlay && passedVideoData) {
+        setVideoList([passedVideoData]);
+        setCurrentIndex(0);
+    }
+  }, [passedVideoData, isOverlay]);
+
   const [initialShallowVideo] = useState(getInitialShallowVideo());
 
-  // ✅ Lấy shallowVideo hiện tại (ưu tiên danh sách khi có)
+  // Video đang được chọn
   const shallowVideo = videoList ? videoList[currentIndex] : initialShallowVideo;
   const maTinDangString = shallowVideo?.maTinDang?.toString();
 
-  // ✅ Scroll để ẩn thông tin người dùng
-  const scrollRef = useRef(null);
-  const hideUserInfo = useVideoScroll(scrollRef);
+  // ==========================================
+  // 2. CÁC HOOKS TƯƠNG TÁC
+  // ==========================================
 
-  // ✅ Hook lấy chi tiết video, realtime Like / Save
+  // --- Hook Tương tác (Like/Save) ---
   const {
     fullVideo,
     isLiked,
@@ -71,7 +101,7 @@ export default function LikedVideoDetailViewer() {
     handleToggleSave,
   } = useVideoInteractions(shallowVideo, currentIndex);
 
-  // ✅ Hook điều khiển phát video
+  // --- Hook Player (Play/Pause/Volume) ---
   const {
     playerRef,
     bgPlayerRef,
@@ -87,7 +117,7 @@ export default function LikedVideoDetailViewer() {
     setIsPlaying,
   } = useVideoPlayer(fullVideo?.videoUrl || shallowVideo?.videoUrl);
 
-  // ✅ Hook bình luận
+  // --- Hook Comments ---
   const {
     comments,
     totalCommentCount,
@@ -96,18 +126,38 @@ export default function LikedVideoDetailViewer() {
     deleteComment,
   } = useComments(shallowVideo?.maTinDang);
 
-  // --- LOGIC CLICK / DOUBLE CLICK ---
+  // ==========================================
+  // 3. XỬ LÝ SỰ KIỆN & NAVIGATE
+  // ==========================================
+
+  // --- Xử lý nút Back thông minh ---
+  const handleGoBack = (e) => {
+    e?.stopPropagation();
+    
+    // Nếu là Overlay, gọi hàm đóng của cha
+    if (isOverlay && onClose) {
+        onClose();
+        return;
+    }
+
+    // Logic Router cũ
+    if (returnPath) {
+      navigate(returnPath);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // --- Logic Click Double Tim ---
   const clickTimeoutRef = useRef(null);
   const clickCountRef = useRef(0);
 
-  const handleClick = useCallback(() => {
+  const handleClickVideo = useCallback(() => {
     clickCountRef.current++;
     if (clickCountRef.current >= 2) {
-      if (!isLiked) {
-        handleLike(showHeart);
-      } else {
-        showHeart();
-      }
+      if (!isLiked) handleLike(showHeart);
+      else showHeart();
+      
       clickCountRef.current = 0;
       clearTimeout(clickTimeoutRef.current);
     } else {
@@ -120,137 +170,177 @@ export default function LikedVideoDetailViewer() {
     }
   }, [isLiked, handleLike, showHeart, togglePlayPause]);
 
-  // --- LOGIC CUỘN VIDEO ---
-  const currentIndexRef = useRef(initialIndex);
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
+  // --- Logic Cuộn chuột để đổi video ---
+  const handleWheelOnVideo = (e) => {
+    // Nếu Overlay hoặc list chỉ có 1 video -> KHÔNG cuộn
+    if (isTransitioning || !videoList || videoList.length <= 1) return;
 
-  const SCROLL_THRESHOLD = 90;
-  const handleWheelScroll = (e) => {
-    if (isTransitioning) return;
     const delta = e.deltaY;
+    const SCROLL_THRESHOLD = 30;
+
     if (Math.abs(delta) < SCROLL_THRESHOLD) return;
 
-    let nextIndex = currentIndexRef.current;
-    if (delta > 0 && nextIndex < (videoList?.length || 0) - 1) {
-      nextIndex++;
-    } else if (delta < 0 && nextIndex > 0) {
-      nextIndex--;
-    } else return;
+    let nextIndex = currentIndex;
 
-    setIsTransitioning(true);
-    setCurrentIndex(nextIndex);
-    setTimeout(() => setIsTransitioning(false), 600);
+    // Lăn xuống -> Video tiếp theo
+    if (delta > 0 && nextIndex < videoList.length - 1) {
+      nextIndex++;
+    } 
+    // Lăn lên -> Video trước đó
+    else if (delta < 0 && nextIndex > 0) {
+      nextIndex--;
+    } else {
+      return; 
+    }
+
+    if (nextIndex !== currentIndex) {
+      setIsTransitioning(true);
+      setCurrentIndex(nextIndex);
+      setTimeout(() => setIsTransitioning(false), 800);
+    }
   };
 
-  useEffect(() => {
-    window.addEventListener("wheel", handleWheelScroll, { passive: true });
-    return () => window.removeEventListener("wheel", handleWheelScroll);
-  }, [isTransitioning, videoList?.length]);
+  // Hàm hỗ trợ nút bấm Next/Prev
+  const handleNextVideo = (e) => {
+    e.stopPropagation();
+    if (currentIndex < (videoList?.length || 0) - 1) {
+        setCurrentIndex(prev => prev + 1);
+    }
+  };
+  
+  const handlePrevVideo = (e) => {
+    e.stopPropagation();
+    if (currentIndex > 0) {
+        setCurrentIndex(prev => prev - 1);
+    }
+  };
 
-  // ✅ Tắt scroll body khi ở trong viewer
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
+  // ==========================================
+  // 4. SIGNALR & RENDER
+  // ==========================================
 
-  // ✅ SignalR Join / Leave group
   useEffect(() => {
     if (videoConnection && maTinDangString) {
-      videoConnection
-        .invoke("JoinVideoGroup", maTinDangString)
-        .then(() => console.log(`✅ Đã tham gia nhóm SignalR: ${maTinDangString}`))
-        .catch((err) => console.error("❌ Lỗi khi JoinVideoGroup:", err));
-
+      videoConnection.invoke("JoinVideoGroup", maTinDangString).catch(console.error);
       return () => {
-        videoConnection
-          .invoke("LeaveVideoGroup", maTinDangString)
-          .then(() => console.log(`🚪 Đã rời nhóm SignalR: ${maTinDangString}`))
-          .catch((err) => console.error("❌ Lỗi khi LeaveVideoGroup:", err));
+        videoConnection.invoke("LeaveVideoGroup", maTinDangString).catch(console.error);
       };
     }
   }, [videoConnection, maTinDangString]);
 
-  // ✅ Ưu tiên hiển thị fullVideo
   const videoToDisplay = fullVideo || shallowVideo;
 
-  // ✅ Khi load trực tiếp từ URL mà chưa có dữ liệu
   if (!videoToDisplay?.maTinDang)
-    return <div className="lvv-loading">Đang tải video...</div>;
+    return <div className={styles.loading}>Đang tải video...</div>;
 
-  // --- JSX TRẢ VỀ ---
-  return (
-    <div className="lvv-container" onClick={handleClick}>
-      {/* Nút quay lại */}
-      <button
-        className="lvv-back-btn"
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(-1);
-        }}
+  // ✅ CSS Style đè lên nếu là Overlay để chiếm toàn màn hình
+  const overlayStyle = isOverlay ? {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw', // Full chiều ngang
+    height: '100vh', // Full chiều dọc
+    zIndex: 99999, // Đè lên tất cả mọi thứ
+    backgroundColor: '#000', 
+    display: 'flex', // Giữ layout flex
+  } : {};
+
+  // ✅ Tạo biến content chứa toàn bộ giao diện
+  const content = (
+    <div className={styles.container} style={overlayStyle}>
+      
+      {/* --- CỘT TRÁI: VIDEO PLAYER --- */}
+      <div 
+        className={styles.videoSide} 
+        onClick={handleClickVideo}
+        onWheel={handleWheelOnVideo} 
       >
-        <FiArrowLeftCircle size={24} />
-      </button>
+        <button
+          className={styles.backBtn}
+          onClick={handleGoBack}
+        >
+          <FiArrowLeftCircle size={24} />
+        </button>
 
-      {/* Phát video */}
-      <VideoPlayer
-        videoUrl={videoToDisplay.videoUrl}
-        playerRef={playerRef}
-        bgPlayerRef={bgPlayerRef}
-        audioRef={audioRef}
-        isPlaying={isPlaying}
-        isMuted={isMuted}
-        volume={volume}
-        showHeartEffect={showHeartEffect}
-        setIsPlaying={setIsPlaying}
-        toggleMute={toggleMute}
-        handleVolumeChange={handleVolumeChange}
-      />
+        <VideoPlayer
+          videoUrl={videoToDisplay.videoUrl}
+          playerRef={playerRef}
+          bgPlayerRef={bgPlayerRef}
+          audioRef={audioRef}
+          isPlaying={isPlaying}
+          isMuted={isMuted}
+          volume={volume}
+          showHeartEffect={showHeartEffect}
+          setIsPlaying={setIsPlaying}
+          toggleMute={toggleMute}
+          handleVolumeChange={handleVolumeChange}
+        />
 
-      {/* Overlay thông tin & bình luận */}
-      <div
-        className="lvv-overlay"
-        onClick={(e) => e.stopPropagation()}
-        onWheel={(e) => e.stopPropagation()}
-      >
-        {/* Ẩn thông tin khi cuộn */}
-        {!hideUserInfo && (
-          <>
-            <VideoInfo video={videoToDisplay} />
-            <VideoActions
-              video={videoToDisplay}
-              isLiked={isLiked}
-              soTym={soTym}
-              isSaved={isSaved}
-              soNguoiLuu={soNguoiLuu}
-              totalCommentCount={totalCommentCount}
-              iconCircleRef={iconCircleRef}
-              handleLike={() => handleLike(showHeart)}
-              handleToggleSave={handleToggleSave}
-            />
-          </>
+        <div className={styles.volumeWrapper}>
+           <VideoVolumeControl
+            volume={volume}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+          />
+        </div>
+
+        {/* Ẩn nút điều hướng nếu chỉ có 1 video */}
+        {videoList && videoList.length > 1 && (
+            <div className={styles.navButtons}>
+                <button 
+                    className={styles.navBtn} 
+                    onClick={handlePrevVideo} 
+                    disabled={currentIndex === 0}
+                >
+                    <FiChevronUp size={24} />
+                </button>
+                <button 
+                    className={styles.navBtn} 
+                    onClick={handleNextVideo}
+                    disabled={currentIndex === (videoList?.length || 0) - 1}
+                >
+                    <FiChevronDown size={24} />
+                </button>
+            </div>
         )}
+      </div>
 
+      {/* --- CỘT PHẢI: INFO & COMMENTS --- */}
+      <div className={styles.sidebarSide}>
         <CommentSection
-          scrollRef={scrollRef}
-          hideUserInfo={hideUserInfo}
           comments={comments}
           totalCommentCount={totalCommentCount}
           currentUserId={currentUserId}
           submitComment={submitComment}
           deleteComment={deleteComment}
-        />
-
-        {/* Thanh điều khiển âm lượng */}
-        <VideoVolumeControl
-          volume={volume}
-          toggleMute={toggleMute}
-          handleVolumeChange={handleVolumeChange}
-        />
+        >
+          <div className={styles.infoHeader}>
+            <VideoInfo video={videoToDisplay} />
+            
+            <div className={styles.actionWrapper}>
+              <VideoActions
+                video={videoToDisplay}
+                isLiked={isLiked}
+                soTym={soTym}
+                isSaved={isSaved}
+                soNguoiLuu={soNguoiLuu}
+                totalCommentCount={totalCommentCount}
+                iconCircleRef={iconCircleRef}
+                handleLike={() => handleLike(showHeart)}
+                handleToggleSave={handleToggleSave}
+              />
+            </div>
+          </div>
+        </CommentSection>
       </div>
     </div>
   );
+
+  // ✅ QUAN TRỌNG: Dùng Portal để đưa content ra khỏi Chat Box nếu là Overlay
+  if (isOverlay) {
+    return createPortal(content, document.body);
+  }
+
+  // Trường hợp dùng Router bình thường
+  return content;
 }

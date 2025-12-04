@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
 import { PlayCircle } from 'lucide-react';
-import { Link } from 'react-router-dom'; // ✅ Thêm Link
 import ParentMessagePreview from './ParentMessagePreview';
 import MessageActions from './MessageActions';
 
@@ -12,7 +11,8 @@ const VideoMessage = forwardRef(
       currentUserId,
       onStartReply,
       onOpenDeleteModal,
-      onJumpToMessage, // ✅ Dùng để nhảy đến tin gốc
+      onJumpToMessage,
+      onPreviewVideo, // ✅ Tên prop này phải khớp với bên SocialChatViewer
     },
     ref
   ) => {
@@ -65,18 +65,19 @@ const VideoMessage = forwardRef(
     // 2️⃣ Trường hợp tin nhắn video bình thường
     // =========================
     const shareInfo = message.share;
+    // Kiểm tra dữ liệu hợp lệ
     if (!shareInfo || !shareInfo.previewImage) {
-      return null; // Không có thông tin preview thì bỏ qua
+      return null;
     }
 
+    // Tách text phụ đi kèm (nếu có regex khớp)
     const parts = message.noiDung.match(/\[ShareId:\d+.*?\]\s*(.*)/);
     const extraText = parts ? parts[1].trim() : '';
 
-    // ✅ Lấy thông tin quan trọng từ shareInfo
     const tinDangId = shareInfo.tinDangId || shareInfo.shareId;
     const videoUrl = shareInfo.previewVideo;
 
-    // ✅ Tạo "shallow video" gửi qua state
+    // ✅ Tạo object dữ liệu video rút gọn để gửi lên cha (cho Overlay)
     const shallowVideoData = {
       maTinDang: tinDangId,
       tieuDe: shareInfo.previewTitle,
@@ -92,7 +93,6 @@ const VideoMessage = forwardRef(
         ref={ref}
         className={`video-message-wrapper ${isSender ? 'sent' : 'received'}`}
       >
-        {/* Avatar bên trái nếu là người nhận */}
         {!isSender && (
           <img
             src={message.sender?.avatarUrl || '/default-avatar.png'}
@@ -102,7 +102,7 @@ const VideoMessage = forwardRef(
         )}
 
         <div className="video-content-container">
-          {/* Nếu có tin nhắn cha (reply) thì hiển thị preview */}
+          {/* Preview tin nhắn cha (nếu có - trường hợp reply) */}
           {message.parentMessage && (
             <div className="text-message-bubble parent-in-video">
               <ParentMessagePreview
@@ -112,18 +112,27 @@ const VideoMessage = forwardRef(
             </div>
           )}
 
-          {/* ✅ Thay thế <a> bằng <Link> để điều hướng nội bộ */}
-          <Link
-            to={`/liked-videos/${tinDangId}`} // <-- route LikedVideoDetailViewer
-            state={{
-              videos: [shallowVideoData],
-              initialIndex: 0,
-            }}
-            target="_blank" // ✅ Mở tab mới
-            rel="noopener noreferrer"
+          {/* ✅ THẺ VIDEO CARD
+             - Dùng thẻ div thay vì Link
+             - Có sự kiện onClick gọi onPreviewVideo
+          */}
+          <div
             className="video-message-card"
-            style={{ backgroundImage: `url(${shareInfo.previewImage})` }}
-            onClick={(e) => e.stopPropagation()} // Ngăn click nổi bọt
+            style={{ 
+              backgroundImage: `url(${shareInfo.previewImage})`,
+              cursor: 'pointer' // Hiển thị con trỏ tay để biết click được
+            }}
+            onClick={(e) => {
+              e.stopPropagation(); // Ngăn sự kiện nổi bọt
+              
+              // Gọi hàm từ cha để mở Overlay Video
+              if (onPreviewVideo) {
+                console.log("Opening video overlay:", shallowVideoData); // Debug log
+                onPreviewVideo(shallowVideoData);
+              } else {
+                console.error("onPreviewVideo prop is missing!");
+              }
+            }}
           >
             <div className="video-play-icon">
               <PlayCircle size={52} strokeWidth={1.6} color="#ffffffcc" />
@@ -133,10 +142,9 @@ const VideoMessage = forwardRef(
                 {shareInfo.previewTitle}
               </div>
             </div>
-          </Link>
-          {/* ✅ Kết thúc thẻ Link */}
+          </div>
 
-          {/* Nếu có text phụ đi kèm video */}
+          {/* Text phụ (lời nhắn kèm theo video) */}
           {extraText && (
             <div className="text-message-bubble extra-text-bubble">
               {extraText}
@@ -144,7 +152,6 @@ const VideoMessage = forwardRef(
           )}
         </div>
 
-        {/* Avatar bên phải nếu là người gửi */}
         {isSender && (
           <img
             src={message.sender?.avatarUrl || '/default-avatar.png'}
@@ -153,7 +160,6 @@ const VideoMessage = forwardRef(
           />
         )}
 
-        {/* Menu hành động (Reply / Xóa) */}
         <MessageActions
           message={message}
           isSender={isSender}

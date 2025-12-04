@@ -125,7 +125,7 @@ export default function VideoSearchPage() {
 
   return (
     <div className="vsp-wrapper">
-     <TopNavbarUniMarket />
+      <TopNavbarUniMarket />
       {/* Menu tab */}
       <div className="vsp-menu" ref={menuRef} onMouseLeave={resetUnderline}>
         <div
@@ -159,11 +159,15 @@ export default function VideoSearchPage() {
               <div
                 key={video.maTinDang}
                 className="vsp-card"
+                // 👇 CẬP NHẬT QUAN TRỌNG TẠI ĐÂY
                 onClick={() =>
-                  navigate(`/video-search-detail/${video.maTinDang}`, {
+                  // Điều hướng đến Route render LikedVideoDetailViewer
+                  navigate(`/video-viewer/${video.maTinDang}`, {
                     state: {
-                      videoList: videos,
+                      videos: videos, // Truyền toàn bộ list video tìm được
                       initialIndex: videos.findIndex((v) => v.maTinDang === video.maTinDang),
+                      // 👇 Truyền đường dẫn để nút Back biết đường quay về trang Search
+                      returnPath: `/search/${encodeURIComponent(keyword)}?tab=${activeTab}`
                     },
                   })
                 }

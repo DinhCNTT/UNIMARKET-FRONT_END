@@ -1,53 +1,56 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+
+// --- AUTH & CORE PAGES ---
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import MarketPage from "../pages/MarketPage";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+// --- ADMIN PAGES & COMPONENTS ---
 import AdminDashboard from "../pages/AdminDashboard";
-import AddEmployee from "../components/AddEmployee";
 import Sidebar from "../components/Sidebar";
+import AddEmployee from "../components/AddEmployee";
 import EmployeeList from "../components/EmployeeList";
 import CategoryForm from "../components/CategoryForm";
-import MarketPage from "../pages/MarketPage";
 import AddParentCategory from "../components/AddParentCategory";
 import ManageParentCategories from "../components/ManageParentCategories";
 import ManageCategories from "../components/ManageCategories";
+import ManagePosts from "../components/ManagePosts";
+import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
+
+// --- POST & MARKET COMPONENTS ---
 import PostForm from "../components/PostForm";
 import PostTinDang from "../components/PostTinDang";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import LocTinDang from "../components/LocTinDang";
 import QuanLyTin from "../components/QuanLyTin";
-import ManagePosts from "../components/ManagePosts";
-import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
+import TinDangDaLuu from "../components/TinDangDaLuu";
 import CapNhatTin from "../components/CapNhatTin/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
-import TrangChat from "../pages/TrangChat";
-import AccountSettings from "../components/AccountSettings/AccountSettings";
-import VideoDetailViewer from "../components/VideoDetailViewer";
-import VideoSearchPage from "../components/VideoSearchPage";
-import VideoSearchDetailViewer from "../components/VideoSearchDetailViewer";
-import UserProfilePage from "../pages/UserProfilePage";
-import TinDangDaLuu from "../components/TinDangDaLuu";
-import VideoLikedPage from "../components/VideoLikedPage";
-// Sửa thành đường dẫn mới
-import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
-import ErrorBoundary from "../components/ErrorBoundary";
-import VideoPage from "../pages/VideoPage";
 
+// --- USER & SETTINGS ---
+import AccountSettings from "../components/AccountSettings/AccountSettings";
+import UserProfilePage from "../pages/UserProfilePage";
+import TrangChat from "../pages/TrangChat";
+
+// --- VIDEO COMPONENTS ---
+import VideoPage from "../pages/VideoPage"; // Lướt video (TikTok feed)
+import VideoSearchPage from "../components/VideoSearchPage"; // Trang tìm kiếm video
+import VideoLikedPage from "../components/VideoLikedPage"; // Trang video đã tym
+import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer đơn lẻ (nếu còn dùng)
+
+// ✅ Viewer "Vạn Năng" mới (Dùng chung cho Search, Liked, Saved)
+import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
+
+// --- ROUTE GUARDS ---
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
 
-  if (user === null) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
-  if (role !== "Admin") {
-    return <Navigate to="/" />;
-  }
+  if (user === null) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (role !== "Admin") return <Navigate to="/" />;
 
   return (
     <div className="admin-container">
@@ -57,27 +60,64 @@ const AdminRoute = ({ children }) => {
   );
 };
 
-// Route bảo vệ người dùng đã đăng nhập
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
+  if (!user) return <Navigate to="/login" />;
   return children;
 };
 
+// --- MAIN APP ROUTES ---
 function AppRoutes() {
   return (
     <Routes>
-      {/* Routes công khai */}
+      {/* ==============================
+          1. PUBLIC & AUTH ROUTES
+      ============================== */}
       <Route path="/" element={<MarketPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
+
+      {/* ==============================
+          2. MARKETPLACE & POSTS
+      ============================== */}
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
       <Route path="/loc-tin-dang" element={<LocTinDang />} />
+      
+      {/* Chi tiết tin đăng */}
+      <Route
+        path="/tin-dang/:id"
+        element={
+          <ChiTietTinDang 
+            onOpenChat={(maCuocTroChuyen) => {
+              window.location.href = `/chat/${maCuocTroChuyen}`;
+            }} 
+          />
+        }
+      />
+
+      {/* ==============================
+          3. USER & PROTECTED ROUTES
+      ============================== */}
+      <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
+      <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
+      <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
+      <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
+      
+      {/* Chat Realtime */}
+      <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+      <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+
+      {/* Profile & Settings */}
+      <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
+      <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
+
+      {/* ==============================
+          4. VIDEO ROUTES (ĐÃ CẬP NHẬT)
+      ============================== */}
+      
+      {/* A. Feed video (Lướt kiểu TikTok) */}
       <Route
         path="/market/video"
         element={
@@ -87,7 +127,32 @@ function AppRoutes() {
         }
       />
 
-      {/* Bảo vệ trang Admin */}
+      {/* B. Các trang danh sách video */}
+      <Route path="/search/:keyword" element={<VideoSearchPage />} />
+      <Route path="/video-da-tym" element={<VideoLikedPage />} />
+
+      {/* C. ✅ TRÌNH XEM CHI TIẾT VIDEO (Dùng chung cho Search & Liked) */}
+      {/* Route này khớp với navigate('/video-viewer/...') trong VideoSearchPage */}
+      <Route 
+        path="/video-viewer/:maTinDang" 
+        element={
+          <ErrorBoundary>
+            <LikedVideoDetailViewer />
+          </ErrorBoundary>
+        } 
+      />
+
+      {/* D. Các Route video phụ / tương thích ngược */}
+      {/* Nếu code cũ có link này, trỏ nó về Viewer mới luôn */}
+      <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
+      <Route path="/video-search-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
+      
+      {/* Viewer đơn lẻ mặc định (giữ lại nếu cần cho logic share link lẻ) */}
+      <Route path="/video/:id" element={<VideoDetailViewer />} />
+
+      {/* ==============================
+          5. ADMIN ROUTES
+      ============================== */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/add-employee" element={<AdminRoute><AddEmployee /></AdminRoute>} />
       <Route path="/admin/employees" element={<AdminRoute><EmployeeList /></AdminRoute>} />
@@ -98,42 +163,6 @@ function AppRoutes() {
       <Route path="/admin/manage-posts" element={<AdminRoute><ManagePosts /></AdminRoute>} />
       <Route path="/admin/reports" element={<AdminRoute><QuanLyBaoCao /></AdminRoute>} />
 
-      {/* Các route khác */}
-      <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
-      <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
-      <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
-      <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
-
-       {/* Chi tiết tin đăng, có thêm onOpenChat callback để chuyển sang chat */}
-      <Route
-        path="/tin-dang/:id"
-        element={<ChiTietTinDang onOpenChat={(maCuocTroChuyen) => {
-          // Chuyển hướng sang trang chat và truyền thêm state để tự động mở chatbox
-          window.location.href = `/chat/${maCuocTroChuyen}`;
-        }} />}
-      />
-      <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
-      
-      {/* Route chat realtime */}
-      <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
-      <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
-
-      {/* ✅ Route mới: Cài đặt tài khoản */}
-      <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
-
-       {/* Route video - Đã sắp xếp lại thứ tự để tránh conflict */}
-       <Route path="/video/:id" element={<VideoDetailViewer />} />
-       <Route path="/search/:keyword" element={<VideoSearchPage />} />
-       <Route path="/video-search-detail/:maTinDang" element={
-         <ErrorBoundary>
-           <VideoSearchDetailViewer />
-         </ErrorBoundary>
-       } />
-       <Route path="/video-da-tym" element={<VideoLikedPage />} /><Route path="/video/:maTinDang" element={<VideoDetailViewer />} />
-       <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
-       
-        {/* Route trang hồ sơ người dùng */}
-      <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
     </Routes>
   );
 }

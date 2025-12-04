@@ -1,7 +1,6 @@
-// src/components/VideoDetails/VideoActions.jsx
 import React from "react";
-// ✅ Import các icon mới từ react-icons
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaRegComment } from "react-icons/fa";
+import styles from "./VideoActions.module.css";
 
 export default function VideoActions({
   video,
@@ -15,55 +14,56 @@ export default function VideoActions({
   handleToggleSave,
 }) {
   return (
-    <div className="lvv-actions">
-      {/* Nút Like */}
+    <div className={styles.actions}>
+      {/* --- NÚT LIKE --- */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           handleLike();
         }}
-        className={`lvv-like-btn ${isLiked ? "liked" : ""}`}
+        // Giữ nguyên logic class liked
+        className={`${styles.likeBtn} ${isLiked ? styles.liked : ""}`}
       >
-        <span className="icon-circle" ref={iconCircleRef}>
-          {/* ✅ THAY THẾ SVG BẰNG ICON ĐỘNG */}
+        <span className={styles.iconCircle} ref={iconCircleRef}>
           {isLiked ? (
-            <FaHeart size={24} color="#ff2e63" />
+            // Bỏ color cứng ở đây, để CSS xử lý cho đồng bộ
+            <FaHeart size={24} /> 
           ) : (
-            <FaRegHeart size={24} color="#ccc" />
+            <FaRegHeart size={24} />
           )}
         </span>
-        <span className="count">{soTym}</span>
+        <span className={styles.count}>{soTym}</span>
       </button>
 
-      {/* Nút Save */}
+      {/* --- NÚT SAVE --- */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           handleToggleSave();
         }}
-        className="lvv-save-btn"
+        // ✅ SỬA: Thêm logic class 'saved' giống như like
+        className={`${styles.saveBtn} ${isSaved ? styles.saved : ""}`}
       >
-        <span className="icon-circle">
-          {/* ✅ THAY THẾ SVG BẰNG ICON ĐỘNG */}
+        <span className={styles.iconCircle}>
           {isSaved ? (
-            <FaBookmark size={24} color="#FFD700" />
+             // Bỏ color cứng ở đây, để CSS xử lý
+            <FaBookmark size={24} />
           ) : (
-            <FaRegBookmark size={24} color="#ccc" />
+            <FaRegBookmark size={24} />
           )}
         </span>
-        <span className="count">{soNguoiLuu || 0}</span>
+        <span className={styles.count}>{soNguoiLuu || 0}</span>
       </button>
 
-      {/* Nút Comment */}
+      {/* --- NÚT COMMENT --- */}
       <button
         onClick={(e) => e.stopPropagation()}
-        className="lvv-comment-toggle-btn"
+        className={styles.commentToggleBtn}
       >
-        <span className="icon-circle"> {/* Thêm span cho đồng bộ */}
-          {/* ✅ THAY THẾ SVG BẰNG ICON MỚI */}
-          <FaRegComment size={24} color="#ccc" />
+        <span className={styles.iconCircle}>
+          <FaRegComment size={24} />
         </span>
-        <span className="lvv-comment-count">{totalCommentCount}</span>
+        <span className={styles.commentCount}>{totalCommentCount}</span>
       </button>
     </div>
   );

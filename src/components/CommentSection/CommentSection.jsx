@@ -1,8 +1,7 @@
-// src/components/CommentSection/CommentSection.jsx
-import React from "react"; // XÓA: useRef
+import React from "react";
 import CommentThread from "./CommentThread";
 import CommentInput from "./CommentInput";
-// XÓA: import { useVideoScroll } from "../../hooks/useVideoScroll";
+import styles from "./CommentSection.module.css";
 
 export default function CommentSection({
   comments,
@@ -10,45 +9,45 @@ export default function CommentSection({
   currentUserId,
   submitComment,
   deleteComment,
-  scrollRef, // <-- THÊM prop: scrollRef
-  hideUserInfo, // <-- THÊM prop: hideUserInfo
+  scrollRef, // Ref để scroll nếu cần (ví dụ scroll to bottom)
+  children, // Chứa VideoInfo và VideoActions
 }) {
-  // XÓA: const scrollRef = useRef(null);
-  // XÓA: const hideUserInfo = useVideoScroll(scrollRef);
-
   return (
-    <div
-      // SỬA: Dùng prop `hideUserInfo` từ cha
-      className={`lvv-comment-section ${hideUserInfo ? "pull-up" : ""}`}
-      onClick={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onWheel={(e) => e.stopPropagation()}
-    >
-      <div className="lvv-comments-title-header">
-        <strong>Comments ({totalCommentCount})</strong>
+    <div className={styles.section}>
+      {/* Vùng cuộn: Chứa Info + Danh sách Comment */}
+      <div className={styles.scrollable} ref={scrollRef}>
+        
+        {/* Render Info & Actions ở trên cùng */}
+        <div>{children}</div>
+
+        {/* Tiêu đề danh sách */}
+        <div className={styles.titleHeader}>
+          Bình luận ({totalCommentCount})
+        </div>
+
+        {/* Danh sách Comment */}
+        <div className={styles.commentList}>
+          {comments && comments.map((comment) => (
+            <CommentThread
+              key={comment.id}
+              comment={comment}
+              currentUserId={currentUserId}
+              onReplySubmit={submitComment}
+              onDelete={deleteComment}
+              level={0}
+            />
+          ))}
+
+          {(!comments || comments.length === 0) && (
+            <div className={styles.emptyState}>
+              Hãy là người đầu tiên bình luận!
+            </div>
+          )}
+        </div>
       </div>
 
-      <div
-        ref={scrollRef} // <-- SỬA: Gắn ref từ cha vào đây
-        className="lvv-comment-scrollable"
-        // SỬA: Dùng prop `hideUserInfo` từ cha
-        style={{ paddingTop: hideUserInfo ? "80px" : "12px" }}
-      >
-        {/* Render danh sách comment */}
-        {comments.map((comment) => (
-          <CommentThread
-            key={comment.id}
-            comment={comment}
-            currentUserId={currentUserId}
-            onReplySubmit={submitComment}
-            onDelete={deleteComment}
-            level={0}
-          />
-        ))}
-
-        {/* Ô nhập bình luận mới */}
-        <CommentInput onSubmit={submitComment} />
-      </div>
+      {/* Input nằm ngoài vùng cuộn, sẽ dính ở đáy Sidebar */}
+      <CommentInput onSubmit={submitComment} />
     </div>
   );
 }

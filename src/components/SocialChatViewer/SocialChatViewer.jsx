@@ -4,16 +4,18 @@ import VideoMessage from "./VideoMessage";
 import TextMessage from "./TextMessage";
 import ChatInput from "./ChatInput";
 import DeleteMessageModal from "./DeleteMessageModal";
+import LikedVideoDetailViewer from "../../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
 import {
     joinGroup,
     registerChatEventHandler,
     unregisterChatEventHandler,
     recallMessage,
     deleteMessageForMe,
-    // (Không cần import 'sendMessage' ở đây, ChatInput.jsx tự xử lý)
 } from "../../services/chatSocialService";
 
-// (Toàn bộ code 'useRelativeTime' của bạn được giữ nguyên)
+// ==========================================
+// HELPER: useRelativeTime (Giữ nguyên)
+// ==========================================
 const useRelativeTime = (isoDateString, isOnline) => {
     const [relativeTime, setRelativeTime] = useState("");
 
@@ -49,8 +51,11 @@ const useRelativeTime = (isoDateString, isOnline) => {
     return relativeTime;
 };
 
-
+// ==========================================
+// MAIN COMPONENT: SocialChatViewer
+// ==========================================
 const SocialChatViewer = ({ chat, userId }) => {
+    // --- State Chat Cơ Bản ---
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
@@ -65,20 +70,41 @@ const SocialChatViewer = ({ chat, userId }) => {
     const [replyingTo, setReplyingTo] = useState(null);
     const [messageToDelete, setMessageToDelete] = useState(null);
 
-    // ✨ [MỚI TỪ CODE 2] State quản lý trạng thái chặn
+    // --- State quản lý trạng thái chặn ---
     const [blockStatus, setBlockStatus] = useState(null);
+
+    // ✨ [MỚI TỪ CODE 2] State quản lý video đang xem (Overlay)
+    const [viewingVideo, setViewingVideo] = useState(null);
 
     // --- Ref để lưu các DOM node của tin nhắn ---
     const messageRefs = useRef(new Map());
 
-    // --- Logic scroll (giữ nguyên) ---
+    // ===================================
+    // ✨ [MỚI TỪ CODE 2] HANDLERS VIDEO
+    // ===================================
+    
+    // Hàm mở video (sẽ được truyền xuống VideoMessage)
+    const handleOpenVideo = useCallback((videoData) => {
+        setViewingVideo(videoData);
+    }, []);
+
+    // Hàm đóng video (truyền vào LikedVideoDetailViewer)
+    const handleCloseVideo = useCallback(() => {
+        setViewingVideo(null);
+    }, []);
+
+    // ===================================
+    // LOGIC SCROLL & FETCH DATA
+    // ===================================
+
+    // Scroll xuống dưới cùng khi có tin nhắn mới (nếu không đang load cũ)
     useEffect(() => {
         if (!loadingMore) {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages, loadingMore]);
 
-    // --- Logic lấy trạng thái (giữ nguyên) ---
+    // Lấy trạng thái hoạt động partner
     useEffect(() => {
         const fetchPartnerActivity = async () => {
             if (!chat?.partner?.id) {
@@ -106,7 +132,7 @@ const SocialChatViewer = ({ chat, userId }) => {
     }, [chat?.partner?.id]);
 
     // ===================================
-    // HÀM REALTIME HANDLERS
+    // REALTIME HANDLERS
     // ===================================
     const handleReceiveMessage = useCallback(
         (newMessage) => {
@@ -129,7 +155,6 @@ const SocialChatViewer = ({ chat, userId }) => {
         [chat?.partner?.id]
     );
 
-    // Handler cho tin nhắn BỊ THU HỒI
     const handleMessageRecalled = useCallback(
         ({ maTinNhan, maCuocTroChuyen: convoId }) => {
             if (convoId !== chat?.maCuocTroChuyen) return;
@@ -142,7 +167,7 @@ const SocialChatViewer = ({ chat, userId }) => {
                             noiDung: "[Tin nhắn đã thu hồi]",
                             mediaUrl: null,
                             share: null,
-                            parentMessage: m.parentMessage // Giữ lại parent nếu có
+                            parentMessage: m.parentMessage
                         }
                         : m
                 )
@@ -151,7 +176,6 @@ const SocialChatViewer = ({ chat, userId }) => {
         [chat?.maCuocTroChuyen]
     );
 
-    // Handler cho tin nhắn BỊ GỠ BỎ (CHỈ MÌNH TÔI)
     const handleMessageRemovedForMe = useCallback(
         ({ maTinNhan, maCuocTroChuyen: convoId }) => {
             if (convoId !== chat?.maCuocTroChuyen) return;
@@ -160,10 +184,8 @@ const SocialChatViewer = ({ chat, userId }) => {
         [chat?.maCuocTroChuyen]
     );
 
-    // ✨ [MỚI TỪ CODE 2] Handler cập nhật trạng thái Chặn/Gỡ Chặn
     const handleBlockStatusChanged = useCallback(
         (data) => {
-            // Chỉ cập nhật nếu đúng là cuộc trò chuyện đang mở
             if (data.maCuocTroChuyen === chat?.maCuocTroChuyen) {
                 setBlockStatus({
                     isBlocked: data.isBlocked,
@@ -171,18 +193,16 @@ const SocialChatViewer = ({ chat, userId }) => {
                 });
             }
         },
-        [chat?.maCuocTroChuyen] // Phụ thuộc vào chat đang chọn
+        [chat?.maCuocTroChuyen]
     );
 
-    // ✨ [MỚI TỪ CODE 2] Handler nhận lỗi (ví dụ: gửi tin khi bị chặn)
     const handleReceiveError = useCallback((errorMessage) => {
-        // Hiển thị lỗi cho người dùng
         alert(errorMessage);
-        // Bạn có thể dùng một thư viện toast đẹp hơn (ví dụ: react-toastify)
     }, []);
 
-
-    // --- Logic fetch tin nhắn (giữ nguyên) ---
+    // ===================================
+    // API FETCH MESSAGES
+    // ===================================
     const fetchMessages = useCallback(async (page, isInitialLoad = false) => {
         if (!chat?.maCuocTroChuyen) return;
 
@@ -217,46 +237,39 @@ const SocialChatViewer = ({ chat, userId }) => {
     }, [chat?.maCuocTroChuyen]);
 
     // ===================================
-    // USE EFFECT (ĐĂNG KÝ SỰ KIỆN)
+    // USE EFFECT (REGISTER EVENTS)
     // ===================================
     useEffect(() => {
         if (!chat?.maCuocTroChuyen) return;
 
-        // ✨ [MỚI TỪ CODE 2] Cập nhật state chặn khi 'chat' prop thay đổi
         setBlockStatus({
             isBlocked: chat.isBlocked,
             maNguoiChan: chat.maNguoiChan,
         });
 
-        // Đăng ký các handler
         registerChatEventHandler("ReceiveMessage", handleReceiveMessage);
         registerChatEventHandler("PresenceUpdated", handlePresenceUpdate);
         registerChatEventHandler("MessageRecalled", handleMessageRecalled);
         registerChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
-        // ✨ [MỚI TỪ CODE 2] Đăng ký sự kiện
         registerChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
         registerChatEventHandler("ReceiveError", handleReceiveError);
 
-        // Reset và fetch tin nhắn
         setMessages([]);
         setHasMore(true);
         fetchMessages(1, true);
         if (chat?.maCuocTroChuyen) joinGroup(chat.maCuocTroChuyen);
 
-        // Cleanup
         return () => {
             unregisterChatEventHandler("ReceiveMessage", handleReceiveMessage);
             unregisterChatEventHandler("PresenceUpdated", handlePresenceUpdate);
             unregisterChatEventHandler("MessageRecalled", handleMessageRecalled);
             unregisterChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
-            // ✨ [MỚI TỪ CODE 2] Hủy đăng ký
             unregisterChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
             unregisterChatEventHandler("ReceiveError", handleReceiveError);
         };
     }, [
         chat?.maCuocTroChuyen,
         chat?.partner?.id,
-        // ✏️ [SỬA TỪ CODE 2] Thêm chat.isBlocked và chat.maNguoiChan làm dependency
         chat?.isBlocked,
         chat?.maNguoiChan,
         handleReceiveMessage,
@@ -264,12 +277,11 @@ const SocialChatViewer = ({ chat, userId }) => {
         fetchMessages,
         handleMessageRecalled,
         handleMessageRemovedForMe,
-        // ✨ [MỚI TỪ CODE 2] Thêm dependencies
         handleBlockStatusChanged,
         handleReceiveError
     ]);
 
-    // --- useEffect scroll (giữ nguyên) ---
+    // Infinite Scroll Observer
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -291,30 +303,15 @@ const SocialChatViewer = ({ chat, userId }) => {
         };
     }, [hasMore, loadingMore, loading, pageNumber, fetchMessages]);
 
-
     // ===================================
-    // HÀM HÀNH ĐỘNG (REPLY, DELETE, JUMP)
+    // ACTION HANDLERS
     // ===================================
+    const handleStartReply = (message) => setReplyingTo(message);
+    const handleOpenDeleteModal = (message) => setMessageToDelete(message);
+    const handleCloseDeleteModal = () => setMessageToDelete(null);
 
-    // Bắt đầu trả lời
-    const handleStartReply = (message) => {
-        setReplyingTo(message);
-    };
-
-    // Mở modal xóa
-    const handleOpenDeleteModal = (message) => {
-        setMessageToDelete(message);
-    };
-
-    // Đóng modal xóa
-    const handleCloseDeleteModal = () => {
-        setMessageToDelete(null);
-    };
-
-    // Xác nhận xóa/thu hồi
     const handleConfirmDelete = async () => {
         if (!messageToDelete) return;
-
         const { maTinNhan, maNguoiGui } = messageToDelete;
         const conversationId = chat.maCuocTroChuyen;
 
@@ -339,36 +336,27 @@ const SocialChatViewer = ({ chat, userId }) => {
         }
     };
 
-    // Hàm JUMP-TO-MESSAGE
     const handleJumpToMessage = (messageId) => {
         const node = messageRefs.current.get(messageId);
-
         if (node) {
-            // Nếu tìm thấy tin nhắn trong DOM
             node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Thêm class 'highlighted' (CSS sẽ xử lý animation)
             node.classList.add('highlighted');
-
-            // Xóa class sau 2.5 giây để animation không chạy lại
             setTimeout(() => {
                 node.classList.remove('highlighted');
-            }, 2500); // Khớp với 2.5s trong CSS
+            }, 2500);
         } else {
-            // Không tìm thấy tin nhắn (có thể do chưa tải)
-            console.warn(`Không tìm thấy tin nhắn ${messageId} trong DOM. Có thể nó chưa được tải.`);
+            console.warn(`Không tìm thấy tin nhắn ${messageId} trong DOM.`);
             alert("Không thể tìm thấy tin nhắn gốc (có thể đã bị trôi quá xa).");
         }
     };
 
-    // ✨ [MỚI TỪ CODE 2] Hàm render ô nhập tin nhắn hoặc thông báo chặn
     const renderChatInput = () => {
-        if (!blockStatus) return null; // Đang tải
+        if (!blockStatus) return null;
 
         if (blockStatus.isBlocked) {
             const isBlocker = blockStatus.maNguoiChan === userId;
             const message = isBlocker
-                ? "To send messages, unblock this account."
+                ? "Bỏ chặn người dùng này để gửi tin nhắn."
                 : "Bạn đã bị người dùng này chặn.";
 
             return (
@@ -378,7 +366,6 @@ const SocialChatViewer = ({ chat, userId }) => {
             );
         }
 
-        // Nếu không bị chặn
         return (
             <ChatInput
                 chatId={chat.maCuocTroChuyen}
@@ -388,12 +375,14 @@ const SocialChatViewer = ({ chat, userId }) => {
         );
     };
 
-
     if (!chat) return null;
 
+    // ===================================
+    // RENDER
+    // ===================================
     return (
-        <div className="social-chat-panel">
-            {/* --- Header (giữ nguyên) --- */}
+        <div className="social-chat-panel" style={{ position: 'relative' }}>
+            {/* --- Header --- */}
             <header className="chat-viewer-header">
                 <img
                     src={chat.partner?.avatarUrl || "/default-avatar.png"}
@@ -413,7 +402,7 @@ const SocialChatViewer = ({ chat, userId }) => {
                 </div>
             </header>
 
-            {/* --- Main (ĐÃ SỬA LỖI PROPS VÀ THÊM LOGIC REF) --- */}
+            {/* --- Message List --- */}
             <main className="chat-messages-list">
                 <div ref={messageListTopRef} style={{ height: "1px" }} />
                 {loadingMore && <p style={{ textAlign: "center" }}>Đang tải tin cũ...</p>}
@@ -421,7 +410,6 @@ const SocialChatViewer = ({ chat, userId }) => {
                     <p style={{ textAlign: "center" }}>Đang tải...</p>
                 ) : (
                     messages.map((msg) => {
-                        // THÊM CALLBACK REF
                         const messageRefCallback = (node) => {
                             if (node) {
                                 messageRefs.current.set(msg.maTinNhan, node);
@@ -430,26 +418,27 @@ const SocialChatViewer = ({ chat, userId }) => {
                             }
                         };
 
-                        // (Logic render của bạn)
                         return (msg.share && msg.share.previewVideo) && !msg.isRecalled ? (
                             <VideoMessage
-                                ref={messageRefCallback} // GẮN REF
+                                ref={messageRefCallback}
                                 key={msg.maTinNhan}
                                 message={msg}
                                 currentUserId={userId}
                                 onStartReply={handleStartReply}
                                 onOpenDeleteModal={handleOpenDeleteModal}
-                                onJumpToMessage={handleJumpToMessage} // TRUYỀN HÀM JUMP
+                                onJumpToMessage={handleJumpToMessage}
+                                // ✅ [MỚI TỪ CODE 2] Truyền hàm mở video
+                                onPreviewVideo={handleOpenVideo}
                             />
                         ) : (
                             <TextMessage
-                                ref={messageRefCallback} // GẮN REF
+                                ref={messageRefCallback}
                                 key={msg.maTinNhan}
                                 message={msg}
                                 currentUserId={userId}
                                 onStartReply={handleStartReply}
                                 onOpenDeleteModal={handleOpenDeleteModal}
-                                onJumpToMessage={handleJumpToMessage} // TRUYỀN HÀM JUMP
+                                onJumpToMessage={handleJumpToMessage}
                             />
                         );
                     })
@@ -457,16 +446,25 @@ const SocialChatViewer = ({ chat, userId }) => {
                 <div ref={messagesEndRef} />
             </main>
 
-            {/* ✏️ [SỬA TỪ CODE 2] Dùng hàm renderChatInput để hiển thị có điều kiện */}
+            {/* --- Input / Block Message --- */}
             {renderChatInput()}
 
-            {/* --- Modal (ĐÃ SỬA PROPS) --- */}
+            {/* --- Delete Modal --- */}
             {messageToDelete && (
                 <DeleteMessageModal
                     message={messageToDelete}
-                    currentUserId={userId} // Bổ sung prop còn thiếu
+                    currentUserId={userId}
                     onConfirm={handleConfirmDelete}
                     onClose={handleCloseDeleteModal}
+                />
+            )}
+
+            {/* ✅ [MỚI TỪ CODE 2] HIỂN THỊ VIDEO OVERLAY NẾU CÓ */}
+            {viewingVideo && (
+                <LikedVideoDetailViewer
+                    isOverlay={true}
+                    passedVideoData={viewingVideo}
+                    onClose={handleCloseVideo}
                 />
             )}
         </div>

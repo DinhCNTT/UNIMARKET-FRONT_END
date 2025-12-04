@@ -1,6 +1,6 @@
-// src/components/VideoPlayer/VideoVolumeControl.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import styles from "./VideoVolumeControl.module.css"; 
 
 export default function VideoVolumeControl({
   volume,
@@ -20,8 +20,7 @@ export default function VideoVolumeControl({
 
   return (
     <div
-      // SỬA: Dùng class thay vì inline style
-      className="lvv-volume-control-wrapper"
+      className={styles.volumeControlWrapper}
       onMouseEnter={() => {
         if (hideVolumeTimeoutRef.current) {
           clearTimeout(hideVolumeTimeoutRef.current);
@@ -36,7 +35,6 @@ export default function VideoVolumeControl({
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* SỬA: Đưa thanh trượt lên trên */}
       {showVolumeSlider && (
         <input
           type="range"
@@ -49,13 +47,12 @@ export default function VideoVolumeControl({
             const newVolume = parseFloat(e.target.value);
             handleVolumeChange(newVolume);
           }}
-          className="lvv-volume-slider" // CSS sẽ lo vị trí
+          className={styles.volumeSlider}
         />
       )}
 
-      {/* Nút âm lượng ở dưới */}
       <button
-        className="lvv-volume-btn" // CSS sẽ lo vị trí
+        className={styles.volumeBtn}
         onClick={(e) => {
           e.stopPropagation();
           toggleMute();
