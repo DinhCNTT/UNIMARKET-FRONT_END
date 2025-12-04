@@ -16,7 +16,6 @@ export const useQuickMessages = (userId) => {
   const loadQuickMessages = useCallback(async () => {
     if (!userId) return;
     
-    // Không set Loading=true ở đây để tránh nháy giao diện khi refresh ngầm
     try {
       const rawMessages = await quickMessageService.getMyQuickMessages();
       
@@ -27,10 +26,6 @@ export const useQuickMessages = (userId) => {
       }));
 
       normalizedMessages.sort((a, b) => a.order - b.order);
-      
-      // Log để kiểm chứng
-      console.log('📥 [HOOK] Đã load danh sách mới:', normalizedMessages.length, 'tin nhắn');
-      
       setQuickMessages(normalizedMessages);
     } catch (error) {
       console.error('Lỗi load tin nhắn:', error);
@@ -41,23 +36,20 @@ export const useQuickMessages = (userId) => {
   useEffect(() => {
     loadQuickMessages(); // Load lần đầu
 
-    // Hàm xử lý khi nghe thấy tín hiệu refresh
     const handleRefreshSignal = () => {
         console.log('♻️ [EVENT] Nhận tín hiệu có thay đổi, đang reload...');
         loadQuickMessages();
     };
 
-    // Đăng ký lắng nghe
     window.addEventListener(REFRESH_EVENT, handleRefreshSignal);
 
-    // Dọn dẹp khi component unmount
     return () => {
         window.removeEventListener(REFRESH_EVENT, handleRefreshSignal);
     };
   }, [loadQuickMessages]);
 
 
-  // --- 3. HÀM LƯU (CÓ BẮN TÍN HIỆU) ---
+  // --- 3. HÀM LƯU ---
   const saveQuickMessages = async (contentParam) => {
     const contentToSave = contentParam !== undefined ? contentParam : editingContent;
     
@@ -69,12 +61,10 @@ export const useQuickMessages = (userId) => {
     setIsSavingQuickMessages(true);
     try {
       if (editingId) {
-        // --- SỬA ---
         const currentMsg = quickMessages.find(m => String(m.id) === String(editingId));
         const order = currentMsg ? currentMsg.order : 1;
         await quickMessageService.updateQuickMessage(editingId, contentToSave, order);
       } else {
-        // --- THÊM ---
         const usedOrders = new Set(quickMessages.map(m => m.order));
         let availableOrder = 1;
         for (let i = 1; i <= 5; i++) {
@@ -88,11 +78,8 @@ export const useQuickMessages = (userId) => {
         await quickMessageService.createQuickMessage(contentToSave, availableOrder);
       }
 
-      // === QUAN TRỌNG NHẤT: BẮN TÍN HIỆU CHO COMPONENT KHÁC ===
-      console.log('📢 [EVENT] Đã lưu xong, bắn tín hiệu reload toàn app');
       window.dispatchEvent(new Event(REFRESH_EVENT));
 
-      // Reset form
       setEditingContent('');
       setEditingId(null);
       return true;
@@ -106,16 +93,10 @@ export const useQuickMessages = (userId) => {
     }
   };
 
-  // --- 4. HÀM XÓA (CÓ BẮN TÍN HIỆU) ---
+  // --- 4. HÀM XÓA (ĐÃ SỬA: Bỏ confirm, chỉ thực hiện xóa) ---
   const deleteQuickMessage = async (id) => {
-    const result = await Swal.fire({
-        title: 'Xóa?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Xóa',
-    });
-
-    if (!result.isConfirmed) return false;
+    // Đã xóa phần Swal.fire confirm ở đây
+    // Vì bên UI (QuickMessageModal) đã hỏi rồi.
 
     try {
       await quickMessageService.deleteQuickMessage(id);

@@ -39,9 +39,17 @@ const QuickMessageModal = ({
     await onSave(editingContent);
   };
 
+  // --- ĐÃ SỬA: Thêm xác nhận bằng trình duyệt mặc định ---
   const handleDelete = async (id) => {
-    await onDelete(id);
+    // Hiển thị hộp thoại xác nhận mặc định của trình duyệt
+    const isConfirmed = window.confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?');
+    
+    // Nếu người dùng chọn OK thì mới thực hiện xóa
+    if (isConfirmed) {
+      await onDelete(id);
+    }
   };
+  // ------------------------------------------------------
 
   const content = (
     <div className={styles.overlay} onClick={onClose}>

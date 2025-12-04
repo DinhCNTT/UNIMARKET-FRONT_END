@@ -2,23 +2,22 @@ import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } 
 import { useNavigate } from "react-router-dom";
 import styles from "./PostDetailsInfo.module.css";
 import ReportButton from "./ReportModals/ReportButton";
-import { IoChatbubbleEllipsesOutline, IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { IoChatbubbleEllipsesOutline, IoChevronBack, IoChevronForward, IoHeartOutline, IoHeart } from "react-icons/io5";
 import { MdOutlineLocationOn, MdOutlineCalendarToday } from "react-icons/md";
-import { IoHeartOutline, IoHeart } from "react-icons/io5";
-import { formatDate } from "../utils/formatters"; 
-import axios from "axios"; 
+import { formatDate } from "../utils/formatters";
+import axios from "axios";
 import defaultAvatar from "../assets/default-avatar.png";
 import MarketWaveChart from "./MarketWaveChart";
-import { AuthContext } from "../context/AuthContext"; 
-import { quickMessageService } from "../services/quickMessageService"; 
+import { AuthContext } from "../context/AuthContext";
+import { quickMessageService } from "../services/quickMessageService";
 import Swal from "sweetalert2";
-import { startChat } from "../services/postService"; 
+import { startChat } from "../services/postService";
 import * as signalR from "@microsoft/signalr";
 
 // Constants
 const SCROLL_PERCENTAGE = 0.7;
-const HUB_URL = "http://localhost:5133/hub/chat"; 
-const API_BASE_URL = "http://localhost:5133/api"; 
+const HUB_URL = "http://localhost:5133/hub/chat";
+const API_BASE_URL = "http://localhost:5133/api";
 
 const DEFAULT_QUICK_REPLIES = [
   "Bạn có ship hàng không?",
@@ -43,46 +42,36 @@ const PostDetailsInfo = ({
 }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [marketData, setMarketData] = useState(null);
-  const [customMessages, setCustomMessages] = useState([]);
   const scrollRef = useRef(null);
-
-  // --- State cho trạng thái Online ---
-  const [isSellerOnline, setIsSellerOnline] = useState(false);
-  const [sellerLastOnline, setSellerLastOnline] = useState(null);
-  const [, forceUpdate] = useState(0); 
   const connectionRef = useRef(null);
 
-  // Derived values
+  // --- State ---
+  const [marketData, setMarketData] = useState(null);
+  const [customMessages, setCustomMessages] = useState([]);
+  
+  // State: User Status
+  const [isSellerOnline, setIsSellerOnline] = useState(false);
+  const [sellerLastOnline, setSellerLastOnline] = useState(null);
+  const [, forceUpdate] = useState(0);
+
+  // --- Derived Values ---
   const isOwner = currentUserId === post.maNguoiBan;
   const sellerAvatarUrl = post.avatar || post.Avatar || defaultAvatar;
 
-  // Memoized combined messages
   const combinedQuickReplies = useMemo(() => {
     const custom = customMessages.map(m => m.content);
     return [...custom, ...DEFAULT_QUICK_REPLIES];
   }, [customMessages]);
 
-  // --- 🛠️ DEBUG: Kiểm tra thông tin đầu vào ---
-  useEffect(() => {
-    console.log("--------------------------------------------------");
-    console.log("🛠️ [DEBUG INFO] Bắt đầu kiểm tra trạng thái User:");
-    console.log("👤 User hiện tại (Logged in):", user?.id);
-    console.log("🛒 Người bán (Seller ID):", post?.maNguoiBan);
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    console.log("🔑 Token:", token ? "✅ Có Token" : "❌ Không thấy Token");
-    console.log("--------------------------------------------------");
-  }, [user, post]);
-
-  // --- Logic tính toán text trạng thái ---
+  // --- Logic: Get Online Text ---
   const getLastOnlineText = useCallback(() => {
     if (isSellerOnline) return "Đang hoạt động";
-    if (!sellerLastOnline) return "Ngoại tuyến"; 
+    if (!sellerLastOnline) return "Ngoại tuyến";
 
     let last;
     try {
-      if (typeof sellerLastOnline === "string") {
-        let normalized = sellerLastOnline.trim();
+      let normalized = typeof sellerLastOnline === "string" ? sellerLastOnline.trim() : "";
+      if (normalized) {
         if (!normalized.includes("T")) normalized = normalized.replace(" ", "T");
         if (!normalized.endsWith("Z")) normalized += "Z";
         last = new Date(normalized);
@@ -94,78 +83,52 @@ const PostDetailsInfo = ({
       return "";
     }
 
-    const now = new Date();
-    const diffMs = now - last;
-    if (diffMs < 0) return "Mới hoạt động gần đây"; 
-    const diffMin = Math.floor(diffMs / 60000);
+    const diffMs = new Date() - last;
+    if (diffMs < 0) return "Mới hoạt động gần đây";
     
+    const diffMin = Math.floor(diffMs / 60000);
     if (diffMin < 1) return "Mới hoạt động gần đây";
     if (diffMin < 60) return `Hoạt động ${diffMin} phút trước`;
-    
+
     const diffH = Math.floor(diffMin / 60);
     if (diffH < 24) return `Hoạt động ${diffH} giờ trước`;
-    
+
     const diffD = Math.floor(diffH / 24);
     if (diffD <= 7) return `Hoạt động ${diffD} ngày trước`;
-    
-    return "Ngoại tuyến"; 
+
+    return "Ngoại tuyến";
   }, [isSellerOnline, sellerLastOnline]);
 
+  // --- Effect: Update Time Ago UI ---
   useEffect(() => {
     if (isSellerOnline || !sellerLastOnline) return;
     const interval = setInterval(() => forceUpdate(n => n + 1), 60000);
     return () => clearInterval(interval);
   }, [isSellerOnline, sellerLastOnline]);
 
-  // --- ✅ Effect Lấy trạng thái ban đầu - SỬ DỤNG PUBLIC ENDPOINT ---
+  // --- Effect: Initial Status Fetch & SignalR ---
   useEffect(() => {
     if (!post?.maNguoiBan) return;
 
+    // 1. Fetch Status ban đầu
     const fetchInitialStatus = async () => {
       try {
-        // ✅ SỬ DỤNG ENDPOINT PUBLIC - KHÔNG CẦN TOKEN
-        const apiUrl = `${API_BASE_URL}/user/public/status/${post.maNguoiBan}`; 
-        
-        console.log(`🚀 [API START] Gọi API lấy trạng thái (Public): ${apiUrl}`);
-
-        const response = await axios.get(apiUrl);
-        
-        console.log("✅ [API SUCCESS] Kết quả trả về từ Backend:", response.data);
-        console.log("👉 IsOnline:", response.data.isOnline);
-        console.log("👉 LastActive:", response.data.lastActive);
-
+        const response = await axios.get(`${API_BASE_URL}/user/public/status/${post.maNguoiBan}`);
         if (response.data) {
           setIsSellerOnline(response.data.isOnline);
           setSellerLastOnline(response.data.lastActive);
         }
       } catch (error) {
-        console.error("❌ [API ERROR] Lỗi khi gọi API trạng thái:", error);
-        if (error.response) {
-            console.error("Status Code:", error.response.status);
-            console.error("Data:", error.response.data);
-        }
+        // Silent fail
       }
     };
-
     fetchInitialStatus();
-  }, [post?.maNguoiBan]);
 
-  // --- ✅ Effect: Kết nối SignalR CHỈ KHI ĐÃ ĐĂNG NHẬP ---
-  useEffect(() => {
-    // ✅ CHỈ KẾT NỐI SIGNALR NẾU USER ĐÃ ĐĂNG NHẬP
-    if (!user?.id || !post?.maNguoiBan) {
-      console.log("⚠️ [SIGNALR] Không kết nối vì user chưa đăng nhập");
-      return;
-    }
-
+    // 2. Kết nối SignalR (chỉ khi có User login)
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (!token) {
-      console.log("⚠️ [SIGNALR] Không kết nối vì không có token");
-      return;
-    }
+    if (!user?.id || !token) return;
 
     const connectSignalR = async () => {
-      console.log("📡 [SIGNALR] Đang chuẩn bị kết nối...");
       const connection = new signalR.HubConnectionBuilder()
         .withUrl(HUB_URL, {
           accessTokenFactory: () => token,
@@ -177,27 +140,21 @@ const PostDetailsInfo = ({
 
       try {
         await connection.start();
-        console.log("🟢 [SIGNALR] Kết nối thành công!");
         
         connection.on("UserStatusChanged", (data) => {
-          console.log("🔔 [SIGNALR EVENT] Có sự kiện UserStatusChanged:", data);
-          
           if (data.userId === post.maNguoiBan) {
-            console.log("🎯 [TARGET MATCH] Đúng là người bán này! Cập nhật State.");
             setIsSellerOnline(data.isOnline);
             if (!data.isOnline && data.lastSeen) {
               setSellerLastOnline(data.lastSeen);
             } else if (data.isOnline) {
               setSellerLastOnline(null);
             }
-          } else {
-             console.log(`⚠️ [IGNORE] Sự kiện của user ${data.userId}, không phải seller ${post.maNguoiBan}`);
           }
         });
 
         connectionRef.current = connection;
       } catch (err) {
-        console.error("🔴 [SIGNALR ERROR] Không thể kết nối:", err);
+        // Silent fail
       }
     };
 
@@ -208,10 +165,11 @@ const PostDetailsInfo = ({
         connectionRef.current.stop();
       }
     };
-  }, [user?.id, post?.maNguoiBan]);
+  }, [post?.maNguoiBan, user?.id]);
 
-  // --- Các effect khác giữ nguyên ---
+  // --- Effect: Fetch Data (Quick Messages & Market) ---
   useEffect(() => {
+    // Quick Messages
     const fetchQuickMessages = async () => {
       if (!user?.id) return;
       try {
@@ -223,25 +181,23 @@ const PostDetailsInfo = ({
         }));
         normalizedMessages.sort((a, b) => a.order - b.order);
         setCustomMessages(normalizedMessages);
-      } catch (error) {
-        // console.error("Lỗi lấy Quick Messages:", error);
-      }
+      } catch { }
     };
     fetchQuickMessages();
-  }, [user?.id]);
 
-  useEffect(() => {
-    if (!post?.maTinDang) return;
-    const apiUrl = `http://localhost:5133/api/tindang/market-price-analysis/${post.maTinDang}`;
-    axios.get(apiUrl)
-      .then(response => {
-        if (response.data?.isSuccess) {
-          setMarketData(response.data);
-        }
-      })
-      .catch(err => {});
-  }, [post?.maTinDang]);
+    // Market Analysis
+    if (post?.maTinDang) {
+      axios.get(`${API_BASE_URL}/tindang/market-price-analysis/${post.maTinDang}`)
+        .then(response => {
+          if (response.data?.isSuccess) {
+            setMarketData(response.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.id, post?.maTinDang]);
 
+  // --- Handlers ---
   const scroll = (direction) => {
     if (!scrollRef.current) return;
     const { current } = scrollRef;
@@ -267,14 +223,11 @@ const PostDetailsInfo = ({
       const maCuocTroChuyen = data?.maCuocTroChuyen || data?.MaCuocTroChuyen;
 
       if (maCuocTroChuyen) {
-        navigate(`/chat/${maCuocTroChuyen}`, { 
-          state: { autoSend: messageContent } 
-        });
+        navigate(`/chat/${maCuocTroChuyen}`, { state: { autoSend: messageContent } });
       } else {
         Swal.fire("Lỗi", "Không thể kết nối tới cuộc trò chuyện.", "error");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       Swal.fire("Lỗi", "Có lỗi xảy ra khi kết nối.", "error");
     }
   };
@@ -284,14 +237,11 @@ const PostDetailsInfo = ({
       <div className={styles.headerRow}>
         <h1 className={styles.title}>{post.tieuDe}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {!isOwner && (
-            <ReportButton targetType="Post" targetId={post.maTinDang} />
-          )}
+          {!isOwner && <ReportButton targetType="Post" targetId={post.maTinDang} />}
           <button
             className={`${styles.saveBtn} ${isSaved ? styles.saved : ''}`}
             onClick={onToggleSave}
             title={isSaved ? "Bỏ lưu tin này" : "Lưu tin này"}
-            aria-label={isSaved ? "Bỏ lưu tin này" : "Lưu tin này"}
           >
             {isSaved ? <IoHeart size={20} color="#e5193b" /> : <IoHeartOutline size={20} />}
             <span>{isSaved ? "Đã lưu" : "Lưu"}</span>
@@ -315,19 +265,11 @@ const PostDetailsInfo = ({
       </p>
 
       <div className={styles.actionButtons}>
-        <button 
-          className={styles.btnPhone} 
-          onClick={onTogglePhone}
-          aria-label="Hiện số điện thoại"
-        >
+        <button className={styles.btnPhone} onClick={onTogglePhone}>
           {showPhoneNumber ? post.phoneNumber : `Hiện số ${post.phoneNumber?.substring(0, 6)}****`}
         </button>
         {!isOwner && (
-          <button 
-            className={styles.btnChat} 
-            onClick={onChat}
-            aria-label="Mở chat"
-          >
+          <button className={styles.btnChat} onClick={onChat}>
             <IoChatbubbleEllipsesOutline size={20} aria-hidden="true" />
             <span>Chat ngay</span>
           </button>
@@ -343,7 +285,6 @@ const PostDetailsInfo = ({
               className={styles.sellerAvatar}
               onError={(e) => { e.target.src = defaultAvatar; }} 
             />
-            {isSellerOnline && <span className={styles.avatarStatusDot}></span>} 
           </div>
           
           <div className={styles.sellerText}>
