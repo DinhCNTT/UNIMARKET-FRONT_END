@@ -37,7 +37,7 @@ import TrangChat from "../pages/TrangChat";
 
 // --- VIDEO COMPONENTS ---
 import VideoPage from "../pages/VideoPage"; // Lướt video (TikTok feed)
-import VideoSearchPage from "../components/VideoSearchPage"; // Trang tìm kiếm video
+import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; // Trang tìm kiếm video
 import VideoLikedPage from "../components/VideoLikedPage"; // Trang video đã tym
 import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer đơn lẻ (nếu còn dùng)
 

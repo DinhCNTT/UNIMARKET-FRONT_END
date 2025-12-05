@@ -1,0 +1,60 @@
+.pageWrapper {
+  min-height: 100vh;
+  background-color: #f8f9fa; /* Màu nền nhẹ cho toàn trang */
+  padding-bottom: 40px;
+}
+
+.contentContainer {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 160px auto 0 auto; /* Cách top navbar + tab menu */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Grid tự động responsive */
+  gap: 30px;
+  justify-items: center;
+  width: 100%;
+}
+
+/* User List Container */
+.userListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 450px; /* Giới hạn chiều rộng cho đẹp */
+  margin: 0 auto; /* Căn giữa */
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  
+  /* Scrollbar custom */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.userListContainer::-webkit-scrollbar {
+  width: 6px;
+}
+.userListContainer::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+.loadingState, .errorState, .emptyState {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+.errorState {
+  color: #dc3545;
+}

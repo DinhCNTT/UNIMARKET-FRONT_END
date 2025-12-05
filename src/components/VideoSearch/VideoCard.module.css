@@ -1,0 +1,90 @@
+.card {
+  width: 220px;
+  /* margin-top xóa bỏ vì sẽ handle ở grid cha */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #000;
+}
+
+.thumbnail video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.heartIcon {
+  color: red;
+  font-size: 18px;
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.likes {
+  position: absolute;
+  bottom: 8px;
+  right: 30px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.info {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.texts {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userName {
+  margin: 0;
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
