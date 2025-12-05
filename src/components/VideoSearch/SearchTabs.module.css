@@ -1,43 +1,40 @@
 .menu {
-  position: fixed;
-  top: 80px; /* Điều chỉnh lại vị trí top cho phù hợp với Navbar */
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative; /* Để underline hoạt động */
   display: flex;
-  gap: 40px;
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  justify-content: flex-start; /* Căn lề trái */
+  gap: 30px; /* Khoảng cách giữa các chữ */
+  width: 100%; /* Chiếm hết chiều rộng khung chứa */
+  margin-bottom: 20px; /* Cách phần video bên dưới ra một chút */
+  padding: 0 10px 10px 10px; /* Padding nhẹ */
+  border-bottom: 1px solid #e0e0e0; 
+  background-color: transparent; /* Bỏ nền trắng đục */
+  box-shadow: none; /* Bỏ bóng đổ */
+  border-radius: 0; /* Bỏ bo tròn kiểu viên thuốc */
+  border: none;
   font-size: 18px;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  z-index: 900;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  padding: 10px 32px;
-  border-radius: 50px; /* Bo tròn kiểu pill shape đẹp hơn */
-  border: 1px solid rgba(255,255,255,0.5);
+  z-index: 10;
 }
 
 .menuItem {
   cursor: pointer;
   position: relative;
-  padding: 8px 12px;
-  color: #555;
+  padding: 8px 0; /* Giảm padding ngang để chữ gọn hơn */
+  color: #888; /* Màu xám khi chưa chọn */
   transition: color 0.3s ease;
 }
 
 .menuItem:hover, .active {
-  color: #007bff;
+  color: #161823; /* Màu đen đậm giống TikTok */
 }
 
 .underline {
   position: absolute;
-  bottom: 5px;
+  bottom: 0; /* Dính sát đường kẻ dưới */
   left: 0;
-  height: 3px;
-  width: 0;
-  background: linear-gradient(90deg, #007bff, #00c6ff);
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+  height: 3px; /* Độ dày gạch chân */
+  background: #161823; /* Màu đen thay vì xanh gradient cho giống TikTok hơn (hoặc giữ màu xanh nếu thích) */
   border-radius: 2px;
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
 }
