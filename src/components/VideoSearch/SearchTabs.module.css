@@ -1,0 +1,43 @@
+.menu {
+  position: fixed;
+  top: 80px; /* Điều chỉnh lại vị trí top cho phù hợp với Navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 40px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  z-index: 900;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 10px 32px;
+  border-radius: 50px; /* Bo tròn kiểu pill shape đẹp hơn */
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.menuItem {
+  cursor: pointer;
+  position: relative;
+  padding: 8px 12px;
+  color: #555;
+  transition: color 0.3s ease;
+}
+
+.menuItem:hover, .active {
+  color: #007bff;
+}
+
+.underline {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+  border-radius: 2px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
