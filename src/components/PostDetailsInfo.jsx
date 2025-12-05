@@ -232,6 +232,14 @@ const PostDetailsInfo = ({
     }
   };
 
+  // 👇 HÀM XỬ LÝ CHUYỂN TRANG USER (MỚI THÊM)
+  const handleViewShop = () => {
+    if (post && post.maNguoiBan) {
+      navigate(`/nguoi-dung/${post.maNguoiBan}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className={styles.chiTietTinDangInfo}>
       <div className={styles.headerRow}>
@@ -306,6 +314,11 @@ const PostDetailsInfo = ({
               )}
             </div>
           </div>
+          
+          <button className={styles.viewShopBtn} onClick={handleViewShop}>
+             Xem trang
+          </button>
+
         </div>
 
         {!isOwner && (

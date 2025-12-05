@@ -151,8 +151,12 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           {/* 1. Phần Mô tả văn bản */}
           <PostDescription description={post.moTa} />
 
-          {/* 2. Phần Thông số kỹ thuật */}
-          <PostTechnicalSpecs detailsJson={post.thongTinChiTiet || post.ThongTinChiTiet} />
+          {/* 2. Phần Thông số kỹ thuật - SỬA ĐOẠN NÀY */}
+          <PostTechnicalSpecs 
+              detailsJson={post.thongTinChiTiet || post.ThongTinChiTiet} 
+              condition={post.tinhTrang}          // Truyền tình trạng (Moi/DaSuDung)
+              negotiable={post.coTheThoaThuan}    // Truyền thỏa thuận (true/false)
+          />
         </div>
 
         {/* Cột phải: Bình Luận */}

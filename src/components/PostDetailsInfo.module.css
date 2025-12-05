@@ -298,3 +298,29 @@
   .navPrev { left: -10px; }
   .navNext { right: -10px; }
 }
+.viewShopBtn {
+  margin-left: auto; /* ⭐ QUAN TRỌNG: Đẩy nút sang tận cùng bên phải */
+  padding: 6px 12px;
+  background-color: var(--bg-secondary); /* Màu xám nhạt giống hình mẫu */
+  color: #333;
+  border: 1px solid transparent;
+  border-radius: 16px; /* Bo tròn kiểu pill */
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.viewShopBtn:hover {
+  background-color: #e4e6eb; /* Màu hover đậm hơn chút */
+  border-color: #d0d0d0;
+}
+
+/* Responsive: Trên màn hình nhỏ có thể chỉnh lại cho đẹp nếu cần */
+@media (max-width: 480px) {
+  .viewShopBtn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
