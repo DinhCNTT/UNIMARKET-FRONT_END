@@ -266,16 +266,44 @@
 }
 
 /* badge near bell */
+/* Badge thông báo (Bong bóng) */
 .um-tn-badge {
-  display: inline-block;
-  min-width: 18px;
-  height: 18px;
-  line-height: 18px;
-  border-radius: 12px;
-  background: #ff4d4f;
-  color: white;
-  font-size: 11px;
-  padding: 0 6px;
-  margin-left: 6px;
-  vertical-align: middle;
+  position: absolute;
+  top: -5px;
+  right: -4px;       
+  min-width: 16px;
+  height: 16px;
+  padding: 0 0px;
+  background: linear-gradient(135deg, #FFC107 0%, #FF5722 100%); 
+  color: #ffffff;      
+  border-radius: 10px;
+  border: 2px solid var(--theme-bg-primary); 
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 10;
+  box-sizing: content-box;
+  box-shadow: 0 2px 4px rgba(255, 87, 34, 0.3); 
+}
+.um-tn-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+}
+
+@keyframes shake-bell {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(10deg); }
+  50% { transform: rotate(0); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0); }
+}
+
+.um-tn-icon-btn:hover .um-tn-badge {
+  animation: shake-bell 0.5s ease-in-out;
 }

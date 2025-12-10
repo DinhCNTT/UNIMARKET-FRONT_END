@@ -95,17 +95,19 @@ const CapNhatTin = () => {
         setCategoryId(tinDang.maDanhMuc);
         setCategoryName(tinDang.danhMuc?.tenDanhMuc);
 
-        if (tinDang.thongTinChiTiet) {
+        const rawDetails = tinDang.chiTietObj || tinDang.thongTinChiTiet;
+
+        if (rawDetails) {
           try {
-            const parsed = typeof tinDang.thongTinChiTiet === 'string' 
-              ? JSON.parse(tinDang.thongTinChiTiet) 
-              : tinDang.thongTinChiTiet;
+            const parsed = typeof rawDetails === 'string' 
+              ? JSON.parse(rawDetails) 
+              : rawDetails;
             setDynamicData(parsed || {});
           } catch (e) {
             console.error("Lỗi parse thông tin chi tiết:", e);
           }
         }
-
+        
         if (tinDang.anhTinDangs?.length > 0) {
           const images = [];
           const videos = [];

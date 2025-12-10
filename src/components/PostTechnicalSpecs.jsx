@@ -1,34 +1,40 @@
 import React from "react";
 import styles from "./PostTechnicalSpecs.module.css";
 
-const PostTechnicalSpecs = ({ detailsJson }) => {
-  // 1. Kiểm tra nếu không có dữ liệu thì không hiển thị gì cả
-  if (!detailsJson) return null;
-
-  // 2. Parse JSON
-  let specs = null;
+// 1. Nhận thêm props condition và negotiable
+const PostTechnicalSpecs = ({ detailsJson, condition, negotiable }) => {
+  
+  // 2. Parse JSON (Sửa lại logic một chút để không return null quá sớm nếu có Tình trạng)
+  let specs = {};
   try {
-    specs = typeof detailsJson === "string" ? JSON.parse(detailsJson) : detailsJson;
-
-    // Nếu object rỗng cũng không hiển thị
-    if (Object.keys(specs).length === 0) return null;
+    if (detailsJson) {
+      specs = typeof detailsJson === "string" ? JSON.parse(detailsJson) : detailsJson;
+    }
   } catch (error) {
     console.error("Lỗi parse thông số kỹ thuật:", error);
-    return null;
+    specs = {}; // Nếu lỗi thì coi như object rỗng
   }
 
-  // 3. Bảng dịch từ khóa sang tiếng Việt có dấu
+  // 3. Nếu không có specs VÀ không có thông tin tình trạng thì mới ẩn
+  if (Object.keys(specs).length === 0 && !condition) return null;
+
+  // 4. Bảng dịch từ khóa JSON sang tiếng Việt (Giữ nguyên)
   const labelMapping = {
     "Hang": "Hãng",
-    "DongMay": "Dòng máy", // 👈 THÊM DÒNG NÀY VÀO
+    "DongMay": "Dòng máy",
     "MauSac": "Màu sắc",
     "DungLuong": "Dung lượng",
     "BaoHanh": "Bảo hành",
     "XuatXu": "Xuất xứ",
-    // Thêm các trường khác nếu sau này mở rộng (VD: Laptop)
     "Ram": "RAM",
     "Cpu": "Vi xử lý",
     "OCung": "Ổ cứng"
+  };
+
+  // 5. Hàm xử lý hiển thị Tình trạng
+  const formatCondition = (val) => {
+    if (!val) return "Không xác định";
+    return val === "Moi" ? "Mới" : "Đã sử dụng";
   };
 
   return (
@@ -36,12 +42,32 @@ const PostTechnicalSpecs = ({ detailsJson }) => {
       <h3 className={styles.specsTitle}>Thông tin chi tiết</h3>
 
       <div className={styles.specsTable}>
+        
+        {/* --- PHẦN THÊM MỚI: Tình trạng & Thỏa thuận --- */}
+        
+        {/* Dòng Tình trạng */}
+        {condition && (
+          <div className={styles.specRow}>
+            <span className={styles.specLabel}>Tình trạng</span>
+            <span className={styles.specValue}>{formatCondition(condition)}</span>
+          </div>
+        )}
+
+        {/* Dòng Thương lượng */}
+        <div className={styles.specRow}>
+          <span className={styles.specLabel}>Thương lượng</span>
+          <span className={styles.specValue}>
+            {negotiable ? "Có thể thương lượng" : "Không thương lượng"}
+          </span>
+        </div>
+
+        {/* --- PHẦN CŨ: Duyệt qua JSON specs --- */}
         {Object.entries(specs).map(([key, value]) => {
-          if (!value) return null; // Bỏ qua nếu giá trị rỗng
+          if (!value) return null;
           return (
             <div key={key} className={styles.specRow}>
               <span className={styles.specLabel}>
-                {labelMapping[key] || key} {/* Tự động map sang tiếng Việt */}
+                {labelMapping[key] || key}
               </span>
               <span className={styles.specValue}>{value}</span>
             </div>

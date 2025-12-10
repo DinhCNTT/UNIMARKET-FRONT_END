@@ -152,7 +152,7 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           <PostDescription description={post.moTa} />
 
           {/* 2. Phần Thông số kỹ thuật */}
-          <PostTechnicalSpecs detailsJson={post.thongTinChiTiet || post.ThongTinChiTiet} />
+          <PostTechnicalSpecs detailsJson={post.ChiTietObj || post.chiTietObj} />
         </div>
 
         {/* Cột phải: Bình Luận */}

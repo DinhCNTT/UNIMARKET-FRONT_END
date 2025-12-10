@@ -10,13 +10,13 @@ import {
   FiUser,
   FiMoreHorizontal,
 } from "react-icons/fi";
-import VideoSearchOverlay from "./VideoSearchOverlay";
-import "./TopNavbarUniMarket.css";
-import { NotificationContext } from "./NotificationsModals/context/NotificationContext";
-import NotificationsDropdown from "./NotificationsModals/NotificationsDropdown";
 import { useNavigate, useLocation } from "react-router-dom";
-import { VideoContext } from "../context/VideoContext";
+import VideoSearchOverlay from "./VideoSearchOverlay";
 import MorePanel from "./MorePanel";
+import NotificationDropdown from "./NotificationDropdown";
+import "./TopNavbarUniMarket.css";
+import { GlobalNotificationContext } from "../context/GlobalNotificationContext";
+import { VideoContext } from "../context/VideoContext";
 
 export default function TopNavbarUniMarket() {
   const navRef = useRef(null);
@@ -28,21 +28,30 @@ export default function TopNavbarUniMarket() {
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
 
   const [profile, setProfile] = useState(null);
-  const { unreadCount, fetchNotifications } = useContext(NotificationContext);
+  const { unreadCount, fetchNotifications } = useContext(GlobalNotificationContext);
 
+  // Logic kiểm tra route chat
   const isChatRoute = location.pathname.startsWith("/chat");
+  
+  // ✅ State isMini: Điều khiển việc thu nhỏ Navbar
   const [isMini, setIsMini] = useState(isChatRoute);
 
+  // Khi đổi route, nếu vào /chat thì tự động thu nhỏ, ra ngoài thì mở rộng (trừ khi đang mở panel)
   useEffect(() => {
-    setIsMini(isChatRoute);
-  }, [isChatRoute]);
+    const PANEL_TABS = ["search", "activity", "messages", "more"];
+    if (PANEL_TABS.includes(activeTab)) {
+        setIsMini(true); // Nếu đang mở panel thì luôn thu nhỏ
+    } else {
+        setIsMini(isChatRoute); // Nếu không mở panel, phụ thuộc vào route
+    }
+  }, [isChatRoute, activeTab]);
 
   const getAvatarSrc = (url) => {
     if (!url) return null;
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
-  const PANEL_TABS = new Set(["search", "upload", "activity", "more"]);
+  const PANEL_TABS_SET = new Set(["search", "upload", "activity", "more"]);
 
   // ==========================================================
   // LOGIC GIỮ "FOR YOU" ACTIVE KHI Ở TRANG VIDEO
@@ -50,7 +59,7 @@ export default function TopNavbarUniMarket() {
   useEffect(() => {
     const path = location.pathname;
     const floatingTabs = new Set([
-      ...PANEL_TABS,
+      ...PANEL_TABS_SET,
       "messages",
       "profile",
     ]);
@@ -88,39 +97,49 @@ export default function TopNavbarUniMarket() {
   }, []);
 
   // ==========================================================
-  // ✅ TOGGLE TAB (QUAN TRỌNG: XỬ LÝ RELOAD FEED)
+  // ✅ TOGGLE TAB (QUAN TRỌNG: LOGIC AUTO-COLLAPSE MỚI)
   // ==========================================================
   const toggleTab = (tab) => {
-    // Nếu bấm lại vào tab đang mở (trừ For You) -> Đóng tab
+    // 1. Nếu bấm lại vào tab đang mở (đóng tab)
     if (activeTab === tab && tab !== "forYou") {
       setActiveTab(null);
+      // Khi đóng panel, mở rộng lại Navbar (trừ khi đang ở trang Chat)
+      setIsMini(location.pathname.startsWith("/chat"));
       return;
     }
 
-    // Nếu bấm vào For You (Home)
+    // 2. Nếu bấm vào For You (Home)
     if (tab === "forYou") {
       setActiveTab("forYou");
-      
-      // 🔥 Gọi triggerReload để useVideoFeed reset lại danh sách video & page
-      triggerReload(); 
-
-      // Nếu đang ở trang khác (không phải xem video) thì điều hướng về trang video
+      triggerReload(); // Reset feed
       if (!location.pathname.startsWith("/video/")) {
-        navigate("/video/1"); // Hoặc đường dẫn mặc định của bạn
+        navigate("/video/1");
       }
+      setIsMini(false); // Home luôn mở rộng navbar
       return;
     }
-    
-    // Các tab khác
+
+    // 3. Xử lý mở các Tab khác
     setActiveTab(tab);
+    
+    // ✅ LOGIC MỚI: Thu nhỏ Navbar khi mở Search, Activity, Messages, More
+    const TABS_NEED_MINI = ["search", "activity", "messages", "more"];
+    
+    if (TABS_NEED_MINI.includes(tab)) {
+        setIsMini(true); // Thu nhỏ ngay lập tức
+    } else {
+        // Nếu click vào tab khác (VD: Explore, Upload, Profile), giữ trạng thái theo route
+        setIsMini(location.pathname.startsWith("/chat"));
+    }
+
+    // Nếu mở tab Activity -> Gọi fetch notification mới nhất
     if (tab === 'activity') {
-      // fetch latest notifications when opening the panel
-      try { fetchNotifications(); } catch (e) { console.warn('fetchNotifications error', e); }
+      try { fetchNotifications(); } catch (e) { console.warn(e); }
     }
   };
 
   // ==========================================================
-  // ✅ XỬ LÝ TAB MESSAGE KHI Ở TRANG CHAT (FIX LỖI MORE PANEL)
+  // XỬ LÝ TAB MESSAGE KHI Ở TRANG CHAT
   // ==========================================================
   useEffect(() => {
     if (location.pathname.startsWith("/chat")) {
@@ -140,10 +159,10 @@ export default function TopNavbarUniMarket() {
   const handleChatClick = () => {
     navigate("/chat");
     setActiveTab("messages");
-    setIsMini(true);
+    setIsMini(true); // Vào chat là thu nhỏ
   };
 
-  const isPanelOpen = PANEL_TABS.has(activeTab);
+  const isPanelOpen = PANEL_TABS_SET.has(activeTab);
 
   // ==========================================================
   // CLICK OUTSIDE TO CLOSE PANEL
@@ -157,10 +176,14 @@ export default function TopNavbarUniMarket() {
       const clickedOutsidePanel = !panel || !panel.contains(e.target);
 
       if (!(clickedOutsideNav && clickedOutsidePanel)) return;
+      
+      // Nếu ở trang chat và tab không phải search thì ko làm gì (Chat luôn active Messages)
       if (isChatRoute && activeTab !== "search") return;
       
-      if (PANEL_TABS.has(activeTab)) {
-        setActiveTab(null); 
+      if (PANEL_TABS_SET.has(activeTab)) {
+        setActiveTab(null);
+        // Click ra ngoài -> Đóng panel -> Mở rộng navbar lại (nếu ko phải chat)
+        setIsMini(location.pathname.startsWith("/chat"));
         return;
       }
     };
@@ -175,29 +198,21 @@ export default function TopNavbarUniMarket() {
   return (
     <div className="um-tn-root">
       <nav
-        className={`um-tn-navbar ${
-          activeTab === "search" ||
-          activeTab === "more" ||
-          (location.pathname.startsWith("/chat") && activeTab !== "search")
-            ? "collapsed"
-            : ""
-        }`}
+        className={`um-tn-navbar ${isMini ? "collapsed" : ""}`}
         ref={navRef}
       >
         {/* LOGO */}
         <div
           className="um-tn-logo"
           onClick={() => {
-            // Click Logo tương tự click For You
             setActiveTab("forYou");
             triggerReload();
             navigate("/market");
+            setIsMini(false); // Click logo thì mở rộng navbar
           }}
           style={{ cursor: "pointer" }}
         >
-          {activeTab === "search" ||
-          activeTab === "more" ||
-          location.pathname.startsWith("/chat") ? (
+          {isMini ? (
             <div className="um-tn-logo-u">U</div>
           ) : (
             <img src="/logoWeb.png" alt="Logo" className="um-tn-logo-img" />
@@ -212,7 +227,7 @@ export default function TopNavbarUniMarket() {
           onClick={() => toggleTab("search")}
         >
           <FiSearch size={20} />
-          {activeTab !== "search" && activeTab !== "more" && <span>Search</span>}
+          {!isMini && <span>Search</span>}
         </button>
 
         {/* MAIN ICONS */}
@@ -224,9 +239,7 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("forYou")}
           >
             <FiHome size={20} />
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>For You</span>
-            )}
+            {!isMini && <span>For You</span>}
           </button>
 
           <button
@@ -236,9 +249,7 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("explore")}
           >
             <FiCompass size={20} />
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>Explore</span>
-            )}
+            {!isMini && <span>Explore</span>}
           </button>
 
           <button
@@ -248,24 +259,31 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("upload")}
           >
             <FiUpload size={20} />
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>Upload</span>
-            )}
+            {!isMini && <span>Upload</span>}
           </button>
 
+          {/* ACTIVITY (NOTIFICATION) */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "activity" ? "active" : ""
             }`}
             onClick={() => toggleTab("activity")}
           >
-            <FiBell size={20} />
-            {unreadCount > 0 && <span className="um-tn-badge">{unreadCount}</span>}
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>Activity</span>
-            )}
+            {/* Bọc icon và badge vào wrapper */}
+            <div className="um-tn-icon-wrapper">
+              <FiBell size={24} /> {/* Tăng size lên 24 cho đẹp */}
+              
+              {unreadCount > 0 && (
+                <span className="um-tn-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </div>
+
+            {!isMini && <span>Activity</span>}
           </button>
 
+          {/* MESSAGES */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "messages" ? "active" : ""
@@ -273,11 +291,10 @@ export default function TopNavbarUniMarket() {
             onClick={handleChatClick}
           >
             <FiMessageSquare size={20} />
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>Messages</span>
-            )}
+            {!isMini && <span>Messages</span>}
           </button>
 
+          {/* PROFILE */}
           <button
             className={`um-tn-icon-btn ${
               activeTab === "profile" ? "active" : ""
@@ -298,9 +315,7 @@ export default function TopNavbarUniMarket() {
             ) : (
               <FiUser size={20} />
             )}
-            {activeTab !== "search" && activeTab !== "more" && (
-              <span>Profile</span>
-            )}
+            {!isMini && <span>Profile</span>}
           </button>
         </div>
 
@@ -313,7 +328,7 @@ export default function TopNavbarUniMarket() {
             onClick={() => toggleTab("more")}
           >
             <FiMoreHorizontal size={20} />
-            {activeTab !== "more" && <span>Thêm</span>}
+            {!isMini && <span>Thêm</span>}
           </button>
         </div>
       </nav>
@@ -327,14 +342,18 @@ export default function TopNavbarUniMarket() {
           <div className="um-tn-tab-content" ref={panelRef}>
             <VideoSearchOverlay
               isOpen={activeTab === "search"}
-              onClose={() => setActiveTab(null)}
+              onClose={() => {
+                  setActiveTab(null);
+                  setIsMini(location.pathname.startsWith("/chat"));
+              }}
             />
           </div>
         )}
 
+        {/* ✅ Hiển thị Component NotificationDropdown mới */}
         {activeTab === "activity" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <NotificationsDropdown />
+            <NotificationDropdown />
           </div>
         )}
 
@@ -354,7 +373,10 @@ export default function TopNavbarUniMarket() {
 
         {activeTab === "more" && (
           <div className="um-tn-tab-content" ref={panelRef}>
-            <MorePanel onClose={() => setActiveTab(null)} />
+            <MorePanel onClose={() => {
+                setActiveTab(null);
+                setIsMini(location.pathname.startsWith("/chat"));
+            }} />
           </div>
         )}
       </div>
