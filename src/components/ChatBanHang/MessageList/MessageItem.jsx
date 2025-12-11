@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 import useResizeObserver from "../../../hooks/useResizeObserver";
 
 const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirstMessage }) => {
-  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage } =
+  const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, sendMessageService } =
     useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -394,7 +394,85 @@ const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirst
               </div>
             </div>
           ) : (
-            <p className={styles.textContent}>{message.noiDung}</p>
+            <div>
+              <p className={styles.textContent}>{message.noiDung}</p>
+
+              {/* Render AI suggestion boxes when present */}
+              {message.isAi && Array.isArray(message.aiSuggestions) && message.aiSuggestions.length > 0 && (
+                <div className={styles.aiSuggestions}>
+                  {message.aiSuggestions.slice(0, 8).map((s, idx) => {
+                    // tolerant field lookup
+                    const title = s?.ten || s?.Ten || s?.title || s?.name || "Sản phẩm";
+                    const price = s?.gia || s?.Gia || s?.price || null;
+                    const image = s?.anhDaiDien || s?.AnhDaiDien || s?.image || s?.Anh || null;
+                    const isHot = s?.isHot || s?.IsHot || false;
+                    const views = s?.soLuotXem || s?.SoLuotXem || 0;
+                    const likes = s?.soLike || s?.SoLike || 0;
+                    const productId = s?.id || s?.Id || s?.maTinDang || s?.MaTinDang;
+                    
+                    return (
+                      <div key={idx} className={styles.aiCard} onClick={() => {
+                        // Navigate to product detail page using the correct route
+                        if (productId) {
+                          window.location.href = `/tin-dang/${productId}`;
+                        }
+                      }}>
+                        <div style={{ position: 'relative' }}>
+                          {image ? <img src={image} alt={title} className={styles.aiCardImage} /> : <div className={styles.aiCardImagePlaceholder}></div>}
+                          {isHot && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '4px',
+                              right: '4px',
+                              backgroundColor: '#ef4444',
+                              color: 'white',
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              zIndex: 10
+                            }}>
+                              🔥 HOT
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.aiCardBody}>
+                          <div className={styles.aiCardTitle}>{title}</div>
+                          {price != null && <div className={styles.aiCardPrice}>{typeof price === 'number' ? price.toLocaleString('vi-VN') + ' đ' : price}</div>}
+                          {(views > 0 || likes > 0) && (
+                            <div style={{
+                              fontSize: '11px',
+                              color: '#64748b',
+                              marginTop: '4px',
+                              display: 'flex',
+                              gap: '8px'
+                            }}>
+                              {views > 0 && <span>👁 {views}</span>}
+                              {likes > 0 && <span>❤️ {likes}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Render clarifying question with quick-reply action */}
+              {message.isAi && message.clarifyingQuestion && (
+                <div className={styles.aiClarify}>
+                  <div className={styles.aiClarifyText}>{message.clarifyingQuestion}</div>
+                  <div className={styles.aiClarifyActions}>
+                    <button
+                      className={styles.aiQuickReply}
+                      onClick={() => sendMessageService(message.clarifyingQuestion, 'text')}
+                    >
+                      Trả lời
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

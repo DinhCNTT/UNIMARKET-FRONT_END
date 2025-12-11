@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar/TopNavbar";
 import MarketHeroHeader from "../components/MarketHeroHeader";
@@ -6,6 +7,7 @@ import CategoryList from "../components/CategoryList";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import UniMarketIntro from "../components/UniMarketIntro";
 import "./MarketPage.css";
+import FloatingAiButton from "../components/AI/FloatingAiButton";
 import Footer from "../components/Footer";
 import FooterBanner from "../components/FooterBanner/FooterBanner"; 
 
@@ -20,6 +22,8 @@ const MarketplacePage = () => {
     <div className="marketplace-page">
       <TopNavbar />
       <MarketHeroHeader />
+
+      {/* Removed centered text AI button; using floating icon-only button instead */}
 
       <div className="main-content" style={{ minHeight: "200vh" }}>
         <CategoryList />
@@ -42,6 +46,7 @@ const MarketplacePage = () => {
       </div>
       <FooterBanner />
       <Footer />
+      <FloatingAiButton user={user} />
     </div>
   );
 };

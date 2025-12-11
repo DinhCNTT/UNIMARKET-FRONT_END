@@ -350,6 +350,36 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     if (!maCuocTroChuyen || !user?.id) return;
 
     const fetchChatInfo = async () => {
+      // If this is an AI assistant chat, populate placeholders locally and skip server call
+      if (String(maCuocTroChuyen).startsWith("ai-assistant-")) {
+        setInfoTinDang({
+          tieuDe: "Uni.AI",
+          gia: 0,
+          anh: "/images/uni-ai-avatar.svg",
+          maTinDang: null,
+          avatarChuSanPham: "/images/uni-ai-avatar.svg",
+          tenChuSanPham: "Uni.AI",
+          isOnline: true,
+          lastOnlineTime: null,
+          formattedLastSeen: null,
+          maChuSanPham: null,
+          isPostDeleted: false,
+        });
+
+        setMaNguoiConLai("uni.ai");
+        setInfoNguoiConLai({
+          id: "uni.ai",
+          avatar: "/images/uni-ai-avatar.svg",
+          ten: "Uni.AI",
+          isOnline: true,
+          lastOnlineTime: null,
+          formattedLastSeen: null,
+        });
+
+        // don't perform participant/block queries for AI chat
+        return;
+      }
+
       try {
         // Lấy thông tin chat
         const res = await api.get(`/chat/info/${maCuocTroChuyen}`);
@@ -409,6 +439,40 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           );
         }
       } catch (error) {
+        // If chat info not found for AI-generated chat IDs, create a local placeholder
+        const status = error?.response?.status || null;
+        if (status === 404 && String(maCuocTroChuyen).startsWith("ai-assistant-")) {
+          console.warn("Chat info not found on server for AI chat. Creating local placeholder.");
+
+          // Populate minimal UI info so the chat box can render for AI assistant
+          setInfoTinDang({
+            tieuDe: "Uni.AI",
+            gia: 0,
+            anh: "/images/uni-ai-avatar.svg",
+            maTinDang: null,
+            avatarChuSanPham: "/images/uni-ai-avatar.svg",
+            tenChuSanPham: "Uni.AI",
+            isOnline: true,
+            lastOnlineTime: null,
+            formattedLastSeen: null,
+            maChuSanPham: null,
+            isPostDeleted: false,
+          });
+
+          setMaNguoiConLai("uni.ai");
+          setInfoNguoiConLai({
+            id: "uni.ai",
+            avatar: "/images/uni-ai-avatar.svg",
+            ten: "Uni.AI",
+            isOnline: true,
+            lastOnlineTime: null,
+            formattedLastSeen: null,
+          });
+
+          // No block checks or participant queries for AI chat
+          return;
+        }
+
         console.error("Lỗi chat info:", error);
       }
     };
@@ -515,32 +579,33 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   useEffect(() => {
     if (!isConnected || !user?.id) return;
 
-    const refreshStatus = async () => {
+      const refreshStatus = async () => {
       // Refresh status cho người còn lại
-      if (infoNguoiConLai.id) {
-        const status = await fetchUserStatus(infoNguoiConLai.id);
-        if (status) {
-          setInfoNguoiConLai((p) => ({
-            ...p,
-            isOnline: status.isOnline,
-            lastOnlineTime: status.lastActive,
-            formattedLastSeen: status.formattedLastSeen,
-          }));
+        // Don't fetch remote status for the built-in AI identity
+        if (infoNguoiConLai.id && infoNguoiConLai.id !== "uni.ai") {
+          const status = await fetchUserStatus(infoNguoiConLai.id);
+          if (status) {
+            setInfoNguoiConLai((p) => ({
+              ...p,
+              isOnline: status.isOnline,
+              lastOnlineTime: status.lastActive,
+              formattedLastSeen: status.formattedLastSeen,
+            }));
+          }
         }
-      }
 
       // Refresh status cho chủ sản phẩm
-      if (infoTinDang.maChuSanPham) {
-        const status = await fetchUserStatus(infoTinDang.maChuSanPham);
-        if (status) {
-          setInfoTinDang((p) => ({
-            ...p,
-            isOnline: status.isOnline,
-            lastOnlineTime: status.lastActive,
-            formattedLastSeen: status.formattedLastSeen,
-          }));
+        if (infoTinDang.maChuSanPham && infoTinDang.maChuSanPham !== "uni.ai") {
+          const status = await fetchUserStatus(infoTinDang.maChuSanPham);
+          if (status) {
+            setInfoTinDang((p) => ({
+              ...p,
+              isOnline: status.isOnline,
+              lastOnlineTime: status.lastActive,
+              formattedLastSeen: status.formattedLastSeen,
+            }));
+          }
         }
-      }
     };
 
     refreshStatus();
@@ -633,7 +698,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       <div className={styles.chatPageWrapper}>
         <div className={styles.chatboxContainer}>
           <ChatHeader />
-          <ChatProductBanner />
+          {!String(maCuocTroChuyen).startsWith("ai-assistant-") && <ChatProductBanner />}
           <MessageList />
 
           <QuickReplies

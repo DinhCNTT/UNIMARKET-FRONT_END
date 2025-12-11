@@ -25,6 +25,7 @@ import {
 
 // Services
 import { deleteConversationForMe, setChatState, bulkSetChatState, getUserChatStates, getUserChats } from "../services/chatService";
+import { injectChatPreview, injectChatMessage } from "./AI/AiHelpers";
 
 
 
@@ -279,6 +280,30 @@ const sortChatsLikeMessenger = (chats) => {
     window.addEventListener('messageDeleted', handleMessageDeleted);
     return () => window.removeEventListener('messageDeleted', handleMessageDeleted);
   }, []);
+
+  // ✅ Lắng nghe event khi có yêu cầu tạo chat preview từ AI (AiHelpers)
+  useEffect(() => {
+    const handleInjectPreview = (event) => {
+      const newChat = event.detail;
+      try {
+        console.log('📥 Nhận được chat preview mới từ AI:', newChat);
+
+        setChatList((prev) => {
+          const exists = prev.some((c) => c.maCuocTroChuyen === newChat.maCuocTroChuyen);
+          if (exists) return prev;
+          return [newChat, ...prev];
+        });
+
+        // Tự động mở chat mới
+        if (onSelectChat) onSelectChat(newChat.maCuocTroChuyen);
+      } catch (err) {
+        console.error('Lỗi khi xử lý InjectSampleMessageToChatList:', err);
+      }
+    };
+
+    window.addEventListener('InjectSampleMessageToChatList', handleInjectPreview);
+    return () => window.removeEventListener('InjectSampleMessageToChatList', handleInjectPreview);
+  }, [onSelectChat]);
 
   // ✅ FIX: Kết nối SignalR với thời gian chính xác
   useEffect(() => {
@@ -678,6 +703,22 @@ connection.on("ChatStatusChanged", (data) => {
     };
   }, [userId]);
 
+  // ✅ AUTO-SELECT chat nếu selectedChatId từ URL params và chatList đã load
+  useEffect(() => {
+    if (!selectedChatId) return; // Không có selectedChatId từ URL
+    if (!chatList || chatList.length === 0) return; // ChatList chưa load
+
+    // Tìm xem chat có tồn tại trong danh sách không
+    const existingChat = chatList.find(c => c.maCuocTroChuyen === selectedChatId);
+    if (!existingChat) return; // Chat không tồn tại
+
+    // ✅ Auto-select chat này
+    if (onSelectChat) {
+      console.log(`[ChatList] Auto-selecting chat from URL params: ${selectedChatId}`);
+      onSelectChat(existingChat);
+    }
+  }, [chatList, selectedChatId, onSelectChat]);
+
   // Lọc danh sách chat theo tiêu chí
   const filteredChats = (() => {
     let chatsToFilter = [];
@@ -800,6 +841,7 @@ connection.on("ChatStatusChanged", (data) => {
             spellCheck={false}
           />
         </div>
+        <div style={{display:'flex', gap:8, alignItems:'center'}}>
         <button
           className="chatlist-filter-menu-btn"
           onClick={(e) => {
@@ -830,6 +872,42 @@ connection.on("ChatStatusChanged", (data) => {
         >
           <FiMoreVertical size={20} />
         </button>
+        {import.meta && import.meta.env && import.meta.env.MODE !== 'production' ? (
+          <button
+            className="chatlist-sample-btn"
+            title="Tạo tin nhắn mẫu"
+            onClick={(e) => {
+              e.stopPropagation();
+              const now = new Date();
+              const chatId = selectedChatId || `sample-ai-${Date.now()}`;
+              const sampleMsg = {
+                maTinNhan: `sample-${Date.now()}`,
+                maCuocTroChuyen: chatId,
+                noiDung: "Xin chào, tôi muốn xem các tin có video về điện thoại giá dưới 5 triệu",
+                maNguoiGui: userId || 'user-sample',
+                loaiTinNhan: 'text',
+                thoiGianGui: now.toISOString(),
+                daXem: false,
+              };
+
+              // Use centralized AI helpers to inject messages and previews
+              injectChatMessage(sampleMsg);
+              injectChatPreview({
+                maCuocTroChuyen: chatId,
+                tieuDeTinDang: 'Huấn luyện AI - Sản phẩm mẫu',
+                giaTinDang: 5000000,
+                anhDaiDienTinDang: '',
+                noiDung: sampleMsg.noiDung,
+                maNguoiGui: sampleMsg.maNguoiGui,
+                loaiTinNhan: sampleMsg.loaiTinNhan,
+                thoiGian: sampleMsg.thoiGianGui
+              });
+            }}
+          >
+            Tạo tin mẫu
+          </button>
+        ) : null}
+        </div>
       </div>
     )}
 
@@ -894,24 +972,31 @@ connection.on("ChatStatusChanged", (data) => {
                       />
                   )}
 
-                  {/* Avatar tin đăng */}
-                  <img src={getFullImageUrl(chat.anhDaiDienTinDang)} alt="Ảnh tin đăng" className="chatlist-item-image" />
+                  {/* Avatar: nếu là AI thì dùng ảnh Uni.AI, còn lại dùng ảnh tin đăng */}
+                  {String(chat.maCuocTroChuyen).startsWith('ai-assistant-') ? (
+                    <img src={'/images/uni-ai-avatar.svg'} alt="Uni.AI" className="chatlist-item-image ai-avatar" />
+                  ) : (
+                    <img src={getFullImageUrl(chat.anhDaiDienTinDang)} alt="Ảnh tin đăng" className="chatlist-item-image" />
+                  )}
 
                   {/* Nội dung hội thoại */}
                   <div className="chatlist-item-content">
                     <div className="chatlist-item-title"><span className="chatlist-item-title-text">{chat.tieuDeTinDang}</span></div>
-                    <div className="chatlist-item-price">
-                      Giá:{" "}
-                      {chat.giaTinDang?.toLocaleString("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      })}
-                    </div>
+                    {/* Không hiển thị giá cho chat AI */}
+                    {!String(chat.maCuocTroChuyen).startsWith('ai-assistant-') && (
+                      <div className="chatlist-item-price">
+                        Giá:{" "}
+                        {chat.giaTinDang?.toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        })}
+                      </div>
+                    )}
                       <div
   className="chatlist-item-info"
   style={{ fontWeight: chat.hasUnreadMessages ? "bold" : "normal" }}
 >
-  {chat.maNguoiGuiCuoi === userId ? "Bạn" : chat.tenNguoiConLai}{" "} - {" "}
+  {chat.maNguoiGuiCuoi === userId ? "Bạn" : (String(chat.maCuocTroChuyen).startsWith('ai-assistant-') ? 'Uni.AI' : chat.tenNguoiConLai)}{" "} - {" "}
   {chat.isEmpty
     ? "Chưa có tin nhắn"
     : chat.isRecalled ? (
