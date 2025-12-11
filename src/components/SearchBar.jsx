@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./SearchBar.css";
 import { 
   FaSearch, 
@@ -9,36 +9,34 @@ import {
   FaArrowLeft,
   FaCheck
 } from "react-icons/fa";
-import { SearchContext } from "../context/SearchContext";
-import { LocationContext } from "../context/LocationContext";
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
-import toast from "react-hot-toast";
 import axios from "axios";
+import { useProductSearch } from "../hooks/useProductSearch"; // Import Hook
 
 const SearchBar = () => {
-  // Contexts
-  const { setSearchTerm } = useContext(SearchContext);
-  const { selectedLocation, setSelectedLocation } = useContext(LocationContext);
-  const { user, token } = useContext(AuthContext);
+  // ==========================================
+  // 1. LOGIC TÌM KIẾM (TỪ CUSTOM HOOK)
+  // ==========================================
+  const {
+    inputValue, setInputValue,
+    suggestions, searchHistory,
+    showSuggestions, setShowSuggestions,
+    loadingSuggestions, loadingHistory,
+    user,
+    handleSearch,
+    deleteSearchHistoryItem,
+    highlightText,
+    formatDate,
+    selectedLocation, // Lấy location hiện tại từ context (qua hook)
+    setSelectedLocation // Lấy hàm set từ context (qua hook)
+  } = useProductSearch();
 
-  // Router
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Refs
+  // ==========================================
+  // 2. LOGIC ĐỊA ĐIỂM (UI RIÊNG CỦA COMPONENT NÀY)
+  // ==========================================
   const suggestionsRef = useRef(null);
   const locationWrapperRef = useRef(null);
 
-  // --- SEARCH STATES ---
-  const [inputValue, setInputValue] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [searchHistory, setSearchHistory] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-
-  // --- LOCATION & MODAL STATES ---
+  // Modal States
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationStep, setLocationStep] = useState("MAIN"); // 'MAIN', 'PROVINCE', 'DISTRICT'
   
@@ -46,46 +44,24 @@ const SearchBar = () => {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   
-  // Temporary selection (camelCase standard)
-  const [tempProvince, setTempProvince] = useState(null); // { maTinhThanh, tenTinhThanh }
-  const [tempDistrict, setTempDistrict] = useState(null); // { maQuanHuyen, tenQuanHuyen }
+  // Temporary selection (Cho việc chọn trong modal trước khi Apply)
+  const [tempProvince, setTempProvince] = useState(null); 
+  const [tempDistrict, setTempDistrict] = useState(null); 
   
   // Search filter inside location lists
   const [locationSearchKeyword, setLocationSearchKeyword] = useState("");
 
-  // ==========================================
-  // 1. INITIALIZATION & EFFECTS
-  // ==========================================
-
-  // FIX: Đồng bộ cả Search Term VÀ Location từ URL khi load trang
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    
-    // 1. Sync Search keyword
-    const searchQuery = queryParams.get("search");
-    if (searchQuery) {
-      setInputValue(searchQuery);
-      setSearchTerm(searchQuery);
-    }
-
-    // 2. Sync Location (Quan trọng: Để khi F5 không bị mất vị trí)
-    const locationQuery = queryParams.get("location");
-    if (locationQuery) {
-      setSelectedLocation(locationQuery);
-    } else {
-        // Nếu không có param location, mặc định set về Toàn quốc
-        setSelectedLocation("Toàn quốc"); 
-    }
-  }, [location.search, setSearchTerm, setSelectedLocation]);
-
-  // Click outside handler
+  // --- Click Outside Handler (Cho cả Search & Location) ---
   useEffect(() => {
     function handleClickOutside(event) {
+      // Đóng gợi ý tìm kiếm
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
+      // Đóng modal địa điểm
       if (locationWrapperRef.current && !locationWrapperRef.current.contains(event.target)) {
         setShowLocationModal(false);
+        // Reset về step MAIN khi đóng animation xong (hoặc đóng ngay)
         if (!showLocationModal) {
              setLocationStep("MAIN");
         }
@@ -93,15 +69,31 @@ const SearchBar = () => {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showLocationModal]);
+  }, [showLocationModal, setShowSuggestions]);
 
-  // Load provinces on mount
+  // --- API: Load Provinces/Districts ---
   useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const response = await axios.get("http://localhost:5133/api/tindang/tinhthanh");
+        if (response.data) setProvinces(response.data);
+      } catch (error) {
+        console.error("Lỗi lấy danh sách tỉnh thành:", error);
+      }
+    };
     fetchProvinces();
   }, []);
 
-  // Load districts when tempProvince changes
   useEffect(() => {
+    const fetchDistricts = async (maTinhThanh) => {
+      try {
+        const response = await axios.get(`http://localhost:5133/api/tindang/tinhthanh/${maTinhThanh}/quanhuynh`);
+        if (response.data) setDistricts(response.data);
+      } catch (error) {
+        setDistricts([]);
+      }
+    };
+
     if (tempProvince?.maTinhThanh) {
       fetchDistricts(tempProvince.maTinhThanh);
     } else {
@@ -109,139 +101,17 @@ const SearchBar = () => {
     }
   }, [tempProvince]);
 
-  // Load search history when logged in
-  useEffect(() => {
-    if (user && token) {
-      fetchSearchHistory();
-    }
-  }, [user, token]);
-
-  // Debounce search suggestions
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchSuggestions(inputValue);
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [inputValue]);
-
-
-  // ==========================================
-  // 2. API FUNCTIONS (LOCATION)
-  // ==========================================
-
-  const fetchProvinces = async () => {
-    try {
-      const response = await axios.get("http://localhost:5133/api/tindang/tinhthanh");
-      if (response.data) {
-        setProvinces(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi lấy danh sách tỉnh thành:", error);
-    }
-  };
-
-  const fetchDistricts = async (maTinhThanh) => {
-    try {
-      const response = await axios.get(`http://localhost:5133/api/tindang/tinhthanh/${maTinhThanh}/quanhuynh`);
-      if (response.data) {
-        setDistricts(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi lấy danh sách quận huyện:", error);
-      setDistricts([]);
-    }
-  };
-
-  // ==========================================
-  // 3. API FUNCTIONS (SEARCH & HISTORY)
-  // ==========================================
-
-  const fetchSearchHistory = async () => {
-    if (!user || !token) return;
-    setLoadingHistory(true);
-    try {
-      const response = await axios.get(
-        "http://localhost:5133/api/tindang/search-history?limit=5",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSearchHistory(response.data && response.data.length > 0 ? response.data : []);
-    } catch (error) {
-      console.error("Lỗi tải lịch sử:", error);
-      setSearchHistory([]);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  const saveSearchHistory = async (keyword) => {
-    if (!user || !token || !keyword.trim()) return;
-    try {
-      await axios.post(
-        "http://localhost:5133/api/tindang/save-search-history",
-        { keyword: keyword.trim() },
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-      );
-      fetchSearchHistory();
-    } catch (error) {
-      console.error("Lỗi lưu lịch sử:", error);
-    }
-  };
-
-  const deleteSearchHistoryItem = async (historyId, event) => {
-    event.stopPropagation();
-    if (!user || !token) return;
-    try {
-      await axios.delete(`http://localhost:5133/api/tindang/search-history/${historyId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSearchHistory((prev) => prev.filter((item) => item.id !== historyId));
-      toast.success("Đã xóa lịch sử tìm kiếm", { duration: 2000, position: "top-center", style: { background: "#1e1e1e", color: "#fff", fontSize: "14px" } });
-    } catch (error) {
-      toast.error("Lỗi khi xóa lịch sử", { duration: 2000, position: "top-center" });
-    }
-  };
-
-  const fetchSuggestions = async (searchText) => {
-    if (!searchText || searchText.trim().length < 1) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    setLoadingSuggestions(true);
-    try {
-      const response = await axios.get(
-        `http://localhost:5133/api/tindang/suggestions?query=${encodeURIComponent(searchText.trim())}&limit=8`
-      );
-      if (response.data && response.data.length > 0) {
-        setSuggestions(response.data);
-        setShowSuggestions(true);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } catch (error) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  };
-
-  // ==========================================
-  // 4. HANDLERS (LOCATION UI)
-  // ==========================================
-
+  // --- Handlers: Location Logic ---
   const toggleLocationModal = () => {
     if (!showLocationModal) {
         setLocationStep("MAIN");
     }
     setShowLocationModal(!showLocationModal);
-    setShowSuggestions(false);
+    setShowSuggestions(false); // Đóng search suggestion nếu mở location
   };
 
   const handleApplyLocation = () => {
     let finalLocationString = "";
-    
     if (tempProvince) {
         if (tempDistrict && tempDistrict.maQuanHuyen !== "all") {
             finalLocationString = `${tempDistrict.tenQuanHuyen}, ${tempProvince.tenTinhThanh}`;
@@ -251,7 +121,6 @@ const SearchBar = () => {
     } else {
         finalLocationString = "Toàn quốc";
     }
-
     setSelectedLocation(finalLocationString);
     setShowLocationModal(false);
   };
@@ -270,6 +139,7 @@ const SearchBar = () => {
     setLocationStep("MAIN");
   };
 
+  // Filter lists
   const getFilteredProvinces = () => {
     if (!locationSearchKeyword) return provinces;
     return provinces.filter(p => p.tenTinhThanh?.toLowerCase().includes(locationSearchKeyword.toLowerCase()));
@@ -284,86 +154,7 @@ const SearchBar = () => {
   };
 
   // ==========================================
-  // 5. HANDLERS (SEARCH ACTIONS)
-  // ==========================================
-
-  const handleSearch = async (searchQuery = null) => {
-    const queryToSearch = searchQuery || inputValue;
-    
-    if (!queryToSearch.trim()) {
-      toast.error("Vui lòng nhập từ khóa tìm kiếm!", {
-        id: "search-error",
-        duration: 2000,
-        position: "top-center",
-        style: { background: "#1e1e1e", color: "#fff", fontSize: "14px", fontWeight: 500, padding: "12px 16px", borderRadius: "10px" },
-        icon: "🔍",
-      });
-      return;
-    }
-
-    setSearchTerm(queryToSearch);
-    setShowSuggestions(false);
-    await saveSearchHistory(queryToSearch);
-
-    const params = new URLSearchParams();
-    params.set('search', queryToSearch);
-    
-    // FIX: Bỏ điều kiện !== "Toàn quốc". 
-    // Luôn gửi location lên URL, kể cả khi là "Toàn quốc" để backend biết là user muốn xem tất cả.
-    if (selectedLocation) {
-      params.set('location', selectedLocation.trim());
-    }
-
-    if (location.pathname !== "/loc-tin-dang") {
-      navigate(`/loc-tin-dang?${params.toString()}`);
-    } else {
-      navigate(`?${params.toString()}`);
-    }
-  };
-
-  const handleSuggestionClick = async (suggestion) => {
-    setInputValue(suggestion.tieuDe);
-    setShowSuggestions(false);
-    await handleSearch(suggestion.tieuDe);
-  };
-
-  const handleHistoryClick = async (historyItem) => {
-    setInputValue(historyItem.keyword);
-    setShowSuggestions(false);
-    await handleSearch(historyItem.keyword);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
-    else if (e.key === "Escape") setShowSuggestions(false);
-  };
-
-  const handleInputFocus = () => {
-    if (inputValue.trim() && suggestions.length > 0) setShowSuggestions(true);
-    else if (!inputValue.trim() && user && searchHistory.length > 0) setShowSuggestions(true);
-  };
-
-  const highlightText = (text, query) => {
-    if (!text || !query.trim()) return text;
-    const regex = new RegExp(`(${query.trim()})`, 'gi');
-    const parts = text.split(regex);
-    return parts.map((part, index) => 
-      regex.test(part) ? <span key={index} className="SearchBarSuggestionHighlight">{part}</span> : part
-    );
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor(Math.abs(now - date) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return "Hôm nay";
-    if (diffDays === 1) return "Hôm qua";
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
-  };
-
-  // ==========================================
-  // 6. RENDER SUB-COMPONENTS (LOCATION MODAL)
+  // 3. RENDER SUB-COMPONENTS (LOCATION MODAL)
   // ==========================================
 
   const renderLocationMain = () => (
@@ -434,12 +225,9 @@ const SearchBar = () => {
                     onClick={() => isProvince ? handleSelectProvince(null) : handleSelectDistrict({ maQuanHuyen: 'all', tenQuanHuyen: 'Tất cả' })}
                 >
                     <span>{isProvince ? "Toàn quốc" : "Tất cả"}</span>
-                    {((isProvince && !tempProvince) || (!isProvince && tempDistrict?.maQuanHuyen === 'all')) && (
-                        <FaCheck className="LocCheckIcon" />
-                    )}
-                    {(!isProvince && !tempDistrict) && (
-                         <FaCheck className="LocCheckIcon" />
-                    )}
+                    {/* Logic check icon hơi rối, giữ nguyên từ code cũ */}
+                    {((isProvince && !tempProvince) || (!isProvince && tempDistrict?.maQuanHuyen === 'all')) && <FaCheck className="LocCheckIcon" />}
+                    {(!isProvince && !tempDistrict) && <FaCheck className="LocCheckIcon" />}
                 </div>
 
                 {items && items.length > 0 ? items.map((item) => {
@@ -468,11 +256,12 @@ const SearchBar = () => {
   };
 
   // ==========================================
-  // 7. MAIN RENDER
+  // 4. MAIN RENDER
   // ==========================================
 
   return (
     <div className="SearchBarContainer">
+      {/* --- PHẦN 1: LOCATION PICKER --- */}
       <div className="SearchBarLocationWrapper" ref={locationWrapperRef}>
         <div className="SearchBarLocationBtn" onClick={toggleLocationModal}>
           <FaMapMarkerAlt className="SearchBarLocationIcon" />
@@ -493,36 +282,53 @@ const SearchBar = () => {
 
       <div className="SearchBarDivider"></div>
 
+      {/* --- PHẦN 2: SEARCH INPUT --- */}
       <div className="SearchBarInputContainer">
         <input
           type="text"
           placeholder="Tìm sản phẩm trên Unimarket..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={handleInputFocus}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+            else if (e.key === "Escape") setShowSuggestions(false);
+          }}
+          onFocus={() => {
+            if (inputValue.trim() || (user && searchHistory.length > 0)) {
+                setShowSuggestions(true);
+            }
+          }}
         />
         
+        {/* DROPDOWN GỢI Ý (Đã rút gọn nhờ Hook) */}
         {showSuggestions && (
           <div className="SearchBarSuggestionsDropdown" ref={suggestionsRef}>
+            
+            {/* Trường hợp 1: Hiển thị Lịch sử tìm kiếm */}
             {!inputValue.trim() && user && searchHistory.length > 0 && (
               <>
                 <div className="SearchBarSuggestionsHeader">
                   <span className="SearchBarSuggestionsTitle">Lịch sử tìm kiếm</span>
                 </div>
                 {searchHistory.map((item) => (
-                  <div key={item.id} className="SearchBarSuggestionItem SearchBarHistoryItem" onClick={() => handleHistoryClick(item)}>
+                  <div key={item.id} className="SearchBarSuggestionItem SearchBarHistoryItem" onClick={() => {
+                      setInputValue(item.keyword);
+                      handleSearch(item.keyword);
+                  }}>
                     <FaClock className="SearchBarSuggestionIcon SearchBarHistoryIcon" />
                     <div className="SearchBarSuggestionContent">
                       <div className="SearchBarSuggestionTitle">{item.keyword}</div>
                       <div className="SearchBarSuggestionCategory">{formatDate(item.createdAt)}</div>
                     </div>
-                    <button className="SearchBarHistoryDelete" onClick={(e) => deleteSearchHistoryItem(item.id, e)}><FaTimes /></button>
+                    <button className="SearchBarHistoryDelete" onClick={(e) => deleteSearchHistoryItem(item.id, e)}>
+                        <FaTimes />
+                    </button>
                   </div>
                 ))}
               </>
             )}
             
+            {/* Trường hợp 2: Hiển thị Gợi ý từ API */}
             {inputValue.trim() && (
               <>
                 <div className="SearchBarSuggestionsHeader">
@@ -532,7 +338,10 @@ const SearchBar = () => {
                   <div className="SearchBarSuggestionLoading">Đang tìm kiếm...</div>
                 ) : suggestions.length > 0 ? (
                   suggestions.map((s, idx) => (
-                    <div key={`${s.maTinDang}-${idx}`} className="SearchBarSuggestionItem" onClick={() => handleSuggestionClick(s)}>
+                    <div key={`${s.maTinDang}-${idx}`} className="SearchBarSuggestionItem" onClick={() => {
+                        setInputValue(s.tieuDe);
+                        handleSearch(s.tieuDe);
+                    }}>
                       <FaSearch className="SearchBarSuggestionIcon" />
                       <div className="SearchBarSuggestionContent">
                         <div className="SearchBarSuggestionTitle">{highlightText(s.tieuDe, inputValue)}</div>
@@ -546,6 +355,7 @@ const SearchBar = () => {
               </>
             )}
 
+            {/* Các trường hợp Empty */}
             {!inputValue.trim() && user && searchHistory.length === 0 && !loadingHistory && (
                  <div className="SearchBarSuggestionEmpty">Chưa có lịch sử tìm kiếm</div>
             )}

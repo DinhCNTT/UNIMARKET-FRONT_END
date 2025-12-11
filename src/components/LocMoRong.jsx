@@ -1,19 +1,17 @@
-import React, { useContext, useState, useEffect } from "react";
-import "./LocMoRong.css";
+import React, { useContext, useState, useEffect, useMemo } from "react";
+import styles from "./LocMoRong.module.css";
 import { CategoryContext } from "../context/CategoryContext";
 import { LocationContext } from "../context/LocationContext";
 
+// Dữ liệu Fix cứng (Mapping Quận Huyện)
 const DISTRICTS = {
   "Hồ Chí Minh": [
-    "Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5",
-    "Quận 6", "Quận 7", "Quận 8", "Quận 9", "Quận 10",
-    "Quận 11", "Quận 12", "Tân Bình", "Tân Phú", "Bình Thạnh",
-    "Phú Nhuận", "Gò Vấp", "Bình Tân", "Thủ Đức", "Nhà Bè"
+    "Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 9", "Quận 10",
+    "Quận 11", "Quận 12", "Tân Bình", "Tân Phú", "Bình Thạnh", "Phú Nhuận", "Gò Vấp", "Bình Tân", "Thủ Đức", "Nhà Bè"
   ],
   "Hà Nội": [
-    "Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân",
-    "Cầu Giấy", "Hoàng Mai", "Long Biên", "Tây Hồ", "Nam Từ Liêm",
-    "Bắc Từ Liêm", "Hà Đông", "Thanh Trì", "Gia Lâm", "Đông Anh"
+    "Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân", "Cầu Giấy", "Hoàng Mai", "Long Biên",
+    "Tây Hồ", "Nam Từ Liêm", "Bắc Từ Liêm", "Hà Đông", "Thanh Trì", "Gia Lâm", "Đông Anh"
   ]
 };
 
@@ -24,30 +22,47 @@ const LocMoRong = ({
   categories,
   onSortOrderChange,
 }) => {
+  // --- Context ---
+  // Lấy location từ context chung (đã được SearchBar cập nhật)
   const { selectedLocation } = useContext(LocationContext);
   const { selectedCategory, setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
 
+  // --- Local State ---
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [showDistricts, setShowDistricts] = useState(false);
+  const [showParentCategories, setShowParentCategories] = useState(false);
+  
+  // State Sắp xếp & Giá
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [minPrice, setMinPrice] = useState(5000000);
   const [maxPrice, setMaxPrice] = useState(15000000);
   const [appliedMinPrice, setAppliedMinPrice] = useState(0);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState(100000000);
-  const [showPriceFilter, setShowPriceFilter] = useState(false);
-  const [showDistricts, setShowDistricts] = useState(false);
-  const [showParentCategories, setShowParentCategories] = useState(false);
-  const [sortOrder, setSortOrder] = useState("newest"); // "newest" hoặc "oldest"
 
+  // --- Effects ---
   useEffect(() => {
     onSortOrderChange(sortOrder);
   }, [sortOrder, onSortOrderChange]);
 
-  const handleApplyPrice = () => {
-    onPriceChange(minPrice, maxPrice);
-    setAppliedMinPrice(minPrice);
-    setAppliedMaxPrice(maxPrice);
-    setShowPriceFilter(false);
-  };
+  // --- FIX LOGIC TÌM QUẬN (QUAN TRỌNG) ---
+  // Logic: Nếu location là "Quận 1, Hồ Chí Minh" -> Cắt chuỗi lấy "Hồ Chí Minh"
+  const availableDistricts = useMemo(() => {
+    if (!selectedLocation) return [];
+    
+    let cityKey = selectedLocation;
+    
+    // Nếu chuỗi có chứa dấu phẩy (VD: "Quận 1, Hồ Chí Minh")
+    if (selectedLocation.includes(",")) {
+      const parts = selectedLocation.split(",");
+      // Lấy phần tử cuối cùng và xóa khoảng trắng (thường là Tên Tỉnh/Thành phố)
+      cityKey = parts[parts.length - 1].trim(); 
+    }
 
+    return DISTRICTS[cityKey] || [];
+  }, [selectedLocation]);
+
+  // --- Handlers ---
   const handleDistrictSelect = (district) => {
     setSelectedDistrict(district);
     onDistrictChange(district);
@@ -57,6 +72,13 @@ const LocMoRong = ({
   const handleClearDistrict = () => {
     setSelectedDistrict("");
     onDistrictChange("");
+  };
+
+  const handleApplyPrice = () => {
+    onPriceChange(minPrice, maxPrice);
+    setAppliedMinPrice(minPrice);
+    setAppliedMaxPrice(maxPrice);
+    setShowPriceFilter(false);
   };
 
   const handleClearPrice = () => {
@@ -73,30 +95,29 @@ const LocMoRong = ({
     onParentCategoryChange("");
   };
 
-  const availableDistricts = DISTRICTS[selectedLocation] || [];
-
+  // --- Render ---
   return (
-    <div className="loc-mo-rong-wrapper">
-      {/* Nút lọc mới nhất/cũ nhất */}
-      <div className="loc-mo-rong-filter-item">
+    <div className={styles.wrapper}>
+      {/* 1. Nút Sắp xếp */}
+      <div className={styles.filterItem}>
         <button
           onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-          className="loc-mo-rong-button"
+          className={styles.filterBtn}
         >
           {sortOrder === "newest" ? "Mới nhất" : "Cũ nhất"}
         </button>
       </div>
 
-      {/* Các nút lọc khác */}
+      {/* 2. Nút Chọn Quận Huyện (Chỉ hiện nếu tìm thấy danh sách quận) */}
       {availableDistricts.length > 0 && (
-        <div className="loc-mo-rong-filter-item">
-          <button onClick={() => setShowDistricts(!showDistricts)} className="loc-mo-rong-button">
-            Lọc theo Quận/Huyện
+        <div className={styles.filterItem}>
+          <button onClick={() => setShowDistricts(!showDistricts)} className={styles.filterBtn}>
+            {selectedDistrict || "Khu vực"} ▼
           </button>
           {showDistricts && (
-            <div className="loc-mo-rong-dropdown-quan-huyen">
+            <div className={styles.listDropdown}>
               {availableDistricts.map((q) => (
-                <div key={q} className="loc-mo-rong-option" onClick={() => handleDistrictSelect(q)}>
+                <div key={q} className={styles.option} onClick={() => handleDistrictSelect(q)}>
                   {q}
                 </div>
               ))}
@@ -105,71 +126,72 @@ const LocMoRong = ({
         </div>
       )}
 
-      <div className="loc-mo-rong-filter-item">
-        <button onClick={() => setShowPriceFilter(!showPriceFilter)} className="loc-mo-rong-button">
-          Lọc theo giá
+      {/* 3. Nút Lọc Giá */}
+      <div className={styles.filterItem}>
+        <button onClick={() => setShowPriceFilter(!showPriceFilter)} className={styles.filterBtn}>
+           Giá ▼
         </button>
         {showPriceFilter && (
-          <div className="loc-mo-rong-dropdown-gia">
-            <div className="loc-mo-rong-range-slider">
-              <input 
-                type="range"
-                min={0}
-                max={100000000}
-                step={1000000}
+          <div className={styles.priceDropdown}>
+            {/* Slider Range */}
+            <div className={styles.sliderContainer}>
+              <input
+                type="range" min={0} max={100000000} step={1000000}
                 value={minPrice}
-                onChange={(e) => setMinPrice(Number(e.target.value))}
+                onChange={(e) => {
+                   const val = Number(e.target.value);
+                   if (val < maxPrice) setMinPrice(val);
+                }}
               />
               <input
-                type="range"
-                min={0}
-                max={100000000}
-                step={1000000}
+                type="range" min={0} max={100000000} step={1000000}
                 value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                onChange={(e) => {
+                   const val = Number(e.target.value);
+                   if (val > minPrice) setMaxPrice(val);
+                }}
               />
             </div>
-            <div className="loc-mo-rong-price-inputs">
-              <div className="loc-mo-rong-price-box">
-                <label>Giá tối thiểu</label>
+
+            {/* Input Số */}
+            <div className={styles.priceInputs}>
+              <div className={styles.inputGroup}>
+                <label>Tối thiểu</label>
                 <input
                   type="text"
                   value={minPrice.toLocaleString("vi-VN")}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, "");
-                    setMinPrice(Number(raw));
-                  }}
+                  onChange={(e) => setMinPrice(Number(e.target.value.replace(/\D/g, "")))}
                 />
               </div>
-              <span style={{ padding: "0 8px" }}>-</span>
-              <div className="loc-mo-rong-price-box">
-                <label>Giá tối đa</label>
+              <span className={styles.separator}>—</span>
+              <div className={styles.inputGroup}>
+                <label>Tối đa</label>
                 <input
                   type="text"
                   value={maxPrice.toLocaleString("vi-VN")}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, "");
-                    setMaxPrice(Number(raw));
-                  }}
+                  onChange={(e) => setMaxPrice(Number(e.target.value.replace(/\D/g, "")))}
                 />
               </div>
             </div>
-            <div className="loc-mo-rong-price-actions">
-              <button onClick={handleClearPrice}>Xóa lọc</button>
-              <button className="ap-dung-btn" onClick={handleApplyPrice}>Áp dụng</button>
+
+            {/* Actions */}
+            <div className={styles.actions}>
+              <button onClick={handleClearPrice} className={styles.clearBtn}>Xóa</button>
+              <button onClick={handleApplyPrice} className={styles.applyBtn}>Áp dụng</button>
             </div>
           </div>
         )}
       </div>
 
-      <div className="loc-mo-rong-filter-item">
-        <button onClick={() => setShowParentCategories(!showParentCategories)} className="loc-mo-rong-button">
-          Lọc theo Danh mục cha
+      {/* 4. Nút Danh mục */}
+      <div className={styles.filterItem}>
+        <button onClick={() => setShowParentCategories(!showParentCategories)} className={styles.filterBtn}>
+          {selectedCategory || "Danh mục"} ▼
         </button>
         {showParentCategories && (
-          <div className="loc-mo-rong-dropdown-danh-muc-cha">
+          <div className={styles.listDropdown}>
             {categories.map((c) => (
-              <div key={c.id} className="loc-mo-rong-option" onClick={() => {
+              <div key={c.id} className={styles.option} onClick={() => {
                 onParentCategoryChange(c.tenDanhMucCha);
                 setSelectedCategory(c.tenDanhMucCha);
                 setShowParentCategories(false);
@@ -181,39 +203,27 @@ const LocMoRong = ({
         )}
       </div>
 
-      <div className="loc-mo-rong-active-filters">
-  {selectedDistrict && (
-    <span className="loc-mo-rong-tag">
-      {selectedDistrict}
-      <button className="tag-close-btn" onClick={handleClearDistrict}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </span>
-  )}
-  {(appliedMinPrice > 0 || appliedMaxPrice < 100000000) && (
-    <span className="loc-mo-rong-tag">
-      {appliedMinPrice.toLocaleString("vi-VN")}đ - {appliedMaxPrice.toLocaleString("vi-VN")}đ
-      <button className="tag-close-btn" onClick={handleClearPrice}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </span>
-  )}
-  {selectedCategory && (
-    <span className="loc-mo-rong-tag">
-      {selectedCategory}
-      <button className="tag-close-btn" onClick={handleClearCategory}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon-close">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </span>
-  )}
-</div>
-
+      {/* 5. Tags hiển thị (Active Filters) */}
+      <div className={styles.activeFilters}>
+        {selectedDistrict && (
+          <span className={styles.tag}>
+            {selectedDistrict}
+            <button className={styles.closeBtn} onClick={handleClearDistrict}>✕</button>
+          </span>
+        )}
+        {(appliedMinPrice > 0 || appliedMaxPrice < 100000000) && (
+          <span className={styles.tag}>
+            {appliedMinPrice.toLocaleString("vi-VN")} - {appliedMaxPrice.toLocaleString("vi-VN")}
+            <button className={styles.closeBtn} onClick={handleClearPrice}>✕</button>
+          </span>
+        )}
+        {selectedCategory && (
+          <span className={styles.tag}>
+            {selectedCategory}
+            <button className={styles.closeBtn} onClick={handleClearCategory}>✕</button>
+          </span>
+        )}
+      </div>
     </div>
   );
 };

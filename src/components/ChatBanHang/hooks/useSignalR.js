@@ -4,7 +4,8 @@ import { connectToChatHub, sendMessage } from "../../../services/chatService";
 import api from "../../../services/api";
 import Swal from "sweetalert2";
 
-const PAGE_SIZE = 10;
+// 🔥 Tăng lên 30 để load nhiều hơn, ít phải load lại
+const PAGE_SIZE = 30;
 
 const mapMessage = (msg) => {
   let timeStr = msg.thoiGianGui;
@@ -35,6 +36,7 @@ export const useSignalR = (maCuocTroChuyen, user) => {
 
     let isMounted = true;
 
+    // 1. Fetch History ban đầu
     const fetchHistory = async () => {
       try {
         const response = await api.get(`/chat/history/${maCuocTroChuyen}`, {
@@ -45,102 +47,59 @@ export const useSignalR = (maCuocTroChuyen, user) => {
           },
         });
 
-        if (!response.data) throw new Error("Lỗi lấy lịch sử chat");
-
-        if (isMounted) {
+        if (isMounted && response.data) {
           const messages = response.data.map(mapMessage).reverse();
           setDanhSachTin(messages);
           setPage(1);
-          const conTrangSau = messages.length === PAGE_SIZE;
-          setHasMore(conTrangSau);
+          setHasMore(messages.length >= PAGE_SIZE);
         }
       } catch (error) {
         console.error("Lỗi lấy lịch sử chat:", error);
-        if (isMounted) {
-          Swal.fire(
-            "Lỗi",
-            error.message || "Không thể lấy lịch sử chat",
-            "error"
-          );
-        }
       }
     };
 
     fetchHistory();
 
+    // 2. Connect SignalR
     const connect = async () => {
       try {
-        const connection = await connectToChatHub(maCuocTroChuyen, (msg) => {
+        const onReceiveMessage = (msg) => {
           if (!isMounted) return;
           const newMsg = mapMessage(msg);
 
-          // ✅ FIX: Kiểm tra cả state hiện tại để quyết định logic
           setDanhSachTin((prev) => {
-            // 1. Lấy trạng thái "đã xoá" từ localStorage
+            // Logic xử lý khi chat đã bị xóa (giữ nguyên logic cũ của bạn)
             let deletedMap = {};
             try {
-              const raw = localStorage.getItem("deletedConversations");
-              deletedMap = raw ? JSON.parse(raw) : {};
-            } catch (e) {
-              deletedMap = {};
-            }
+               const raw = localStorage.getItem("deletedConversations");
+               deletedMap = raw ? JSON.parse(raw) : {};
+            } catch(e){}
             const hadDeleted = !!deletedMap[maCuocTroChuyen];
 
-            // ✅ FIX: Chỉ reset khi cuộc trò chuyện THỰC SỰ trống (chưa tái xuất)
             if (hadDeleted && prev.length === 0) {
-              // Đây là tin nhắn đầu tiên sau khi xóa (tái xuất)
-              console.log("🔄 Tái xuất cuộc trò chuyện với tin nhắn đầu tiên");
-              
-              // 1a. Xoá cờ deleted
-              try {
-                delete deletedMap[maCuocTroChuyen];
-                localStorage.setItem(
-                  "deletedConversations",
-                  JSON.stringify(deletedMap)
-                );
-              } catch (e) { /* Bỏ qua */ }
-
-              // 1b. Reset phân trang
-              setPage(1);
-              setHasMore(false);
-
-              // 1c. Trả về state MỚI (chỉ tin nhắn này)
-              return [newMsg];
-              
-            } else if (hadDeleted && prev.length > 0) {
-              // ✅ FIX: Cuộc trò chuyện đã được tái xuất trước đó
-              // Chỉ cần XÓA CỜ và THÊM tin nhắn mới vào cuối
-              console.log("➕ Thêm tin nhắn mới vào cuộc trò chuyện đã tái xuất");
-              
-              try {
-                delete deletedMap[maCuocTroChuyen];
-                localStorage.setItem(
-                  "deletedConversations",
-                  JSON.stringify(deletedMap)
-                );
-              } catch (e) { /* Bỏ qua */ }
-
-              return [...prev, newMsg]; // Giữ nguyên tin nhắn cũ, thêm tin mới
-              
-            } else {
-              // Trường hợp bình thường: không có cờ deleted
-              return [...prev, newMsg];
+               // Reset nếu là tin nhắn đầu tiên sau khi xóa
+               try { delete deletedMap[maCuocTroChuyen]; localStorage.setItem("deletedConversations", JSON.stringify(deletedMap)); } catch(e){}
+               setPage(1);
+               setHasMore(false);
+               return [newMsg];
+            } else if (hadDeleted) {
+                try { delete deletedMap[maCuocTroChuyen]; localStorage.setItem("deletedConversations", JSON.stringify(deletedMap)); } catch(e){}
             }
-          });
-        });
 
-        // Lắng nghe các sự kiện SignalR khác
+            // Kiểm tra trùng lặp cho chắc chắn (dù tin mới ít khi trùng)
+            if (prev.some(m => m.maTinNhan === newMsg.maTinNhan)) return prev;
+            return [...prev, newMsg];
+          });
+        };
+
+        const connection = await connectToChatHub(maCuocTroChuyen, onReceiveMessage);
+
         connection.on("TinNhanDaThuHoi", (data) => {
           if (!isMounted) return;
-          const { maTinNhan } = data;
           setDanhSachTin((prev) =>
             prev.map((msg) =>
-              msg.maTinNhan === maTinNhan
-                ? {
-                    ...msg,
-                    isRecalled: true,
-                    noiDung: "Tin nhắn đã được thu hồi",
-                  }
+              msg.maTinNhan === data.maTinNhan
+                ? { ...msg, isRecalled: true, noiDung: "Tin nhắn đã được thu hồi" }
                 : msg
             )
           );
@@ -148,14 +107,14 @@ export const useSignalR = (maCuocTroChuyen, user) => {
 
         connection.on("DaXemTinNhan", (data) => {
           if (!isMounted) return;
-          const MaTinNhanCuoi = data?.MaTinNhanCuoi || data?.maTinNhanCuoi;
+          const MaTinNhanCuoi = data?.MaTinNhanCuoi;
           if (MaTinNhanCuoi) {
             setDanhSachTin((prev) =>
-              prev.map((msg) => {
-                const isMatch =
-                  msg.maTinNhan.toString() === MaTinNhanCuoi.toString();
-                return isMatch ? { ...msg, daXem: true } : msg;
-              })
+              prev.map((msg) =>
+                msg.maTinNhan.toString() === MaTinNhanCuoi.toString()
+                  ? { ...msg, daXem: true }
+                  : msg
+              )
             );
           }
         });
@@ -164,17 +123,12 @@ export const useSignalR = (maCuocTroChuyen, user) => {
           connectionRef.current = connection;
           setIsConnected(connection && connection.state === "Connected");
         }
+        
+        connection.onclose(() => { if(isMounted) setIsConnected(false); });
+        connection.onreconnected(() => { if(isMounted) setIsConnected(true); });
 
-        connection.onclose(() => {
-          if (isMounted) setIsConnected(false);
-          console.log("SignalR connection closed");
-        });
-        connection.onreconnected(() => {
-          if (isMounted) setIsConnected(true);
-          console.log("SignalR reconnected");
-        });
       } catch (err) {
-        console.error("Lỗi kết nối SignalR hoặc đăng ký sự kiện:", err);
+        console.error("Lỗi kết nối SignalR:", err);
       }
     };
 
@@ -182,9 +136,13 @@ export const useSignalR = (maCuocTroChuyen, user) => {
 
     return () => {
       isMounted = false;
+      // 🔥 FIX: Chỉ cleanup listener, KHÔNG stop connection (vì dùng chung)
       if (connectionRef.current) {
-        connectionRef.current.stop();
-        connectionRef.current = null;
+         try {
+             connectionRef.current.off("TinNhanDaThuHoi");
+             connectionRef.current.off("DaXemTinNhan");
+         } catch(e){}
+         connectionRef.current = null;
       }
       setDanhSachTin([]);
       setPage(1);
@@ -193,53 +151,42 @@ export const useSignalR = (maCuocTroChuyen, user) => {
     };
   }, [maCuocTroChuyen, user?.id]);
 
-  const recallMessage = useCallback(
-    async (maTinNhan) => {
-      if (connectionRef.current && connectionRef.current.state === "Connected") {
-        await connectionRef.current.invoke("ThuHoiTinNhan", maTinNhan, user.id);
-      } else {
-        throw new Error("Kết nối SignalR không sẵn sàng");
-      }
-    },
-    [user?.id]
-  );
+  // --- Các hàm tiện ích ---
+  const recallMessage = useCallback(async (maTinNhan) => {
+    if (connectionRef.current?.state === "Connected") {
+      await connectionRef.current.invoke("ThuHoiTinNhan", maTinNhan, user.id);
+    }
+  }, [user?.id]);
 
-  const recallMedia = useCallback(
-    async (maTinNhan) => {
-      if (connectionRef.current && connectionRef.current.state === "Connected") {
-        await connectionRef.current.invoke("ThuHoiAnhVideo", maTinNhan, user.id);
-      } else {
-        throw new Error("Kết nối SignalR không sẵn sàng");
-      }
-    },
-    [user?.id]
-  );
+  const recallMedia = useCallback(async (maTinNhan) => {
+    if (connectionRef.current?.state === "Connected") {
+      await connectionRef.current.invoke("ThuHoiAnhVideo", maTinNhan, user.id);
+    }
+  }, [user?.id]);
 
   const markAsRead = useCallback(() => {
-    if (connectionRef.current && isConnected && user && maCuocTroChuyen) {
-      connectionRef.current
-        .invoke("DanhDauDaXem", maCuocTroChuyen, user.id)
-        .catch(console.error);
+    if (connectionRef.current?.state === "Connected" && user && maCuocTroChuyen) {
+      connectionRef.current.invoke("DanhDauDaXem", maCuocTroChuyen, user.id).catch(()=>{});
     }
-  }, [isConnected, user?.id, maCuocTroChuyen]);
+  }, [user?.id, maCuocTroChuyen, isConnected]);
 
-  const sendMessageService = useCallback(
-    async (text, type = "text") => {
-      if (!maCuocTroChuyen || !user?.id) {
-        throw new Error("Không có thông tin chat hoặc người dùng");
-      }
-      await sendMessage(maCuocTroChuyen, user.id, text, type);
-    },
-    [maCuocTroChuyen, user?.id]
-  );
+  const sendMessageService = useCallback(async (text, type = "text") => {
+    if (!maCuocTroChuyen || !user?.id) throw new Error("Thiếu thông tin");
+    await sendMessage(maCuocTroChuyen, user.id, text, type);
+  }, [maCuocTroChuyen, user?.id]);
 
+  const deleteLocalMessage = useCallback((maTinNhan) => {
+    setDanhSachTin((prev) => prev.filter((msg) => msg.maTinNhan !== maTinNhan));
+  }, []);
+
+  // 🔥🔥🔥 HÀM LOAD MORE ĐÃ FIX TRÙNG LẶP BACKEND 🔥🔥🔥
   const loadMoreMessages = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
     const nextPage = page + 1;
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     try {
       const response = await api.get(`/chat/history/${maCuocTroChuyen}`, {
@@ -251,24 +198,33 @@ export const useSignalR = (maCuocTroChuyen, user) => {
       });
 
       const newMessages = response.data.map(mapMessage).reverse();
-      setDanhSachTin((prev) => [...newMessages, ...prev]);
-      setPage(nextPage);
-      setHasMore(newMessages.length === PAGE_SIZE);
+
+      if (newMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setDanhSachTin((prev) => {
+          // --- BẮT BUỘC: Lọc trùng lặp do Backend Skip/Take ---
+          const existingIds = new Set(prev.map((m) => m.maTinNhan));
+          
+          // Chỉ lấy những tin chưa tồn tại
+          const uniqueNewMessages = newMessages.filter(
+            (msg) => !existingIds.has(msg.maTinNhan)
+          );
+          // ----------------------------------------------------
+
+          return [...uniqueNewMessages, ...prev];
+        });
+
+        setPage(nextPage);
+        // Nếu số tin lấy về < PAGE_SIZE nghĩa là đã hết sạch tin
+        setHasMore(newMessages.length >= PAGE_SIZE);
+      }
     } catch (error) {
       console.error("Lỗi tải tin nhắn cũ:", error);
     } finally {
       setIsLoadingMore(false);
     }
   }, [isLoadingMore, hasMore, page, maCuocTroChuyen, user?.id]);
-
-  const deleteLocalMessage = useCallback(
-    (maTinNhan) => {
-      setDanhSachTin((prev) =>
-        prev.filter((msg) => msg.maTinNhan !== maTinNhan)
-      );
-    },
-    []
-  );
 
   return {
     danhSachTin,

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import axios from "axios";
-import "./LocTinDang.css";
+import styles from "./LocTinDang.module.css";
 import { CategoryContext } from "../context/CategoryContext";
 import { SearchContext } from "../context/SearchContext";
 import { LocationContext } from "../context/LocationContext";
@@ -8,11 +8,11 @@ import { Link } from "react-router-dom";
 import TopNavbar from "./TopNavbar/TopNavbar";
 import LocMoRong from "../components/LocMoRong";
 
+// Helper tính thời gian (giữ nguyên)
 const timeAgo = (dateString) => {
   const now = new Date();
   const date = new Date(dateString);
   const seconds = Math.floor((now - date) / 1000);
-
   const intervals = [
     { label: "năm", seconds: 31536000 },
     { label: "tháng", seconds: 2592000 },
@@ -21,12 +21,9 @@ const timeAgo = (dateString) => {
     { label: "phút", seconds: 60 },
     { label: "giây", seconds: 1 },
   ];
-
   for (const interval of intervals) {
     const count = Math.floor(seconds / interval.seconds);
-    if (count > 0) {
-      return `${count} ${interval.label} trước`;
-    }
+    if (count > 0) return `${count} ${interval.label} trước`;
   }
   return "Vừa xong";
 };
@@ -42,26 +39,37 @@ const LocTinDang = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10;
 
-  // Sort order state: "newest" hoặc "oldest"
+  // Sort order state
   const [sortOrder, setSortOrder] = useState("newest");
 
+  // Contexts
   const { searchTerm } = useContext(SearchContext);
-  const {
-    selectedCategory,
-    setSelectedCategory,
-    selectedSubCategory,
-    setSelectedSubCategory,
-  } = useContext(CategoryContext);
+  const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { selectedLocation } = useContext(LocationContext);
 
+  // --- 1. XỬ LÝ LOCATION TỪ CONTEXT (QUAN TRỌNG) ---
+  // Tách chuỗi "Quận 1, Hồ Chí Minh" thành { city: "Hồ Chí Minh", dist: "Quận 1" }
+  const { contextCity, contextDistrict } = useMemo(() => {
+    if (!selectedLocation || selectedLocation === "Toàn quốc") {
+      return { contextCity: "", contextDistrict: "" };
+    }
+    if (selectedLocation.includes(",")) {
+      const parts = selectedLocation.split(",");
+      return {
+        contextDistrict: parts[0].trim(),
+        contextCity: parts[1].trim()
+      };
+    }
+    return { contextCity: selectedLocation, contextDistrict: "" };
+  }, [selectedLocation]);
+
+
+  // --- 2. FETCH DATA ---
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5133/api/tindang/get-posts"
-        );
+        const response = await axios.get("http://localhost:5133/api/tindang/get-posts");
         setPosts(response.data);
-        console.log("Fetched posts:", response.data);
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
@@ -69,9 +77,7 @@ const LocTinDang = () => {
 
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5133/api/category/get-categories-with-icon"
-        );
+        const res = await axios.get("http://localhost:5133/api/category/get-categories-with-icon");
         setCategories(res.data);
       } catch (err) {
         console.error("Lỗi khi tải danh mục:", err);
@@ -82,57 +88,54 @@ const LocTinDang = () => {
     fetchCategories();
   }, []);
 
-  // Các hàm filter
+  // --- 3. LOGIC FILTER (ĐÃ SỬA) ---
+
   const filterBySearchTerm = (posts) => {
     if (!searchTerm) return posts;
-    return posts.filter(
-      (post) =>
-        post.tieuDe && post.tieuDe.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return posts.filter((post) => post.tieuDe && post.tieuDe.toLowerCase().includes(searchTerm.toLowerCase()));
   };
 
   const filterByCategory = (posts) => {
     if (!selectedCategory && !selectedSubCategory) return posts;
     return posts.filter((post) => {
       if (selectedSubCategory) {
-        return (
-          post.danhMuc && post.danhMuc.toLowerCase() === selectedSubCategory.toLowerCase()
-        );
+        return post.danhMuc && post.danhMuc.toLowerCase() === selectedSubCategory.toLowerCase();
       }
       if (selectedCategory) {
-        return (
-          post.danhMucCha &&
-          post.danhMucCha.toLowerCase() === selectedCategory.toLowerCase()
-        );
+        return post.danhMucCha && post.danhMucCha.toLowerCase() === selectedCategory.toLowerCase();
       }
       return true;
     });
   };
 
+  // FIX: Lọc theo Tỉnh Thành (Dùng contextCity đã tách)
   const filterByLocation = (posts) => {
-    if (!selectedLocation) return posts;
-    return posts.filter((post) =>
-      post.tinhThanh && post.tinhThanh.includes(selectedLocation)
-    );
+    if (!contextCity) return posts; // Nếu là Toàn quốc hoặc rỗng thì trả về hết
+    return posts.filter((post) => post.tinhThanh && post.tinhThanh.includes(contextCity));
   };
 
+  // FIX: Lọc theo Quận Huyện (Ưu tiên bộ lọc LocMoRong > SearchBar)
   const filterByDistrict = (posts) => {
-    if (!selectedDistrict) return posts;
-    return posts.filter((post) => post.quanHuyen && post.quanHuyen.includes(selectedDistrict));
+    // Nếu user chọn quận ở LocMoRong thì dùng nó.
+    // Nếu không, kiểm tra xem SearchBar có chọn quận cụ thể không (contextDistrict)
+    const targetDistrict = selectedDistrict || contextDistrict;
+    
+    if (!targetDistrict) return posts;
+    return posts.filter((post) => post.quanHuyen && post.quanHuyen.includes(targetDistrict));
   };
 
   const filterByPrice = (posts) => {
     return posts.filter((post) => post.gia >= minPrice && post.gia <= maxPrice);
   };
 
-  // Áp dụng filter
+  // --- 4. ÁP DỤNG FILTER ---
   const filteredByLocation = filterByLocation(posts);
   const filteredByCategory = filterByCategory(filteredByLocation);
-  const filteredByDistrict = filterByDistrict(filteredByCategory);
+  const filteredByDistrict = filterByDistrict(filteredByCategory); // Chạy sau filterByLocation
   const filteredByPrice = filterByPrice(filteredByDistrict);
   const filteredPostsBySearch = filterBySearchTerm(filteredByPrice);
 
-  // Sắp xếp theo sortOrder
+  // --- 5. SORT & PAGINATION ---
   const sortedPosts = [...filteredPostsBySearch].sort((a, b) => {
     if (sortOrder === "newest") {
       return new Date(b.ngayDang) - new Date(a.ngayDang);
@@ -141,7 +144,6 @@ const LocTinDang = () => {
     }
   });
 
-  // Tính toán phân trang
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -157,29 +159,18 @@ const LocTinDang = () => {
   // Reset trang khi filter thay đổi
   useEffect(() => {
     setCurrentPage(1);
-  }, [
-    searchTerm,
-    selectedCategory,
-    selectedSubCategory,
-    selectedLocation,
-    selectedDistrict,
-    minPrice,
-    maxPrice,
-    sortOrder,
-  ]);
+  }, [searchTerm, selectedCategory, selectedSubCategory, selectedLocation, selectedDistrict, minPrice, maxPrice, sortOrder]);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
   };
 
   const renderNoPostsMessage = () => {
     if (sortedPosts.length === 0) {
       let message = `Không có tin đăng`;
-      if (selectedLocation) message += ` tại ${selectedLocation}`;
-      if (selectedDistrict) message += ` - ${selectedDistrict}`;
+      // Hiển thị thông báo thông minh hơn
+      if (contextCity) message += ` tại ${contextCity}`;
+      if (selectedDistrict || contextDistrict) message += ` - ${selectedDistrict || contextDistrict}`;
       if (selectedSubCategory) message += ` trong danh mục "${selectedSubCategory}"`;
       else if (selectedCategory) message += ` trong danh mục "${selectedCategory}"`;
       if (searchTerm) message += ` với từ khóa "${searchTerm}"`;
@@ -189,8 +180,9 @@ const LocTinDang = () => {
   };
 
   return (
-    <div className="loc-tin-dang-container">
+    <div className={styles.container}>
       <TopNavbar />
+      
       <LocMoRong
         onDistrictChange={setSelectedDistrict}
         onPriceChange={(min, max) => {
@@ -204,72 +196,53 @@ const LocTinDang = () => {
         categories={categories}
         onSortOrderChange={setSortOrder}
       />
-      <h2 className="loc-tin-dang-title">Kết Quả Lọc Tin Đăng</h2>
-      <div className="loc-tin-dang-filter-info">
-        {selectedLocation && (
-          <p>
-            Đang hiển thị tin đăng tại: <strong>{selectedLocation}</strong>
-          </p>
+
+      <h2 className={styles.title}>Kết Quả Lọc Tin Đăng</h2>
+      
+      <div className={styles.filterInfo}>
+        {contextCity && (
+          <p>Khu vực: <strong>{contextCity}</strong></p>
         )}
-        {selectedDistrict && (
-          <p>
-            Đang lọc theo quận/huyện: <strong>{selectedDistrict}</strong>
-          </p>
+        {(selectedDistrict || contextDistrict) && (
+          <p>Quận/Huyện: <strong>{selectedDistrict || contextDistrict}</strong></p>
         )}
-        {selectedSubCategory && (
-          <p>
-            Danh mục: <strong>{selectedSubCategory}</strong>
-          </p>
-        )}
-        {selectedCategory && !selectedSubCategory && (
-          <p>
-            Danh mục: <strong>{selectedCategory}</strong>
-          </p>
+        {(selectedSubCategory || selectedCategory) && (
+          <p>Danh mục: <strong>{selectedSubCategory || selectedCategory}</strong></p>
         )}
         {searchTerm && (
-          <p>
-            Từ khóa: <strong>{searchTerm}</strong>
-          </p>
+          <p>Từ khóa: <strong>{searchTerm}</strong></p>
         )}
       </div>
 
-      <div className="loc-tin-dang-list">
+      <div className={styles.list}>
         {renderNoPostsMessage() ? (
-          <p className="loc-tin-dang-no-result">{renderNoPostsMessage()}</p>
+          <p className={styles.noResult}>{renderNoPostsMessage()}</p>
         ) : (
           currentPosts.map((post) => (
-            <div key={post.maTinDang} className="loc-tin-dang-item">
-              <Link to={`/tin-dang/${post.maTinDang}`} className="loc-tin-dang-link">
-                <div className="loc-tin-dang-content">
-                  <div className="loc-tin-dang-image-container">
+            <div key={post.maTinDang} className={styles.item}>
+              <Link to={`/tin-dang/${post.maTinDang}`} className={styles.link}>
+                <div className={styles.content}>
+                  <div className={styles.imageContainer}>
                     {post.images && post.images.length > 0 ? (
                       <img
-                        src={
-                          post.images[0].startsWith("http")
-                            ? post.images[0]
-                            : `http://localhost:5133${post.images[0]}`
-                        }
+                        src={post.images[0].startsWith("http") ? post.images[0] : `http://localhost:5133${post.images[0]}`}
                         alt={post.tieuDe}
-                        className="loc-tin-dang-image"
+                        className={styles.image}
                       />
                     ) : (
-                      <div className="loc-tin-dang-no-image">Không có ảnh</div>
+                      <div className={styles.noImage}>Không có ảnh</div>
                     )}
                   </div>
-                  <div className="loc-tin-dang-info">
-                    <h3 className="loc-tin-dang-title-item">{post.tieuDe}</h3>
-                    <p className="loc-tin-dang-price">{formatCurrency(post.gia)}</p>
-                    <p className="loc-tin-dang-location">
+                  <div className={styles.info}>
+                    <h3 className={styles.itemTitle}>{post.tieuDe}</h3>
+                    <p className={styles.price}>{formatCurrency(post.gia)}</p>
+                    <p className={styles.location}>
                       {post.tinhThanh} - {post.quanHuyen}
                     </p>
-                    {post.ngayDang && (
-                      <p className="loc-tin-dang-time">{timeAgo(post.ngayDang)}</p>
-                    )}
+                    {post.ngayDang && <p className={styles.time}>{timeAgo(post.ngayDang)}</p>}
                     {post.moTa && (
-                      <p className="loc-tin-dang-description">
-                        {post.moTa.length > 100
-                          ? `${post.moTa.substring(0, 100)}...`
-                          : post.moTa}
+                      <p className={styles.description}>
+                        {post.moTa.length > 100 ? `${post.moTa.substring(0, 100)}...` : post.moTa}
                       </p>
                     )}
                   </div>
@@ -280,30 +253,21 @@ const LocTinDang = () => {
         )}
       </div>
 
-      {/* Phân trang */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
+        <div className={styles.pagination}>
+          <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
             &lt;
           </button>
-
           {pageNumbers.map((number) => (
             <button
               key={number}
               onClick={() => paginate(number)}
-              className={currentPage === number ? "active" : ""}
+              className={currentPage === number ? styles.active : ""}
             >
               {number}
             </button>
           ))}
-
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
+          <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
             &gt;
           </button>
         </div>

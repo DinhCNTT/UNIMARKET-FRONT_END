@@ -43,25 +43,21 @@
   overflow: hidden; /* Ngăn chặn bất kỳ tràn nào không mong muốn */
 }
 
-/* FIX BƯỚC 2: SỬA LẠI CLASS NÀY */
 .chatboxMessages {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
-  
-  /* ✅ ĐỔI MÀU: Nền vùng tin nhắn */
+  overflow-x: hidden;
   background: var(--theme-bg-secondary);
+  /* 🔥 GIẢM PADDING NÀY: Chỉnh xuống 20px hoặc vừa đủ với chiều cao thanh input của bạn */
+  padding-bottom: 15px; 
   
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  /* Thêm padding-bottom để chừa chỗ cho thanh thông báo */
-  padding-bottom: 80px; 
-  
-  scrollbar-width: thin; /* Làm hẹp thanh cuộn */
-  /* ✅ ĐỔI MÀU: Màu thanh cuộn Firefox */
+  scrollbar-width: thin;
   scrollbar-color: var(--theme-border-color) transparent;
+  
+  /* Giữ nguyên cái này */
+  overflow-anchor: none;
+  position: relative;
 }
 
 /* Webkit Scrollbar */
@@ -223,25 +219,28 @@
     font-size: 12px;
   }
 }
-
 /* ===== CSS CHO LOADING SPINNER ===== */
 .loadingMore {
   position: absolute;
-  top: 15px; 
+  top: 10px;  /* Cách đỉnh 10px */
   left: 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  z-index: 10; 
+  align-items: center;
+  z-index: 999; /* Đảm bảo nổi lên trên tin nhắn */
+  height: 40px; /* Chiều cao khu vực loading */
+  background: transparent; /* Nền trong suốt hoặc mờ nhẹ nếu thích */
+  pointer-events: none; /* Để chuột vẫn cuộn được khi đang load */
 }
 
 .spinner {
   width: 24px;
   height: 24px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #3b82f6; 
+  border-top-color: #3b82f6; /* Màu xanh dương */
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite; /* Quay nhanh hơn chút cho mượt */
 }
 
 @keyframes spin {
