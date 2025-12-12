@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { NotificationContext } from "./context/NotificationContext";
 import { useNavigate } from "react-router-dom";
 import NotificationDetailModal from "./NotificationDetailModal";
-import "../../styles/Notifications.css";
+import notificationsStyles from "../../styles/Notifications.module.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5133";
 
@@ -89,19 +89,19 @@ export default function NotificationsDropdown() {
   };
 
   return (
-    <div className="um-notif-dropdown">
-      <div className="um-notif-header">
+    <div className={notificationsStyles.umNotifDropdown}>
+      <div className={notificationsStyles.umNotifHeader}>
         <strong>Thông báo</strong>
-        <span className="um-notif-count">{displayedUnreadCount || 0}</span>
+        <span className={notificationsStyles.umNotifCount}>{displayedUnreadCount || 0}</span>
       </div>
 
-      {loading && <div className="um-notif-loading">Đang tải...</div>}
+      {loading && <div className={notificationsStyles.umNotifLoading}>Đang tải...</div>}
 
       {!loading && displayedNotifications.length === 0 && (
-        <div className="um-notif-empty">Chưa có thông báo</div>
+        <div className={notificationsStyles.umNotifEmpty}>Chưa có thông báo</div>
       )}
 
-      <ul className="um-notif-list">
+      <ul className={notificationsStyles.umNotifList}>
         {displayedNotifications.map((n) => {
 
           let displayTitle = n.title;
@@ -123,17 +123,17 @@ export default function NotificationsDropdown() {
           const lcMsg = rawMessage.toLowerCase();
           let typeClass = '';
           if (lcTitle.includes('cảnh báo') || lcMsg.includes('cảnh báo') || lcMsg.includes('báo cáo')) {
-            typeClass = 'warning';
+            typeClass = notificationsStyles.warning;
           } else if (lcMsg.includes('đã xóa') || lcMsg.includes('bị xóa') || lcMsg.includes('xoá') || lcMsg.includes('xóa')) {
-            typeClass = 'deleted';
+            typeClass = notificationsStyles.deleted;
           }
 
           return (
-              <li key={n.id} className={`um-notif-item ${n.isRead ? "read" : "unread"} ${typeClass}`} onClick={() => handleClick(n)}>
-                {n.postImageUrl && <img src={n.postImageUrl} alt="" className="um-notif-thumb" />}
-                <div className="um-notif-body">
-                  <div className="um-notif-message">{summary}</div>
-                  <div className="um-notif-time">{new Date(n.createdAt).toLocaleString()}</div>
+              <li key={n.id} className={`${notificationsStyles.umNotifItem} ${n.isRead ? notificationsStyles.read : notificationsStyles.unread} ${typeClass}`} onClick={() => handleClick(n)}>
+                {n.postImageUrl && <img src={n.postImageUrl} alt="" className={notificationsStyles.umNotifThumb} />}
+                <div className={notificationsStyles.umNotifBody}>
+                  <div className={notificationsStyles.umNotifMessage}>{summary}</div>
+                  <div className={notificationsStyles.umNotifTime}>{new Date(n.createdAt).toLocaleString()}</div>
                 </div>
               </li>
             );

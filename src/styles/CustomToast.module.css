@@ -1,5 +1,5 @@
-/* CustomToast.css - prefix = um-toast để tránh trùng */
-.um-toast-container {
+/* CustomToast.module.css - prefix = um-toast để tránh trùng */
+.umToastContainer {
   top: 22px !important;          /* vị trí cách top 22px */
   left: 50% !important;
   transform: translateX(-50%) !important; /* luôn căn giữa màn hình */
@@ -9,8 +9,7 @@
 }
 
 /* Base toast */
-/* Base toast */
-.um-toast {
+.umToast {
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -32,7 +31,7 @@
 }
 
 /* Nội dung text */
-.um-toast-body {
+.umToastBody {
   flex: 1;
   margin: 0;
   padding: 0;
@@ -42,18 +41,18 @@
 }
 
 /* progress bar styling (nếu dùng) */
-.um-toast-progress {
+.umToastProgress {
   background: rgba(255,255,255,0.25) !important;
 }
 
 /* type colors */
-.um-toast--success { background: linear-gradient(135deg,#34c759,#28a745) !important; }
-.um-toast--error   { background: linear-gradient(135deg,#ff3b30,#e53935) !important; }
-.um-toast--warning { background: linear-gradient(135deg,#ff9500,#fb8c00) !important; }
-.um-toast--info    { background: linear-gradient(135deg,#0a84ff,#1e88e5) !important; }
+.umToastSuccess { background: linear-gradient(135deg,#34c759,#28a745) !important; }
+.umToastError   { background: linear-gradient(135deg,#ff3b30,#e53935) !important; }
+.umToastWarning { background: linear-gradient(135deg,#ff9500,#fb8c00) !important; }
+.umToastInfo    { background: linear-gradient(135deg,#0a84ff,#1e88e5) !important; }
 
 /* small icon container */
-.um-toast .um-toast-icon {
+.umToastIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;

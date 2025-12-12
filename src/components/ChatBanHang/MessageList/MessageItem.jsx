@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { useChat } from "../context/ChatContext";
 import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
+import aiSuggestionsStyles from "../../../components/AI/AISuggestions.module.css";
 import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand } from "react-icons/fa";
 import Swal from "sweetalert2";
 import useResizeObserver from "../../../hooks/useResizeObserver";
@@ -399,7 +400,7 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
 
               {/* Render AI suggestion boxes when present */}
               {message.isAi && Array.isArray(message.aiSuggestions) && message.aiSuggestions.length > 0 && (
-                <div className={styles.aiSuggestions}>
+                <div className={aiSuggestionsStyles.aiSuggestions}>
                   {message.aiSuggestions.slice(0, 8).map((s, idx) => {
                     // tolerant field lookup
                     const title = s?.ten || s?.Ten || s?.title || s?.name || "Sản phẩm";
@@ -411,14 +412,14 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                     const productId = s?.id || s?.Id || s?.maTinDang || s?.MaTinDang;
 
                     return (
-                      <div key={idx} className={styles.aiCard} onClick={() => {
+                      <div key={idx} className={aiSuggestionsStyles.aiCard} onClick={() => {
                         // Navigate to product detail page using the correct route
                         if (productId) {
                           window.location.href = `/tin-dang/${productId}`;
                         }
                       }}>
                         <div style={{ position: 'relative' }}>
-                          {image ? <img src={image} alt={title} className={styles.aiCardImage} /> : <div className={styles.aiCardImagePlaceholder}></div>}
+                          {image ? <img src={image} alt={title} className={aiSuggestionsStyles.aiCardImage} /> : <div className={aiSuggestionsStyles.aiCardImagePlaceholder}></div>}
                           {isHot && (
                             <div style={{
                               position: 'absolute',
@@ -436,9 +437,9 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                             </div>
                           )}
                         </div>
-                        <div className={styles.aiCardBody}>
-                          <div className={styles.aiCardTitle}>{title}</div>
-                          {price != null && <div className={styles.aiCardPrice}>{typeof price === 'number' ? price.toLocaleString('vi-VN') + ' đ' : price}</div>}
+                        <div className={aiSuggestionsStyles.aiCardBody}>
+                          <div className={aiSuggestionsStyles.aiCardTitle}>{title}</div>
+                          {price != null && <div className={aiSuggestionsStyles.aiCardPrice}>{typeof price === 'number' ? price.toLocaleString('vi-VN') + ' đ' : price}</div>}
                           {(views > 0 || likes > 0) && (
                             <div style={{
                               fontSize: '11px',
@@ -460,11 +461,11 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
 
               {/* Render clarifying question with quick-reply action */}
               {message.isAi && message.clarifyingQuestion && (
-                <div className={styles.aiClarify}>
-                  <div className={styles.aiClarifyText}>{message.clarifyingQuestion}</div>
-                  <div className={styles.aiClarifyActions}>
+                <div className={aiSuggestionsStyles.aiClarify}>
+                  <div className={aiSuggestionsStyles.aiClarifyText}>{message.clarifyingQuestion}</div>
+                  <div className={aiSuggestionsStyles.aiClarifyActions}>
                     <button
-                      className={styles.aiQuickReply}
+                      className={aiSuggestionsStyles.aiQuickReply}
                       onClick={() => sendMessageService(message.clarifyingQuestion, 'text')}
                     >
                       Trả lời
