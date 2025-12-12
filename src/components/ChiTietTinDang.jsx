@@ -17,55 +17,46 @@ import Lightbox from "../components/Lightbox";
 import PostComments from "../components/PostComments";
 
 /**
- * Trang Chi Tiết Tin Đăng (Final Version)
- * - Tích hợp chuyển hướng đến trang người bán
+ * Trang Chi Tiết Tin Đăng (Final Version - Đã Fix)
  */
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
-  // ✅ LOGIC GỘP (Data & Actions):
   const {
     post,
     similarPostsByCategory,
     similarPostsBySeller,
     loading,
     handleChatWithSeller,
-    isSaved,           // Feature Lưu tin
-    handleToggleSave   // Feature Lưu tin
+    isSaved,           
+    handleToggleSave   
   } = usePostDetails(id, onOpenChat);
 
-  // --- STATE QUẢN LÝ GIAO DIỆN ---
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  
-  // ✅ State quản lý việc ẩn/hiện SĐT
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
 
-  // Effect quản lý box nổi khi cuộn trang
   useEffect(() => {
     const handleScroll = () => {
-      setShowFloatingBox(window.scrollY > 400); // Hiện khi cuộn qua header
+      setShowFloatingBox(window.scrollY > 400); 
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handlers cho Lightbox
   const handleOpenLightbox = (index) => {
     setLightboxIndex(index);
     setShowLightbox(true);
   };
   const handleCloseLightbox = () => setShowLightbox(false);
 
-  // Xử lý khi bấm chat
   const handleChatClick = () => {
     handleChatWithSeller();
   };
 
-  // 👇 HÀM CHUYỂN ĐẾN TRANG USER (Dùng cho nút "Xem thêm" ở slider)
   const handleViewShop = () => {
     if (post && post.maNguoiBan) {
       navigate(`/nguoi-dung/${post.maNguoiBan}`);
@@ -73,18 +64,16 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     }
   };
 
-  // --- RENDER ---
-
   if (loading) return <div className={styles.loading}>Đang tải thông tin...</div>;
   if (!post) return <div className={styles.notFound}>Không tìm thấy tin đăng.</div>;
 
   const formattedPrice = formatPrice(post.gia);
-
+console.log("🔥 DATA GỐC CỦA POST:", post);
   return (
     <div className={styles.chiTietTinDang}>
       <TopNavbar />
 
-      {/* --- FLOATING BOX (Thanh điều hướng nổi khi cuộn xuống) --- */}
+      {/* --- FLOATING BOX --- */}
       {showFloatingBox && (
         <FloatingProductBox
           image={getMediaUrl(post.images?.[0])}
@@ -95,16 +84,13 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             {post.dungLuong && <span> | {post.dungLuong}</span>}
             {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
           </>}
-          // Xử lý mô tả: cắt ngắn, bỏ HTML tags
           description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
           
-          // Logic SĐT
           onShowPhone={() => setShowPhoneNumber((s) => !s)}
           showPhone={showPhoneNumber}
           phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
           phone={post.phoneNumber}
           
-          // Logic Chat & ID
           onChat={handleChatClick}
           currentUserId={user?.id}
           sellerId={post.maNguoiBan}
@@ -112,9 +98,8 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         />
       )}
 
-      {/* --- HEADER TIN ĐĂNG (Ảnh + Info) --- */}
+      {/* --- HEADER TIN ĐĂNG --- */}
       <div className={styles.tinDangHeader} id="tong-quan">
-        {/* Carousel Ảnh */}
         <div className={styles.imageContainer}>
           <PostImageCarousel 
             images={post.images} 
@@ -122,40 +107,38 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           />
         </div>
 
-        {/* Thông tin chi tiết (Giá, Nút bấm, Người bán) */}
         <div className={styles.chiTietTinDangInfoWrapper}>
           <PostDetailsInfo
             post={post}
             formattedPrice={formattedPrice}
             currentUserId={user?.id}
-            
-            // Logic Chat
             onChat={handleChatClick} 
-            
-            // Logic Lưu tin
             isSaved={isSaved} 
             onToggleSave={handleToggleSave}
-
-            // Logic SĐT
             showPhoneNumber={showPhoneNumber}
             onTogglePhone={() => setShowPhoneNumber((s) => !s)}
           />
         </div>
       </div>
 
-      {/* --- MAIN CONTENT: MÔ TẢ & BÌNH LUẬN --- */}
+      {/* --- MAIN CONTENT --- */}
       <div className={styles.descriptionAndCommentsWrapper}>
         
-        {/* Cột trái: Mô Tả + Thông số kỹ thuật */}
         <div className={styles.descriptionContainer} id="mo-ta-chi-tiet">
-          {/* 1. Phần Mô tả văn bản */}
           <PostDescription description={post.moTa} />
 
-          {/* 2. Phần Thông số kỹ thuật */}
-          <PostTechnicalSpecs detailsJson={post.ChiTietObj || post.chiTietObj} />
+          {/* 👇 KHU VỰC SỬA LỖI QUAN TRỌNG 👇 */}
+          <PostTechnicalSpecs 
+            detailsJson={post.ChiTietObj || post.chiTietObj} // Dữ liệu MongoDB
+            TinhTrang={post.TinhTrang || post.tinhTrang}       
+  
+  // Thử lấy CoTheThoaThuan (viết hoa) HOẶC coTheThoaThuan (viết thường)
+  CoTheThoaThuan={post.CoTheThoaThuan || post.coTheThoaThuan}
+          />
+          {/* 👆 Đã thêm 2 dòng trên để truyền dữ liệu SQL vào con */}
+
         </div>
 
-        {/* Cột phải: Bình Luận */}
         <div className={styles.commentsContainer} id="binh-luan">
           <PostComments maTinDang={post.maTinDang} />
         </div>
@@ -163,18 +146,15 @@ const ChiTietTinDang = ({ onOpenChat }) => {
       </div>
       
       {/* --- CÁC TIN ĐĂNG LIÊN QUAN --- */}
-      
-      {/* 1. Tin Đăng Cùng Người Bán -> Dùng CAROUSEL (Trượt ngang) */}
       <div id="cac-tin-dang-khac">
         <SimilarPostsSection
           title={`Các tin đăng khác của ${post.nguoiBan}`}
           posts={similarPostsBySeller}
           mode="carousel" 
-          onViewShop={handleViewShop} // 👈 Đã truyền hàm chuyển trang vào đây
+          onViewShop={handleViewShop}
         />
       </div>
 
-      {/* 2. Tin Đăng Tương Tự -> Dùng GRID (Lưới 5 cột + Xem thêm) */}
       <div id="tin-dang-tuong-tu">
         <SimilarPostsSection
           title="Tin đăng tương tự"
@@ -183,7 +163,6 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         />
       </div>
 
-      {/* Lightbox (Xem ảnh phóng to) */}
       {showLightbox && (
         <Lightbox
           images={post.images}

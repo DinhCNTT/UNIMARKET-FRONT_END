@@ -1,24 +1,57 @@
 import React from "react";
 import styles from "./PostTechnicalSpecs.module.css";
 
-// 1. Nhận thêm props condition và negotiable
-const PostTechnicalSpecs = ({ detailsJson, condition, negotiable }) => {
+const PostTechnicalSpecs = (props) => {
+  const { detailsJson } = props;
+
+  // --- PHẦN 1: XỬ LÝ DỮ LIỆU TỪ SQL SERVER (Props) ---
   
-  // 2. Parse JSON (Sửa lại logic một chút để không return null quá sớm nếu có Tình trạng)
-  let specs = {};
+  // 1. Lấy Tình Trạng
+  // Chấp nhận cả viết hoa (TinhTrang) hoặc viết thường (tinhTrang) hoặc prop tên condition
+  const sqlCondition = props.TinhTrang || props.tinhTrang || props.condition;
+  
+  // 2. Lấy Thương Lượng
+  let sqlNegotiable = props.CoTheThoaThuan; 
+  if (sqlNegotiable === undefined) sqlNegotiable = props.coTheThoaThuan;
+  if (sqlNegotiable === undefined) sqlNegotiable = props.negotiable;
+
+  // Xử lý giá trị: Chấp nhận Boolean true hoặc chuỗi "True"/"true"
+  const isNegotiable = 
+    sqlNegotiable === true || 
+    String(sqlNegotiable).toLowerCase() === "true";
+
+  // --- PHẦN 2: XỬ LÝ DỮ LIỆU TỪ MONGODB (JSON) ---
+  let mongoSpecs = {};
   try {
     if (detailsJson) {
-      specs = typeof detailsJson === "string" ? JSON.parse(detailsJson) : detailsJson;
+      mongoSpecs = typeof detailsJson === "string" ? JSON.parse(detailsJson) : detailsJson;
     }
   } catch (error) {
-    console.error("Lỗi parse thông số kỹ thuật:", error);
-    specs = {}; // Nếu lỗi thì coi như object rỗng
+    console.error("Lỗi parse JSON:", error);
+    mongoSpecs = {};
   }
+  
+  // Lọc bỏ các key trùng lặp trong JSON (để ưu tiên dữ liệu SQL)
+  const { 
+    TinhTrang, tinhTrang, tinh_trang, Condition, condition, 
+    CoTheThoaThuan, coTheThoaThuan, co_the_thoa_thuan, Negotiable, negotiable,
+    ...displaySpecs 
+  } = mongoSpecs;
 
-  // 3. Nếu không có specs VÀ không có thông tin tình trạng thì mới ẩn
-  if (Object.keys(specs).length === 0 && !condition) return null;
 
-  // 4. Bảng dịch từ khóa JSON sang tiếng Việt (Giữ nguyên)
+  // --- PHẦN 3: ĐIỀU KIỆN HIỂN THỊ ---
+  // Nếu không có Tình trạng VÀ không có thông số chi tiết -> Ẩn luôn
+  if (!sqlCondition && Object.keys(displaySpecs).length === 0) return null;
+
+  // --- PHẦN 4: HÀM FORMAT HIỂN THỊ ---
+  const formatCondition = (val) => {
+    if (!val) return "Không xác định";
+    // Mapping dữ liệu từ "DaSuDung" -> "Đã sử dụng"
+    if (val === "Moi" || val === "New" || val === "new") return "Mới";
+    if (val === "DaSuDung" || val === "Used" || val === "used") return "Đã sử dụng";
+    return val;
+  };
+
   const labelMapping = {
     "Hang": "Hãng",
     "DongMay": "Dòng máy",
@@ -31,39 +64,33 @@ const PostTechnicalSpecs = ({ detailsJson, condition, negotiable }) => {
     "OCung": "Ổ cứng"
   };
 
-  // 5. Hàm xử lý hiển thị Tình trạng
-  const formatCondition = (val) => {
-    if (!val) return "Không xác định";
-    return val === "Moi" ? "Mới" : "Đã sử dụng";
-  };
-
   return (
     <div className={styles.specsContainer}>
       <h3 className={styles.specsTitle}>Thông tin chi tiết</h3>
 
       <div className={styles.specsTable}>
         
-        {/* --- PHẦN THÊM MỚI: Tình trạng & Thỏa thuận --- */}
-        
-        {/* Dòng Tình trạng */}
-        {condition && (
+        {/* 1. HIỂN THỊ TÌNH TRẠNG (Từ SQL) */}
+        {sqlCondition && (
           <div className={styles.specRow}>
             <span className={styles.specLabel}>Tình trạng</span>
-            <span className={styles.specValue}>{formatCondition(condition)}</span>
+            <span className={styles.specValue}>{formatCondition(sqlCondition)}</span>
           </div>
         )}
 
-        {/* Dòng Thương lượng */}
+        {/* 2. HIỂN THỊ THƯƠNG LƯỢNG (Từ SQL) */}
         <div className={styles.specRow}>
           <span className={styles.specLabel}>Thương lượng</span>
           <span className={styles.specValue}>
-            {negotiable ? "Có thể thương lượng" : "Không thương lượng"}
+            {isNegotiable ? "Có thể thương lượng" : "Không thương lượng"}
           </span>
         </div>
 
-        {/* --- PHẦN CŨ: Duyệt qua JSON specs --- */}
-        {Object.entries(specs).map(([key, value]) => {
-          if (!value) return null;
+        {/* 3. HIỂN THỊ CÁC THÔNG SỐ KHÁC (Từ MongoDB) */}
+        {Object.entries(displaySpecs).map(([key, value]) => {
+          // Bỏ qua giá trị rỗng
+          if (value === null || value === undefined || value === "") return null;
+          
           return (
             <div key={key} className={styles.specRow}>
               <span className={styles.specLabel}>
