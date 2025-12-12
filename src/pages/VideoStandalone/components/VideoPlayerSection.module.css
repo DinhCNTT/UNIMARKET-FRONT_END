@@ -1,0 +1,182 @@
+/* VideoPlayerSection.module.css */
+
+.container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* --- LAYOUT CHÍNH --- */
+.mainContent {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end; 
+    justify-content: center;
+    gap: 20px; 
+    
+    max-width: 100%;
+    max-height: 100%;
+    padding-bottom: 20px;
+}
+
+/* --- VIDEO WRAPPER --- */
+.videoWrapper {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  display: flex;       
+  justify-content: center;
+  align-items: center;
+  
+  max-width: 100%;
+  max-height: 100%;
+
+  /* --- THAY ĐỔI 1: Kéo video qua phải --- */
+  margin-left: 100px; /* Thêm lề trái để đẩy toàn bộ video sang phải */
+  
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+  background: #000;
+  transition: all 0.3s ease;
+}
+
+/* VIDEO PLAYER (DỌC MẶC ĐỊNH) */
+.videoPlayer {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  
+  /* Chiều cao cho video dọc */
+  max-height: 90vh; 
+  
+  object-fit: contain;
+}
+
+/* --- THAY ĐỔI 2: VIDEO NGANG & VUÔNG --- */
+.landscapeWrapper .videoPlayer {
+    width: 100% !important;
+    max-width: 800px !important; 
+    max-height: 95vh !important; 
+    height: auto !important;
+    background: #000;
+}
+
+/* --- INFO OVERLAY --- */
+.infoOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 15px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  z-index: 10;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.infoOverlay > * { pointer-events: auto; }
+
+.authorRow { margin-bottom: 4px; cursor: pointer; }
+.authorName { font-size: 18px; font-weight: 700; }
+.authorName:hover { text-decoration: underline; }
+
+.description {
+    font-size: 15px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.musicRow { display: flex; align-items: center; gap: 8px; }
+.musicIcon { font-size: 14px; }
+.musicText { font-size: 13px; font-weight: 600; }
+
+/* --- SIDE ACTIONS (BÊN PHẢI) --- */
+.sideActions {
+    position: relative; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 10px;
+    padding-bottom: 10px;
+}
+
+.actionItem {
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; transition: transform 0.2s;
+}
+.actionItem:active { transform: scale(0.9); }
+
+.iconCircle {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background-color: rgba(22, 24, 35, 0.06);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.iconCircle:hover { background-color: rgba(22, 24, 35, 0.12); }
+
+.actionText {
+    font-size: 12px; font-weight: 600; 
+    color: #161823;
+    margin-top: 6px;
+}
+
+.actionItemAvatar { position: relative; margin-bottom: 10px; cursor: pointer; }
+.avatarContainer {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.avatarImg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.plusIcon {
+    position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+    background: #fe2c55; width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+}
+
+.discAnimation {
+    width: 48px; height: 48px;
+    background: #222; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 8px solid #333; overflow: hidden;
+    animation: spin 4s linear infinite; margin-top: 10px;
+}
+.discAnimation img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.playIconOverlay {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  pointer-events: none; opacity: 0.8; z-index: 5;
+}
+.heartAnimation {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none; animation: heartPop 0.8s ease-out forwards;
+    z-index: 20; filter: drop-shadow(0 0 10px rgba(254, 44, 85, 0.5));
+}
+@keyframes heartPop {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+    15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    30% { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+@media (max-width: 900px) {
+    .mainContent { display: block; width: 100%; height: 100%; padding: 0; }
+    .sideActions { position: absolute; right: 10px; bottom: 80px; z-index: 20; gap: 14px; }
+    .actionText { color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+    .iconCircle { background: transparent; width: auto; height: auto; }
+    .videoWrapper, .landscapeWrapper { border-radius: 0; width: 100%; height: 100%; margin-left: 0; /* Reset margin mobile */ }
+    .videoPlayer, .landscapeWrapper .videoPlayer { max-height: 100vh !important; max-width: 100% !important; }
+}

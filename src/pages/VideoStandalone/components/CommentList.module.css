@@ -1,0 +1,93 @@
+/* Container danh sách */
+.listContainer {
+    padding: 0 10px 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 1 Item bình luận */
+.commentItem {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.userName {
+    font-size: 13px;
+    font-weight: 700;
+    color: #161823;
+    cursor: pointer;
+}
+
+.text {
+    font-size: 14px;
+    color: #161823;
+    line-height: 1.4;
+    white-space: pre-wrap; /* Giữ xuống dòng */
+}
+
+.metaData {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 4px;
+}
+
+.time {
+    font-size: 12px;
+    color: #888;
+}
+
+.replyBtn {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.replyBtn:hover {
+    text-decoration: underline;
+}
+
+/* Nút Like Comment (Trái tim nhỏ bên phải) */
+.likeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    padding-top: 5px;
+}
+
+.likeCount {
+    font-size: 10px;
+    color: #888;
+}
+
+/* Loading & Empty State */
+.loadingText, .emptyText {
+    text-align: center;
+    color: #888;
+    margin-top: 40px;
+    font-size: 14px;
+}

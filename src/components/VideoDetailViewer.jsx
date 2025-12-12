@@ -478,8 +478,14 @@ const prevRefreshSignalRef = useRef(refreshSignal);
   // WHEEL
   useEffect(() => {
     const handleWheel = (e) => {
+      // 🔥 FIX LỖI: Nếu đang giữ phím Ctrl (để Zoom), thì KHÔNG ĐƯỢC CHẶN sự kiện
+      if (e.ctrlKey) return; 
+
       if (showComments || showDetailPanel || showSharePanel) return;
+      
+      // Chỉ chặn scroll mặc định khi không Zoom và không mở panel
       e.preventDefault();
+      
       if (isAnimatingRef.current) return;
 
       if (e.deltaY > 0) goToIndex(currentIndex + 1);

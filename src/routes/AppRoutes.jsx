@@ -36,13 +36,15 @@ import UserProfilePage from "../pages/UserProfilePage";
 import TrangChat from "../pages/TrangChat";
 
 // --- VIDEO COMPONENTS ---
-import VideoPage from "../pages/VideoPage"; // Lướt video (TikTok feed)
-import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; // Trang tìm kiếm video
-import VideoLikedPage from "../components/VideoLikedPage"; // Trang video đã tym
-import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer đơn lẻ (nếu còn dùng)
+import VideoPage from "../pages/VideoPage"; 
+import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; 
+import VideoLikedPage from "../components/VideoLikedPage"; 
+import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer cũ (Giữ nguyên)
 
-// ✅ Viewer "Vạn Năng" mới (Dùng chung cho Search, Liked, Saved)
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
+
+// 🔥 [MỚI] IMPORT TRANG VIDEO STANDALONE
+import VideoStandalonePage from "../pages/VideoStandalone/VideoStandalonePage";
 
 // --- ROUTE GUARDS ---
 const AdminRoute = ({ children }) => {
@@ -84,7 +86,6 @@ function AppRoutes() {
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
       <Route path="/loc-tin-dang" element={<LocTinDang />} />
       
-      {/* Chi tiết tin đăng */}
       <Route
         path="/tin-dang/:id"
         element={
@@ -105,19 +106,16 @@ function AppRoutes() {
       <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
       
-      {/* Chat Realtime */}
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
       <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
 
-      {/* Profile & Settings */}
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
 
       {/* ==============================
-          4. VIDEO ROUTES (ĐÃ CẬP NHẬT)
+          4. VIDEO ROUTES
       ============================== */}
       
-      {/* A. Feed video (Lướt kiểu TikTok) */}
       <Route
         path="/market/video"
         element={
@@ -127,12 +125,9 @@ function AppRoutes() {
         }
       />
 
-      {/* B. Các trang danh sách video */}
       <Route path="/search/:keyword" element={<VideoSearchPage />} />
       <Route path="/video-da-tym" element={<VideoLikedPage />} />
 
-      {/* C. ✅ TRÌNH XEM CHI TIẾT VIDEO (Dùng chung cho Search & Liked) */}
-      {/* Route này khớp với navigate('/video-viewer/...') trong VideoSearchPage */}
       <Route 
         path="/video-viewer/:maTinDang" 
         element={
@@ -142,13 +137,16 @@ function AppRoutes() {
         } 
       />
 
-      {/* D. Các Route video phụ / tương thích ngược */}
-      {/* Nếu code cũ có link này, trỏ nó về Viewer mới luôn */}
       <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
       <Route path="/video-search-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
       
-      {/* Viewer đơn lẻ mặc định (giữ lại nếu cần cho logic share link lẻ) */}
+      {/* ✅ GIỮ NGUYÊN ROUTE CŨ CỦA BẠN (Viewer đơn lẻ mặc định) */}
       <Route path="/video/:id" element={<VideoDetailViewer />} />
+
+      {/* 🔥 [THÊM MỚI] Route này dành riêng cho click từ thông báo */}
+      {/* Tên đường dẫn khác đi để không đụng chạm cái cũ */}
+      <Route path="/video-standalone/:id" element={<VideoStandalonePage />} />
+
 
       {/* ==============================
           5. ADMIN ROUTES

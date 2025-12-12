@@ -1,0 +1,76 @@
+.fullPageLayout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    overflow: hidden;
+}
+
+.leftNavColumn {
+    width: 72px; 
+    background-color: #fff;
+    border-right: 1px solid #2f2f2f;
+    flex-shrink: 0;
+    display: flex; flex-direction: column;
+}
+
+/* --- SỬA QUAN TRỌNG TẠI ĐÂY --- */
+.videoSection {
+    flex: 1;
+    position: relative;
+    background: #ffff; /* Nền đen để video nổi bật */
+    
+    /* Cho phép cuộn dọc */
+    overflow-y: scroll; 
+    
+    /* Kích hoạt Scroll Snap (Cuộn dính) */
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+
+    /* Ẩn thanh cuộn cho đẹp */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Ẩn thanh cuộn Chrome/Safari */
+.videoSection::-webkit-scrollbar {
+    display: none;
+}
+
+/* Class bao bọc từng Video Item */
+.videoSnapItem {
+    width: 100%;
+    height: 100%; /* Chiều cao bằng đúng khung nhìn */
+    scroll-snap-align: start; /* Dính vào đầu */
+    scroll-snap-stop: always; /* Buộc phải dừng ở từng video, không trượt vèo vèo */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* ... Giữ nguyên các class khác như backButton, sidebarSection ... */
+.sidebarSection {
+    width: 360px;
+    background-color: #fff;
+    border-left: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    position: relative;
+    display: flex; flex-direction: column;
+    height: 100%;
+}
+
+.loadingState, .errorState {
+    width: 100vw; height: 100vh;
+    background: #000;
+    color: #fff;
+    display: flex; justify-content: center; align-items: center;
+}
+
+@media (max-width: 900px) {
+    .fullPageLayout { flex-direction: column; overflow-y: auto; }
+    .videoSection { height: 100vh; width: 100%; }
+    .sidebarSection { display: none; }
+    .leftNavColumn { display: none; }
+}

@@ -126,7 +126,6 @@ export default function NotificationDropdown({ onClose }) {
         setNotifications((prev) => 
           prev.map((n) => n.id === noti.id ? { ...n, isRead: true } : n)
         );
-        // Cập nhật số lượng thông báo chưa đọc ở Global (nếu có hàm này)
         if (markAsReadGlobal) markAsReadGlobal();
       } catch (err) { console.error(err); }
     }
@@ -136,14 +135,17 @@ export default function NotificationDropdown({ onClose }) {
       navigate(`/nguoi-dung/${noti.senderId}`);
       if (onClose) onClose(); 
     } 
-    // Kiểm tra referenceId (hoặc refId tùy API trả về) cho Video
+    // Kiểm tra referenceId cho Video
     else if (noti.referenceId || noti.refId) {
       const videoId = noti.referenceId || noti.refId;
-      navigate(`/video/${videoId}`); 
+      
+      // 🔥 SỬA TẠI ĐÂY: Điều hướng sang route MỚI (/video-standalone/...)
+      // Route cũ (/video/...) vẫn giữ nguyên cho các chức năng khác
+      navigate(`/video-standalone/${videoId}`); 
+      
       if (onClose) onClose(); 
     }
   };
-
   // Helper: Render nội dung chữ
   const renderContentText = (noti) => {
     switch (noti.type) {
