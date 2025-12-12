@@ -19,7 +19,7 @@ import AppRoutes from "./routes/AppRoutes";
 // --- Toast Imports ---
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./styles/CustomToast.css";
+import customToastStyles from "./styles/CustomToast.module.css";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { Toaster as SonnerToaster } from "sonner";
 

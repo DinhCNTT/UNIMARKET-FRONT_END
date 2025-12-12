@@ -44,7 +44,12 @@ const MarketplacePage = () => {
       </div>
       <FooterBanner />
       <Footer />
-      <FloatingAiButton user={user} />
+        {/* ✅ FloatingAiButton - Fixed position, always on top */}
+      <div style={{ position: 'fixed', right: 0, bottom: 0, zIndex: 99999, pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto' }}>
+          <FloatingAiButton user={user} />
+        </div>
+      </div>
     </div>
   );
 };

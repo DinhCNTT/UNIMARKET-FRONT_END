@@ -355,9 +355,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         setInfoTinDang({
           tieuDe: "Uni.AI",
           gia: 0,
-          anh: "/images/uni-ai-avatar.svg",
+          anh: "/images/uni-ai-avatar.png",
           maTinDang: null,
-          avatarChuSanPham: "/images/uni-ai-avatar.svg",
+          avatarChuSanPham: "/images/uni-ai-avatar.png",
           tenChuSanPham: "Uni.AI",
           isOnline: true,
           lastOnlineTime: null,
@@ -369,7 +369,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
         setMaNguoiConLai("uni.ai");
         setInfoNguoiConLai({
           id: "uni.ai",
-          avatar: "/images/uni-ai-avatar.svg",
+          avatar: "/images/uni-ai-avatar.png",
           ten: "Uni.AI",
           isOnline: true,
           lastOnlineTime: null,
@@ -447,9 +447,9 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           setInfoTinDang({
             tieuDe: "Uni.AI",
             gia: 0,
-            anh: "/images/uni-ai-avatar.svg",
+            anh: "/images/uni-ai-avatar.png",
             maTinDang: null,
-            avatarChuSanPham: "/images/uni-ai-avatar.svg",
+            avatarChuSanPham: "/images/uni-ai-avatar.png",
             tenChuSanPham: "Uni.AI",
             isOnline: true,
             lastOnlineTime: null,
@@ -461,7 +461,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
           setMaNguoiConLai("uni.ai");
           setInfoNguoiConLai({
             id: "uni.ai",
-            avatar: "/images/uni-ai-avatar.svg",
+            avatar: "/images/uni-ai-avatar.png",
             ten: "Uni.AI",
             isOnline: true,
             lastOnlineTime: null,

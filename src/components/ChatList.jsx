@@ -969,7 +969,7 @@ connection.on("ChatStatusChanged", (data) => {
 
                  {/* Avatar: nếu là AI thì dùng ảnh Uni.AI, còn lại dùng ảnh tin đăng */}
                   {String(chat.maCuocTroChuyen).startsWith('ai-assistant-') ? (
-                    <img src={'/images/uni-ai-avatar.svg'} alt="Uni.AI" className="chatlist-item-image ai-avatar" />
+                    <img src={'/images/uni-ai-avatar.png'} alt="Uni.AI" className="chatlist-item-image ai-avatar" />
                   ) : (
                     <img src={getFullImageUrl(chat.anhDaiDienTinDang)} alt="Ảnh tin đăng" className="chatlist-item-image" />
                   )}
