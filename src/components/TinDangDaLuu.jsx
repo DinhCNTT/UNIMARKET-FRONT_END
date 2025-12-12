@@ -1,18 +1,15 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// Import nhiều icon đẹp hơn
 import { 
   FaHeart, FaTrashAlt, FaFire, FaMapMarkerAlt, 
-  FaChevronDown, FaChevronUp, FaFolderOpen, 
+  FaChevronUp, FaFolderOpen, 
   FaArrowRight, FaLayerGroup, FaCheckCircle
 } from "react-icons/fa";
 
 import TopNavbar from "./TopNavbar/TopNavbar";
 import Footer from "./Footer";
 import { AuthContext } from "../context/AuthContext";
-
-// Import CSS Module
 import styles from "./TinDangDaLuu.module.css";
 
 const TinDangDaLuu = () => {
@@ -20,9 +17,12 @@ const TinDangDaLuu = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [showScrollable, setShowScrollable] = useState(false);
+  
+  // Bỏ showScrollable, chỉ giữ lại state đếm số lượng hiển thị
   const [expandedPosts, setExpandedPosts] = useState(8); 
-  const gridRef = useRef(null);
+  
+  // Ref này dùng để scroll window khi thu gọn (tùy chọn)
+  const containerRef = useRef(null);
 
   // --- Fetch Data ---
   const fetchSavedPosts = async (token) => {
@@ -61,24 +61,17 @@ const TinDangDaLuu = () => {
       setPosts(prev => prev.filter(post => post.maTinDang !== id));
       showNotification("Đã xóa khỏi danh sách yêu thích!", "success");
     } catch (err) {
-      let msg = "Có lỗi xảy ra.";
-      if (err.response?.data?.message) {
-        msg = err.response.data.message;
-      }
-      showNotification(msg, "error");
+      showNotification("Có lỗi xảy ra.", "error");
     }
   };
 
   // --- Custom Notification ---
   const showNotification = (message, type) => {
     const notification = document.createElement('div');
-    // Kết hợp class module
     notification.className = `${styles.notification} ${styles[type]}`;
-    // Thêm icon vào nội dung text (đơn giản hóa bằng string template)
     notification.innerHTML = type === 'success' 
       ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> ${message}`
       : message;
-      
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
   };
@@ -87,41 +80,30 @@ const TinDangDaLuu = () => {
     navigate(`/tin-dang/${maTinDang}`);
   };
 
-  // --- Format Giá (Chuẩn Chợ Tốt) ---
+  // --- Format Giá (Hiển thị đầy đủ số) ---
   const formatPrice = (price) => {
     if (price === 0 || !price) return "Thỏa thuận";
-    if (price >= 1000000000) return `${(price / 1000000000).toFixed(2)} tỷ`.replace('.00', '');
-    if (price >= 1000000) return `${(price / 1000000).toFixed(1)} triệu`.replace('.0', '');
+    
+    // Chỉ dùng toLocaleString để hiển thị đầy đủ số và thêm chữ đ
     return `${price.toLocaleString('vi-VN')} đ`;
   };
 
-  // --- Xử lý Xem thêm / Thu gọn ---
+  // --- Xử lý Xem thêm / Thu gọn (Đã sửa) ---
   const handleShowMore = () => {
-    const newExpandedCount = Math.min(expandedPosts + 8, posts.length);
-    setExpandedPosts(newExpandedCount);
-    
-    if (!showScrollable) setShowScrollable(true);
-
-    setTimeout(() => {
-      if (gridRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = gridRef.current;
-        const newScroll = Math.min(scrollTop + clientHeight * 0.7, scrollHeight - clientHeight);
-        gridRef.current.scrollTo({ top: newScroll, behavior: 'smooth' });
-      }
-    }, 100);
+    // Chỉ đơn giản là tăng số lượng hiển thị, không set scroll
+    setExpandedPosts(prev => Math.min(prev + 8, posts.length));
   };
 
   const handleCollapse = () => {
-    if (expandedPosts > 8) {
-      setExpandedPosts(8);
-      setShowScrollable(false);
-      if (gridRef.current) gridRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    setExpandedPosts(8);
+    // Khi thu gọn, cuộn màn hình lên đầu danh sách để người dùng dễ nhìn
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const displayedPosts = posts.slice(0, expandedPosts);
 
-  // --- Render Loading ---
   if (loading) {
     return (
       <>
@@ -137,14 +119,12 @@ const TinDangDaLuu = () => {
     );
   }
 
-  // --- Main Render ---
   return (
     <>
       <TopNavbar />
       <div className={styles.container}>
         <div className={styles.wrapper}>
           
-          {/* Header */}
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               <div className={styles.iconBox}>
@@ -164,7 +144,6 @@ const TinDangDaLuu = () => {
             </div>
           </div>
 
-          {/* Content */}
           {posts.length === 0 ? (
             <div className={styles.empty}>
               <FaFolderOpen className={styles.emptyIcon} />
@@ -178,18 +157,15 @@ const TinDangDaLuu = () => {
               </button>
             </div>
           ) : (
-            <div className={styles.gridContainer}>
-              <div 
-                ref={gridRef}
-                className={`${styles.grid} ${showScrollable ? styles.scrollable : ''}`}
-              >
+            <div className={styles.gridContainer} ref={containerRef}> 
+              {/* Đã bỏ class scrollable và ref ở div grid */}
+              <div className={styles.grid}>
                 {displayedPosts.map((post, index) => (
                   <div 
                     key={post.maTinDang} 
                     className={styles.card}
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    {/* Image Area */}
                     <div 
                       className={styles.imageWrapper} 
                       onClick={() => handleImageClick(post.maTinDang)}
@@ -200,7 +176,6 @@ const TinDangDaLuu = () => {
                         </div>
                       )}
 
-                      {/* Nút Xóa (Thùng rác) */}
                       <button
                         className={styles.deleteBtn}
                         onClick={(e) => {
@@ -227,7 +202,6 @@ const TinDangDaLuu = () => {
                       <div className={styles.overlay}></div>
                     </div>
 
-                    {/* Info Area */}
                     <div 
                       className={styles.info}
                       onClick={() => handleImageClick(post.maTinDang)}
@@ -259,7 +233,8 @@ const TinDangDaLuu = () => {
                     </button>
                   )}
                   
-                  {showScrollable && expandedPosts > 8 && (
+                  {/* Luôn hiện nút thu gọn nếu đã mở rộng hơn 8 tin */}
+                  {expandedPosts > 8 && (
                     <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={handleCollapse}>
                       <FaChevronUp /> Thu gọn
                     </button>
