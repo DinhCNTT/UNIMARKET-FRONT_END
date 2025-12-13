@@ -3,7 +3,7 @@
 /* ============================== */
 /*          NAVBAR CHÍNH          */
 /* ============================== */
-.um-tn-navbar {
+.um-tn-navbar { 
   position: fixed;
   left: 0;
   top: 0;
@@ -12,7 +12,7 @@
 
   /* Theme */
   background-color: var(--theme-bg-primary);
-  border-right: 1px solid var(--theme-border-color);
+  border-right: none; /* ← XÓA VIỀN HOÀN TOÀN */
 
   display: flex;
   flex-direction: column;

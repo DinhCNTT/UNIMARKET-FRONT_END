@@ -12,7 +12,15 @@ import styles from './VideoPlayerSection.module.css';
 const API_BASE = "http://localhost:5133";
 
 // Thêm prop isActive vào danh sách props
-const VideoPlayerSection = ({ videoData, token, currentUser, onUpdateVideo, onOpenComments, isActive }) => {
+const VideoPlayerSection = ({ 
+    videoData, 
+    token, 
+    currentUser, 
+    onUpdateVideo, 
+    onOpenComments, 
+    isActive,
+    onRatioChange // <--- THÊM PROP NÀY
+}) => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   
@@ -77,6 +85,34 @@ const VideoPlayerSection = ({ videoData, token, currentUser, onUpdateVideo, onOp
       setIsPlaying(false);
     }
   }, [isActive, videoData]); 
+
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    // Hàm check tỷ lệ
+    const checkRatio = () => {
+        if (videoEl.videoWidth && videoEl.videoHeight) {
+            if (videoEl.videoWidth >= videoEl.videoHeight) {
+                setIsLandscape(true);
+            } else {
+                setIsLandscape(false);
+            }
+        }
+    };
+
+    // Nếu video đã có metadata (readyState >= 1), check ngay lập tức
+    if (videoEl.readyState >= 1) {
+        checkRatio();
+    }
+
+    // Vẫn lắng nghe sự kiện đề phòng video chưa load
+    videoEl.addEventListener('loadedmetadata', checkRatio);
+    
+    return () => {
+        videoEl.removeEventListener('loadedmetadata', checkRatio);
+    };
+}, [videoData]);
 
   // 3. Metadata: Kiểm tra tỷ lệ khung hình
   const handleLoadedMetadata = (e) => {

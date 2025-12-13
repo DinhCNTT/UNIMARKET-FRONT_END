@@ -139,9 +139,15 @@ export default function NotificationDropdown({ onClose }) {
     else if (noti.referenceId || noti.refId) {
       const videoId = noti.referenceId || noti.refId;
       
-      // 🔥 SỬA TẠI ĐÂY: Điều hướng sang route MỚI (/video-standalone/...)
-      // Route cũ (/video/...) vẫn giữ nguyên cho các chức năng khác
-      navigate(`/video-standalone/${videoId}`); 
+      // 🔥 SỬA: Kiểm tra xem có EntityId (ID Comment) không
+      let targetUrl = `/video-standalone/${videoId}`;
+      
+      // Nếu là thông báo Comment/Reply và có ID cụ thể, thêm vào URL
+      if ((noti.type === 'Comment' || noti.type === 'Reply') && noti.entityId) {
+          targetUrl += `?commentId=${noti.entityId}`;
+      }
+
+      navigate(targetUrl);
       
       if (onClose) onClose(); 
     }
