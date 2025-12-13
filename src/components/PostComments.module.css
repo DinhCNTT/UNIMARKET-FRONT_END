@@ -161,10 +161,14 @@
 .commentItem {
   display: flex;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
   
   /* Đảm bảo item không vượt quá chiều rộng cha */
   max-width: 100%;
+}
+/* Thêm class này để tạo khoảng cách giữa các comment cha (cấp 1) */
+.commentList > div {
+    margin-bottom: 16px;
 }
 
 .avatar {
@@ -332,3 +336,19 @@
   color: #dc3545;
 }
 .toastBtnDelete:hover { background-color: #ffe0e3; }
+.repliesContainerIndent {
+  margin-left: 0;
+  padding-left: 44px; /* Thụt vào 1 lần duy nhất */
+  margin-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 2. Dùng cho con của Cấp 2 trở đi (KHÔNG thụt nữa - Phẳng) */
+.repliesContainerFlat {
+  margin-left: 0;
+  padding-left: 0 !important;
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
