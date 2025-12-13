@@ -50,17 +50,15 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ============================================================================
-  // HOOKS - Chọn hook dựa theo loại chat
-  // ============================================================================
+  // ✅ HOOKS - Gọi tất cả hooks không conditionally
+  const aiChatLogic = useAiChat(maCuocTroChuyen, user);
+  const signalRChatLogic = useSignalR(maCuocTroChuyen, user);
 
   // ✅ Xác định xem đây là AI chat hay chat thường
   const isAiConversation = maCuocTroChuyen?.startsWith("ai-assistant-");
 
-  // ✅ Dùng hook có điều kiện
-  const chatLogic = isAiConversation
-    ? useAiChat(maCuocTroChuyen, user)
-    : useSignalR(maCuocTroChuyen, user);
+  // ✅ Chọn hook logic dựa trên loại chat
+  const chatLogic = isAiConversation ? aiChatLogic : signalRChatLogic;
 
   // ✅ Destructure từ hook đã chọn
   const {
@@ -77,7 +75,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   } = chatLogic;
 
   // ✅ Reference connection nếu là SignalR (AI chat không cần)
-  const connection = !isAiConversation ? chatLogic.connection : null;
+  const connection = !isAiConversation ? signalRChatLogic.connection : null;
 
   useEffect(() => {
     // Chỉ gửi khi đã kết nối SignalR và có dữ liệu autoSend

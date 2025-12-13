@@ -288,3 +288,36 @@ export const getUserChats = async (userId) => {
     return [];
   }
 };
+
+// ✅ NEW: Mark conversation as read
+export const markConversationAsRead = async (maCuocTroChuyen, userId) => {
+  try {
+    const token = getAuthToken();
+    const headers = { "Content-Type": "application/json" };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    console.log(`📤 Calling mark-as-read for chat: ${maCuocTroChuyen}, userId: ${userId}`);
+
+    const res = await fetch(`${apiBaseUrl}/chat/mark-as-read`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ maCuocTroChuyen, userId })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`❌ markConversationAsRead failed: ${res.status} - ${text}`);
+      return false;
+    }
+
+    const data = await res.json();
+    console.log(`✅ markConversationAsRead success:`, data);
+    return true;
+  } catch (err) {
+    console.error("markConversationAsRead error:", err);
+    return false;
+  }
+};
