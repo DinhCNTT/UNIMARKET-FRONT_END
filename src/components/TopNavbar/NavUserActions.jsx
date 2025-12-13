@@ -148,10 +148,25 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
           <FaRegBell size={18} />
           {unreadCount > 0 && <span className={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>}
         </button>
-        {showNotifPanel && (
-          <div style={{ position: 'absolute', right: 0, top: '45px', zIndex: 2500 }} onMouseLeave={() => setShowNotifPanel(false)}>
+        {showNotifPanel && createPortal(
+          <div
+            ref={(el) => {
+              if (el) {
+                const bellBtn = document.querySelector('[title="Thông báo"]');
+                if (bellBtn) {
+                  const rect = bellBtn.getBoundingClientRect();
+                  el.style.position = 'fixed';
+                  el.style.right = window.innerWidth - rect.right + 'px';
+                  el.style.top = rect.bottom + 10 + 'px';
+                  el.style.zIndex = '10000';
+                }
+              }
+            }}
+            onMouseLeave={() => setShowNotifPanel(false)}
+          >
             <NotificationsDropdown />
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 

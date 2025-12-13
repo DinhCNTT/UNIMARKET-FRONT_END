@@ -9,6 +9,8 @@
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   border: 1px solid rgba(0,0,0,0.06);
   overflow: hidden;
+  position: relative;
+  z-index: 10001;
 }
 
 .umNotifHeader {
