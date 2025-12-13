@@ -22,6 +22,7 @@ import styles from "./ModuleChatCss/MessageList.module.css";
 
 import { ChatContext } from "./context/ChatContext";
 import { useSignalR } from "./hooks/useSignalR";
+import { useAiChat } from "./hooks/useAiChat";
 import { useQuickMessages } from "../ChatList/useQuickMessages";
 
 import ChatHeader from "./ChatHeader";
@@ -50,14 +51,21 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const location = useLocation();
 
   // ============================================================================
-  // HOOKS
+  // HOOKS - Chọn hook dựa theo loại chat
   // ============================================================================
 
-  // SignalR Hook
+  // ✅ Xác định xem đây là AI chat hay chat thường
+  const isAiConversation = maCuocTroChuyen?.startsWith("ai-assistant-");
+
+  // ✅ Dùng hook có điều kiện
+  const chatLogic = isAiConversation
+    ? useAiChat(maCuocTroChuyen, user)
+    : useSignalR(maCuocTroChuyen, user);
+
+  // ✅ Destructure từ hook đã chọn
   const {
     danhSachTin,
     isConnected,
-    connection,
     recallMessage,
     recallMedia,
     markAsRead,
@@ -66,7 +74,10 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     loadMoreMessages,
     isLoadingMore,
     hasMore,
-  } = useSignalR(maCuocTroChuyen, user);
+  } = chatLogic;
+
+  // ✅ Reference connection nếu là SignalR (AI chat không cần)
+  const connection = !isAiConversation ? chatLogic.connection : null;
 
   useEffect(() => {
     // Chỉ gửi khi đã kết nối SignalR và có dữ liệu autoSend

@@ -8,6 +8,7 @@ export function injectChatPreview(detail) {
 
 export function injectChatMessage(detail) {
   // detail: { maTinNhan, maCuocTroChuyen, noiDung, maNguoiGui, loaiTinNhan, thoiGianGui, daXem }
+  console.log("[injectChatMessage] Dispatching event with detail:", detail);
   window.dispatchEvent(new CustomEvent('InjectSampleMessage', { detail }));
 }
 

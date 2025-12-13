@@ -867,41 +867,6 @@ connection.on("ChatStatusChanged", (data) => {
         >
           <FiMoreVertical size={20} />
         </button>
-                {import.meta && import.meta.env && import.meta.env.MODE !== 'production' ? (
-          <button
-            className="chatlist-sample-btn"
-            title="Tạo tin nhắn mẫu"
-            onClick={(e) => {
-              e.stopPropagation();
-              const now = new Date();
-              const chatId = selectedChatId || `sample-ai-${Date.now()}`;
-              const sampleMsg = {
-                maTinNhan: `sample-${Date.now()}`,
-                maCuocTroChuyen: chatId,
-                noiDung: "Xin chào, tôi muốn xem các tin có video về điện thoại giá dưới 5 triệu",
-                maNguoiGui: userId || 'user-sample',
-                loaiTinNhan: 'text',
-                thoiGianGui: now.toISOString(),
-                daXem: false,
-              };
-
-              // Use centralized AI helpers to inject messages and previews
-              injectChatMessage(sampleMsg);
-              injectChatPreview({
-                maCuocTroChuyen: chatId,
-                tieuDeTinDang: 'Huấn luyện AI - Sản phẩm mẫu',
-                giaTinDang: 5000000,
-                anhDaiDienTinDang: '',
-                noiDung: sampleMsg.noiDung,
-                maNguoiGui: sampleMsg.maNguoiGui,
-                loaiTinNhan: sampleMsg.loaiTinNhan,
-                thoiGian: sampleMsg.thoiGianGui
-              });
-            }}
-          >
-            Tạo tin mẫu
-          </button>
-        ) : null}
         </div>
       </div>
     )}

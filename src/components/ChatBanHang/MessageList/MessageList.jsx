@@ -90,13 +90,16 @@ const MessageList = () => {
     }
   }, [danhSachTin.length, isFirstLoad]);
 
-  // Đánh dấu đã xem
+  // Đánh dấu đã xem - chỉ gọi lần đầu vào chat hoặc khi load lịch sử cũ
   useEffect(() => {
-    const timer = setTimeout(() => {
-      markAsRead();
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [danhSachTin.length, markAsRead]);
+    if (isFirstLoad) {
+      // Lần đầu vào chat - đánh dấu tất cả tin nhắn cũ là đã đọc
+      const timer = setTimeout(() => {
+        markAsRead();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstLoad, markAsRead]);
 
   // Reset khi đổi chat
   useEffect(() => {

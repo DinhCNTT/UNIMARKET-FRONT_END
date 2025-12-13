@@ -21,11 +21,6 @@ const QuickReplies = ({
   customQuickMessages = [],
   onOpenSettings,
 }) => {
-  
-  // Log xem Component có nhận được dữ liệu mới không
-  useEffect(() => {
-    console.log('👀 [QuickReplies View] Nhận customQuickMessages:', customQuickMessages);
-  }, [customQuickMessages]);
 
   const handleQuickReply = useCallback(async (text) => {
       // ... giữ nguyên logic gửi tin
