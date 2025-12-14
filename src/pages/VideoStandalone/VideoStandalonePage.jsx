@@ -13,7 +13,8 @@ import {
 } from 'react-router-dom';
 
 import axios from 'axios';
-import { IoArrowBack } from 'react-icons/io5';
+// 🔥 Import icon mũi tên và nút Back
+import { IoArrowBack, IoChevronUp, IoChevronDown } from 'react-icons/io5';
 
 // --- CONTEXT & CSS ---
 import { AuthContext } from '../../context/AuthContext';
@@ -173,7 +174,7 @@ const VideoStandalonePage = () => {
         if (isNaN(index)) return;
 
         setActiveIndex(index);
-
+        // Cập nhật URL mà không reload trang
         if (videosList[index]) {
           window.history.replaceState(
             null,
@@ -181,7 +182,7 @@ const VideoStandalonePage = () => {
             `/video-standalone/${videosList[index].maTinDang}`
           );
         }
-
+        // Nếu lướt gần cuối danh sách (còn 2 video) -> Tải thêm
         if (
           index >= videosList.length - 2 &&
           !isLoadingMore
@@ -190,7 +191,7 @@ const VideoStandalonePage = () => {
         }
       });
     }, options);
-
+  // Gắn observer vào các phần tử video
     const elements = document.querySelectorAll(
       `.${styles.videoSnapItem}`
     );
@@ -220,6 +221,30 @@ const VideoStandalonePage = () => {
     });
   };
 
+  // 🔥 LOGIC ĐIỀU HƯỚNG BẰNG MŨI TÊN (CỐ ĐỊNH)
+  // Hàm này sẽ tìm phần tử DOM của video tiếp theo và cuộn tới đó
+  const handleScrollNavigation = (direction) => {
+    let newIndex = activeIndex;
+
+    if (direction === 'up') {
+      // Lên: Giảm index, không nhỏ hơn 0
+      newIndex = Math.max(0, activeIndex - 1);
+    } else if (direction === 'down') {
+      // Xuống: Tăng index, không lớn hơn độ dài list
+      newIndex = Math.min(videosList.length - 1, activeIndex + 1);
+    }
+
+    // Nếu index thay đổi, tìm element và cuộn tới đó
+    if (newIndex !== activeIndex) {
+      const targetEl = containerRef.current.querySelector(
+        `[data-index="${newIndex}"]`
+      );
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   // ======================================================
   // 6. RENDER
   // ======================================================
@@ -230,7 +255,7 @@ const VideoStandalonePage = () => {
   if (videosList.length === 0) {
     return (
       <div className={styles.errorState}>
-        Video không tồn tại.
+        Video không tồn tại hoặc đã bị xóa.
       </div>
     );
   }
@@ -278,6 +303,26 @@ const VideoStandalonePage = () => {
             />
           </div>
         ))}
+      </div>
+
+      {/* 🔥 MŨI TÊN ĐIỀU HƯỚNG CỐ ĐỊNH (FIXED NAVIGATION) */}
+      {/* Nằm ngoài videoSection nên sẽ đứng yên khi cuộn */}
+      <div className={styles.fixedNavigationGroup}>
+          <button
+            className={`${styles.fixedNavBtn} ${activeIndex === 0 ? styles.disabled : ''}`}
+            onClick={() => handleScrollNavigation('up')}
+            title="Video trước"
+          >
+             <IoChevronUp size={24} />
+          </button>
+
+          <button
+            className={styles.fixedNavBtn}
+            onClick={() => handleScrollNavigation('down')}
+            title="Video tiếp theo"
+          >
+             <IoChevronDown size={24} />
+          </button>
       </div>
 
       {/* CỘT 3: SIDEBAR */}

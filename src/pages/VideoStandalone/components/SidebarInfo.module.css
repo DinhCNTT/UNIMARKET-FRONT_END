@@ -169,7 +169,6 @@
     padding: 0;
     margin: 0;
 }
-
 .charCounter {
     align-self: flex-end; 
     font-size: 10px;
@@ -221,7 +220,7 @@
     padding: 28px 24px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); /* Shadow sâu hơn tạo chiều sâu 3D */
     text-align: center;
-    
+
     /* 🔥 CẢI TIẾN PHÔNG CHỮ QUAN TRỌNG NHẤT */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     -webkit-font-smoothing: antialiased; /* Giúp chữ mượt mà hơn trên Mac */
@@ -269,7 +268,7 @@
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
-    
+
     /* Đảm bảo nút dùng cùng phông chữ đẹp */
     font-family: inherit; 
     letter-spacing: 0.3px; /* Giãn chữ nút ra một chút cho dễ đọc */
@@ -328,4 +327,103 @@
         opacity: 1;
         transform: scale(1) translateY(0);
     }
+}
+
+/* SidebarInfo.module.css */
+
+/* ... Các styles cũ ... */
+
+/* --- NÚT XEM CHI TIẾT SẢN PHẨM --- */
+.productInfoBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Đẩy mũi tên sang phải cùng */
+    padding: 14px 16px; /* Tăng padding dọc chút cho thoáng */
+
+    background-color: #ffffff;
+    /* Viền dưới nhạt và tinh tế hơn */
+    border-bottom: 1px solid rgba(22, 24, 35, 0.06); 
+
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+
+    /* Font hệ thống chuẩn đẹp */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.productInfoBar:hover {
+    background-color: #f8f9fa; /* Màu nền hover xám rất nhẹ, sang trọng */
+}
+
+/* --- WRAPPER ICON --- */
+.productIconWrapper {
+    width: 36px;  /* Tăng kích thước icon lên xíu */
+    height: 36px;
+
+    /* Bo góc kiểu squircle (vuông bo tròn) nhìn hiện đại hơn tròn hẳn */
+    border-radius: 10px; 
+
+    /* Màu nền đỏ nhạt thương hiệu */
+    background-color: rgba(254, 44, 85, 0.08); 
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+    flex-shrink: 0; /* Đảm bảo icon không bị bóp méo */
+
+    transition: transform 0.2s ease;
+}
+
+/* Hiệu ứng: Khi hover vào thanh, icon nảy nhẹ lên */
+.productInfoBar:hover .productIconWrapper {
+    transform: scale(1.08);
+}
+
+/* --- TEXT CONTAINER --- */
+.productText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    justify-content: center;
+    gap: 3px; /* Khoảng cách giữa Label và Tên */
+}
+
+/* --- NHÃN "CHI TIẾT SẢN PHẨM" --- */
+.productLabel {
+    font-size: 11px;
+    color: #8a8b91; /* Màu xám trung tính, dễ chịu */
+    text-transform: uppercase;
+    font-weight: 700; /* Đậm hơn để rõ nét */
+    letter-spacing: 0.6px; /* Giãn chữ ra để dễ đọc hơn */
+    line-height: 1;
+}
+
+/* --- TÊN SẢN PHẨM --- */
+.productNameTruncated {
+    font-size: 15px; /* Tăng size từ 14 lên 15 cho rõ */
+    font-weight: 600; /* Semi-bold nhìn chuyên nghiệp */
+    color: #161823; /* Màu đen than (không đen tuyền) */
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    letter-spacing: -0.2px; /* Thu hẹp nhẹ khoảng cách chữ để nhìn kết cấu chặt chẽ */
+    line-height: 1.3;
+}
+
+/* --- CHỈNH SỬA MŨI TÊN (CHEVRON) --- */
+/* Bạn cần thêm class này vào icon FaChevronRight trong file JSX nếu muốn hiệu ứng */
+/* Ví dụ: <FaChevronRight className={styles.arrowIcon} ... /> */
+.productInfoBar svg:last-child { 
+    color: #b0b0b4;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.productInfoBar:hover svg:last-child {
+    color: #161823; /* Hover thì đậm lên */
+    transform: translateX(3px); /* Di chuyển nhẹ qua phải mời gọi click */
 }

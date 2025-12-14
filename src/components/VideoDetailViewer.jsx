@@ -4,10 +4,10 @@ import { useSearchParams, useNavigate, useParams, useLocation } from "react-rout
 import axios from "axios";
 
 // 🔥 Icons
-import { IoHeart } from "react-icons/io5";
-
+import { IoHeart, IoChevronUp, IoChevronDown } from "react-icons/io5";
 // 🔥 Components & Context
 import TopNavbarUniMarket from "./TopNavbarUniMarket";
+import VideoDetailHeader from "./VideoDetailHeader";
 import CommentDrawer from "./CommentDrawer";
 import VideoDetailsPanel from "./VideoDetailsPanel";
 import SharePanel from "./SharePanel";
@@ -710,122 +710,177 @@ const prevRefreshSignalRef = useRef(refreshSignal);
     <div className="vdv-wrapper vdv-full-screen-scroll" data-theme={effectiveTheme}>
       <TopNavbarUniMarket />
 
-      {loading && videoList.length === 0 && (
-        <div className="loading-overlay" style={{ zIndex: 10000 }}>
-          <div className="spinner"></div>
-        </div>
-      )}
+      {!showComments && <VideoDetailHeader />}
 
-      {loading && videoList.length > 0 && (
-         <div className="loading-indicator-bottom" style={{
-             position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', 
-             zIndex: 20, pointerEvents: 'none' 
-         }}>
-           <div className="spinner-small" style={{
-               width: '24px', height: '24px', border: '3px solid rgba(255,255,255,0.3)', 
-               borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite'
-           }}></div>
-        </div>
-      )}
-
+    {/* Loading lần đầu */}
+    {loading && videoList.length === 0 && (
+      <div className="loading-overlay" style={{ zIndex: 10000 }}>
+        <div className="spinner"></div>
+      </div>
+    )}
+    {/* Loading khi kéo tiếp video */}
+    {loading && videoList.length > 0 && (
       <div
-        ref={containerRef}
-        className="video-list-container"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        className="loading-indicator-bottom"
+        style={{
+          position: "absolute",
+          bottom: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 20,
+          pointerEvents: "none",
+        }}
       >
         <div
-          className="video-list-wrapper"
-          style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
-        >
-          {videoList.map((video, index) => {
-            const ratio = aspectRatios[index];
-            let ratioClass = "";
-            if (ratio != null) {
-              if (ratio < 1) ratioClass = "vdv-portrait";
-              else if (ratio > 1.5) ratioClass = "vdv-landscape";
-              else if (ratio > 1.2) ratioClass = "vdv-square-wide";
-              else ratioClass = "vdv-square";
-            }
+                    className="spinner-small"
+          style={{
+            width: "24px",
+            height: "24px",
+            border: "3px solid rgba(255,255,255,0.3)",
+            borderTopColor: "#fff",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+      </div>
+    )}
 
-            return (
-              <div key={video.maTinDang || index} className={`video-item ${ratioClass}`}>
-                <div className={`vdv-container ${ratioClass} ${showComments ? "comment-open" : ""}`}>
-                  <VideoPlayer
-                    video={video}
-                    index={index}
-                    currentIndex={currentIndex}
-                    videoElsRef={videoElsRef}
-                    videoRef={videoRef}
-                    setAspectRatios={setAspectRatios}
-                    handleVideoClick={handleVideoClick}
-                    showControls={showControls}
-                    handleDragStateChange={setIsDraggingVideo}
-                  />
+    {/* ===================== VIDEO LIST ===================== */}
+    <div
+      ref={containerRef}
+      className="video-list-container"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        className="video-list-wrapper"
+        style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+      >
+        {videoList.map((video, index) => {
+          const ratio = aspectRatios[index];
+          let ratioClass = "";
 
-                  <VideoInfoOverlay
-                    video={video}
-                    formatCount={formatCount}
-                    isDraggingVideo={isDraggingVideo}
-                  />
-                </div>
+          if (ratio != null) {
+            if (ratio < 1) ratioClass = "vdv-portrait";
+            else if (ratio > 1.5) ratioClass = "vdv-landscape";
+            else if (ratio > 1.2) ratioClass = "vdv-square-wide";
+            else ratioClass = "vdv-square";
+          }
 
-                <VideoSideActions
+          return (
+            <div key={video.maTinDang || index} className={`video-item ${ratioClass}`}>
+              <div
+                className={`vdv-container ${ratioClass} ${
+                  showComments ? "comment-open" : ""
+                }`}
+              >
+                <VideoPlayer
                   video={video}
-                  user={user}
-                  token={token}
-                  isFollowing={index === currentIndex ? isFollowing : false}
+                  index={index}
+                  currentIndex={currentIndex}
+                  videoElsRef={videoElsRef}
+                  videoRef={videoRef}
+                  setAspectRatios={setAspectRatios}
+                  handleVideoClick={handleVideoClick}
+                  showControls={showControls}
+                  handleDragStateChange={setIsDraggingVideo}
+                />
+
+                <VideoInfoOverlay
+                  video={video}
                   formatCount={formatCount}
-                  onFollow={handleToggleFollow}
-                  onLike={() => handleLike(video)}
-                  onSave={() => handleToggleSave(video)}
-                  onComment={() => setShowComments((prev) => !prev)}
-                  onShare={() => setShowSharePanel(true)}
-                  onShowDetail={() => handleShowDetail(video.maTinDang)}
+                  isDraggingVideo={isDraggingVideo}
                 />
               </div>
-            );
-          })}
-        </div>
+
+              <VideoSideActions
+                video={video}
+                user={user}
+                token={token}
+                isFollowing={index === currentIndex ? isFollowing : false}
+                formatCount={formatCount}
+                onFollow={handleToggleFollow}
+                onLike={() => handleLike(video)}
+                onSave={() => handleToggleSave(video)}
+                onComment={() => setShowComments((prev) => !prev)}
+                onShare={() => setShowSharePanel(true)}
+                onShowDetail={() => handleShowDetail(video.maTinDang)}
+              />
+            </div>
+          );
+        })}
       </div>
-
-      {showHeart && (
-        <div className="vdv-heart-animation">
-          <IoHeart size={80} color="#ff4d6d" />
-        </div>
-      )}
-
-      {showComments && (
-        <CommentDrawer
-          maTinDang={videoData?.maTinDang}
-          onClose={() => setShowComments(false)}
-        />
-      )}
-
-      <VideoDetailsPanel
-        isOpen={showDetailPanel}
-        onClose={() => setShowDetailPanel(false)}
-        loading={loadingDetail}
-        data={detailData}
-      />
-
-      {showSharePanel && videoData && (
-        <SharePanel
-          key={videoData.maTinDang}
-          isOpen={showSharePanel}
-          onClose={() => setShowSharePanel(false)}
-          tinDangId={videoData.maTinDang}
-          displayMode="Video"
-          index={currentIndex}
-          previewTitle={videoData.tieuDe}
-          previewImage={videoThumbnail}
-          previewVideo={videoData.videoUrl}
-          disableBodyScrollLock={true}
-          onShareSuccess={() => handleOptimisticShareUpdate(videoData.maTinDang)}
-        />
-      )}
     </div>
-  );
+
+{/* ❤️ Animation tim */}
+    {showHeart && (
+      <div className="vdv-heart-animation">
+        <IoHeart size={80} color="#ff4d6d" />
+      </div>
+    )}
+
+    {/* ===================== COMMENT DRAWER ===================== */}
+    {showComments && (
+      <CommentDrawer
+        maTinDang={videoData?.maTinDang}
+        onClose={() => setShowComments(false)}
+      />
+    )}
+
+    {/* ===================== DETAIL PANEL ===================== */}
+    <VideoDetailsPanel
+      isOpen={showDetailPanel}
+      onClose={() => setShowDetailPanel(false)}
+      loading={loadingDetail}
+      data={detailData}
+    />
+
+    {/* ===================== SHARE PANEL ===================== */}
+    {showSharePanel && videoData && (
+      <SharePanel
+        key={videoData.maTinDang}
+        isOpen={showSharePanel}
+        onClose={() => setShowSharePanel(false)}
+        tinDangId={videoData.maTinDang}
+        displayMode="Video"
+        index={currentIndex}
+        previewTitle={videoData.tieuDe}
+        previewImage={videoThumbnail}
+        previewVideo={videoData.videoUrl}
+        disableBodyScrollLock={true}
+        onShareSuccess={() =>
+          handleOptimisticShareUpdate(videoData.maTinDang)
+        }
+      />
+    )}
+
+    {/* ======================================================== */}
+    {/* ✅ THANH ĐIỀU HƯỚNG BÊN PHẢI (CODE 2 ĐÃ GHÉP) */}
+    {/* ======================================================== */}
+    <div className="vdv-right-nav">
+      <button
+        className="vdv-nav-btn"
+        onClick={() => goToIndex(currentIndex - 1)}
+        disabled={currentIndex === 0 || isAnimatingRef.current}
+        title="Video trước"
+      >
+        <IoChevronUp size={24} />
+      </button>
+      <div className="vdv-nav-divider"></div>
+
+      <button
+        className="vdv-nav-btn"
+        onClick={() => goToIndex(currentIndex + 1)}
+        disabled={
+          currentIndex === videoList.length - 1 || isAnimatingRef.current
+        }
+        title="Video tiếp theo"
+      >
+        <IoChevronDown size={24} />
+      </button>
+    </div>
+  </div>
+);
 };
 
 export default VideoDetailViewer;

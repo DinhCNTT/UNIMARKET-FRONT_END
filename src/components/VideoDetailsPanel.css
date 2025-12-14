@@ -1,5 +1,10 @@
+/* ========================================================= */
+/*                 IMPORT FONT QUỐC DÂN (INTER)              */
+/* ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 :root {
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  /* Ưu tiên Inter, sau đó đến các font hệ thống chuẩn đẹp */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
   --color-primary: #f59e0b;          /* Cam */
@@ -22,11 +27,18 @@
   justify-content: center;
   align-items: center;
   z-index: 999;
+  /* Hiệu ứng mờ nền nhẹ */
+  backdrop-filter: blur(2px);
 }
 
 .video-detail-panel {
   background-color: var(--theme-bg-primary);
   color: var(--theme-text-primary);
+
+  /* Áp dụng font mới và làm mịn chữ */
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased; /* Giúp chữ sắc nét trên Mac/iOS */
+  -moz-osx-font-smoothing: grayscale;
 
   width: 650px;
   height: 90vh;
@@ -40,7 +52,7 @@
   -webkit-overflow-scrolling: touch;
 
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25); /* Shadow mềm mại hơn */
 
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -98,14 +110,19 @@
 
 .video-detail-header h3 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700; /* Đậm hơn chút để nổi bật tiêu đề */
   color: var(--theme-text-primary);
+  margin: 0;
+  letter-spacing: -0.025em; /* Thu hẹp khoảng cách chữ giúp hiện đại hơn */
 }
 
 .close-btn {
   cursor: pointer;
   color: var(--theme-text-secondary);
   transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .close-btn:hover {
   color: var(--theme-text-primary);
@@ -132,7 +149,10 @@
 }
 
 .category-info {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase; /* Chuyên nghiệp hơn cho nhãn */
+  letter-spacing: 0.02em;
   color: var(--theme-text-secondary);
   background-color: var(--theme-bg-hover);
 
@@ -144,15 +164,16 @@
 
 .title {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700; /* Tăng độ đậm */
   color: var(--theme-text-primary);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
 }
 
 .price {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px; /* To hơn chút */
+  font-weight: 800; /* Rất đậm để nhấn mạnh */
   color: var(--color-price);
 
   margin-top: -12px;
@@ -160,6 +181,7 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
+  letter-spacing: -0.03em; /* Số tiền đứng gần nhau trông đẹp hơn */
 }
 
 .note {
@@ -173,7 +195,7 @@
 /* ========================================================= */
 .video-detail-info {
   display: grid;
-  gap: 8px;
+  gap: 10px; /* Tăng khoảng cách chút */
   margin-top: -8px;
 }
 
@@ -187,18 +209,23 @@
 
   background-color: var(--theme-bg-hover);
   border: 1px solid var(--theme-border-color);
+  padding: 14px 16px; /* Padding rộng hơn chút cho dễ nhìn */
 
-  padding: 12px;
   border-radius: 10px;
+  transition: border-color 0.2s;
+}
+/* Hiệu ứng focus nhẹ */
+.video-detail-info-item:hover {
+    border-color: var(--color-primary);
 }
 
 .video-detail-info-item .info-icon {
-  font-size: 16px;
+  font-size: 18px;
   color: var(--color-primary);
 }
 
 .video-detail-info-item .value {
-  font-weight: 500;
+  font-weight: 600; /* Đậm hơn để phân biệt với label */
 }
 
 /* ========================================================= */
@@ -206,15 +233,16 @@
 /* ========================================================= */
 .section-title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--theme-text-primary);
   margin-bottom: 12px;
+  letter-spacing: -0.01em;
 }
 
 .seller-section,
 .description-section {
   border-top: 1px solid var(--theme-border-color);
-  padding-top: 20px;
+  padding-top: 24px;
 }
 
 /* ========================================================= */
@@ -223,12 +251,12 @@
 .seller-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .seller-avatar {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--theme-border-color);
@@ -237,12 +265,14 @@
 .seller-details {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .seller-name {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--theme-text-primary);
+  line-height: 1.2;
 }
 
 /* ========================================================= */
@@ -252,7 +282,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .contact-btn {
@@ -264,7 +294,7 @@
   font-size: 15px;
   font-weight: 600;
 
-  padding: 10px 16px;
+  padding: 12px 20px; /* Nút to hơn, dễ bấm hơn */
   border-radius: 10px;
   border: 1px solid transparent;
 
@@ -276,16 +306,21 @@
 }
 
 .contact-btn .btn-icon {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /* Phone = Primary */
 .contact-btn.phone {
   background-color: var(--color-primary);
   color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); /* Shadow nhẹ */
 }
 .contact-btn.phone:hover {
   background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+.contact-btn.phone:active {
+    transform: translateY(0);
 }
 
 /* Chat = Secondary */
@@ -296,11 +331,13 @@
 }
 .contact-btn.chat:hover {
   background-color: var(--theme-bg-primary);
+  border-color: var(--theme-text-secondary);
 }
 .contact-btn.chat:disabled {
   background-color: var(--theme-bg-hover);
   color: var(--theme-text-secondary);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* ========================================================= */
@@ -309,7 +346,8 @@
 .description-text {
   font-size: 15px;
   color: var(--theme-text-secondary);
-  line-height: 1.7;
+  line-height: 1.65; /* Tăng line-height cho dễ đọc */
+  font-weight: 400;
 
   white-space: pre-line;
   word-break: break-word;
@@ -332,6 +370,7 @@
   color: var(--color-primary-dark);
 
   cursor: pointer;
+  padding: 0;
 }
 .toggle-btn:hover {
   text-decoration: underline;
@@ -346,6 +385,7 @@
   text-align: center;
   font-size: 16px;
   color: var(--theme-text-secondary);
+  font-weight: 500;
 }
 
 /* ========================================================= */
@@ -367,7 +407,7 @@
 
 .carousel-track {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
   scroll-behavior: smooth;
 
@@ -402,10 +442,12 @@
 
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent; /* Chuẩn bị cho hover */
 }
 .carousel-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-color: var(--theme-border-color);
 }
 
 .carousel-img {
@@ -433,7 +475,7 @@
   background-color: var(--theme-bg-primary);
   color: var(--theme-text-primary);
 
-  border: none;
+  border: 1px solid var(--theme-border-color); /* Thêm viền nhẹ */
   cursor: pointer;
 
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -453,8 +495,8 @@
   height: 16px;
 }
 
-.carousel-arrow-left  { left: -10px; }
-.carousel-arrow-right { right: -10px; }
+.carousel-arrow-left  { left: -12px; }
+.carousel-arrow-right { right: -12px; }
 
 .carousel-arrow.hidden { display: none; }
 
@@ -468,7 +510,8 @@
   width: 100vw;
   height: 100vh;
 
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.9); /* Tối hơn chút cho tập trung */
+  backdrop-filter: blur(5px);   /* Làm mờ nền phía sau */
 
   display: flex;
   justify-content: center;
@@ -492,16 +535,17 @@
   max-width: 100%;
   max-height: 85vh;
   border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
 .ic-lightbox-close,
 .ic-lightbox-prev,
 .ic-lightbox-next {
   position: absolute;
-  padding: 10px;
+  padding: 12px;
 
-  background: rgba(30,30,30,0.6);
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 50%;
 
   color: #fff;
@@ -511,27 +555,28 @@
   align-items: center;
   justify-content: center;
 
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 .ic-lightbox-close:hover,
 .ic-lightbox-prev:hover,
 .ic-lightbox-next:hover {
-  background: rgba(0,0,0,0.8);
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .ic-lightbox-close {
-  top: -15px;
-  right: -15px;
+  top: -20px;
+  right: -20px;
 }
 
 .ic-lightbox-prev {
   top: 50%;
-  left: -50px;
+  left: -60px;
   transform: translateY(-50%);
 }
 
 .ic-lightbox-next {
   top: 50%;
-  right: -50px;
+  right: -60px;
   transform: translateY(-50%);
 }
