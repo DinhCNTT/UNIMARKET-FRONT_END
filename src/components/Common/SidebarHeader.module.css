@@ -1,0 +1,353 @@
+/* src/pages/VideoStandalone/components/SidebarHeader.module.css */
+
+/* =========================================
+   1. WRAPPER TỔNG (Compact Version)
+   ========================================= */
+.userHeaderWrapper {
+    width: 100%;
+    padding: 10px 12px; 
+    display: flex;
+    justify-content: flex-end; /* Căn phải */
+    background-color: transparent;
+    position: relative;
+    z-index: 50;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* =========================================
+   2. CONTAINER CHÍNH (VIÊN THUỐC GỌN)
+   ========================================= */
+.userHeaderContainer {
+    display: flex;
+    align-items: center;
+    
+    /* Hiệu ứng trong suốt (Glassmorphism) */
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    border-radius: 999px;
+    padding: 4px 8px; 
+    
+    border: 1px solid rgba(255, 255, 255, 0.6); 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05), 
+                0 1px 2px rgba(0, 0, 0, 0.03);
+    
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.userHeaderContainer:hover {
+    background-color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   3. LOGO CHỮ U (NHỎ GỌN)
+   ========================================= */
+.customULogoWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; 
+    height: 30px;
+    cursor: pointer;
+    margin-right: 6px; 
+    background-color: rgba(0,0,0,0.03);
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.customULogoWrapper:hover {
+    background-color: rgba(0,0,0,0.06);
+}
+
+.uLogo {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-weight: 900;
+    font-size: 20px; 
+    line-height: 1;
+    letter-spacing: -0.5px;
+    
+    background: linear-gradient(90deg, #121212 50%, #fca728 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* =========================================
+   4. CÁC ICONS (TINH GỌN)
+   ========================================= */
+.headerIcons {
+    display: flex;
+    align-items: center;
+    gap: 4px; 
+    padding-right: 8px;
+}
+
+.iconBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; 
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px; 
+    color: #161823;
+    transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+    background-color: rgba(22, 24, 35, 0.06);
+    color: #000;
+}
+
+/* Đường gạch dọc ngăn cách */
+.headerSeparator {
+    width: 1px;
+    height: 18px; 
+    background-color: rgba(22, 24, 35, 0.12);
+    margin: 0 4px;
+}
+
+/* =========================================
+   5. KHU VỰC AVATAR USER
+   ========================================= */
+.userInfoArea {
+    position: relative;
+    padding: 2px;
+    cursor: pointer;
+    margin-left: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.currentUserAvatar {
+    width: 32px; 
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1); 
+    
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.userInfoArea:hover .currentUserAvatar {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 2px #fca728;
+}
+
+/* =========================================
+   6. MENU DROPDOWN (COMPACT)
+   ========================================= */
+.userDropdown {
+    position: absolute;
+    top: 135%; 
+    right: 0;
+    width: 220px; 
+    
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 6px; 
+    
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 
+                0 2px 4px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0,0,0,0.06);
+    
+    z-index: 1000;
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+}
+
+.userDropdown::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 25px;
+    background: transparent;
+}
+
+.userDropdown::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    right: 14px;
+    width: 10px;
+    height: 10px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    border-left: 1px solid rgba(0,0,0,0.06);
+}
+
+.dropdownHeader {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(22, 24, 35, 0.06);
+    margin-bottom: 4px;
+}
+
+.dropdownUserName {
+    font-weight: 700;
+    font-size: 15px; 
+    color: #161823;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+    padding: 10px 10px; 
+    font-size: 14px; 
+    font-weight: 600;
+    color: #161823;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.dropdownItem:hover {
+    background-color: rgba(22, 24, 35, 0.04);
+    transform: translateX(2px);
+}
+
+.dropdownItem svg {
+    font-size: 18px; 
+    color: #161823;
+}
+
+/* Logout Item */
+.dropdownItem:last-child:hover {
+    background-color: rgba(254, 44, 85, 0.06);
+    color: #fca728;
+}
+.dropdownItem:last-child:hover svg {
+    color: #fca728;
+}
+
+/* =========================================
+   7. BUTTON ĐĂNG NHẬP (STYLE TIKTOK)
+   ========================================= */
+.authButtons {
+    padding-left: 6px;
+}
+
+.loginBtnSmall {
+    background-color: #fca728;
+    color: white;
+    border: none;
+    border-radius: 4px; /* Bo góc nhẹ hơn giống ảnh */
+    padding: 6px 20px; /* Rộng hơn chút */
+    font-size: 16px; /* Chữ to rõ */
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    box-shadow: none; /* Bỏ shadow để giống nút flat */
+    transition: background-color 0.2s ease;
+    min-width: 100px; /* Đảm bảo nút không quá bé */
+}
+
+.loginBtnSmall:hover {
+    background-color: #fca728; /* Màu đậm hơn khi hover */
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-8px) scale(0.98); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+/* =========================================
+   8. MODAL XÁC NHẬN ĐĂNG XUẤT (NEW)
+   ========================================= */
+.logoutModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Đảm bảo nằm trên cùng */
+    animation: fadeInModal 0.2s ease-out;
+}
+
+.logoutModalContent {
+    background-color: #fff;
+    width: 310px; /* Kích thước giống ảnh */
+    border-radius: 8px;
+    padding: 32px 24px 24px 24px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.logoutModalTitle {
+    font-size: 18px;
+    font-weight: 700; /* In đậm */
+    color: #161823;
+    margin: 0 0 24px 0;
+    line-height: 1.3;
+}
+
+.logoutModalActions {
+    display: flex;
+    justify-content: center;
+    gap: 8px; /* Khoảng cách giữa 2 nút */
+}
+
+.modalBtn {
+    flex: 1;
+    height: 40px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+/* Nút Hủy */
+.btnCancel {
+    background-color: #fff;
+    border: 1px solid rgba(22, 24, 35, 0.12);
+    color: #161823;
+}
+
+.btnCancel:hover {
+    background-color: rgba(22, 24, 35, 0.03);
+    border-color: rgba(22, 24, 35, 0.2);
+}
+
+/* Nút Đăng xuất */
+.btnLogout {
+    background-color: #fff;
+    border: 1px solid rgba(22, 24, 35, 0.12);
+    color: #fca728; /* Chữ màu đỏ */
+}
+
+.btnLogout:hover {
+    background-color: rgba(254, 44, 85, 0.04);
+    border-color: #fca728;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
