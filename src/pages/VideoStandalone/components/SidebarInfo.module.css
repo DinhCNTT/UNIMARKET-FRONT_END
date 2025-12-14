@@ -10,7 +10,7 @@
 
 /* --- PHẦN 1: FIXED HEADER GROUP (Không cuộn) --- */
 .fixedHeaderGroup {
-    flex-shrink: 0; /* Không bị co lại */
+    flex-shrink: 0; 
     border-bottom: 1px solid #f1f1f1;
     background: #fff;
     z-index: 10;
@@ -79,53 +79,253 @@
 }
 .copyBtn { border: none; background: none; font-weight: 700; cursor: pointer; }
 
-/* Tabs */
-.tabs { display: flex; border-bottom: 1px solid #e3e3e4; }
+/* --- TABS --- */
+.tabs { 
+    display: flex; 
+    border-bottom: 1px solid #e3e3e4;
+    margin-top: 60px; 
+}
+
 .tabItem {
     flex: 1;
     padding: 12px;
     text-align: center;
-    background: none; border: none;
-    font-weight: 600; font-size: 14px; color: rgba(22, 24, 35, 0.5);
-    cursor: pointer; position: relative;
-}
-.tabItem.active { color: #161823; }
-.tabItem.active::after {
-    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #161823;
+    background: none; 
+    border: none;
+    font-weight: 600; 
+    font-size: 14px; 
+    color: rgba(22, 24, 35, 0.5);
+    cursor: pointer; 
+    position: relative;
 }
 
-/* --- PHẦN 2: SCROLL CONTENT (Chỉ phần này cuộn) --- */
+.tabItem.active { 
+    color: #161823; 
+}
+
+.tabItem.active::after {
+    content: ''; 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 2px; 
+    background: #161823;
+}
+
+/* --- PHẦN 2: SCROLL CONTENT --- */
 .scrollContent {
-    flex: 1; /* Chiếm hết khoảng trống còn lại */
-    overflow-y: auto; /* Scroll dọc */
-    background-color: #f8f8f8;
+    flex: 1; 
+    overflow-y: auto; 
+    background-color: #ffff;
     padding: 20px;
-    
-    /* Tùy chỉnh thanh cuộn cho đẹp */
     scrollbar-width: thin;
-    scrollbar-color: #b0b0b0 transparent;
+    scrollbar-color: #ffff transparent;
 }
 .scrollContent::-webkit-scrollbar { width: 6px; }
 .scrollContent::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
 
-/* --- PHẦN 3: FOOTER INPUT (Cố định dưới cùng) --- */
-.footerInputArea {
+
+/* --- PHẦN 3: FOOTER INPUT (ĐÃ CHỈNH SỬA GỌN HƠN) --- */
+
+.commentInputArea {
     flex-shrink: 0;
-    padding: 20px;
+    padding: 10px 20px; 
     background: #fff;
-    border-top: 1px solid #e3e3e4;
-    display: flex; align-items: center; gap: 10px;
+    border-top: 1px solid #f1f1f1;
+    display: flex; 
+    align-items: flex-end; 
+    gap: 12px;
+    border-top: none;
+}
+
+.inputWrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #f1f1f2;
+    border-radius: 8px; /* Bo góc ít hơn chút cho giống ảnh 2 */
+    
+    /* QUAN TRỌNG: Giảm padding để khung thấp lại */
+    padding: 8px 12px; 
 }
 
 .inputBox {
-    flex: 1;
-    background: #f1f1f2;
-    border: none; padding: 12px 15px;
-    border-radius: 8px; outline: none; font-size: 14px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #161823;
+    font-family: inherit;
+    resize: none; 
+    
+    /* Chỉnh min-height nhỏ lại để khớp với 1 dòng text */
+    min-height: 18px; 
+    max-height: 100px; 
+    overflow-y: auto; 
+    line-height: 1.4; /* Line height vừa đủ */
+    padding: 0;
+    margin: 0;
+}
+
+.charCounter {
+    align-self: flex-end; 
+    font-size: 10px;
+    color: #a0a0a0;
+    margin-top: 2px; /* Giảm khoảng cách margin */
+    font-weight: 400;
+}
+
+.limitReached {
+    color: #ff9f1c; 
 }
 
 .postBtn {
-    background: none; border: none;
-    color: #fe2c55; font-weight: 600; cursor: pointer;
-    font-size: 14px;
+    /* Canh chỉnh nút Đăng nằm ngang hàng với dòng chữ khi chưa xuống dòng */
+    margin-bottom: 8px; 
+    background: none;
+    border: none;
+    color: #ff9f1c; /* Màu cam giống ảnh bạn gửi */
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Nếu nút bị mờ khi chưa nhập gì */
+.postBtn:disabled {
+    color: #ff9f1c; /* Hoặc màu xám nhạt */
+    cursor: default;
+}
+/* ================= OVERLAY ================= */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px); /* Tăng blur nhẹ để nền nội dung nổi bật hơn */
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeInOverlay 0.2s ease-out forwards;
+}
+
+/* ================= MODAL BOX ================= */
+.modalContent {
+    background: #ffffff;
+    width: 340px; /* Tăng nhẹ chiều rộng để chữ không bị bó hẹp */
+    max-width: 90%;
+    border-radius: 16px; /* Bo góc mềm mại hơn chút */
+    padding: 28px 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); /* Shadow sâu hơn tạo chiều sâu 3D */
+    text-align: center;
+    
+    /* 🔥 CẢI TIẾN PHÔNG CHỮ QUAN TRỌNG NHẤT */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    -webkit-font-smoothing: antialiased; /* Giúp chữ mượt mà hơn trên Mac */
+    -moz-osx-font-smoothing: grayscale;
+
+    transform: scale(0.9);
+    opacity: 0;
+    animation: popInModal 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* ================= TEXT ================= */
+.modalTitle {
+    font-size: 20px; /* Tăng size tiêu đề lên 20px cho rõ ràng */
+    font-weight: 700;
+    color: #111827; /* Màu đen than (không phải đen tuyền) nhìn sang hơn */
+    margin: 0 0 10px 0;
+    letter-spacing: -0.025em; /* Thu hẹp khoảng cách chữ tiêu đề một xíu cho hiện đại */
+    line-height: 1.3;
+}
+
+.modalDesc {
+    font-size: 15px; /* Size 15px đọc dễ chịu hơn 14px trên mobile */
+    font-weight: 400;
+    color: #6b7280; /* Màu xám trung tính, tách biệt rõ với tiêu đề */
+    line-height: 1.6; /* Tăng khoảng cách dòng cho thoáng mắt */
+    margin-bottom: 28px;
+    padding: 0 10px; /* Thêm padding 2 bên để chữ không sát lề quá */
+}
+
+/* ================= ACTION BUTTONS ================= */
+.modalActions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Nút chung */
+.btnCancel,
+.btnDelete {
+    flex: 1;
+    padding: 12px 16px; /* Tăng padding ngang */
+    font-size: 15px; /* Đồng bộ size chữ nút với nội dung */
+    font-weight: 600;
+    border-radius: 12px; /* Bo góc nút nhiều hơn chút */
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    
+    /* Đảm bảo nút dùng cùng phông chữ đẹp */
+    font-family: inherit; 
+    letter-spacing: 0.3px; /* Giãn chữ nút ra một chút cho dễ đọc */
+}
+
+/* ================= CANCEL – XÁM NHẸ ================= */
+.btnCancel {
+    background-color: #f3f4f6;
+    color: #374151; /* Màu chữ đậm hơn một chút để tăng độ tương phản */
+}
+
+.btnCancel:hover {
+    background-color: #e5e7eb;
+    color: #111827;
+}
+
+.btnCancel:active {
+    transform: scale(0.98);
+}
+
+/* ================= DELETE – VÀNG CAM NỔI BẬT ================= */
+.btnDelete {
+    background: linear-gradient(135deg, #ffb703, #fb8500);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(251, 133, 0, 0.3); /* Giảm bóng lại chút cho tinh tế */
+}
+
+.btnDelete:hover {
+    background: linear-gradient(135deg, #fca311, #f77f00);
+    box-shadow: 0 6px 16px rgba(247, 127, 0, 0.4);
+    transform: translateY(-1px); /* Hiệu ứng nhấc nút lên nhẹ khi hover */
+}
+
+.btnDelete:active {
+    transform: scale(0.98) translateY(0);
+}
+
+/* ================= ANIMATIONS (GIỮ NGUYÊN) ================= */
+@keyframes fadeInOverlay {
+    from {
+        background-color: rgba(0, 0, 0, 0);
+        backdrop-filter: blur(0);
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+}
+
+@keyframes popInModal {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }

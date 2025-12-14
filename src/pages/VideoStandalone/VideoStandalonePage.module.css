@@ -52,7 +52,7 @@
 
 /* ... Giữ nguyên các class khác như backButton, sidebarSection ... */
 .sidebarSection {
-    width: 360px;
+    width: 380px;
     background-color: #fff;
     border-left: 1px solid #e0e0e0;
     flex-shrink: 0;

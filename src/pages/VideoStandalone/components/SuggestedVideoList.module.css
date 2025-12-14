@@ -1,88 +1,160 @@
+/* --- CẤU TRÚC CHUNG --- */
 .gridContainer {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Chia 2 cột */
-    gap: 12px;
-    padding: 15px 0;
+    grid-template-columns: repeat(2, 1fr); /* 2 cột đều nhau */
+    gap: 12px; /* Khoảng cách chuẩn mobile */
+    padding: 12px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .card {
     cursor: pointer;
-    transition: opacity 0.2s;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.card:hover {
-    opacity: 0.8; /* Hiệu ứng hover nhẹ */
+/* Hiệu ứng click xịn hơn */
+.card:active {
+    transform: scale(0.97);
+    opacity: 0.9;
 }
 
+/* --- PHẦN HÌNH ẢNH & VIDEO --- */
 .imageWrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 9 / 16; /* Tỷ lệ chuẩn TikTok */
-    border-radius: 8px;
+    
+    /* Tỉ lệ 3:4 (Đúng theo yêu cầu ngắn lại) */
+    aspect-ratio: 3 / 4; 
+    
+    border-radius: 10px;
     overflow: hidden;
-    background-color: #eee;
+    background-color: #f2f2f2;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04); 
 }
 
 .image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    /* Không cần transition transform ở đây nữa vì video sẽ đè lên */
 }
 
-.viewsOverlay {
+/* --- MỚI: Video Preview đè lên ảnh --- */
+.previewVideo {
     position: absolute;
-    bottom: 5px;
-    left: 5px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Đảm bảo video full khung không bị méo */
+    z-index: 2; /* Nằm trên ảnh */
+    border-radius: 10px;
+    background-color: #000; /* Nền đen tránh nháy trắng khi load video */
 }
 
+/* --- PHẦN THÔNG TIN --- */
 .info {
-    margin-top: 8px;
+    margin-top: 10px;
+    padding: 0 4px;
 }
 
+/* Tiêu đề */
 .title {
-    font-size: 13px;
-    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.4;
-    margin: 0 0 4px 0;
+    color: #161823;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
     
-    /* Cắt dòng nếu tên quá dài (tối đa 2 dòng) */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    color: #161823; /* Màu chữ đen TikTok */
+    text-overflow: ellipsis;
 }
 
-/* Hỗ trợ Dark mode nếu sau này cần */
-:global([data-theme='dark']) .title {
-    color: #fff;
-}
-
-.author {
+/* Hàng Người đăng */
+.authorRow {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    color: #888;
+    gap: 8px;
+    margin-bottom: 6px;
 }
 
 .smallAvatar {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     object-fit: cover;
+    background-color: #eee;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.authorName {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Hàng Thống kê */
+.statsRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #86878b;
+}
+
+.statsText {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.statsRow svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 1px;
+}
+
+.statsRow svg path {
+    stroke: #86878b;
+    stroke-width: 3;
+}
+
+.dot {
+    font-size: 10px;
+    margin: 0 3px;
+    opacity: 0.6;
 }
 
 .loading {
-    text-align: center;
-    padding: 20px;
-    color: #888;
+    display: flex;
+    justify-content: center;
+    padding: 30px;
+    color: #999;
     font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    grid-column: 1 / -1;
 }
+
+/* --- DARK MODE SUPPORT --- */
+:global([data-theme='dark']) .title { color: #f1f1f2; }
+:global([data-theme='dark']) .authorName { color: #aaa; }
+:global([data-theme='dark']) .statsRow,
+:global([data-theme='dark']) .statsRow svg path { color: #777; stroke: #777; }
+:global([data-theme='dark']) .imageWrapper { background-color: #2f2f2f; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }

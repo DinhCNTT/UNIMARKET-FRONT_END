@@ -1,197 +1,305 @@
-import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback
+} from 'react';
+
+import {
+  useParams,
+  useNavigate,
+  useSearchParams
+} from 'react-router-dom';
+
 import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5';
 
-// --- IMPORT CONTEXT & CSS ---
+// --- CONTEXT & CSS ---
 import { AuthContext } from '../../context/AuthContext';
 import styles from './VideoStandalonePage.module.css';
 
-// --- IMPORT COMPONENTS ---
+// --- COMPONENTS ---
 import SidebarInfo from './components/SidebarInfo';
 import VideoPlayerSection from './components/VideoPlayerSection';
-import TopNavbarUniMarket from '../../components/TopNavbarUniMarket'; 
+import TopNavbarUniMarket from '../../components/TopNavbarUniMarket';
 
-const API_BASE = "http://localhost:5133";
+const API_BASE = 'http://localhost:5133';
 
 const VideoStandalonePage = () => {
+  // --- ROUTER ---
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // 🔥 Lấy commentId từ URL (?commentId=10)
+  const highlightCommentId = searchParams.get('commentId');
+
+  // --- CONTEXT ---
   const { token, user } = useContext(AuthContext);
 
-  // --- STATE QUẢN LÝ DANH SÁCH VIDEO ---
-  // Thay vì chỉ 1 videoData, ta quản lý 1 danh sách để Scroll Snap
+  // --- STATE ---
   const [videosList, setVideosList] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(0); // Index của video đang xem
+  const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  
-  // Ref để theo dõi container cuộn và observer
-  const containerRef = useRef(null);
-  
-  // State quản lý Tab của Sidebar
-  const [activeTab, setActiveTab] = useState('comments'); 
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // 1. Fetch Video Đầu Tiên (Dựa trên URL)
+  // Sidebar Tab
+  const [activeTab, setActiveTab] = useState('comments');
+
+  // Scroll container
+  const containerRef = useRef(null);
+
+  // ======================================================
+  // 1. LOAD MORE VIDEOS (Infinite Scroll)
+  // ======================================================
+  const loadMoreVideos = useCallback(
+    async (currentList) => {
+      if (isLoadingMore || !currentList || !hasMore) return;
+
+      try {
+        setIsLoadingMore(true);
+        console.log('Đang tải thêm video đề xuất...');
+
+        const excludedIds = currentList.map(v => v.maTinDang);
+
+        const res = await axios.post(
+          `${API_BASE}/api/Recommendation/foryou`,
+          {
+            PageSize: 5,
+            ExcludedIds: excludedIds
+          }
+        );
+
+        if (res.data && res.data.length > 0) {
+          setVideosList(prev => {
+            const existingIds = new Set(prev.map(v => v.maTinDang));
+            const uniqueNewVideos = res.data.filter(
+              v => !existingIds.has(v.maTinDang)
+            );
+
+            if (uniqueNewVideos.length === 0) {
+              setHasMore(false);
+              return prev;
+            }
+
+            return [...prev, ...uniqueNewVideos];
+          });
+        } else {
+          setHasMore(false);
+        }
+      } catch (err) {
+        console.error('Lỗi load more:', err);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [isLoadingMore, hasMore]
+  );
+
+  // ======================================================
+  // 2. INIT DATA (Load video từ URL)
+  // ======================================================
   useEffect(() => {
     const initData = async () => {
-      // Nếu ID thay đổi mà activeIndex chưa khớp (trường hợp user paste link mới), reset lại list
-      // Tuy nhiên, logic replaceState bên dưới sẽ đổi URL, nên ta chỉ fetch lại nếu videosList đang rỗng
-      if (!id) return;
-
-      // Nếu list đã có dữ liệu và video đang xem khớp với ID thì không fetch lại (tránh loop khi replaceState)
-      if (videosList.length > 0 && videosList[activeIndex]?.maTinDang == id) {
-          return;
+      // Tránh fetch lại khi replaceState
+      if (
+        id &&
+        videosList.length > 0 &&
+        videosList[activeIndex]?.maTinDang == id
+      ) {
+        return;
       }
 
       try {
         setLoading(true);
-        // Load video chính từ URL
-        const resMain = await axios.get(`${API_BASE}/api/Video/${id}`, {
-             headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-        
-        // Khởi tạo mảng với video đầu tiên
-        setVideosList([resMain.data]); 
+
+        const resMain = await axios.get(
+          `${API_BASE}/api/Video/${id}`,
+          {
+            headers: token
+              ? { Authorization: `Bearer ${token}` }
+              : {}
+          }
+        );
+
+        const firstVideo = resMain.data;
+
+        setVideosList([firstVideo]);
         setActiveIndex(0);
 
+        // Preload video tiếp theo
+        loadMoreVideos([firstVideo]);
       } catch (error) {
-        console.error("Lỗi tải video:", error);
+        console.error('Lỗi tải video ban đầu:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    initData();
-    // Reset tab về comment khi vào trang mới
+    if (id) initData();
+
+    // Reset tab khi vào trang mới
     setActiveTab('comments');
-  }, [id, token]); 
+  }, [id, token]);
 
-  // 2. Xử lý khi Sidebar load được danh sách đề xuất
-  // Logic: Nối các video đề xuất vào cuối videosList để người dùng lướt tiếp
-  const handleSuggestedLoaded = useCallback((suggestedVideos) => {
-      if (suggestedVideos && suggestedVideos.length > 0) {
-          setVideosList(prev => {
-              // Lọc trùng lặp để tránh thêm video đã có trong list
-              const currentIds = new Set(prev.map(v => v.maTinDang));
-              const newVideos = suggestedVideos.filter(v => !currentIds.has(v.maTinDang));
-              
-              if (newVideos.length === 0) return prev;
-              return [...prev, ...newVideos];
-          });
-      }
-  }, []);
-
-  // 3. Intersection Observer: Phát hiện video đang xem
+  // ======================================================
+  // 3. AUTO SWITCH TAB KHI CÓ commentId
+  // ======================================================
   useEffect(() => {
-      const options = {
-          root: containerRef.current, // Khung scroll (videoSection)
-          threshold: 0.6 // Video hiện > 60% thì tính là active
-      };
+    if (highlightCommentId) {
+      setActiveTab('comments');
+    }
+  }, [highlightCommentId]);
 
-      const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                  // Lấy index từ attribute data-index
-                  const index = parseInt(entry.target.getAttribute('data-index'));
-                  
-                  if (!isNaN(index)) {
-                    setActiveIndex(index);
-                    
-                    // Cập nhật URL thầm lặng (không reload trang) khớp với video đang xem
-                    const currentVideo = videosList[index]; // Lưu ý: videosList trong closure này có thể cũ nếu không để dependency đúng, nhưng ta lấy index là đủ
-                    
-                    // Để lấy data mới nhất, ta dùng hàm setVideosList callback hoặc truy cập videosList từ scope (nhờ dependency bên dưới)
-                    if (videosList[index]) {
-                        // Dùng replaceState để đổi URL mà không re-render lại component cha
-                        window.history.replaceState(null, "", `/video-standalone/${videosList[index].maTinDang}`);
-                    }
-                  }
-              }
-          });
-      }, options);
+  // ======================================================
+  // 4. INTERSECTION OBSERVER (Scroll Snap + Infinite)
+  // ======================================================
+  useEffect(() => {
+    const options = {
+      root: containerRef.current,
+      threshold: 0.6
+    };
 
-      // Gắn observer vào các phần tử video
-      const elements = document.querySelectorAll(`.${styles.videoSnapItem}`);
-      elements.forEach(el => observer.observe(el));
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
 
-      return () => {
-          if (observer) observer.disconnect();
-      };
-  }, [videosList]); // Chạy lại observer khi danh sách video thay đổi (được nối thêm)
+        const index = parseInt(
+          entry.target.getAttribute('data-index')
+        );
 
-  // 4. Các hàm xử lý sự kiện
-  const handleBack = () => {
-    // Nếu có history thì back, không thì về trang danh sách
-    if (window.history.length > 2) navigate(-1);
-    else navigate('/market/video'); 
-  };
+        if (isNaN(index)) return;
 
-  // Cập nhật state (Like, Save) cho video đang hiển thị mà không fetch lại
-  const handleUpdateCurrentVideo = (updatedFields) => {
-      setVideosList(prev => {
-          const newList = [...prev];
-          if (newList[activeIndex]) {
-            newList[activeIndex] = { ...newList[activeIndex], ...updatedFields };
-          }
-          return newList;
+        setActiveIndex(index);
+
+        if (videosList[index]) {
+          window.history.replaceState(
+            null,
+            '',
+            `/video-standalone/${videosList[index].maTinDang}`
+          );
+        }
+
+        if (
+          index >= videosList.length - 2 &&
+          !isLoadingMore
+        ) {
+          loadMoreVideos(videosList);
+        }
       });
+    }, options);
+
+    const elements = document.querySelectorAll(
+      `.${styles.videoSnapItem}`
+    );
+    elements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [videosList, isLoadingMore, loadMoreVideos]);
+
+  // ======================================================
+  // 5. HANDLERS
+  // ======================================================
+  const handleBack = () => {
+    if (window.history.length > 2) navigate(-1);
+    else navigate('/market/video');
   };
 
-  if (loading && videosList.length === 0) return <div className={styles.loadingState}></div>;
-  if (videosList.length === 0) return <div className={styles.errorState}>Video không tồn tại.</div>;
+  const handleUpdateCurrentVideo = (updatedFields) => {
+    setVideosList(prev => {
+      const list = [...prev];
+      if (list[activeIndex]) {
+        list[activeIndex] = {
+          ...list[activeIndex],
+          ...updatedFields
+        };
+      }
+      return list;
+    });
+  };
 
-  // Lấy data của video hiện tại để truyền xuống Sidebar
+  // ======================================================
+  // 6. RENDER
+  // ======================================================
+  if (loading && videosList.length === 0) {
+    return <div className={styles.loadingState}></div>;
+  }
+
+  if (videosList.length === 0) {
+    return (
+      <div className={styles.errorState}>
+        Video không tồn tại.
+      </div>
+    );
+  }
+
   const currentVideoData = videosList[activeIndex];
 
   return (
     <div className={styles.fullPageLayout}>
-      
       {/* CỘT 1: NAV */}
       <div className={styles.leftNavColumn}>
-          <TopNavbarUniMarket />
+        <TopNavbarUniMarket />
       </div>
 
-      {/* CỘT 2: PLAYER - CONTAINER CUỘN DỌC (Scroll Snap) */}
-      <div className={styles.videoSection} ref={containerRef}>
-        
-        {/* Nút Back (Fixed position) */}
-        <button className={styles.backButton} onClick={handleBack} style={{position: 'fixed', zIndex: 10, top: '20px', left: '20px'}}>
-           <IoArrowBack size={24} />
+      {/* CỘT 2: VIDEO PLAYER */}
+      <div
+        className={styles.videoSection}
+        ref={containerRef}
+      >
+        <button
+          className={styles.backButton}
+          onClick={handleBack}
+          style={{
+            position: 'fixed',
+            zIndex: 10,
+            top: '20px',
+            left: '20px'
+          }}
+        >
+          <IoArrowBack size={24} />
         </button>
-        
-        {/* Render danh sách video */}
+
         {videosList.map((vid, index) => (
-            <div 
-                key={`${vid.maTinDang}-${index}`} 
-                className={styles.videoSnapItem} // Class này cần có CSS: scroll-snap-align: start; height: 100%;
-                data-index={index}
-            >
-                <VideoPlayerSection 
-                    videoData={vid} 
-                    token={token}
-                    currentUser={user}
-                    onUpdateVideo={handleUpdateCurrentVideo}
-                    onOpenComments={() => setActiveTab('comments')}
-                    isActive={index === activeIndex} // Truyền trạng thái active để video tự play
-                />
-            </div>
+          <div
+            key={`${vid.maTinDang}-${index}`}
+            className={styles.videoSnapItem}
+            data-index={index}
+          >
+            <VideoPlayerSection
+              videoData={vid}
+              token={token}
+              currentUser={user}
+              isActive={index === activeIndex}
+              onUpdateVideo={handleUpdateCurrentVideo}
+              onOpenComments={() => setActiveTab('comments')}
+            />
+          </div>
         ))}
       </div>
 
-      {/* CỘT 3: SIDEBAR - Hiển thị thông tin của video đang Active */}
+      {/* CỘT 3: SIDEBAR */}
       <div className={styles.sidebarSection}>
-         {currentVideoData && (
-             <SidebarInfo 
-                // Quan trọng: Thêm key để React reset Sidebar khi đổi video
-                key={currentVideoData.maTinDang} 
-                videoData={currentVideoData} 
-                activeTab={activeTab}        
-                setActiveTab={setActiveTab}
-                onDataLoaded={handleSuggestedLoaded} // Nhận danh sách đề xuất để nối vào list
-             />
-         )}
-      </div>
+        {currentVideoData && (
+          <SidebarInfo
+            key={currentVideoData.maTinDang}
+            videoData={currentVideoData}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            fullVideoList={videosList}
+            currentVideoId={currentVideoData.maTinDang}
+            hasMore={hasMore}
+            onLoadMore={() =>
+              loadMoreVideos(videosList)
+            }
 
+            // 🔥 COMMENT ID TỪ URL
+            highlightCommentId={highlightCommentId}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,8 @@
 /* VideoPlayerSection.module.css */
 
+/* ======================================================
+   GLOBAL SETTINGS & CONTAINER
+   ====================================================== */
 .container {
   width: 100%;
   height: 100%;
@@ -8,22 +11,29 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  
+  /* --- CẬP NHẬT: Font chữ hệ thống hiện đại, chuyên nghiệp --- */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; /* Làm mượt chữ trên Mac */
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* --- LAYOUT CHÍNH --- */
 .mainContent {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end; 
-    justify-content: center;
-    gap: 20px; 
-    
-    max-width: 100%;
-    max-height: 100%;
-    padding-bottom: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end; 
+  justify-content: center;
+  gap: 20px; 
+  
+  max-width: 100%;
+  max-height: 100%;
+  padding-bottom: 20px;
 }
 
-/* --- VIDEO WRAPPER --- */
+/* ======================================================
+   VIDEO AREA
+   ====================================================== */
 .videoWrapper {
   position: relative;
   width: fit-content;
@@ -35,14 +45,15 @@
   max-width: 100%;
   max-height: 100%;
 
-  /* --- THAY ĐỔI 1: Kéo video qua phải --- */
-  margin-left: 100px; /* Thêm lề trái để đẩy toàn bộ video sang phải */
+  /* --- GIỮ NGUYÊN LOGIC CŨ: Kéo video qua phải --- */
+  margin-left: 100px; 
   
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
   background: #000;
   transition: all 0.3s ease;
+  max-width: 100%;
 }
 
 /* VIDEO PLAYER (DỌC MẶC ĐỊNH) */
@@ -50,7 +61,11 @@
   display: block;
   width: auto;
   height: auto;
-  max-width: 100%;
+  
+  /* --- FIX LỖI --- */
+  /* Giới hạn chiều rộng tối đa ngay cả khi chưa nhận diện được chiều ngang/dọc */
+  max-width: 100%; 
+  /* Hoặc an toàn hơn: max-width: calc(100vw - 350px); trừ hao phần sidebar bên phải */
   
   /* Chiều cao cho video dọc */
   max-height: 90vh; 
@@ -58,125 +73,203 @@
   object-fit: contain;
 }
 
-/* --- THAY ĐỔI 2: VIDEO NGANG & VUÔNG --- */
+/* --- LOGIC CŨ: VIDEO NGANG & VUÔNG --- */
 .landscapeWrapper .videoPlayer {
-    width: 100% !important;
-    max-width: 800px !important; 
-    max-height: 95vh !important; 
-    height: auto !important;
-    background: #000;
+  width: 100% ;
+  max-width: 800px ; 
+  max-height: 95vh ; 
+  height: auto ;
+  background: #000;
 }
 
-/* --- INFO OVERLAY --- */
+/* ======================================================
+   INFO OVERLAY (Thông tin tác giả, mô tả)
+   ====================================================== */
 .infoOverlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 20px 15px;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  padding: 20px 18px; /* Tăng nhẹ padding ngang cho thoáng */
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); /* Đậm hơn chút để chữ rõ hơn */
   z-index: 10;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  /* Bóng chữ đậm hơn để nổi bật trên nền video */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 .infoOverlay > * { pointer-events: auto; }
 
-.authorRow { margin-bottom: 4px; cursor: pointer; }
-.authorName { font-size: 18px; font-weight: 700; }
+.authorRow { 
+  margin-bottom: 6px; /* Tăng khoảng cách chút */
+  cursor: pointer; 
+}
+
+.authorName { 
+  font-size: 19px; /* Tăng từ 18px lên 19px */
+  font-weight: 700; 
+  letter-spacing: 0.3px; /* Giãn chữ nhẹ cho sang */
+}
 .authorName:hover { text-decoration: underline; }
 
 .description {
-    font-size: 15px;
-    line-height: 1.4;
-    margin-bottom: 8px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  font-size: 16px; /* Tăng từ 15px lên 16px cho to rõ */
+  line-height: 1.5; /* Giãn dòng thoáng hơn (1.4 -> 1.5) */
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 500; /* Chữ đậm vừa phải cho dễ đọc */
+  opacity: 0.95;
 }
 
-.musicRow { display: flex; align-items: center; gap: 8px; }
-.musicIcon { font-size: 14px; }
-.musicText { font-size: 13px; font-weight: 600; }
+.musicRow { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+}
 
-/* --- SIDE ACTIONS (BÊN PHẢI) --- */
+.musicIcon { 
+  font-size: 15px; 
+}
+
+.musicText { 
+  font-size: 14px; /* Tăng từ 13px lên 14px */
+  font-weight: 600; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
+}
+
+/* ======================================================
+   SIDE ACTIONS (Thả tim, comment, share...)
+   ====================================================== */
 .sideActions {
-    position: relative; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    gap: 10px;
-    padding-bottom: 10px;
+  position: relative; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 7px; /* Tăng khoảng cách giữa các nút cho thoáng (10px -> 16px) */
+  padding-bottom: 10px;
 }
 
 .actionItem {
-    display: flex; flex-direction: column; align-items: center;
-    cursor: pointer; transition: transform 0.2s;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  cursor: pointer; 
+  transition: transform 0.2s;
 }
 .actionItem:active { transform: scale(0.9); }
 
 .iconCircle {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background-color: rgba(22, 24, 35, 0.06);
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background-color: rgba(22, 24, 35, 0.06);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
 }
-.iconCircle:hover { background-color: rgba(22, 24, 35, 0.12); }
+.iconCircle:hover { 
+  background-color: rgba(22, 24, 35, 0.15); /* Đậm hơn chút khi hover */
+}
 
 .actionText {
-    font-size: 12px; font-weight: 600; 
-    color: #161823;
-    margin-top: 6px;
+  font-size: 13px; /* Tăng từ 12px lên 13px */
+  font-weight: 700; /* Đậm hơn cho rõ số liệu */
+  color: #161823;
+  margin-top: 6px;
+  letter-spacing: 0.2px;
 }
 
-.actionItemAvatar { position: relative; margin-bottom: 10px; cursor: pointer; }
+/* --- AVATAR & FOLLOW BUTTON --- */
+.actionItemAvatar { position: relative; margin-bottom: 12px; cursor: pointer; }
+
 .avatarContainer {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    padding: 0;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border: 1px solid #fff; /* Thêm viền trắng mỏng cho sang */
 }
 .avatarImg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
 .plusIcon {
-    position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-    background: #fe2c55; width: 20px; height: 20px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid #fff;
+  position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  background: #fe2c55; width: 22px; height: 22px; /* To hơn chút xíu */
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 14px;
 }
 
+/* --- DISC ANIMATION --- */
 .discAnimation {
-    width: 48px; height: 48px;
-    background: #222; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 8px solid #333; overflow: hidden;
-    animation: spin 4s linear infinite; margin-top: 10px;
+  width: 48px; height: 48px;
+  background: #222; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 9px solid #333; /* Dày viền đĩa than hơn chút */
+  overflow: hidden;
+  animation: spin 5s linear infinite; /* Quay chậm lại chút cho mượt */
+  margin-top: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
-.discAnimation img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.discAnimation img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
 
+/* ======================================================
+   ANIMATIONS & OVERLAYS
+   ====================================================== */
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
 .playIconOverlay {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   pointer-events: none; opacity: 0.8; z-index: 5;
-}
-.heartAnimation {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    pointer-events: none; animation: heartPop 0.8s ease-out forwards;
-    z-index: 20; filter: drop-shadow(0 0 10px rgba(254, 44, 85, 0.5));
-}
-@keyframes heartPop {
-    0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
-    15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-    30% { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
 }
 
+.heartAnimation {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  pointer-events: none; animation: heartPop 0.8s ease-out forwards;
+  z-index: 20; filter: drop-shadow(0 0 10px rgba(254, 44, 85, 0.6));
+}
+@keyframes heartPop {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+  15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(0.9); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* ======================================================
+   RESPONSIVE (MOBILE) - GIỮ NGUYÊN LOGIC CŨ
+   ====================================================== */
 @media (max-width: 900px) {
-    .mainContent { display: block; width: 100%; height: 100%; padding: 0; }
-    .sideActions { position: absolute; right: 10px; bottom: 80px; z-index: 20; gap: 14px; }
-    .actionText { color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-    .iconCircle { background: transparent; width: auto; height: auto; }
-    .videoWrapper, .landscapeWrapper { border-radius: 0; width: 100%; height: 100%; margin-left: 0; /* Reset margin mobile */ }
-    .videoPlayer, .landscapeWrapper .videoPlayer { max-height: 100vh !important; max-width: 100% !important; }
+  .mainContent { display: block; width: 100%; height: 100%; padding: 0; }
+  
+  .sideActions { 
+    position: absolute; right: 10px; bottom: 80px; z-index: 20; 
+    gap: 16px; /* Đồng bộ gap mới */
+  }
+  
+  .actionText { 
+    color: #fff; 
+    font-weight: 600; /* Giảm độ đậm trên mobile cho đỡ thô */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6); /* Bóng chữ rõ hơn trên nền video */
+  }
+  
+  .iconCircle { background: transparent; width: auto; height: auto; }
+  
+  /* Reset layout video trên mobile */
+  .videoWrapper, .landscapeWrapper { 
+    border-radius: 0; 
+    width: 100%; 
+    height: 100%; 
+    margin-left: 0; /* Reset margin mobile như yêu cầu */ 
+  }
+  
+  .videoPlayer, .landscapeWrapper .videoPlayer { 
+    max-height: 100vh ; 
+    max-width: 100% ; 
+  }
 }

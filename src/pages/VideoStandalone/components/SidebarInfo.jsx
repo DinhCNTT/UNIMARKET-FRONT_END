@@ -1,127 +1,317 @@
-import React, { useState, useContext } from 'react';
-import axios from 'axios';
+import React, {
+    useState,
+    useContext,
+    useRef,
+    useEffect
+} from 'react';
 
-// --- IMPORT CONTEXT & CSS ---
-import { AuthContext } from '../../../context/AuthContext'; 
+import axios from 'axios';
+import { IoCloseOutline } from 'react-icons/io5';
+
+import { AuthContext } from "../../../context/AuthContext";
 import styles from './SidebarInfo.module.css';
 
-// --- IMPORT COMPONENTS CON ---
 import SuggestedVideoList from './SuggestedVideoList';
-import CommentList from './CommentList'; 
+import CommentList from './CommentList';
 
 const API_BASE = "http://localhost:5133";
 
-// 1. Thêm prop onDataLoaded vào danh sách nhận
-const SidebarInfo = ({ videoData, activeTab, setActiveTab, onDataLoaded }) => {
-  const { token } = useContext(AuthContext);
+const SidebarInfo = ({
+    videoData,
+    activeTab,
+    setActiveTab,
+    fullVideoList,
+    currentVideoId,
+    onLoadMore,
+    hasMore,
+    
+    // 🔥 PROP TỪ URL (Highligh comment)
+    highlightCommentId
+}) => {
+    // 🔥 Lấy token và user từ Context
+    const { token, user } = useContext(AuthContext);
 
-  // State cho input bình luận
-  const [commentText, setCommentText] = useState('');
-  const [isPosting, setIsPosting] = useState(false);
-  
-  // State để trigger reload danh sách comment sau khi đăng
-  const [refreshKey, setRefreshKey] = useState(0); 
+    /* ======================================================
+       STATE
+    ====================================================== */
+    const [commentText, setCommentText] = useState('');
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-  // --- HÀM GỬI BÌNH LUẬN ---
-  const handlePostComment = async () => {
-      if (!commentText.trim()) return;
-      if (!token) {
-          alert("Vui lòng đăng nhập để bình luận!");
-          return;
-      }
+    // 🔥 STATE MỚI CHO MODAL XÓA (Code 2)
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [commentToDelete, setCommentToDelete] = useState(null);
 
-      try {
-          setIsPosting(true);
-          await axios.post(
-              `${API_BASE}/api/Video/${videoData.maTinDang}/comment`,
-              { Content: commentText, ParentCommentId: null },
-              { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setCommentText('');
-          setRefreshKey(prev => prev + 1); // Reload list comment
-      } catch (error) {
-          console.error("Lỗi gửi comment:", error);
-      } finally {
-          setIsPosting(false);
-      }
-  };
+    const textareaRef = useRef(null);
 
-  const handleKeyDown = (e) => {
-      if (e.key === 'Enter') handlePostComment();
-  };
+    /* ======================================================
+       AUTO RESIZE TEXTAREA
+    ====================================================== */
+    useEffect(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height =
+            commentText === ''
+                ? '20px'
+                : `${textareaRef.current.scrollHeight}px`;
+    }, [commentText]);
 
-  if (!videoData) return null;
+    /* ======================================================
+       POST COMMENT
+    ====================================================== */
+    const handlePostCommentGeneric = async (content, parentId = null) => {
+        if (!content.trim()) return;
 
-  return (
-    <div className={styles.sidebarContainer}>
-      
-      {/* 1. THANH TAB (HEADER) */}
-      <div className={styles.tabs}>
-        <button 
-            className={`${styles.tabItem} ${activeTab === 'comments' ? styles.active : ''}`}
-            onClick={() => setActiveTab('comments')}
-        >
-            Bình luận ({videoData.soBinhLuan})
-        </button>
-        <button 
-            className={`${styles.tabItem} ${activeTab === 'suggested' ? styles.active : ''}`}
-            onClick={() => setActiveTab('suggested')}
-        >
-            Đề xuất khác
-        </button>
-      </div>
+        if (!token) {
+            alert("Vui lòng đăng nhập để bình luận!");
+            return;
+        }
 
-      {/* 2. NỘI DUNG CUỘN (BODY) */}
-      {/* LƯU Ý QUAN TRỌNG: 
-         Thay vì dùng toán tử 3 ngôi (condition ? A : B), ta render cả 2 nhưng ẩn hiện bằng CSS.
-         Điều này giúp SuggestedVideoList luôn chạy để lấy dữ liệu "Next Video" gửi lên cha.
-      */}
-      <div className={`${styles.scrollContent} sidebar-content-scroll`}>
+        try {
+            setIsPosting(true);
+
+            await axios.post(
+                `${API_BASE}/api/Video/${videoData.maTinDang}/comment`,
+                {
+                    Content: content,
+                    ParentCommentId: parentId
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            // Reset sau khi post
+            setCommentText('');
+            setReplyingTo(null);
+            setRefreshKey(prev => prev + 1);
+
+        } catch (error) {
+            console.error("Lỗi gửi comment:", error);
+        } finally {
+            setIsPosting(false);
+        }
+    };
+
+    /* ======================================================
+       DELETE COMMENT LOGIC (Sử dụng Modal từ Code 2)
+    ====================================================== */
+    
+    // 1. Hàm được gọi khi nhấn nút "Xóa" ở CommentList -> Mở Modal
+    const handleDeleteComment = (commentId) => {
+        if (!token) return;
+        setCommentToDelete(commentId);
+        setShowDeleteModal(true);
+    };
+
+    // 2. Hàm thực thi xóa thật sự (Khi bấm nút "Xóa" trong Modal)
+    const confirmDelete = async () => {
+        if (!commentToDelete) return;
         
-        {/* Tab Bình luận */}
-        <div style={{ display: activeTab === 'comments' ? 'block' : 'none' }}>
-           <CommentList 
-                videoId={videoData.maTinDang} 
-                refreshTrigger={refreshKey} 
-           />
-        </div>
+        try {
+            await axios.delete(`${API_BASE}/api/Video/comment/${commentToDelete}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            // Xóa thành công
+            setRefreshKey(prev => prev + 1); // Reload list
+            setShowDeleteModal(false);       // Đóng modal
+            setCommentToDelete(null);        // Reset ID
+            
+        } catch (error) {
+            console.error("Lỗi xóa comment:", error);
+            alert("Không thể xóa bình luận (Có thể do lỗi mạng hoặc quyền truy cập).");
+            setShowDeleteModal(false);
+        }
+    };
 
-        {/* Tab Đề xuất */}
-        <div style={{ display: activeTab === 'suggested' ? 'block' : 'none' }}>
-           <SuggestedVideoList 
-                currentVideoId={videoData.maTinDang}
+    // 3. Hủy xóa -> Đóng Modal
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+        setCommentToDelete(null);
+    };
+
+    /* ======================================================
+       HANDLERS GIAO DIỆN
+    ====================================================== */
+    const handleReplyClick = (comment) => {
+        setReplyingTo(comment);
+        setActiveTab('comments');
+        if (textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    };
+
+    const handleCancelReply = () => {
+        setReplyingTo(null);
+        setCommentText('');
+    };
+
+    const handleInputChange = (e) => {
+        const val = e.target.value;
+        if (val.length <= 150) {
+            setCommentText(val);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handlePostCommentGeneric(
+                commentText,
+                replyingTo ? replyingTo.id : null
+            );
+        }
+    };
+
+    if (!videoData) return null;
+
+    /* ======================================================
+       RENDER
+    ====================================================== */
+    return (
+        <div className={styles.sidebarContainer}>
+
+            {/* ===================== TABS ===================== */}
+            <div className={styles.tabs}>
+                <button
+                    className={`${styles.tabItem} ${
+                        activeTab === 'comments' ? styles.active : ''
+                    }`}
+                    onClick={() => setActiveTab('comments')}
+                >
+                    Bình luận ({videoData.soBinhLuan || 0})
+                </button>
+
+                <button
+                    className={`${styles.tabItem} ${
+                        activeTab === 'suggested' ? styles.active : ''
+                    }`}
+                    onClick={() => setActiveTab('suggested')}
+                >
+                    Đề xuất ({fullVideoList ? fullVideoList.length : 0})
+                </button>
+            </div>
+
+            {/* ===================== BODY (SCROLL) ===================== */}
+            <div className={`${styles.scrollContent} sidebar-content-scroll`}>
                 
-                // --- QUAN TRỌNG: Truyền prop này xuống để list gửi dữ liệu ngược lên ---
-                onDataLoaded={onDataLoaded} 
-           />
-        </div>
+                {/* --- TAB COMMENTS --- */}
+                <div style={{ display: activeTab === 'comments' ? 'block' : 'none' }}>
+                    <CommentList
+                        videoId={videoData.maTinDang}
+                        refreshTrigger={refreshKey}
+                        onReply={handleReplyClick}
+                        onPostReply={handlePostCommentGeneric}
+                        highlightCommentId={highlightCommentId}
 
-      </div>
+                        // 🔥 TRUYỀN HÀM MỞ MODAL XUỐNG
+                        currentUser={user} 
+                        onDeleteComment={handleDeleteComment}
+                    />
+                </div>
 
-      {/* 3. KHUNG NHẬP BÌNH LUẬN (FOOTER) - Chỉ hiện khi ở Tab Bình Luận */}
-      {activeTab === 'comments' && (
-        <div className={styles.commentInputArea}>
-           <input 
-             type="text" 
-             className={styles.inputBox}
-             placeholder="Thêm bình luận..." 
-             value={commentText}
-             onChange={(e) => setCommentText(e.target.value)}
-             onKeyDown={handleKeyDown}
-             disabled={isPosting}
-           />
-           <button 
-             className={styles.postBtn} 
-             onClick={handlePostComment}
-             disabled={isPosting || !commentText.trim()}
-             style={{opacity: commentText.trim() ? 1 : 0.5}}
-           >
-             {isPosting ? '...' : 'Đăng'}
-           </button>
+                {/* --- TAB SUGGESTED --- */}
+                <div style={{ display: activeTab === 'suggested' ? 'block' : 'none' }}>
+                    <SuggestedVideoList
+                        videos={fullVideoList}
+                        currentVideoId={currentVideoId}
+                        onLoadMore={onLoadMore}
+                        hasMore={hasMore}
+                    />
+                </div>
+            </div>
+
+            {/* ===================== FOOTER INPUT ===================== */}
+            {activeTab === 'comments' && (
+                <div className={styles.commentInputArea}>
+                    <div className={styles.inputWrapper}>
+                        {/* Thanh trạng thái Reply */}
+                        {replyingTo && (
+                            <div className={styles.replyingBar}>
+                                <span>
+                                    Đang trả lời <b>{replyingTo.userName}</b>
+                                </span>
+                                <IoCloseOutline
+                                    className={styles.cancelReplyBtn}
+                                    onClick={handleCancelReply}
+                                />
+                            </div>
+                        )}
+
+                        {/* Textarea */}
+                        <textarea
+                            ref={textareaRef}
+                            className={styles.inputBox}
+                            placeholder={
+                                replyingTo
+                                    ? `Trả lời ${replyingTo.userName}...`
+                                    : "Thêm bình luận..."
+                            }
+                            value={commentText}
+                            onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
+                            disabled={isPosting}
+                            rows={1}
+                        />
+
+                        {/* Counter */}
+                        <span
+                            className={`${styles.charCounter} ${
+                                commentText.length >= 150
+                                    ? styles.limitReached
+                                    : ''
+                            }`}
+                        >
+                            {commentText.length}/150
+                        </span>
+                    </div>
+
+                    <button
+                        className={styles.postBtn}
+                        onClick={() =>
+                            handlePostCommentGeneric(
+                                commentText,
+                                replyingTo ? replyingTo.id : null
+                            )
+                        }
+                        disabled={isPosting || !commentText.trim()}
+                        style={{ opacity: commentText.trim() ? 1 : 0.5 }}
+                    >
+                        {isPosting ? '...' : 'Đăng'}
+                    </button>
+                </div>
+            )}
+
+            {/* 🔥 PHẦN MODAL CONFIRM DELETE (MỚI) */}
+            {showDeleteModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <h3 className={styles.modalTitle}>Xóa bình luận?</h3>
+                        <p className={styles.modalDesc}>
+                            Bạn có chắc chắn muốn xóa bình luận này không? <br/>
+                            Hành động này không thể hoàn tác.
+                        </p>
+                        <div className={styles.modalActions}>
+                            <button 
+                                className={styles.btnCancel} 
+                                onClick={cancelDelete}
+                            >
+                                Hủy
+                            </button>
+                            <button 
+                                className={styles.btnDelete} 
+                                onClick={confirmDelete}
+                            >
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default SidebarInfo;
