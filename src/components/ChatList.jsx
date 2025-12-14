@@ -24,7 +24,7 @@ import {
 } from "react-icons/fi";
 
 // Services
-import { deleteConversationForMe, setChatState, bulkSetChatState, getUserChatStates, getUserChats } from "../services/chatService";
+import { deleteConversationForMe, setChatState, bulkSetChatState, getUserChatStates, getUserChats, markConversationAsRead } from "../services/chatService";
 import { injectChatPreview, injectChatMessage } from "./AI/AiHelpers";
 
 
@@ -42,6 +42,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const connectionRef = useRef(null);
   const menuButtonRefs = useRef({});
   const [showFriendList, setShowFriendList] = useState(false);
+  const selectedChatIdRef = useRef(selectedChatId);
 
   // Use quick messages hook
   const {
@@ -80,6 +81,25 @@ const sortChatsLikeMessenger = (chats) => {
     return timeB - timeA; // mới nhất lên đầu
   });
 };
+
+  // ✅ Helper: Parse AI message JSON và lấy replyText
+  const formatChatPreview = (content, isAiChat) => {
+    if (!content) return "";
+    
+    // Nếu là AI chat, thử parse JSON để lấy replyText
+    if (isAiChat) {
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed.replyText) {
+          return parsed.replyText; // Hiển thị replyText thay vì JSON
+        }
+      } catch (e) {
+        // Nếu parse lỗi, hiển thị content bình thường
+      }
+    }
+    
+    return content;
+  };
 
   // Hiển thị xác nhận xóa cuộc trò chuyện
   const handleShowDeleteConfirm = (chatId) => {
@@ -339,6 +359,17 @@ connection.on("CapNhatCuocTroChuyen", async (chat) => {
     isHidden: chat.isHidden ?? false,
     isDeleted: chat.isDeleted ?? false,
   };
+
+  // ✅ NEW: Nếu ChatBox của conversation này đang mở, auto mark as read
+  if (selectedChatIdRef.current === newChat.maCuocTroChuyen && newChat.maNguoiGuiCuoi !== userId) {
+    // Auto mark as read realtime
+    console.log(`🔔 New message arrived in open chat ${newChat.maCuocTroChuyen}, auto-marking as read...`);
+    markConversationAsRead(newChat.maCuocTroChuyen, userId).catch(err => {
+      console.warn("Failed to auto-mark chat as read:", err);
+    });
+    // ✅ Set hasUnreadMessages = false ngay để dòng chatlist info không in đậm
+    newChat.hasUnreadMessages = false;
+  }
 
   // Lấy trạng thái chat từ database
   const chatStates = await getUserChatStates(userId);
@@ -714,6 +745,33 @@ connection.on("ChatStatusChanged", (data) => {
       onSelectChat(existingChat);
     }
   }, [chatList, selectedChatId, onSelectChat]);
+
+  // ✅ NEW: Auto-mark as read khi selectedChatId thay đổi (ChatBox được mở)
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChatId;
+  }, [selectedChatId]);
+
+  // ✅ NEW: Auto-mark as read khi selectedChatId thay đổi (ChatBox được mở)
+  useEffect(() => {
+    if (!selectedChatId || !userId) return;
+
+    // Mark conversation as read khi ChatBox được mở
+    markConversationAsRead(selectedChatId, userId)
+      .then((success) => {
+        if (success) {
+          console.log(`✅ Auto-marked ${selectedChatId} as read when ChatBox opened`);
+          // Update UI: set hasUnreadMessages = false
+          setChatList(prev => prev.map(c => 
+            c.maCuocTroChuyen === selectedChatId 
+              ? { ...c, hasUnreadMessages: false } 
+              : c
+          ));
+          // Dispatch refresh event for navbar badge
+          window.dispatchEvent(new Event("refreshChatList"));
+        }
+      })
+      .catch(err => console.warn("Failed to auto-mark as read:", err));
+  }, [selectedChatId, userId, markConversationAsRead]);
   // Lọc danh sách chat theo tiêu chí
   const filteredChats = (() => {
     let chatsToFilter = [];
@@ -867,41 +925,6 @@ connection.on("ChatStatusChanged", (data) => {
         >
           <FiMoreVertical size={20} />
         </button>
-                {import.meta && import.meta.env && import.meta.env.MODE !== 'production' ? (
-          <button
-            className="chatlist-sample-btn"
-            title="Tạo tin nhắn mẫu"
-            onClick={(e) => {
-              e.stopPropagation();
-              const now = new Date();
-              const chatId = selectedChatId || `sample-ai-${Date.now()}`;
-              const sampleMsg = {
-                maTinNhan: `sample-${Date.now()}`,
-                maCuocTroChuyen: chatId,
-                noiDung: "Xin chào, tôi muốn xem các tin có video về điện thoại giá dưới 5 triệu",
-                maNguoiGui: userId || 'user-sample',
-                loaiTinNhan: 'text',
-                thoiGianGui: now.toISOString(),
-                daXem: false,
-              };
-
-              // Use centralized AI helpers to inject messages and previews
-              injectChatMessage(sampleMsg);
-              injectChatPreview({
-                maCuocTroChuyen: chatId,
-                tieuDeTinDang: 'Huấn luyện AI - Sản phẩm mẫu',
-                giaTinDang: 5000000,
-                anhDaiDienTinDang: '',
-                noiDung: sampleMsg.noiDung,
-                maNguoiGui: sampleMsg.maNguoiGui,
-                loaiTinNhan: sampleMsg.loaiTinNhan,
-                thoiGian: sampleMsg.thoiGianGui
-              });
-            }}
-          >
-            Tạo tin mẫu
-          </button>
-        ) : null}
         </div>
       </div>
     )}
@@ -950,6 +973,26 @@ connection.on("ChatStatusChanged", (data) => {
                   onClick={() => {
                     if (!isHideMode) {
                       setShowFriendList(false);
+                      // ✅ NEW: Mark as read when clicking chat
+                      if (chat.hasUnreadMessages) {
+                        console.log(`📌 Clicking chat ${chat.maCuocTroChuyen}, marking as read...`);
+                        // Update UI immediately
+                        setChatList(prev => prev.map(c => 
+                          c.maCuocTroChuyen === chat.maCuocTroChuyen 
+                            ? { ...c, hasUnreadMessages: false } 
+                            : c
+                        ));
+                        
+                        // Call API to persist to backend
+                        markConversationAsRead(chat.maCuocTroChuyen, userId)
+                          .then((success) => {
+                            if (success) {
+                              window.dispatchEvent(new Event("refreshChatList"));
+                            }
+                          })
+                          .catch((err) => console.error("Error marking chat as read:", err));
+                      }
+                      
                       onSelectChat(chat.maCuocTroChuyen);
                     }
                   }}
@@ -1007,7 +1050,7 @@ connection.on("ChatStatusChanged", (data) => {
           <Video size={14} /> Video
         </span>
       )
-    : chat.tinNhanCuoi}
+    : formatChatPreview(chat.tinNhanCuoi, String(chat.maCuocTroChuyen).startsWith('ai-assistant-'))}
 </div>
                   </div>
 

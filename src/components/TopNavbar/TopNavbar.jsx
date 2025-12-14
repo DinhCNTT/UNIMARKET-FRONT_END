@@ -85,6 +85,7 @@ const TopNavbar = () => {
   const fetchChatUnreadCount = async () => {
     if (!user) return;
     try {
+      console.log("📞 fetchChatUnreadCount called");
       const hiddenChatIds = await getHiddenAndDeletedChatIds();
       const params = new URLSearchParams();
       hiddenChatIds.forEach(id => params.append("hiddenChatIds", id));
@@ -92,6 +93,7 @@ const TopNavbar = () => {
       const res = await axios.get(
         `http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`
       );
+      console.log(`📊 Unread count result: ${res.data.unreadCount}`);
       setChatUnreadCount(res.data.unreadCount || 0);
     } catch (error) {
       console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
