@@ -7,34 +7,48 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  background-color: var(--theme-bg-secondary);
   z-index: 9999;
 }
 
 /* Video list container */
 .video-list-container {
   height: 100vh;
-  overflow: hidden;
-  position: relative;
-  width: 100vw; /* Bắt sự kiện mouse-move toàn màn hình */
-}
+  width: 100vw;
+  
+  /* Bật cuộn dọc native */
+  overflow-y: scroll; 
+  
+  /* Kích hoạt Scroll Snap (Hít video) */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth; /* Cuộn mượt khi click nút */
 
+  /* Ẩn thanh cuộn */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.video-list-container::-webkit-scrollbar {
+  display: none;
+}
 .video-list-wrapper {
-  height: 100%;
+  height: auto;
   width: 100%;
-  transition: transform 0.65s ease-out;
-  will-change: transform;
+  /* Xóa transition và transform cũ đi */
 }
-
 /* Layout 1 item (video + side info) */
 .video-item {
   height: 100vh;
+  width: 100%;
+  
+  /* Điểm hít: Bắt buộc video phải nằm gọn trong màn hình */
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* Bắt buộc dừng lại từng video, không trượt vèo vèo */
+  
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
 }
-
 /* Video transitioning */
 body.video-transitioning .video-item {
   pointer-events: none;
@@ -340,22 +354,38 @@ body.video-transitioning .video-item {
   background-color: var(--theme-bg-primary);
   color: var(--theme-text-primary);
 }
+
 .vdv-right-nav {
   position: absolute;
-  right: 20px; /* Cách mép phải 20px */
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  z-index: 100; /* Cao hơn video nhưng thấp hơn modal/overlay */
-  background: rgba(0, 0, 0, 0.4); /* Nền mờ nhẹ cho cụm nút */
+  
+  /* Z-index này thấp hơn Overlay comment (9999), 
+     nhưng vì Overlay đã set pointer-events: none nên nút này vẫn bấm được */
+  z-index: 100; 
+
+  /* Nền mờ cho nút */
+  background: rgba(0, 0, 0, 0.4); 
   padding: 8px 6px;
   border-radius: 30px;
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* Hiệu ứng trượt */
+  transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
+.vdv-right-nav.shift-for-comments {
+  right: 400px; 
+}
+@media (max-width: 768px) {
+  .vdv-right-nav {
+    display: none; 
+  }
+}
 .vdv-nav-btn {
   width: 44px;
   height: 44px;

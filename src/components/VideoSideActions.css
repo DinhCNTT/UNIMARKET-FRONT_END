@@ -12,11 +12,11 @@
 
 /* Logic vị trí dựa trên tỷ lệ video (nằm ở component cha) - GIỮ NGUYÊN */
 .video-item.vdv-portrait .vdv-side-info {
-  margin-top: 220px;
+  margin-top: 235px;
   margin-left: 20px;
 }
 .video-item.vdv-landscape .vdv-side-info {
-  margin-top: 75px;
+  margin-top: 58px;
 }
 .video-item.vdv-square .vdv-side-info {
   margin-top: 240px;

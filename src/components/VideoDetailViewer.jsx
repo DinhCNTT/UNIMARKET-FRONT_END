@@ -5,6 +5,7 @@ import axios from "axios";
 
 // 🔥 Icons
 import { IoHeart, IoChevronUp, IoChevronDown } from "react-icons/io5";
+
 // 🔥 Components & Context
 import TopNavbarUniMarket from "./TopNavbarUniMarket";
 import VideoDetailHeader from "./VideoDetailHeader";
@@ -31,7 +32,6 @@ import VideoSideActions from "./VideoSideActions";
 import "./VideoDetailViewer.css";
 
 const API_BASE = "http://localhost:5133";
-const SLIDE_DURATION = 650;
 
 // ======================================================
 //  COMPONENT CHÍNH
@@ -62,18 +62,16 @@ const VideoDetailViewer = () => {
     fetchMore, 
     hasMore, 
     initializeWithVideo,
-    reloadForYou // <--- THÊM DÒNG NÀY
+    reloadForYou 
   } = useVideoFeed({ manualMode: !!id });
   
   // Mặc định bắt đầu từ 0
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  console.log("-----------------------------------");
-  console.log("1️⃣ [DetailViewer] Render");
-  console.log("   👉 URL ID:", id);
-  console.log("   👉 Router State (Seed Video):", seedVideoFromRouter?.maTinDang);
-  console.log("   👉 Current Index:", currentIndex); // Giờ thì OK rồi
-  console.log("   👉 Video List Length:", videoList.length);
+  // Debug Logs
+  // console.log("--- [DetailViewer] Render ---");
+  // console.log("👉 Current Index:", currentIndex);
+  // console.log("👉 Video List Length:", videoList.length);
 
   const [showHeart, setShowHeart] = useState(false);
   const navigate = useNavigate();
@@ -95,13 +93,13 @@ const VideoDetailViewer = () => {
 
   // Refs
   const videoRef = useRef(null);
-  const videoElsRef = useRef([]);
-  const containerRef = useRef(null);
-  const isAnimatingRef = useRef(false);
+  const videoElsRef = useRef([]);      // Ref đến thẻ <video> để play/pause
+  const containerRef = useRef(null);   // Ref đến container chính để cuộn
+  const itemRefs = useRef([]);         // 🔥 Ref đến từng item (div bao quanh video) để observer bắt
+  
   const controlsTimeoutRef = useRef(null);
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef(null);
-
   const originalBodyStyle = useRef({ className: "" });
 
   // Realtime
@@ -121,7 +119,62 @@ const VideoDetailViewer = () => {
   );
 
   // ======================================================
-  // ✅ LOGIC KHỞI TẠO TỪ URL ID (Code 2 Integration)
+  // ✅ LOGIC SCROLL SNAP & OBSERVER (MỚI - TỪ CODE 2)
+  // ======================================================
+  
+  // Tự động cập nhật currentIndex khi video lướt vào vùng nhìn thấy
+  useEffect(() => {
+    const observerOptions = {
+      root: containerRef.current, // null = viewport, hoặc dùng containerRef nếu scroll bên trong div
+      threshold: 0.6, // Video phải hiện 60% thì mới tính là đã chuyển slide
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = parseInt(entry.target.getAttribute("data-index"));
+          if (!isNaN(index) && index !== currentIndex) {
+            console.log("👀 Scrolled to video index:", index);
+            
+            // Dừng tracking video cũ trước khi chuyển
+            // Lưu ý: videoList[currentIndex] là video cũ ở thời điểm này
+            if (videoList[currentIndex]) {
+              stopViewTracking(videoList[currentIndex].maTinDang);
+            }
+            
+            setCurrentIndex(index);
+          }
+        }
+      });
+    }, observerOptions);
+
+    // Gắn observer vào các item
+    itemRefs.current.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoList, stopViewTracking]); // Bỏ currentIndex khỏi dependency để tránh loop Observer
+
+  // ======================================================
+  // ✅ ĐIỀU HƯỚNG BẰNG NÚT (Sửa lại dùng scrollIntoView)
+  // ======================================================
+  const goToIndex = (index) => {
+    if (index >= 0 && index < videoList.length) {
+      const targetEl = itemRefs.current[index];
+      if (targetEl) {
+        // Lệnh này sẽ cuộn mượt đến video đó nhờ CSS scroll-behavior hoặc tham số smooth
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Không cần setCurrentIndex ở đây vì Observer phía trên sẽ tự bắt được và set
+      }
+    }
+  };
+
+  // ======================================================
+  // ✅ LOGIC KHỞI TẠO TỪ URL ID
   // ======================================================
   useEffect(() => {
     if (id) {
@@ -134,15 +187,12 @@ const VideoDetailViewer = () => {
        if (isMismatch) {
           console.log("🛠 Init video:", videoIdNum);
           
-          // 1. Ưu tiên lấy dữ liệu từ Router (Seed) để hiển thị NGAY LẬP TỨC (tránh màn hình đen)
+          // 1. Ưu tiên lấy dữ liệu từ Router (Seed) để hiển thị NGAY LẬP TỨC
           if (seedVideoFromRouter && String(seedVideoFromRouter.maTinDang) === String(id)) {
-             console.log("⚡ [Pha 1] Hiển thị ngay dữ liệu từ Router (có thể cũ/thiếu)");
-             
-             // Gọi hàm của bạn để setup list ban đầu
+             console.log("⚡ [Pha 1] Hiển thị ngay dữ liệu từ Router");
              initializeWithVideo(seedVideoFromRouter);
 
-             // 2. NGAY SAU ĐÓ: Gọi ngầm API để lấy số liệu chính xác (Lượt view, tim, share...)
-             // Việc này chạy song song, người dùng đang xem video thì số sẽ tự nhảy về đúng
+             // 2. NGAY SAU ĐÓ: Gọi ngầm API để lấy số liệu chính xác
              axios.get(`${API_BASE}/api/video/detail/${id}`, { 
                  headers: token ? { Authorization: `Bearer ${token}` } : {} 
              })
@@ -150,26 +200,16 @@ const VideoDetailViewer = () => {
                  console.log("✅ [Pha 2] Đã lấy được dữ liệu tươi từ Server");
                  const freshVideo = res.data;
 
-                 // CẬP NHẬT LẠI LIST MỘT CÁCH ÂM THẦM (SILENT UPDATE)
                  setVideoList(prevList => {
-                     // Nếu list chưa có gì hoặc video đầu khác ID (user đã lướt đi chỗ khác) -> Bỏ qua
                      if (prevList.length === 0 || String(prevList[0].maTinDang) !== String(id)) {
                          return prevList;
                      }
-
-                     // Tạo mảng mới, giữ nguyên các video phía sau (đề xuất), chỉ thay thế video đầu
                      const newList = [...prevList];
-                     
-                     // 🔥 KỸ THUẬT QUAN TRỌNG: 
-                     // Giữ nguyên các trường điều khiển player cũ (để video không bị reload/khựng lại)
-                     // Chỉ ghi đè các thông số (tim, share, comment...)
                      newList[0] = {
-                         ...prevList[0], // Giữ lại state cũ (ví dụ đang play đến giây thứ 5)
-                         ...freshVideo,  // Ghi đè dữ liệu mới từ server vào
-                         // Đảm bảo ID không đổi để React không hủy component VideoPlayer
+                         ...prevList[0], 
+                         ...freshVideo, 
                          maTinDang: prevList[0].maTinDang 
                      };
-                     
                      return newList;
                  });
              })
@@ -185,27 +225,10 @@ const VideoDetailViewer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, seedVideoFromRouter]);
 
-  // 🔴 LOG 2: Theo dõi biến động State
-  useEffect(() => {
-    if (videoList.length > 0) {
-        console.log(`2️⃣ [State Change] VideoList updated. Length: ${videoList.length}`);
-        console.log(`   👉 Video[0] ID: ${videoList[0].maTinDang}`);
-        console.log(`   👉 Current Index is: ${currentIndex}`);
-        
-        // Kiểm tra xem video đầu tiên có khớp với ID trên URL không
-        if (parseInt(id) !== videoList[0].maTinDang) {
-            console.error(`🚨 LỖI LỚN: ID trên URL (${id}) KHÁC ID video đầu tiên (${videoList[0].maTinDang})`);
-        } else {
-            console.log(`✅ Video đầu tiên khớp với URL.`);
-        }
-    }
-  }, [videoList, currentIndex, id]);
-
   // ======================================================
-  // ✅ LOGIC RESET KHI RELOAD (Code 1)
+  // ✅ LOGIC RESET KHI RELOAD (FOR YOU)
   // ======================================================
-  // ✅ CODE MỚI: Dừng video cũ trước khi load cái mới
-const prevRefreshSignalRef = useRef(refreshSignal);
+  const prevRefreshSignalRef = useRef(refreshSignal);
 
   useEffect(() => {
     if (refreshSignal !== prevRefreshSignalRef.current) {
@@ -221,19 +244,15 @@ const prevRefreshSignalRef = useRef(refreshSignal);
             });
         }
 
-        // 🔥 FIX QUAN TRỌNG 1: Xóa sạch bộ nhớ tỷ lệ khung hình cũ
-        // Giúp video mới không bị áp dụng nhầm khung hình của video cũ
         setAspectRatios({}); 
-
-        // 🔥 FIX QUAN TRỌNG 2: Xóa tạm danh sách video
-        // Giúp ngăn chặn hiệu ứng "trượt ngược" về video cũ
-        // Màn hình sẽ hiển thị loading trong tích tắc rồi hiện video mới ngay
         setVideoList([]); 
 
         // Reset Index về 0
         setCurrentIndex(0);
+        
+        // Reset vị trí scroll về đầu
         if (containerRef.current) {
-            containerRef.current.scrollTop = 0;
+            containerRef.current.scrollTo(0, 0);
         }
 
         // Tải video mới
@@ -245,7 +264,7 @@ const prevRefreshSignalRef = useRef(refreshSignal);
 
 
   // ======================================================
-  // ✅ LOGIC INFINITE SCROLL (Code 1)
+  // ✅ LOGIC INFINITE SCROLL
   // ======================================================
   useEffect(() => {
     if (!loading && hasMore && videoList.length > 0 && currentIndex >= videoList.length - 2) {
@@ -343,13 +362,10 @@ const prevRefreshSignalRef = useRef(refreshSignal);
         prevList.map((v) => {
           if (v.maTinDang === videoToSave.maTinDang) {
             const newIsSaved = !v.isSaved;
-            // 🔥 FIX: Đảm bảo dùng 'soNguoiLuu' và ép kiểu số để tránh lỗi cộng chuỗi
             const currentSaveCount = typeof v.soNguoiLuu === 'number' ? v.soNguoiLuu : 0;
-            
             return {
               ...v,
               isSaved: newIsSaved,
-              // Tăng giảm dựa trên số hiện tại
               soNguoiLuu: newIsSaved ? currentSaveCount + 1 : Math.max(0, currentSaveCount - 1),
             };
           }
@@ -357,7 +373,6 @@ const prevRefreshSignalRef = useRef(refreshSignal);
         })
       );
 
-      // Gọi API
       const { data } = await axios.post(
         `${API_BASE}/api/video/ToggleSave`,
         { maTinDang: videoToSave.maTinDang },
@@ -369,23 +384,21 @@ const prevRefreshSignalRef = useRef(refreshSignal);
         }
       );
 
-      // Cập nhật lại từ phản hồi server (chuẩn xác nhất)
       const { saved, totalSaves } = data;
       setVideoList((prevList) =>
         prevList.map((v) =>
           v.maTinDang === videoToSave.maTinDang
-            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves } // 🔥 FIX: Dùng soNguoiLuu
+            ? { ...v, isSaved: saved, soNguoiLuu: totalSaves }
             : v
         )
       );
     } catch (err) {
       console.error("Lỗi khi lưu video:", err);
-      // Revert nếu lỗi (Optional)
     }
   };
 
   // =======================
-  // SHARE (SỬA LẠI LOGIC NÀY)
+  // SHARE
   // =======================
   const handleOptimisticShareUpdate = (maTinDang) => {
     console.log("Share thành công! Đợi SignalR cập nhật số liệu...");
@@ -448,95 +461,9 @@ const prevRefreshSignalRef = useRef(refreshSignal);
     }, 1000);
   };
 
-  // ======================================================
-  // CHUYỂN VIDEO (WHEEL + TOUCH)
-  // ======================================================
-  const goToIndex = (nextIndex) => {
-    if (isAnimatingRef.current) return;
-    
-    // Chặn lướt quá giới hạn
-    if (nextIndex < 0) return;
-    if (nextIndex >= videoList.length) return;
-
-    if (nextIndex === currentIndex) return;
-
-    isAnimatingRef.current = true;
-    document.body.classList.add("video-transitioning");
-
-    if (videoData) {
-      stopViewTracking(videoData.maTinDang);
-    }
-
-    setCurrentIndex(nextIndex);
-
-    setTimeout(() => {
-      isAnimatingRef.current = false;
-      document.body.classList.remove("video-transitioning");
-    }, SLIDE_DURATION + 80);
-  };
-
-  // WHEEL
-  useEffect(() => {
-    const handleWheel = (e) => {
-      // 🔥 FIX LỖI: Nếu đang giữ phím Ctrl (để Zoom), thì KHÔNG ĐƯỢC CHẶN sự kiện
-      if (e.ctrlKey) return; 
-
-      if (showComments || showDetailPanel || showSharePanel) return;
-      
-      // Chỉ chặn scroll mặc định khi không Zoom và không mở panel
-      e.preventDefault();
-      
-      if (isAnimatingRef.current) return;
-
-      if (e.deltaY > 0) goToIndex(currentIndex + 1);
-      else goToIndex(currentIndex - 1);
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [currentIndex, videoList.length, showComments, showDetailPanel, showSharePanel]);
-
-  // TOUCH
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    let startY = 0;
-    let lastY = 0;
-    const THRESHOLD = 60;
-
-    const onTouchStart = (e) => {
-      if (isAnimatingRef.current || showComments || showDetailPanel || showSharePanel) return;
-      startY = e.touches[0].clientY;
-      lastY = startY;
-    };
-
-    const onTouchMove = (e) => {
-      if (isAnimatingRef.current) return;
-      lastY = e.touches[0].clientY;
-      e.preventDefault();
-    };
-
-    const onTouchEnd = () => {
-      const delta = lastY - startY;
-      if (Math.abs(delta) > THRESHOLD) {
-        delta < 0 ? goToIndex(currentIndex + 1) : goToIndex(currentIndex - 1);
-      }
-    };
-
-    el.addEventListener("touchstart", onTouchStart, { passive: false });
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-    el.addEventListener("touchend", onTouchEnd, { passive: false });
-
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [currentIndex, videoList.length]);
-
-  // Autoplay
-  // ✅ CODE MỚI: Thêm videoList vào để biết khi nào có video mới về thì chạy
+  // =======================
+  // AUTOPLAY LOGIC
+  // =======================
   const lastPlayedVideoIdRef = useRef(null);
 
   useEffect(() => {
@@ -557,10 +484,8 @@ const prevRefreshSignalRef = useRef(refreshSignal);
             
             if (i === currentIndex) {
                 // Video hiện tại (Active Slide)
-                
-                // 🔥 FIX QUAN TRỌNG:
                 // Nếu là video MỚI (isSameVideo === false) -> Thì mới ép chạy (Autoplay)
-                // Nếu là video CŨ (isSameVideo === true) -> Tức là chỉ bấm Tym/Lưu -> KHÔNG CAN THIỆP (đang Pause thì kệ Pause)
+                // Nếu là video CŨ (isSameVideo === true) -> KHÔNG CAN THIỆP (đang Pause thì kệ Pause)
                 if (!isSameVideo) {
                     const playPromise = v.play();
                     if (playPromise !== undefined) {
@@ -583,8 +508,7 @@ const prevRefreshSignalRef = useRef(refreshSignal);
   useEffect(() => {
     originalBodyStyle.current.className = document.body.className;
     document.body.style.overflow = "hidden";
-    document.body.classList.remove("video-transitioning");
-
+    
     return () => {
       document.body.style.overflow = "";
       document.body.className = originalBodyStyle.current.className;
@@ -593,7 +517,7 @@ const prevRefreshSignalRef = useRef(refreshSignal);
   }, []);
 
   // ======================================================
-  // REALTIME
+  // REALTIME (SignalR)
   // ======================================================
   useEffect(() => {
     if (!isConnected || !connection || !videoData) return;
@@ -626,35 +550,32 @@ const prevRefreshSignalRef = useRef(refreshSignal);
     // Chỉ chạy khi có kết nối
     if (!connection || !isConnected) return;
 
-    // 1. Xử lý Like (Tym)
+    // 1. Like
     const handleUpdateLike = (maTinDang, soTym) => {
       setVideoList((list) => 
         list.map((v) => (v.maTinDang === maTinDang ? { ...v, soTym } : v))
       );
     };
 
-    // 2. Xử lý Save (Lưu) - 🔥 FIX: Gán vào `soNguoiLuu`
+    // 2. Save
     const handleUpdateSave = (maTinDang, totalSaves) => {
       setVideoList((list) => 
         list.map((v) => (v.maTinDang === maTinDang ? { ...v, soNguoiLuu: totalSaves } : v))
       );
     };
 
-    // 3. Xử lý Share (Chia sẻ) - 🔥 FIX QUAN TRỌNG
+    // 3. Share
     const handleUpdateShare = (maTinDang, totalShares) => {
       setVideoList((list) => 
         list.map((v) => {
           if (v.maTinDang === maTinDang) {
-            // Server là chân lý (Source of Truth). 
-            // Nếu Server bảo 55 thì là 55, bất kể Client đang hiển thị 54 hay 56.
-            // Việc này giúp đồng bộ chính xác giữa người Share (User A) và người xem (User B).
             return { ...v, soLuotChiaSe: totalShares };
           }
           return v;
         })
       );
     };
-    // 4. Xử lý Comment (Bình luận)
+    // 4. Comment
     const handleUpdateCommentCount = (maTinDang, totalComments) => {
       setVideoList((list) => 
         list.map((v) => (v.maTinDang === maTinDang ? { ...v, soBinhLuan: totalComments } : v))
@@ -667,20 +588,19 @@ const prevRefreshSignalRef = useRef(refreshSignal);
     connection.on("UpdateShareCount", handleUpdateShare);
     connection.on("UpdateCommentCount", handleUpdateCommentCount);
 
-    // --- 🔥 CLEANUP (BẮT BUỘC): Hủy đăng ký khi component unmount hoặc re-render ---
-    // Nếu thiếu đoạn này, sự kiện sẽ chạy 2 lần -> gây lỗi nhảy số đôi
+    // --- Cleanup ---
     return () => {
       connection.off("UpdateLikeCount", handleUpdateLike);
       connection.off("UpdateSaveCount", handleUpdateSave);
       connection.off("UpdateShareCount", handleUpdateShare);
       connection.off("UpdateCommentCount", handleUpdateCommentCount);
     };
-  }, [connection, isConnected]);
+  }, [connection, isConnected, setVideoList]);
 
   // ======================================================
   // RENDER
   // ======================================================
-  // 🔥 Code 2: Sửa lại điều kiện loading để tránh màn hình đen khi đang init
+  
   if (loading && videoList.length === 0) {
     return (
       <div className="loading-overlay" style={{background: 'black', zIndex: 99999}}>
@@ -712,175 +632,177 @@ const prevRefreshSignalRef = useRef(refreshSignal);
 
       {!showComments && <VideoDetailHeader />}
 
-    {/* Loading lần đầu */}
-    {loading && videoList.length === 0 && (
-      <div className="loading-overlay" style={{ zIndex: 10000 }}>
-        <div className="spinner"></div>
-      </div>
-    )}
-    {/* Loading khi kéo tiếp video */}
-    {loading && videoList.length > 0 && (
-      <div
-        className="loading-indicator-bottom"
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 20,
-          pointerEvents: "none",
-        }}
-      >
+      {/* Loading lần đầu */}
+      {loading && videoList.length === 0 && (
+        <div className="loading-overlay" style={{ zIndex: 10000 }}>
+          <div className="spinner"></div>
+        </div>
+      )}
+
+      {/* Loading khi kéo tiếp video */}
+      {loading && videoList.length > 0 && (
         <div
-                    className="spinner-small"
+          className="loading-indicator-bottom"
           style={{
-            width: "24px",
-            height: "24px",
-            border: "3px solid rgba(255,255,255,0.3)",
-            borderTopColor: "#fff",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
+            position: "absolute",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 20,
+            pointerEvents: "none",
           }}
-        />
-      </div>
-    )}
+        >
+          <div
+            className="spinner-small"
+            style={{
+              width: "24px",
+              height: "24px",
+              border: "3px solid rgba(255,255,255,0.3)",
+              borderTopColor: "#fff",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+        </div>
+      )}
 
-    {/* ===================== VIDEO LIST ===================== */}
-    <div
-      ref={containerRef}
-      className="video-list-container"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+      {/* ===================== VIDEO LIST (Đã sửa logic cuộn) ===================== */}
       <div
-        className="video-list-wrapper"
-        style={{ transform: `translateY(-${currentIndex * 100}vh)` }}
+        ref={containerRef}
+        className="video-list-container" // Đảm bảo CSS class này có scroll-snap-type: y mandatory
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        // 🔥 ĐÃ XÓA transform (quan trọng)
       >
-        {videoList.map((video, index) => {
-          const ratio = aspectRatios[index];
-          let ratioClass = "";
+        <div className="video-list-wrapper">
+          {videoList.map((video, index) => {
+            const ratio = aspectRatios[index];
+            let ratioClass = "";
 
-          if (ratio != null) {
-            if (ratio < 1) ratioClass = "vdv-portrait";
-            else if (ratio > 1.5) ratioClass = "vdv-landscape";
-            else if (ratio > 1.2) ratioClass = "vdv-square-wide";
-            else ratioClass = "vdv-square";
-          }
+            if (ratio != null) {
+              if (ratio < 1) ratioClass = "vdv-portrait";
+              else if (ratio > 1.5) ratioClass = "vdv-landscape";
+              else if (ratio > 1.2) ratioClass = "vdv-square-wide";
+              else ratioClass = "vdv-square";
+            }
 
-          return (
-            <div key={video.maTinDang || index} className={`video-item ${ratioClass}`}>
+            return (
               <div
-                className={`vdv-container ${ratioClass} ${
-                  showComments ? "comment-open" : ""
-                }`}
+                key={video.maTinDang || index}
+                className={`video-item ${ratioClass}`}
+                data-index={index} // 🔥 Để Observer đọc được index
+                ref={(el) => (itemRefs.current[index] = el)} // 🔥 Gán ref để Observer bắt
               >
-                <VideoPlayer
-                  video={video}
-                  index={index}
-                  currentIndex={currentIndex}
-                  videoElsRef={videoElsRef}
-                  videoRef={videoRef}
-                  setAspectRatios={setAspectRatios}
-                  handleVideoClick={handleVideoClick}
-                  showControls={showControls}
-                  handleDragStateChange={setIsDraggingVideo}
-                />
+                <div
+                  className={`vdv-container ${ratioClass} ${
+                    showComments ? "comment-open" : ""
+                  }`}
+                >
+                  <VideoPlayer
+                    video={video}
+                    index={index}
+                    currentIndex={currentIndex}
+                    videoElsRef={videoElsRef}
+                    videoRef={videoRef}
+                    setAspectRatios={setAspectRatios}
+                    handleVideoClick={handleVideoClick}
+                    showControls={showControls}
+                    handleDragStateChange={setIsDraggingVideo}
+                  />
 
-                <VideoInfoOverlay
+                  <VideoInfoOverlay
+                    video={video}
+                    formatCount={formatCount}
+                    isDraggingVideo={isDraggingVideo}
+                  />
+                </div>
+
+                <VideoSideActions
                   video={video}
+                  user={user}
+                  token={token}
+                  isFollowing={index === currentIndex ? isFollowing : false}
                   formatCount={formatCount}
-                  isDraggingVideo={isDraggingVideo}
+                  onFollow={handleToggleFollow}
+                  onLike={() => handleLike(video)}
+                  onSave={() => handleToggleSave(video)}
+                  onComment={() => setShowComments((prev) => !prev)}
+                  onShare={() => setShowSharePanel(true)}
+                  onShowDetail={() => handleShowDetail(video.maTinDang)}
                 />
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              <VideoSideActions
-                video={video}
-                user={user}
-                token={token}
-                isFollowing={index === currentIndex ? isFollowing : false}
-                formatCount={formatCount}
-                onFollow={handleToggleFollow}
-                onLike={() => handleLike(video)}
-                onSave={() => handleToggleSave(video)}
-                onComment={() => setShowComments((prev) => !prev)}
-                onShare={() => setShowSharePanel(true)}
-                onShowDetail={() => handleShowDetail(video.maTinDang)}
-              />
-            </div>
-          );
-        })}
+      {/* ❤️ Animation tim */}
+      {showHeart && (
+        <div className="vdv-heart-animation">
+          <IoHeart size={80} color="#ff4d6d" />
+        </div>
+      )}
+
+      {/* ===================== COMMENT DRAWER ===================== */}
+      {showComments && (
+        <CommentDrawer
+          maTinDang={videoData?.maTinDang}
+          onClose={() => setShowComments(false)}
+        />
+      )}
+
+      {/* ===================== DETAIL PANEL ===================== */}
+      <VideoDetailsPanel
+        isOpen={showDetailPanel}
+        onClose={() => setShowDetailPanel(false)}
+        loading={loadingDetail}
+        data={detailData}
+      />
+
+      {/* ===================== SHARE PANEL ===================== */}
+      {showSharePanel && videoData && (
+        <SharePanel
+          key={videoData.maTinDang}
+          isOpen={showSharePanel}
+          onClose={() => setShowSharePanel(false)}
+          tinDangId={videoData.maTinDang}
+          displayMode="Video"
+          index={currentIndex}
+          previewTitle={videoData.tieuDe}
+          previewImage={videoThumbnail}
+          previewVideo={videoData.videoUrl}
+          disableBodyScrollLock={true}
+          onShareSuccess={() =>
+            handleOptimisticShareUpdate(videoData.maTinDang)
+          }
+        />
+      )}
+
+      {/* ======================================================== */}
+      {/* ✅ THANH ĐIỀU HƯỚNG BÊN PHẢI (Đã thêm logic shift-for-comments) */}
+      {/* ======================================================== */}
+      <div className={`vdv-right-nav ${showComments ? "shift-for-comments" : ""}`}>
+        <button
+          className="vdv-nav-btn"
+          onClick={() => goToIndex(currentIndex - 1)}
+          disabled={currentIndex === 0}
+          title="Video trước"
+        >
+          <IoChevronUp size={24} />
+        </button>
+        <div className="vdv-nav-divider"></div>
+
+        <button
+          className="vdv-nav-btn"
+          onClick={() => goToIndex(currentIndex + 1)}
+          disabled={currentIndex === videoList.length - 1}
+          title="Video tiếp theo"
+        >
+          <IoChevronDown size={24} />
+        </button>
       </div>
     </div>
-
-{/* ❤️ Animation tim */}
-    {showHeart && (
-      <div className="vdv-heart-animation">
-        <IoHeart size={80} color="#ff4d6d" />
-      </div>
-    )}
-
-    {/* ===================== COMMENT DRAWER ===================== */}
-    {showComments && (
-      <CommentDrawer
-        maTinDang={videoData?.maTinDang}
-        onClose={() => setShowComments(false)}
-      />
-    )}
-
-    {/* ===================== DETAIL PANEL ===================== */}
-    <VideoDetailsPanel
-      isOpen={showDetailPanel}
-      onClose={() => setShowDetailPanel(false)}
-      loading={loadingDetail}
-      data={detailData}
-    />
-
-    {/* ===================== SHARE PANEL ===================== */}
-    {showSharePanel && videoData && (
-      <SharePanel
-        key={videoData.maTinDang}
-        isOpen={showSharePanel}
-        onClose={() => setShowSharePanel(false)}
-        tinDangId={videoData.maTinDang}
-        displayMode="Video"
-        index={currentIndex}
-        previewTitle={videoData.tieuDe}
-        previewImage={videoThumbnail}
-        previewVideo={videoData.videoUrl}
-        disableBodyScrollLock={true}
-        onShareSuccess={() =>
-          handleOptimisticShareUpdate(videoData.maTinDang)
-        }
-      />
-    )}
-
-    {/* ======================================================== */}
-    {/* ✅ THANH ĐIỀU HƯỚNG BÊN PHẢI (CODE 2 ĐÃ GHÉP) */}
-    {/* ======================================================== */}
-    <div className="vdv-right-nav">
-      <button
-        className="vdv-nav-btn"
-        onClick={() => goToIndex(currentIndex - 1)}
-        disabled={currentIndex === 0 || isAnimatingRef.current}
-        title="Video trước"
-      >
-        <IoChevronUp size={24} />
-      </button>
-      <div className="vdv-nav-divider"></div>
-
-      <button
-        className="vdv-nav-btn"
-        onClick={() => goToIndex(currentIndex + 1)}
-        disabled={
-          currentIndex === videoList.length - 1 || isAnimatingRef.current
-        }
-        title="Video tiếp theo"
-      >
-        <IoChevronDown size={24} />
-      </button>
-    </div>
-  </div>
-);
+  );
 };
 
 export default VideoDetailViewer;

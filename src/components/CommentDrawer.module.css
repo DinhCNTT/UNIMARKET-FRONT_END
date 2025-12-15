@@ -54,26 +54,42 @@
 /* ======================================================= */
 
 .overlay {
-  position: fixed; inset: 0;
-  background-color: var(--bg-overlay);
+  position: fixed; 
+  inset: 0;
+  background-color: transparent; /* Trong suốt */
   z-index: 9999;
-  display: flex; justify-content: flex-end;
+  display: flex; 
+  justify-content: flex-end;
   font-family: 'Inter', sans-serif;
-  opacity: 0; animation: fadeIn 0.2s forwards;
+  opacity: 0; 
+  animation: fadeIn 0.2s forwards;
+  pointer-events: none; /* Click xuyên qua */
 }
-
 @keyframes fadeIn { to { opacity: 1; } }
 
 .drawer {
-  width: 100%; max-width: 420px;
+  width: 100%; 
+  max-width: 390px; /* TikTok Web chuẩn thường khoảng 356px-360px */
   height: 100%;
-  background-color: var(--bg-primary); /* Dùng biến */
-  color: var(--text-primary);          /* Dùng biến */
-  display: flex; flex-direction: column;
-  transform: translateX(100%);
-  animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   
-  transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển màu mượt */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  
+  display: flex; 
+  flex-direction: column;
+  
+  transform: translateX(100%);
+  animation: slideIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; /* Easing mượt hơn */
+  transition: background-color 0.3s, color 0.3s;
+
+  pointer-events: auto; /* Bật lại click cho vùng này */
+
+  /* 🔥 THAY ĐỔI QUAN TRỌNG: VIỀN TIKTOK STYLE */
+  /* Bỏ box-shadow cũ: box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15); */
+  box-shadow: none; 
+  
+  /* Thêm đường viền trái mảnh, màu tự động theo theme */
+  border-left: 1px solid var(--border-color); 
 }
 
 @keyframes slideIn { to { transform: translateX(0); } }
