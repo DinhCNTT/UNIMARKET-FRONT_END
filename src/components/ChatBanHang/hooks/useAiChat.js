@@ -277,3 +277,4 @@ export const useAiChat = (maCuocTroChuyen, user) => {
     deleteLocalMessage: () => {},
   };
 };
+  

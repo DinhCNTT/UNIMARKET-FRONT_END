@@ -12,7 +12,7 @@
 }
 
 .item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .link {
@@ -43,7 +43,7 @@
   font-size: 12px;
 }
 
-/* Time Label (Chung) */
+/* Time Label */
 .time {
   position: absolute;
   z-index: 10;
@@ -66,21 +66,41 @@
   justify-content: space-between;
 }
 
+/* Container cho phần trên (Title, Specs, Price) */
+.infoTop {
+  display: flex;
+  flex-direction: column;
+}
+
 .itemTitle {
   font-weight: 500;
   color: #222;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0; /* Giảm margin bottom để gần dòng specs hơn */
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 15px; /* Điều chỉnh font size tiêu chuẩn */
+}
+
+/* --- [MỚI] Style cho dòng thông số (Ram, Dòng máy, Bảo hành) --- */
+.itemSpecs {
+  font-size: 13px;       /* Font nhỏ hơn title */
+  color: #888;           /* Màu xám nhạt giống hình mẫu */
+  margin-bottom: 4px; 
+  margin-top: 3px;   /* Cách giá tiền một chút */
+  white-space: nowrap;   /* Giữ trên 1 dòng */
+  overflow: hidden;      /* Ẩn nếu quá dài */
+  text-overflow: ellipsis; /* Hiện dấu ... nếu dài quá khung */
+  line-height: 1.5;
 }
 
 .price {
   font-weight: 700;
-  color: #f0325e;
-  margin: 4px 0;
+  color: #d0021b; /* Màu đỏ đậm hơn chút cho nổi bật giá */
+  margin: 2px 0 6px 0;
+  font-size: 16px;
 }
 
 /* Footer Section */
@@ -118,16 +138,16 @@
 }
 
 .userAvatar {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .userName {
-  font-size: 13px;
-  color: #444;
-  font-weight: 500;
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
 }
 
 /* =========================================
@@ -138,7 +158,7 @@
 }
 
 .listMode .content {
-  flex-direction: row; /* Ngang */
+  flex-direction: row; 
   height: 190px;
 }
 
@@ -153,7 +173,6 @@
   position: relative;
 }
 
-/* Time ở List Mode: Góc trái dưới */
 .listMode .time {
   bottom: 0;
   left: 0;
@@ -161,15 +180,21 @@
 }
 
 .listMode .info {
-  padding: 12px 16px;
+  padding: 10px 16px 12px 16px; /* Padding bạn đã chỉnh ở bước trước */
+  justify-content: flex-start;
 }
 
 .listMode .itemTitle {
   font-size: 16px;
+  -webkit-line-clamp: 1; /* Ở list mode tiêu đề thường 1 dòng cho gọn */
+}
+.listMode .bottomFooter {
+  margin-top: 20px;
+  gap: 15px
 }
 
 .listMode .price {
-  font-size: 16px;
+  font-size: 17px;
   margin-bottom: auto;
 }
 
@@ -177,13 +202,16 @@
    MODE 2: GRID MODE (Dạng lưới dọc)
    ========================================= */
 .gridMode {
-  border: none;
+  border: 1px solid transparent; /* Tránh giật layout khi hover border */
   height: 100%;
-  /* Grid item styles */
+}
+
+.gridMode:hover {
+    border-color: #f0f0f0;
 }
 
 .gridMode .content {
-  flex-direction: column; /* Dọc */
+  flex-direction: column; 
   height: 100%;
 }
 
@@ -197,27 +225,19 @@
   position: relative;
 }
 
-/* Time ở Grid Mode: Góc phải trên */
 .gridMode .time {
   top: 10px;
   right: 10px;
   border-radius: 12px;
 }
 
-.gridMode .itemTitle {
-  font-size: 15px;
-}
-
-.gridMode .price {
-  font-size: 15px;
-}
-
 .gridMode .bottomFooter {
   flex-direction: row;
-  margin-top: 0;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
-/* Ẩn User Row khi ở Grid Mode theo yêu cầu */
+/* Ẩn User Row khi ở Grid Mode (theo code cũ của bạn) */
 .gridMode .userRow {
   display: none;
 }
