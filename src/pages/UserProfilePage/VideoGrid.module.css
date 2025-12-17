@@ -1,4 +1,3 @@
-/* Gần giống PostGrid.module.css, chỉ khác phần grid và card */
 .tabContent {
   padding: 32px;
 }
@@ -27,72 +26,54 @@
   font-weight: 600;
 }
 
-.gridSection {
-  position: relative;
-}
-
-.gridContainer.showAll {
-  max-height: calc(100vh - 400px);
-  min-height: 500px;
-  overflow-y: auto;
-  border: 1px solid var(--theme-border-color);
-  scrollbar-color: #ff6600 var(--theme-bg-hover);
-  border-radius: 12px;
-  padding: 16px;
-  scrollbar-width: thin;
-}
-
-.gridContainer.showAll::-webkit-scrollbar {
-  width: 8px;
-}
-.gridContainer.showAll::-webkit-scrollbar-track {
-  background: var(--theme-bg-hover);
-  border-radius: 4px;
-}
-.gridContainer.showAll::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #ff6600, #ff8533);
-  border-radius: 4px;
-}
-
+/* ✅ CHỈNH LƯỚI GRID THÀNH 6 CỘT */
 .videosGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(6, 1fr); /* 6 video 1 hàng */
+  gap: 10px;
   margin-bottom: 24px;
+
+  /* --- CẬP NHẬT MỚI --- */
+  margin-top: -20px;   /* Đẩy lên cao (số càng nhỏ càng lên cao) */
+  margin-left: -15px;  /* Kéo sang trái (lấn ra ngoài lề trái) */
+  
+  /* Nếu kéo sang trái làm bên phải bị hụt, hãy thêm dòng dưới để bù lại độ rộng: */
+  width: calc(100% + 15px); 
+}
+/* Responsive: Màn hình nhỏ thì giảm cột xuống */
+@media (max-width: 1200px) {
+  .videosGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .videosGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .videoCard {
-  background: var(--theme-bg-primary);
-  box-shadow: var(--theme-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
-  border: 1px solid var(--theme-border-color);
-  border-radius: 16px;
+  background: black;
+  border-radius: 8px; /* Bo góc ít hơn cho giống TikTok/Reels */
   overflow: hidden;
-  transition: all 0.3s ease;
   cursor: pointer;
-  aspect-ratio: 9/16;
-}
-
-.videoCard:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--theme-shadow-hover, 0 8px 32px rgba(0, 0, 0, 0.12));
+  aspect-ratio: 3/4; /* Tỉ lệ dọc video */
+  position: relative;
 }
 
 .videoWrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #000;
-  border-radius: 16px;
-  overflow: hidden;
 }
 
 .videoPlayer {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 16px;
 }
 
+/* ✅ GRADIENT ĐEN Ở DƯỚI ĐỂ NỔI BẬT CHỮ TRẮNG */
 .videoOverlay {
   position: absolute;
   top: 0;
@@ -101,53 +82,61 @@
   bottom: 0;
   background: linear-gradient(
     to bottom,
-    transparent 0%,
     transparent 70%,
-    rgba(0, 0, 0, 0.7) 100%
+    rgba(0, 0, 0, 0.6) 100%
   );
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 12px;
+  justify-content: flex-end; /* Đẩy nội dung xuống đáy */
+  padding: 8px;
   pointer-events: none;
 }
 
-.videoTitle {
-  font-size: 12px;
-  font-weight: 600;
-  color: white;
-  margin: 0;
-  line-height: 1.3;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* ✅ STYLE CHO SỐ VIEW VÀ ICON PLAY */
+.viewCountBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  color: #ffffff;
+  font-size: 13px;              
+  font-weight: 600;             
+  letter-spacing: 0.2px;        
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  line-height: 1.2;
 }
 
+
+.playIcon {
+  font-size: 16px;
+}
+
+/* Phần nút xem thêm giữ nguyên */
 .showMoreContainer {
   text-align: center;
   margin-top: 24px;
+  display: flex;
+  justify-content: center;
 }
+
 .showMoreBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 160px;
-  padding: 12px 0;
-  background: linear-gradient(135deg, #ff6600, #ff8533);
-  color: white;
-  border: none;
+  padding: 10px 24px;
+  background: var(--theme-bg-hover); /* Màu nhẹ hơn */
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border-color);
   border-radius: 25px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
-  margin-left: -840px;
+  transition: all 0.2s ease;
 }
+
 .showMoreBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4);
+  background: var(--theme-border-color);
 }

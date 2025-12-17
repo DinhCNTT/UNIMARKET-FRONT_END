@@ -38,7 +38,6 @@ import TrangChat from "../pages/TrangChat";
 // --- VIDEO COMPONENTS ---
 import VideoPage from "../pages/VideoPage"; 
 import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; 
-import VideoLikedPage from "../components/VideoLikedPage"; 
 import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer cũ (Giữ nguyên)
 
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
@@ -126,7 +125,6 @@ function AppRoutes() {
       />
 
       <Route path="/search/:keyword" element={<VideoSearchPage />} />
-      <Route path="/video-da-tym" element={<VideoLikedPage />} />
 
       <Route 
         path="/video-viewer/:maTinDang" 

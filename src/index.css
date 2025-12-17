@@ -1,19 +1,21 @@
-/* Trong file index.css hoặc App.css */
+/* src/index.css */
+
 * {
- margin: 0;
-padding: 0;
- box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body {
- overflow-x: clip;
+/* ✅ ĐÂY LÀ CHÌA KHÓA: Sử dụng clip để cắt phần thừa ngang mà không ảnh hưởng Sticky */
+body, html {
+  overflow-x: clip !important; 
+  /* 'clip' tốt hơn 'hidden' vì nó hỗ trợ sticky tốt hơn trên trình duyệt hiện đại */
 }
-/* Thêm html vào danh sách này */
-html, 
-body, 
+
+/* ❌ BỎ 'html' và 'body' ra khỏi danh sách dưới đây */
 #root, 
 .marketplace-page, 
 .main-content, 
 .section-wrapper {
-    overflow: visible !important; /* Bắt buộc hiện để sticky chạy */
+   overflow: visible !important; /* Giữ lại cái này cho các div con để Sticky hoạt động */
 }

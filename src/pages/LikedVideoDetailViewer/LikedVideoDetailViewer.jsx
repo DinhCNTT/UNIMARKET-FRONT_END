@@ -4,8 +4,8 @@ import React, {
   useRef,
   useCallback,
   useContext,
+  useMemo,
 } from "react";
-// ✅ 1. Import createPortal để đưa giao diện ra ngoài khung chat
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeftCircle, FiChevronUp, FiChevronDown } from "react-icons/fi";
@@ -24,72 +24,89 @@ import VideoActions from "../../components/VideoDetails/VideoActions";
 import CommentSection from "../../components/CommentSection/CommentSection";
 import VideoVolumeControl from "../../components/VideoPlayer/VideoVolumeControl";
 
-export default function LikedVideoDetailViewer({ 
-  isOverlay = false, 
-  passedVideoData = null, 
-  onClose 
+export default function LikedVideoDetailViewer({
+  isOverlay = false,
+  passedVideoData = null,
+  onClose,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { maTinDang: paramMaTinDang } = useParams();
 
   // ==========================================
-  // 1. KHỞI TẠO DỮ LIỆU (HỖ TRỢ CẢ ROUTER VÀ OVERLAY)
+  // 1. KHỞI TẠO DỮ LIỆU
   // ==========================================
-  
-  // Lấy dữ liệu từ Router state (trường hợp không phải overlay)
-  const { 
-    videos: stateVideos, 
-    videoList: stateVideoList, 
+
+  const {
+    videos: stateVideos,
+    videoList: stateVideoList,
     initialIndex: stateInitialIndex = 0,
-    returnPath 
+    returnPath,
   } = location.state || {};
 
-  // Xác định danh sách video ban đầu
-  const initialVideos = isOverlay && passedVideoData 
-      ? [passedVideoData] 
-      : (stateVideos || stateVideoList || null);
+  const initialVideos =
+    isOverlay && passedVideoData
+      ? [passedVideoData]
+      : stateVideos || stateVideoList || null;
 
   const [videoList, setVideoList] = useState(initialVideos);
-  // Nếu là Overlay thì index luôn là 0, ngược lại lấy từ state
-  const [currentIndex, setCurrentIndex] = useState(isOverlay ? 0 : stateInitialIndex);
-  
-  // State quản lý chuyển cảnh (scroll debounce)
+  const [currentIndex, setCurrentIndex] = useState(
+    isOverlay ? 0 : stateInitialIndex
+  );
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   const { videoConnection } = useContext(VideoHubContext);
 
-  // --- Logic lấy video hiện tại (Shallow Video) ---
+  // --- Logic lấy video ban đầu (Shallow) ---
   const getInitialShallowVideo = () => {
     if (initialVideos && initialVideos[currentIndex]) {
       return initialVideos[currentIndex];
     }
-    // Fallback: Vào bằng link trực tiếp (Router)
     if (paramMaTinDang && !isOverlay) {
       return { maTinDang: paramMaTinDang };
     }
     return null;
   };
 
-  // Cập nhật nếu passedVideoData thay đổi (khi click tin nhắn khác lúc đang mở overlay)
+  // Cập nhật nếu passedVideoData thay đổi
   useEffect(() => {
     if (isOverlay && passedVideoData) {
-        setVideoList([passedVideoData]);
-        setCurrentIndex(0);
+      setVideoList([passedVideoData]);
+      setCurrentIndex(0);
     }
   }, [passedVideoData, isOverlay]);
 
   const [initialShallowVideo] = useState(getInitialShallowVideo());
 
-  // Video đang được chọn
-  const shallowVideo = videoList ? videoList[currentIndex] : initialShallowVideo;
-  const maTinDangString = shallowVideo?.maTinDang?.toString();
+  // Video từ List (dữ liệu sơ sài)
+  const shallowVideo = videoList
+    ? videoList[currentIndex]
+    : initialShallowVideo;
 
   // ==========================================
-  // 2. CÁC HOOKS TƯƠNG TÁC
+  // ⚡ FIX LỖI: CHUẨN HÓA DỮ LIỆU (Mapping)
+  // ==========================================
+  // Dù dữ liệu đầu vào là 'videoDuongDan' (từ Grid) hay 'videoUrl' (từ API)
+  // thì đều quy về 'videoUrl' để tránh bị undefined gây lỗi Hook.
+  const normalizeVideoData = (vid) => {
+    if (!vid) return null;
+    return {
+      ...vid,
+      videoUrl: vid.videoUrl || vid.videoDuongDan || "", // Ưu tiên Url, fallback sang DuongDan
+      anhBia: vid.anhBia || vid.thumbnailUrl || "", // Ví dụ thêm fallback ảnh bìa
+    };
+  };
+
+  const normalizedShallow = useMemo(
+    () => normalizeVideoData(shallowVideo),
+    [shallowVideo]
+  );
+  
+  // ==========================================
+  // 2. HOOKS TƯƠNG TÁC
   // ==========================================
 
-  // --- Hook Tương tác (Like/Save) ---
+  // Hook lấy dữ liệu đầy đủ từ API
   const {
     fullVideo,
     isLiked,
@@ -99,9 +116,21 @@ export default function LikedVideoDetailViewer({
     iconCircleRef,
     handleLike,
     handleToggleSave,
-  } = useVideoInteractions(shallowVideo, currentIndex);
+  } = useVideoInteractions(normalizedShallow, currentIndex);
 
-  // --- Hook Player (Play/Pause/Volume) ---
+  // Chuẩn hóa video đầy đủ (nếu đã tải xong)
+  const normalizedFull = useMemo(
+    () => normalizeVideoData(fullVideo),
+    [fullVideo]
+  );
+
+  // Video cuối cùng để hiển thị (Ưu tiên full > shallow)
+  const videoToDisplay = normalizedFull || normalizedShallow;
+  
+  // Đảm bảo luôn có 1 chuỗi URL, tránh undefined truyền vào hook
+  const safeVideoUrl = videoToDisplay?.videoUrl || ""; 
+
+  // --- Hook Player ---
   const {
     playerRef,
     bgPlayerRef,
@@ -115,7 +144,7 @@ export default function LikedVideoDetailViewer({
     handleVolumeChange,
     toggleMute,
     setIsPlaying,
-  } = useVideoPlayer(fullVideo?.videoUrl || shallowVideo?.videoUrl);
+  } = useVideoPlayer(safeVideoUrl); // ✅ Truyền URL đã chuẩn hóa
 
   // --- Hook Comments ---
   const {
@@ -124,23 +153,18 @@ export default function LikedVideoDetailViewer({
     currentUserId,
     submitComment,
     deleteComment,
-  } = useComments(shallowVideo?.maTinDang);
+  } = useComments(videoToDisplay?.maTinDang);
 
   // ==========================================
-  // 3. XỬ LÝ SỰ KIỆN & NAVIGATE
+  // 3. LOGIC SỰ KIỆN
   // ==========================================
 
-  // --- Xử lý nút Back thông minh ---
   const handleGoBack = (e) => {
     e?.stopPropagation();
-    
-    // Nếu là Overlay, gọi hàm đóng của cha
     if (isOverlay && onClose) {
-        onClose();
-        return;
+      onClose();
+      return;
     }
-
-    // Logic Router cũ
     if (returnPath) {
       navigate(returnPath);
     } else {
@@ -148,7 +172,6 @@ export default function LikedVideoDetailViewer({
     }
   };
 
-  // --- Logic Click Double Tim ---
   const clickTimeoutRef = useRef(null);
   const clickCountRef = useRef(0);
 
@@ -157,7 +180,7 @@ export default function LikedVideoDetailViewer({
     if (clickCountRef.current >= 2) {
       if (!isLiked) handleLike(showHeart);
       else showHeart();
-      
+
       clickCountRef.current = 0;
       clearTimeout(clickTimeoutRef.current);
     } else {
@@ -170,27 +193,19 @@ export default function LikedVideoDetailViewer({
     }
   }, [isLiked, handleLike, showHeart, togglePlayPause]);
 
-  // --- Logic Cuộn chuột để đổi video ---
   const handleWheelOnVideo = (e) => {
-    // Nếu Overlay hoặc list chỉ có 1 video -> KHÔNG cuộn
     if (isTransitioning || !videoList || videoList.length <= 1) return;
-
     const delta = e.deltaY;
     const SCROLL_THRESHOLD = 30;
-
     if (Math.abs(delta) < SCROLL_THRESHOLD) return;
 
     let nextIndex = currentIndex;
-
-    // Lăn xuống -> Video tiếp theo
     if (delta > 0 && nextIndex < videoList.length - 1) {
       nextIndex++;
-    } 
-    // Lăn lên -> Video trước đó
-    else if (delta < 0 && nextIndex > 0) {
+    } else if (delta < 0 && nextIndex > 0) {
       nextIndex--;
     } else {
-      return; 
+      return;
     }
 
     if (nextIndex !== currentIndex) {
@@ -200,18 +215,17 @@ export default function LikedVideoDetailViewer({
     }
   };
 
-  // Hàm hỗ trợ nút bấm Next/Prev
   const handleNextVideo = (e) => {
     e.stopPropagation();
     if (currentIndex < (videoList?.length || 0) - 1) {
-        setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
   };
-  
+
   const handlePrevVideo = (e) => {
     e.stopPropagation();
     if (currentIndex > 0) {
-        setCurrentIndex(prev => prev - 1);
+      setCurrentIndex((prev) => prev - 1);
     }
   };
 
@@ -219,89 +233,100 @@ export default function LikedVideoDetailViewer({
   // 4. SIGNALR & RENDER
   // ==========================================
 
+  const maTinDangString = videoToDisplay?.maTinDang?.toString();
+
   useEffect(() => {
     if (videoConnection && maTinDangString) {
-      videoConnection.invoke("JoinVideoGroup", maTinDangString).catch(console.error);
+      // Kiểm tra kết nối trước khi invoke để tránh lỗi ngắt kết nối
+      if (videoConnection.state === "Connected") {
+          videoConnection
+            .invoke("JoinVideoGroup", maTinDangString)
+            .catch((err) => console.error("SignalR Join Error:", err));
+      }
+      
       return () => {
-        videoConnection.invoke("LeaveVideoGroup", maTinDangString).catch(console.error);
+        if (videoConnection.state === "Connected") {
+            videoConnection
+              .invoke("LeaveVideoGroup", maTinDangString)
+              .catch((err) => console.error("SignalR Leave Error:", err));
+        }
       };
     }
   }, [videoConnection, maTinDangString]);
 
-  const videoToDisplay = fullVideo || shallowVideo;
-
+  // Nếu chưa có thông tin cơ bản (maTinDang), hiển thị Loading
   if (!videoToDisplay?.maTinDang)
     return <div className={styles.loading}>Đang tải video...</div>;
 
-  // ✅ CSS Style đè lên nếu là Overlay để chiếm toàn màn hình
-  const overlayStyle = isOverlay ? {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw', // Full chiều ngang
-    height: '100vh', // Full chiều dọc
-    zIndex: 99999, // Đè lên tất cả mọi thứ
-    backgroundColor: '#000', 
-    display: 'flex', // Giữ layout flex
-  } : {};
+  const overlayStyle = isOverlay
+    ? {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 99999,
+        backgroundColor: "#000",
+        display: "flex",
+      }
+    : {};
 
-  // ✅ Tạo biến content chứa toàn bộ giao diện
   const content = (
     <div className={styles.container} style={overlayStyle}>
-      
       {/* --- CỘT TRÁI: VIDEO PLAYER --- */}
-      <div 
-        className={styles.videoSide} 
+      <div
+        className={styles.videoSide}
         onClick={handleClickVideo}
-        onWheel={handleWheelOnVideo} 
+        onWheel={handleWheelOnVideo}
       >
-        <button
-          className={styles.backBtn}
-          onClick={handleGoBack}
-        >
+        <button className={styles.backBtn} onClick={handleGoBack}>
           <FiArrowLeftCircle size={24} />
         </button>
 
-        <VideoPlayer
-          videoUrl={videoToDisplay.videoUrl}
-          playerRef={playerRef}
-          bgPlayerRef={bgPlayerRef}
-          audioRef={audioRef}
-          isPlaying={isPlaying}
-          isMuted={isMuted}
-          volume={volume}
-          showHeartEffect={showHeartEffect}
-          setIsPlaying={setIsPlaying}
-          toggleMute={toggleMute}
-          handleVolumeChange={handleVolumeChange}
-        />
+        {/* ✅ FIX: Chỉ render Player khi có URL để tránh component con bị crash */}
+        {safeVideoUrl ? (
+            <VideoPlayer
+            videoUrl={safeVideoUrl}
+            playerRef={playerRef}
+            bgPlayerRef={bgPlayerRef}
+            audioRef={audioRef}
+            isPlaying={isPlaying}
+            isMuted={isMuted}
+            volume={volume}
+            showHeartEffect={showHeartEffect}
+            setIsPlaying={setIsPlaying}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            />
+        ) : (
+            <div className={styles.loading}>Đang tải nguồn video...</div>
+        )}
 
         <div className={styles.volumeWrapper}>
-           <VideoVolumeControl
+          <VideoVolumeControl
             volume={volume}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
           />
         </div>
 
-        {/* Ẩn nút điều hướng nếu chỉ có 1 video */}
         {videoList && videoList.length > 1 && (
-            <div className={styles.navButtons}>
-                <button 
-                    className={styles.navBtn} 
-                    onClick={handlePrevVideo} 
-                    disabled={currentIndex === 0}
-                >
-                    <FiChevronUp size={24} />
-                </button>
-                <button 
-                    className={styles.navBtn} 
-                    onClick={handleNextVideo}
-                    disabled={currentIndex === (videoList?.length || 0) - 1}
-                >
-                    <FiChevronDown size={24} />
-                </button>
-            </div>
+          <div className={styles.navButtons}>
+            <button
+              className={styles.navBtn}
+              onClick={handlePrevVideo}
+              disabled={currentIndex === 0}
+            >
+              <FiChevronUp size={24} />
+            </button>
+            <button
+              className={styles.navBtn}
+              onClick={handleNextVideo}
+              disabled={currentIndex === (videoList?.length || 0) - 1}
+            >
+              <FiChevronDown size={24} />
+            </button>
+          </div>
         )}
       </div>
 
@@ -315,8 +340,9 @@ export default function LikedVideoDetailViewer({
           deleteComment={deleteComment}
         >
           <div className={styles.infoHeader}>
+            {/* Truyền video đã chuẩn hóa vào Info */}
             <VideoInfo video={videoToDisplay} />
-            
+
             <div className={styles.actionWrapper}>
               <VideoActions
                 video={videoToDisplay}
@@ -336,11 +362,9 @@ export default function LikedVideoDetailViewer({
     </div>
   );
 
-  // ✅ QUAN TRỌNG: Dùng Portal để đưa content ra khỏi Chat Box nếu là Overlay
   if (isOverlay) {
     return createPortal(content, document.body);
   }
 
-  // Trường hợp dùng Router bình thường
   return content;
 }

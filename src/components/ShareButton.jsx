@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Share2, Copy, Facebook, Twitter, Send, Link, X } from 'lucide-react';
+import { Share2, Copy, Facebook, Twitter, Send, X, Link } from 'lucide-react';
 import './ShareButton.css';
 import { useTheme } from '../context/ThemeContext';
+
 const ShareButton = ({ profileUser }) => {
   const { effectiveTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ const ShareButton = ({ profileUser }) => {
   const currentUrl = window.location.href;
   const shareTitle = `Trang cá nhân của ${profileUser?.fullName || 'Người dùng'}`;
 
-  // Effect xử lý mở/đóng dropdown
+  // Effect xử lý mở/đóng dropdown (Giữ nguyên logic cũ)
   useEffect(() => {
     const handleClickOutside = (event) => {
       const portalElement = document.getElementById('UserProfile-ShareButton-dropdownPortal');
@@ -51,7 +52,6 @@ const ShareButton = ({ profileUser }) => {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
-      // Fallback cho old browsers
       const textArea = document.createElement('textarea');
       textArea.value = currentUrl;
       document.body.appendChild(textArea);
@@ -90,7 +90,7 @@ const ShareButton = ({ profileUser }) => {
         {/* Overlay */}
         <div className="UserProfile-ShareButton-overlay" onClick={() => setIsOpen(false)} />
         
-        {/* Dropdown - LUÔN Ở GIỮA MÀN HÌNH */}
+        {/* Dropdown - Giao diện mới */}
         <div 
           id="UserProfile-ShareButton-dropdownPortal" 
           className="UserProfile-ShareButton-dropdown"
@@ -98,57 +98,52 @@ const ShareButton = ({ profileUser }) => {
         >
           {/* Header */}
           <div className="UserProfile-ShareButton-header">
-            <h4 className="UserProfile-ShareButton-title">Chia sẻ trang cá nhân</h4>
+            <h4 className="UserProfile-ShareButton-title">Chia sẻ đến</h4>
             <button
               onClick={() => setIsOpen(false)}
               className="UserProfile-ShareButton-closeBtn"
             >
-              <X size={16} />
+              <X size={20} />
             </button>
           </div>
 
-          {/* Copy Link Section */}
-          <div className="UserProfile-ShareButton-copySection">
-            <div className="UserProfile-ShareButton-copyContainer">
-              <div className="UserProfile-ShareButton-linkInputWrapper">
-                <Link size={16} className="UserProfile-ShareButton-linkIcon" />
-                <input 
-                  type="text" 
-                  value={currentUrl} 
-                  readOnly 
-                  className="UserProfile-ShareButton-linkInput"
-                />
-              </div>
-              <button
-                onClick={copyToClipboard}
-                className={`UserProfile-ShareButton-copyBtn ${copySuccess ? 'success' : ''}`}
-              >
-                <Copy size={14} />
-                {copySuccess ? 'Đã copy!' : 'Copy'}
-              </button>
-            </div>
-          </div>
-
-          {/* Social Share Buttons */}
-          <div className="UserProfile-ShareButton-socialSection">
-            <div className="UserProfile-ShareButton-socialLabel">Hoặc chia sẻ qua:</div>
+          {/* Grid chứa các icon tròn */}
+          <div className="UserProfile-ShareButton-grid">
             
-            <div className="UserProfile-ShareButton-socialButtons">
-              <button onClick={shareToFacebook} className="UserProfile-ShareButton-socialBtn facebook">
-                <Facebook size={18} />
-                <span>Facebook</span>
-              </button>
+            {/* Nút Copy Link */}
+            <button onClick={copyToClipboard} className="UserProfile-ShareButton-item">
+              <div className={`UserProfile-ShareButton-iconCircle copy ${copySuccess ? 'success' : ''}`}>
+                {copySuccess ? <Copy size={24} /> : <Link size={24} />}
+              </div>
+              <span className="UserProfile-ShareButton-label">
+                {copySuccess ? 'Đã copy' : 'Sao chép'}
+              </span>
+            </button>
 
-              <button onClick={shareToTwitter} className="UserProfile-ShareButton-socialBtn twitter">
-                <Twitter size={18} />
-                <span>Twitter</span>
-              </button>
+            {/* Facebook */}
+            <button onClick={shareToFacebook} className="UserProfile-ShareButton-item">
+              <div className="UserProfile-ShareButton-iconCircle facebook">
+                <Facebook size={24} fill="white" />
+              </div>
+              <span className="UserProfile-ShareButton-label">Facebook</span>
+            </button>
 
-              <button onClick={shareToTelegram} className="UserProfile-ShareButton-socialBtn telegram">
-                <Send size={18} />
-                <span>Telegram</span>
-              </button>
-            </div>
+            {/* Telegram */}
+            <button onClick={shareToTelegram} className="UserProfile-ShareButton-item">
+              <div className="UserProfile-ShareButton-iconCircle telegram">
+                <Send size={24} />
+              </div>
+              <span className="UserProfile-ShareButton-label">Telegram</span>
+            </button>
+
+            {/* Twitter / X */}
+            <button onClick={shareToTwitter} className="UserProfile-ShareButton-item">
+              <div className="UserProfile-ShareButton-iconCircle twitter">
+                <Twitter size={24} fill="white" />
+              </div>
+              <span className="UserProfile-ShareButton-label">Twitter</span>
+            </button>
+
           </div>
         </div>
       </div>

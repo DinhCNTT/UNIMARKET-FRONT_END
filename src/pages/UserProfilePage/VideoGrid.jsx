@@ -3,28 +3,43 @@ import { useNavigate } from "react-router-dom";
 import styles from "./VideoGrid.module.css";
 import EmptyState from "../../components/Common/EmptyState/EmptyState";
 import { CiVideoOff } from "react-icons/ci";
+import { IoPlayOutline } from "react-icons/io5";
 
 const VideoGrid = ({ videos }) => {
   const [showMoreVideos, setShowMoreVideos] = useState(false);
   const navigate = useNavigate();
   const videoRefs = useRef([]);
 
-  // ✅ Logic hover đã được chuyển vào đây
-  const handleVideoHover = (video, shouldPlay) => {
-    if (!video) return;
+  const formatViewCount = (count) => {
+    if (!count) return "0";
+    if (count >= 1000000) return (count / 1000000).toFixed(1) + "M";
+    if (count >= 1000) return (count / 1000).toFixed(1) + "K";
+    return count.toString();
+  };
 
-    if (shouldPlay) {
-      video.currentTime = 0;
-      video.play().catch(() => {});
-      setTimeout(() => {
-        if (video) video.pause();
-      }, 5000);
-    } else {
-      video.pause();
+  // --- XỬ LÝ HOVER VIDEO ---
+  const handleMouseEnter = (index) => {
+    const video = videoRefs.current[index];
+    if (video) {
+      // Promise để tránh lỗi "The play() request was interrupted"
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          // Auto-play was prevented (thường do chưa mute hoặc trình duyệt chặn)
+          console.log("Auto-play prevented");
+        });
+      }
     }
   };
 
-  // ✅ Logic click đã được chuyển vào đây
+  const handleMouseLeave = (index) => {
+    const video = videoRefs.current[index];
+    if (video) {
+      video.pause();
+      video.currentTime = 0; // Reset về đầu khi chuột rời đi
+    }
+  };
+
   const handleVideoClick = (clickedVideo, videoIndex) => {
     navigate(`/video-search-detail/${clickedVideo.maTinDang}`, {
       state: {
@@ -35,7 +50,7 @@ const VideoGrid = ({ videos }) => {
     });
   };
 
-  if (videos.length === 0) {
+  if (!videos || videos.length === 0) {
     return (
       <EmptyState
         icon={<CiVideoOff />}
@@ -45,55 +60,38 @@ const VideoGrid = ({ videos }) => {
     );
   }
 
-  const displayedVideos = showMoreVideos ? videos : videos.slice(0, 10);
+  const displayedVideos = showMoreVideos ? videos : videos.slice(0, 12);
 
   return (
     <div className={styles.tabContent}>
       <div className={styles.gridSection}>
-        <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>Danh sách video</h3>
-          <div className={styles.sectionCount}>{videos.length} video</div>
-        </div>
-
-        <div
-          className={`${styles.gridContainer} ${
-            showMoreVideos ? styles.showAll : ""
-          }`}
-        >
+        <div className={`${styles.gridContainer} ${showMoreVideos ? styles.showAll : ""}`}>
           <div className={styles.videosGrid}>
             {displayedVideos.map((video, index) => (
               <div
-                key={video.maTinDang}
+                key={video.maTinDang || index}
                 className={styles.videoCard}
                 onClick={() => handleVideoClick(video, index)}
-                onMouseEnter={(e) => {
-                  const videoElement = e.currentTarget.querySelector("video");
-                  handleVideoHover(videoElement, true);
-                }}
-                onMouseLeave={(e) => {
-                  const videoElement = e.currentTarget.querySelector("video");
-                  handleVideoHover(videoElement, false);
-                }}
+                onMouseEnter={() => handleMouseEnter(index)}
+                onMouseLeave={() => handleMouseLeave(index)}
               >
                 <div className={styles.videoWrapper}>
                   <video
                     ref={(el) => (videoRefs.current[index] = el)}
-                    src={video.videoUrl}
+                    // Ưu tiên dùng videoUrl hoặc videoDuongDan tùy API trả về
+                    src={video.videoUrl || video.videoDuongDan} 
+                    poster={video.anhBia}
                     loop
-                    muted
+                    muted // Bắt buộc phải muted mới auto play được trên Chrome
+                    preload="metadata" // Load frame đầu tiên để tránh màn hình đen
                     playsInline
-                    preload="metadata"
                     className={styles.videoPlayer}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVideoClick(video, index);
-                    }}
                   />
+                  
                   <div className={styles.videoOverlay}>
-                    <div className={styles.videoInfo}>
-                      <h4 className={styles.videoTitle} title={video.tieuDe}>
-                        {video.tieuDe}
-                      </h4>
+                    <div className={styles.viewCountBadge}>
+                      <IoPlayOutline className={styles.playIcon} />
+                      <span>{formatViewCount(video.views || video.luotXem || 0)}</span>
                     </div>
                   </div>
                 </div>
@@ -102,17 +100,13 @@ const VideoGrid = ({ videos }) => {
           </div>
         </div>
 
-        {videos.length > 10 && (
+        {videos.length > 12 && (
           <div className={styles.showMoreContainer}>
             <button
               className={styles.showMoreBtn}
               onClick={() => setShowMoreVideos(!showMoreVideos)}
             >
-              {showMoreVideos ? (
-                <>Thu gọn ↑</>
-              ) : (
-                <>Xem thêm ({videos.length - 10} video) ↓</>
-              )}
+              {showMoreVideos ? "Thu gọn ↑" : `Xem thêm (${videos.length - 12} video) ↓`}
             </button>
           </div>
         )}

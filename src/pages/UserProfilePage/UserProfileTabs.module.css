@@ -3,21 +3,23 @@
   background-color: var(--theme-bg-primary);
   border-bottom: 1px solid var(--theme-border-color);
   padding-left: 12px;
-  gap: 6px;
-  width: fit-content;
+  /* Đổi gap rộng ra một chút cho thoáng giống TikTok desktop */
+  gap: 20px; 
+  width: 100%; /* Đổi từ fit-content thành 100% hoặc cụ thể để dàn trải đẹp hơn */
+  min-width: 400px;
   position: relative;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Underline chung */
+/* Các phần khác giữ nguyên */
 .tabsContainer::after {
   content: "";
   position: absolute;
   bottom: 0;
-  left: var(--underline-left, 0); /* ✅ Dùng CSS variable */
-  width: var(--underline-width, 0); /* ✅ Dùng CSS variable */
+  left: var(--underline-left, 0);
+  width: var(--underline-width, 0);
   height: 2px;
-  background: #ff6600;
+  background: var(--theme-text-primary); /* TikTok dùng màu đen/trắng theo theme cho underline, hoặc cam nếu bạn muốn giữ style cũ */
   border-radius: 1px;
   transition: all 0.3s ease;
 }
@@ -26,24 +28,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: 8px; /* Tăng khoảng cách icon và chữ */
+  padding: 12px 14px;
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 16px; /* Font to hơn chút cho giống TikTok Desktop */
   font-weight: 600;
   color: var(--theme-text-secondary);
   cursor: pointer;
   transition: color 0.25s ease;
   position: relative;
   outline: none;
+  /* Font Family nếu cần thiết */
+  font-family: 'ProximaNova', system-ui, -apple-system, sans-serif;
 }
 
 .tab:hover {
-  color: #ff6600;
+  color: var(--theme-text-primary); /* Hover thành màu đậm thay vì cam */
   background: none;
 }
+
 .tab.active {
-  color: #ff6600;
+  color: var(--theme-text-primary); /* Active là màu đậm (đen/trắng) */
   background: none;
 }
