@@ -6,8 +6,9 @@ import Swal from "sweetalert2";
 
 const PAGE_SIZE = 30;
 
-// Helper: Map tin nhắn AI (có parse JSON)
+// ✅ FIX: Hàm map message thông minh, tự động "bóc" JSON bất kể ID người gửi
 const mapAiMessage = (msg) => {
+  // 1. Xử lý thời gian (Giữ nguyên logic cũ của bạn)
   let timeStr = msg.thoiGianGui || msg.thoiGian;
   if (timeStr && typeof timeStr === "string" && !timeStr.endsWith("Z")) {
     timeStr += "Z";
@@ -20,26 +21,53 @@ const mapAiMessage = (msg) => {
       : new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
     thoiGianGui: timeStr || new Date().toISOString(),
     daXem: msg.daXem || false,
-    isAi: msg.maNguoiGui === "uni.ai" || msg.maNguoiGui === "ai-assistant",
+    // Logic cũ: base.isAi phụ thuộc vào ID -> Dễ sai nếu ID thay đổi
+    isAi: msg.maNguoiGui === "uni.ai" || msg.maNguoiGui === "ai-assistant", 
   };
 
-  // ✅ Parse JSON của AI nếu có
-  if (base.isAi && typeof msg.noiDung === "string") {
-    try {
-      const trimmed = msg.noiDung.trim();
+  // 2. Logic mới: Cố gắng parse nội dung bất kể là ai gửi
+  let parsedContent = null;
+  let rawContent = msg.noiDung;
+
+  try {
+    // Trường hợp 1: Nội dung đã là Object (do axios tự parse)
+    if (typeof rawContent === "object" && rawContent !== null) {
+      parsedContent = rawContent;
+    } 
+    // Trường hợp 2: Nội dung là String JSON (thường gặp nhất)
+    else if (typeof rawContent === "string") {
+      const trimmed = rawContent.trim();
       if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-        const parsed = JSON.parse(trimmed);
-        return {
-          ...base,
-          noiDung: parsed.replyText || parsed.ReplyText || parsed.text || base.noiDung,
-          aiSuggestions: parsed.suggestedProducts || parsed.SuggestedProducts || parsed.suggestions || null,
-          clarifyingQuestion: parsed.clarifyingQuestion || parsed.ClarifyingQuestion || null,
-        };
+        parsedContent = JSON.parse(trimmed);
       }
-    } catch (e) {
-      // Parse lỗi thì giữ nguyên nội dung gốc
+    }
+  } catch (e) {
+    // Parse lỗi thì thôi, coi như tin nhắn thường
+  }
+
+  // 3. Nếu Parse thành công và tìm thấy các key đặc trưng của AI
+  if (parsedContent) {
+    const replyText =
+      parsedContent.replyText ||
+      parsedContent.ReplyText ||
+      parsedContent.reply ||
+      parsedContent.message ||
+      parsedContent.text ||
+      parsedContent.content; // Thêm vài case dự phòng
+
+    // Nếu tìm thấy text sạch -> Đây chắc chắn là tin nhắn AI (hoặc hệ thống)
+    if (replyText) {
+      return {
+        ...base,
+        noiDung: replyText, // ✅ Lấy nội dung sạch
+        isAi: true, // ✅ Force set là AI để hiển thị icon Bot
+        aiSuggestions: parsedContent.suggestedProducts || parsedContent.SuggestedProducts || parsedContent.suggestions || null,
+        clarifyingQuestion: parsedContent.clarifyingQuestion || parsedContent.ClarifyingQuestion || null,
+      };
     }
   }
+
+  // Trả về mặc định nếu không phải JSON đặc biệt
   return base;
 };
 

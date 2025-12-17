@@ -5,28 +5,27 @@
 /* --- TẠO KHỐI TRẮNG BAO QUANH --- */
 .filterContainer {
   background-color: #fff;
-  padding: 16px 20px; /* Tăng padding một chút cho thoáng */
+  padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Khoảng cách giữa Header và các nút filter */
-  
+  gap: 12px;
   font-family: 'Reddit Sans', sans-serif;
-  margin-top: 10px; /* Cách search bar bên trên một chút */
+  margin-top: 10px;
 }
 
-/* --- PHẦN HEADER TEXT BÊN TRONG KHUNG --- */
+/* --- PHẦN HEADER TEXT --- */
 .headerText {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 4px; /* Tạo khoảng cách với hàng nút bấm bên dưới */
+  margin-bottom: 4px;
 }
 
 .breadcrumb {
   font-size: 13px;
-  color: #888; /* Màu xám nhạt như hình mẫu */
+  color: #888;
 }
 
 .slogan {
@@ -45,7 +44,53 @@
   align-items: center;
 }
 
-/* Các CSS bên dưới giữ nguyên như cũ */
+/* --- [MỚI] KHỐI CHỨA NÚT GỢI Ý --- */
+.suggestionBlock {
+  display: flex;
+  gap: 15px;
+  margin-top: 8px; /* Cách hàng trên một chút */
+  padding-top: 12px;
+  border-top: 1px dashed #eee; /* Đường kẻ mờ ngăn cách cho đẹp */
+}
+
+/* --- [MỚI] NÚT ICON ĐƠN GIẢN (Thay thế nút vàng cũ) --- */
+.categoryTileBtn {
+  background: none;
+  border: 1px solid transparent; /* Viền trong suốt */
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  
+  display: flex;
+  flex-direction: column; /* Icon trên, chữ dưới */
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Khoảng cách giữa icon và chữ */
+  
+  padding: 10px 15px;
+  min-width: 80px;
+  transition: all 0.2s ease;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.categoryTileBtn span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Hover effect nhẹ nhàng (màu xám nhạt, không vàng) */
+.categoryTileBtn:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px); /* Nhấc nhẹ lên */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Các nút thường (Giữ nguyên) --- */
 .filterItem {
   position: relative;
 }
@@ -67,11 +112,12 @@
 }
 
 .filterBtn:hover {
-  border-color: #999;       /* Viền chuyển màu xám đậm hơn chút */
-  color: #333;              /* Chữ màu đen/xám đậm */
-  background-color: #f2f2f2; /* Nền màu xám nhẹ */
+  border-color: #999;
+  color: #333;            
+  background-color: #f2f2f2;
 }
 
+/* --- Active Filters Tags --- */
 .activeFilters {
   display: flex;
   gap: 8px;
@@ -106,7 +152,7 @@
   font-family: 'Reddit Sans', sans-serif;
 }
 
-/* --- Dropdown Styles --- */
+/* --- Dropdown Styles (Giữ nguyên) --- */
 .dropdownBase {
   position: absolute;
   top: calc(100% + 6px);

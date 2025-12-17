@@ -1,0 +1,117 @@
+/* LocTinDang.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@300;400;500;700&display=swap');
+
+.pageWrapper {
+  background-color: #f4f4f4;
+  min-height: 100vh;
+  padding-top: 80px; 
+  padding-bottom: 40px;
+  font-family: 'Reddit Sans', sans-serif;
+}
+
+.contentContainer {
+  width: 96%;
+  max-width: 1050px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listBlock {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Header Row */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.viewToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 5px 0;
+  cursor: pointer;
+  font-family: 'Reddit Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  transition: color 0.2s;
+}
+
+.viewToggleBtn:hover {
+  color: #0056b3;
+}
+
+/* Filter Info */
+.filterInfo {
+  background-color: #f0f7ff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border-left: 3px solid #38699f;
+  font-size: 13px;
+}
+
+.filterInfo p {
+  margin: 4px 0;
+  color: #444;
+}
+
+.filterInfo strong {
+  color: #0056b3;
+}
+
+/* --- GRID SYSTEM (Định nghĩa lưới chứa các ProductItem) --- */
+.list {
+  width: 100%;
+}
+
+/* Container cho List View: Xếp dọc */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Container cho Grid View: Xếp lưới */
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); 
+  gap: 16px;
+}
+
+@media screen and (max-width: 768px) {
+  .gridView {
+     grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+/* States */
+.loading, .error, .noResult {
+  text-align: center;
+  padding: 40px;
+  color: #777;
+  font-style: italic;
+  font-family: 'Reddit Sans', sans-serif;
+}
+
+.error { color: #f0325e; }
