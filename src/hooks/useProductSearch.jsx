@@ -4,14 +4,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { SearchContext } from "../context/SearchContext";
-import { LocationContext } from "../context/LocationContext"; // QUAN TRỌNG: Import Context
+import { LocationContext } from "../context/LocationContext";
 
 export const useProductSearch = () => {
   // --- Contexts ---
   const { user, token } = useContext(AuthContext);
   const { setSearchTerm } = useContext(SearchContext);
-  
-  // FIX: Lấy trực tiếp State từ LocationContext (Thay vì tạo state mới)
   const { selectedLocation, setSelectedLocation } = useContext(LocationContext);
 
   // --- Router ---
@@ -38,10 +36,13 @@ export const useProductSearch = () => {
       setSearchTerm(searchQuery);
     }
     
-    // Sync Location (Nếu URL có location, cập nhật ngay vào Context)
+    // Sync Location
     if (locationQuery) {
       setSelectedLocation(locationQuery);
-    } 
+    } else {
+       // Nếu URL không có location, mặc định set về Toàn quốc (hoặc null tuỳ logic app bạn)
+       // setSelectedLocation("Toàn quốc"); 
+    }
   }, [location.search, setSearchTerm, setSelectedLocation]);
 
   // --- 2. Load History ---
@@ -130,6 +131,8 @@ export const useProductSearch = () => {
   // --- Handlers ---
   const handleSearch = async (overrideQuery = null) => {
     const queryToSearch = overrideQuery || inputValue;
+    
+    // Validate đầu vào (Tuỳ chọn: Nếu muốn cho phép tìm rỗng chỉ để lọc nơi chốn thì bỏ check này)
     if (!queryToSearch.trim()) {
       toast.error("Vui lòng nhập từ khóa tìm kiếm!");
       return;
@@ -142,8 +145,9 @@ export const useProductSearch = () => {
     const params = new URLSearchParams();
     params.set("search", queryToSearch);
     
-    // FIX: Luôn gửi location hiện tại lên URL để LocMoRong đọc được
-    if (selectedLocation) {
+    // [LOGIC QUAN TRỌNG]: Chỉ set param location nếu KHÔNG PHẢI là "Toàn quốc"
+    // Khi param location vắng mặt, Backend/Trang lọc sẽ tự hiểu là lấy tất cả (Hà Nội + HCM + ...)
+    if (selectedLocation && selectedLocation !== "Toàn quốc") {
       params.set("location", selectedLocation.trim());
     }
 
@@ -153,7 +157,6 @@ export const useProductSearch = () => {
 
   // Utilities
   const highlightText = (text, query) => {
-    // Trả về JSX ở đây (Lý do phải đổi tên file thành .jsx)
     if (!text || !query.trim()) return text;
     const regex = new RegExp(`(${query.trim()})`, "gi");
     const parts = text.split(regex);
@@ -182,7 +185,7 @@ export const useProductSearch = () => {
     deleteSearchHistoryItem,
     highlightText,
     formatDate,
-    selectedLocation, // Trả về giá trị thực từ Context
-    setSelectedLocation // Trả về hàm set thực từ Context
+    selectedLocation,
+    setSelectedLocation
   };
 };

@@ -24,7 +24,7 @@ import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
 import PostForm from "../components/PostForm";
 import PostTinDang from "../components/PostTinDang";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
-import LocTinDang from "../components/LocTinDang";
+import LocTinDang from "../components/LocTinDang/LocTinDang";
 import QuanLyTin from "../components/QuanLyTin";
 import TinDangDaLuu from "../components/TinDangDaLuu";
 import CapNhatTin from "../components/CapNhatTin/CapNhatTin";
