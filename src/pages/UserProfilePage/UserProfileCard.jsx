@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-// ✅ 1. IMPORT useNavigate
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./UserProfileCard.module.css";
@@ -9,6 +8,8 @@ import FollowListModal from "./FollowListModal";
 import SuggestedAccounts from "./SuggestedAccounts";
 import EditProfileModal from "./EditProfileModal";
 import SidebarHeader from '../../components/Common/SidebarHeader';
+import { getOrCreateConversation } from "../../services/chatSocialService";
+
 // --- KHU VỰC ĐỊNH NGHĨA ICON (SVG) ---
 const SettingsIcon = () => (
   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M41.0373 26.8329C41.2721 25.9329 41.3965 24.986 41.3965 24.0156C41.3965 23.0333 41.2692 22.0754 41.0292 21.1651L45.0232 17.2711C45.3995 16.9042 45.5186 16.3477 45.3184 15.8643C44.2096 13.187 42.4828 10.7818 40.2858 8.84157C39.8829 8.4858 39.2934 8.45564 38.854 8.75239L34.1287 11.9442C32.4862 10.8732 30.6548 10.0436 28.7058 9.49962L27.674 3.96144C27.5756 3.43324 27.1166 3.04688 26.5801 3.04688H21.4199C20.8834 3.04688 20.4244 3.43324 20.326 3.96144L19.2942 9.49962C17.3452 10.0436 15.5138 10.8732 13.8713 11.9442L9.14603 8.75239C8.70656 8.45564 8.11714 8.4858 7.71424 8.84157C5.51724 10.7818 3.79043 13.187 2.68165 15.8643C2.48137 16.3477 2.60047 16.9042 2.97682 17.2711L6.97082 21.1651C6.7308 22.0754 6.60352 23.0333 6.60352 24.0156C6.60352 24.986 6.72793 25.9329 6.96272 26.8329L2.97682 30.7289C2.60047 31.0958 2.48137 31.6523 2.68165 32.1357C3.79043 34.813 5.51724 37.2182 7.71424 39.1584C8.11714 39.5142 8.70656 39.5444 9.14603 39.2476L13.8713 36.0558C15.5138 37.1268 17.3452 37.9564 19.2942 38.5004L20.326 44.0386C20.4244 44.5668 20.8834 44.9531 21.4199 44.9531H26.5801C27.1166 44.9531 27.5756 44.5668 27.674 44.0386L28.7058 38.5004C30.6548 37.9564 32.4862 37.1268 34.1287 36.0558L38.854 39.2476C39.2934 39.5444 39.8829 39.5142 40.2858 39.1584C42.4828 37.2182 44.2096 34.813 45.3184 32.1357C45.5186 31.6523 45.3995 31.0958 45.0232 30.7289L41.0373 26.8329ZM24 31.5156C19.8579 31.5156 16.5 28.1578 16.5 24.0156C16.5 19.8735 19.8579 16.5156 24 16.5156C28.1421 16.5156 31.5 19.8735 31.5 24.0156C31.5 28.1578 28.1421 31.5156 24 31.5156Z" fill="currentColor"/></svg>
@@ -120,6 +121,24 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
     }
   };
 
+  const handleMessageClick = async () => {
+    if (!userInfo?.id) return;
+    if (isOwner) return;
+
+    try {
+        const conversationData = await getOrCreateConversation(userInfo.id);
+        navigate('/chat', {      
+            state: { 
+                selectedConversation: conversationData, 
+                autoSelect: true 
+            } 
+        });
+    } catch (error) {
+        console.error("Lỗi khi mở tin nhắn:", error);
+        alert("Không thể bắt đầu cuộc trò chuyện: " + (error.message || "Lỗi không xác định"));
+    }
+  };
+
   useEffect(() => {
     function handleClickOutside(event) {
         if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -132,16 +151,12 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
 
  return (
     <>
-      {/* ✅ CODE ĐÃ SỬA: SidebarHeader 
-          - Dùng position: fixed để cố định khi cuộn.
-          - right: 20px để nằm sát góc phải màn hình.
-          - top: 80px (hoặc tùy chỉnh) để không đè lên Header chính của trang web.
-      */}
+      {/* SidebarHeader - Fixed position */}
       <div style={{ 
           position: 'fixed', 
-          top: '20px',     // Cách mép trên 80px (tránh header chính)
-          right: '20px',   // Cách mép phải 20px (đẩy hẳn sang phải)
-          zIndex: 1000     // Luôn nổi lên trên
+          top: '20px',    
+          right: '20px',  
+          zIndex: 1000    
       }}>
           <SidebarHeader />
       </div>
@@ -220,7 +235,10 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
                     {isFollowing ? "Đang Follow" : "Follow"}
                   </button>
 
-                  <button className={styles.btnMessage}>
+                  <button 
+                    className={styles.btnMessage}
+                    onClick={handleMessageClick}
+                  >
                     Tin nhắn
                   </button>
 

@@ -28,7 +28,7 @@ import { deleteConversationForMe, setChatState, bulkSetChatState, getUserChatSta
 import { injectChatPreview, injectChatMessage } from "./AI/AiHelpers";
 
 
-const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
+const ChatList = ({ selectedChatId, onSelectChat, userId, initialMode }) => {
   const [chatList, setChatList] = useState([]);
   const [hiddenChatList, setHiddenChatList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +41,7 @@ const ChatList = ({ selectedChatId, onSelectChat, userId }) => {
   const [showQuickMessageModal, setShowQuickMessageModal] = useState(false);
   const connectionRef = useRef(null);
   const menuButtonRefs = useRef({});
-  const [showFriendList, setShowFriendList] = useState(false);
+  const [showFriendList, setShowFriendList] = useState(initialMode === 'friend');
   const selectedChatIdRef = useRef(selectedChatId);
 
   // Use quick messages hook
@@ -261,6 +261,12 @@ const sortChatsLikeMessenger = (chats) => {
     console.log('[ChatList] Header filter opened - loading quick messages...');
     loadQuickMessages();
   }, [expandedChatId, userId]);
+
+  useEffect(() => {
+    if (initialMode === 'friend') {
+        setShowFriendList(true);
+    }
+  }, [initialMode]);
 
   // ✅ Lắng nghe event khi tin nhắn bị xóa để cập nhật chatlist
   useEffect(() => {

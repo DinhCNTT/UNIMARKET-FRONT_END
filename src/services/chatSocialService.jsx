@@ -1,11 +1,14 @@
 import * as signalR from "@microsoft/signalr";
 
-const hubUrl = "http://localhost:5133/SocialChatHub"; // ⚙️ đổi sang https nếu server có SSL
+// ⚙️ CẤU HÌNH URL
+const BASE_URL = "http://localhost:5133";
+const HUB_URL = `${BASE_URL}/SocialChatHub`;
+
 let connection = null;
 let connectionPromise = null;
 
 // ===================================================
-// EVENT HANDLERS — callback realtime
+// EVENT HANDLERS — Quản lý callback realtime
 // ===================================================
 const eventHandlers = {
   ReceiveMessage: [],
@@ -22,7 +25,7 @@ const eventHandlers = {
 };
 
 // ===================================================
-// TOKEN HELPER — lấy token linh hoạt
+// TOKEN HELPER — Lấy token linh hoạt
 // ===================================================
 const getAuthToken = () =>
   localStorage.getItem("token") ||
@@ -63,13 +66,13 @@ export const connectToSocialChatHub = () => {
     }
 
     connection = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl, { accessTokenFactory: () => token })
+      .withUrl(HUB_URL, { accessTokenFactory: () => token })
       .withAutomaticReconnect()
       .build();
 
-    // ===================================================
-    // Đăng ký sự kiện realtime từ server
-    // ===================================================
+    // ---------------------------------------------------
+    // Đăng ký các sự kiện từ Server
+    // ---------------------------------------------------
 
     connection.on("ReceiveMessage", (message) => {
       eventHandlers.ReceiveMessage.forEach((h) => h(message));
@@ -143,9 +146,9 @@ export const connectToSocialChatHub = () => {
       eventHandlers.MuteStatusChanged.forEach((h) => h(data))
     );
 
-    // ===================================================
-    // Kết nối Hub (auto retry)
-    // ===================================================
+    // ---------------------------------------------------
+    // Bắt đầu kết nối
+    // ---------------------------------------------------
     try {
       await connection.start();
       console.log("🔗 SocialChatHub connected:", connection.connectionId);
@@ -174,23 +177,21 @@ export const disconnectFromSocialChatHub = async () => {
 };
 
 // ===================================================
-// Hàm gọi Hub an toàn
+// Helper: Hàm gọi Hub an toàn (Auto Reconnect)
 // ===================================================
 const invoke = async (methodName, ...args) => {
-  await connectionPromise; // Chờ kết nối đầu tiên hoàn tất (nếu đang diễn ra)
+  await connectionPromise; // Chờ kết nối đầu tiên hoàn tất
 
   if (connection?.state !== signalR.HubConnectionState.Connected) {
     console.warn(`⚠️ Hub chưa kết nối (${methodName}), thử reconnect...`);
     try {
-      // Thử kết nối lại
       await connectToSocialChatHub();
     } catch (error) {
       console.error("❌ Không thể reconnect:", error);
-      return; // Không thể làm gì hơn
+      return;
     }
   }
 
-  // Nếu kết nối thành công (hoặc đã kết nối từ trước)
   try {
     return await connection.invoke(methodName, ...args);
   } catch (err) {
@@ -199,10 +200,11 @@ const invoke = async (methodName, ...args) => {
 };
 
 // ===================================================
-// HÀM CHAT CHÍNH (Invoke SignalR)
+// SIGNALR ACTIONS (Gửi lệnh lên Server)
 // ===================================================
 export const joinGroup = (maCuocTroChuyen) =>
   invoke("JoinGroup", maCuocTroChuyen);
+
 export const leaveGroup = (maCuocTroChuyen) =>
   invoke("LeaveGroup", maCuocTroChuyen);
 
@@ -217,17 +219,20 @@ export const sendMessage = (
 
 export const markAsSeen = (maCuocTroChuyen) =>
   invoke("MarkAsSeen", maCuocTroChuyen);
+
 export const recallMessage = (maCuocTroChuyen, maTinNhan) =>
   invoke("ThuHoiTinNhan", maCuocTroChuyen, maTinNhan);
 
 export const sendTyping = (maCuocTroChuyen, toUserId = null) =>
   invoke("Typing", maCuocTroChuyen, toUserId);
+
 export const ping = () => invoke("Ping");
+
 export const updateUserPresence = (userId, isOnline) =>
   invoke("CapNhatTrangThaiNguoiDung", userId, isOnline);
 
 // ===================================================
-// ✨ API HELPER (Chung cho Block, Mute)
+// API HELPER (Dùng chung cho các lệnh Fetch)
 // ===================================================
 const callConversationApi = async (maCuocTroChuyen, action) => {
   const token = getAuthToken();
@@ -235,7 +240,7 @@ const callConversationApi = async (maCuocTroChuyen, action) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5133/api/SocialShare/conversation/${maCuocTroChuyen}/${action}`,
+      `${BASE_URL}/api/SocialShare/conversation/${maCuocTroChuyen}/${action}`,
       {
         method: "POST",
         headers: {
@@ -258,33 +263,65 @@ const callConversationApi = async (maCuocTroChuyen, action) => {
 };
 
 // ===================================================
-// ✨ API — Block / Unblock Conversation
+// API RESTFUL — CÁC CHỨC NĂNG CHAT KHÁC
 // ===================================================
+
+/**
+ * ✨ [MỚI] Lấy hoặc tạo cuộc trò chuyện 1-1
+ * @param {string} targetUserId - ID của người muốn chat
+ */
+export const getOrCreateConversation = async (targetUserId) => {
+  const token = getAuthToken(); // Sử dụng hàm getAuthToken có sẵn để đồng bộ
+  if (!token) throw new Error("Chưa đăng nhập");
+
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/SocialShare/start-conversation`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        // Gửi string trực tiếp vì Backend nhận [FromBody] string
+        body: JSON.stringify(targetUserId),
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Không thể tạo cuộc trò chuyện");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Lỗi getOrCreateConversation:", error);
+    throw error;
+  }
+};
+
+// --- Block / Unblock ---
 export const blockConversation = (maCuocTroChuyen) =>
   callConversationApi(maCuocTroChuyen, "block");
 
 export const unblockConversation = (maCuocTroChuyen) =>
   callConversationApi(maCuocTroChuyen, "unblock");
 
-// ===================================================
-// ✨ [MỚI] API — Mute / Unmute Conversation
-// ===================================================
+// --- Mute / Unmute ---
 export const muteConversation = (maCuocTroChuyen) =>
   callConversationApi(maCuocTroChuyen, "mute");
 
 export const unmuteConversation = (maCuocTroChuyen) =>
   callConversationApi(maCuocTroChuyen, "unmute");
 
-// ===================================================
-// API — Ẩn hoặc xóa cuộc trò chuyện
-// ===================================================
+// --- Xóa cuộc trò chuyện (Ẩn) ---
 export const deleteConversation = async (maCuocTroChuyen) => {
   const token = getAuthToken();
   if (!token) throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
 
   try {
     const res = await fetch(
-      `http://localhost:5133/api/SocialShare/conversation/${maCuocTroChuyen}`,
+      `${BASE_URL}/api/SocialShare/conversation/${maCuocTroChuyen}`,
       {
         method: "DELETE",
         headers: {
@@ -306,16 +343,14 @@ export const deleteConversation = async (maCuocTroChuyen) => {
   }
 };
 
-// ===================================================
-// ✨ API — Delete Message (Only for me)
-// ===================================================
+// --- Xóa tin nhắn (Chỉ phía tôi) ---
 export const deleteMessageForMe = async (conversationId, messageId) => {
   const token = getAuthToken();
   if (!token) throw new Error("Token không tồn tại.");
 
   try {
     const response = await fetch(
-      `http://localhost:5133/api/SocialShare/message/delete-for-me`,
+      `${BASE_URL}/api/SocialShare/message/delete-for-me`,
       {
         method: "POST",
         headers: {

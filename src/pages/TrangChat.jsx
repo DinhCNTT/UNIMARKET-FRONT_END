@@ -1,18 +1,18 @@
-// File: src/pages/TrangChat.jsx (PHIÊN BẢN ĐÃ SỬA ĐỂ TÍCH HỢP)
+// File: src/pages/TrangChat.jsx
 
 import React, { useState, useContext, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom"; // ✅ Đã có useLocation
 import { AuthContext } from "../context/AuthContext";
 import TopNavbarUniMarket from "../components/TopNavbarUniMarket";
 import ChatList from "../components/ChatList";
 import ChatBox from "../components/ChatBanHang/ChatBox";
-import SocialChatViewer from "../components/SocialChatViewer/SocialChatViewer"; // <-- ĐÃ IMPORT
+import SocialChatViewer from "../components/SocialChatViewer/SocialChatViewer"; 
 import "./TrangChat.css";
 import chatBanner from "../assets/chat_banner_01.png";
 
 const TrangChat = () => {
     const { maCuocTroChuyen } = useParams();
-    const location = useLocation();
+    const location = useLocation(); // ✅ Hook để lấy dữ liệu từ navigate
     const { user } = useContext(AuthContext);
 
     // State cho ChatBox (mua bán)
@@ -22,10 +22,43 @@ const TrangChat = () => {
     // State cho SocialChatViewer (chat bạn bè)
     const [viewingSocialChat, setViewingSocialChat] = useState(null);
 
-    // Logic cũ: xử lý vào chat từ URL
+    // ========================================================
+    // ✨ [BƯỚC 4 - LOGIC MỚI] NHẬN DỮ LIỆU TỪ TRANG PROFILE
+    // ========================================================
     useEffect(() => {
-        if (maCuocTroChuyen) setSelectedChatId(maCuocTroChuyen);
-    }, [maCuocTroChuyen]);
+        // Kiểm tra xem có dữ liệu được truyền qua navigate không
+        if (location.state?.selectedConversation && location.state?.autoSelect) {
+            const convData = location.state.selectedConversation;
+            
+            console.log("📥 Nhận được yêu cầu mở chat Social:", convData);
+
+            // 1. Cập nhật state để mở ngay SocialChatViewer
+            setViewingSocialChat({
+                maCuocTroChuyen: convData.maCuocTroChuyen,
+                partner: convData.partner,
+                isBlocked: convData.isBlocked,
+                maNguoiChan: convData.maNguoiChan,
+                // Các trường mặc định để tránh lỗi render
+                unreadCount: 0,
+                isMuted: false 
+            });
+
+            // 2. Đảm bảo tắt chat mua bán (nếu đang mở)
+            setSelectedChatId(null);
+            
+            // 3. Xóa state trong history để khi F5 không bị kích hoạt lại (Tuỳ chọn)
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]); // Chạy mỗi khi location thay đổi
+
+
+    // --- Logic cũ: xử lý vào chat mua bán từ URL ---
+    useEffect(() => {
+        // Chỉ chạy nếu KHÔNG có viewingSocialChat (ưu tiên Social Chat từ profile)
+        if (maCuocTroChuyen && !viewingSocialChat) {
+            setSelectedChatId(maCuocTroChuyen);
+        }
+    }, [maCuocTroChuyen, viewingSocialChat]);
 
     // Logic cũ: tìm partner ID cho ChatBox
     useEffect(() => {
@@ -39,17 +72,16 @@ const TrangChat = () => {
     }, [selectedChatId, user]);
 
 
-    // Hàm xử lý chọn chat (Đã cập nhật từ trước và vẫn đúng)
+    // Hàm xử lý chọn chat từ Sidebar
     const handleSelectChat = (chat, chatType) => {
         if (chatType === 'social') {
             setViewingSocialChat(chat);    // 1. Mở social chat
             setSelectedChatId(null);       // 2. Đóng chat mua bán
         } else {
             setViewingSocialChat(null);    // 1. Đóng social chat
-        const chatId = (chat && typeof chat === 'object') ? chat.maCuocTroChuyen : chat;
-            setSelectedChatId(chatId); // 2. Mở chat mua bán
+            const chatId = (chat && typeof chat === 'object') ? chat.maCuocTroChuyen : chat;
+            setSelectedChatId(chatId);     // 2. Mở chat mua bán
             
-            // Logic cũ tìm partner id
             if (user && chatId && chatId.includes("-")) {
                 const parts = chatId.split("-");
                 const otherUserId = parts.find((id) => id !== user.id);
@@ -60,42 +92,34 @@ const TrangChat = () => {
         }
     };
 
-    // --- BỎ HÀM handleCloseViewer VÌ KHÔNG CẦN NỮA ---
-    // const handleCloseViewer = () => { ... };
-    
     const isChatRoute = location.pathname.startsWith("/chat");
 
     return (
-        <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <TopNavbarUniMarket />
-            <div className={`trang-chat-container ${isChatRoute ? "with-mini-nav" : ""}`}>
+        <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+            <TopNavbarUniMarket />
+            <div className={`trang-chat-container ${isChatRoute ? "with-mini-nav" : ""}`}>
                 <div className="chat-list-container">
                     {user?.id && (
                         <ChatList
+                            // Logic highlight: Nếu đang xem social chat thì highlight ID đó
                             selectedChatId={selectedChatId || viewingSocialChat?.maCuocTroChuyen}
                             onSelectChat={handleSelectChat}
                             userId={user.id}
+                            // ✨ Truyền thêm prop này để ChatList biết đang ở chế độ Social (Mẹo ở bước 2)
+                            initialMode={viewingSocialChat ? 'friend' : 'market'} 
                         />
                     )}
                 </div>
 
-                {/* === KHU VỰC THAY ĐỔI CHÍNH === */}
                 <div className="chat-box-container">
-                    {/* Logic render mới:
-                      1. Ưu tiên hiển thị SocialChatViewer nếu viewingSocialChat có dữ liệu.
-                      2. Nếu không, hiển thị ChatBox nếu selectedChatId có dữ liệu.
-                      3. Nếu không, hiển thị placeholder.
-                    */}
                     {viewingSocialChat ? (
                         <SocialChatViewer
                             chat={viewingSocialChat}
                             userId={user?.id}
-                            // Bỏ prop onClose vì không còn nút đóng
                         />
                     ) : selectedChatId ? (
                         <ChatBox
                             maCuocTroChuyen={selectedChatId}
-                            // các props khác giữ nguyên
                             nguoiNhanId={selectedChatUserId}
                             nguoiGuiId={user.id}
                         />
@@ -110,12 +134,7 @@ const TrangChat = () => {
                         </div>
                     )}
                 </div>
-                {/* === KẾT THÚC THAY ĐỔI === */}
-
             </div>
-
-            {/* --- BỎ KHỐI RENDER MODAL Ở ĐÂY --- */}
-            {/* {viewingSocialChat && ( ... )} */}
         </div>
     );
 };
