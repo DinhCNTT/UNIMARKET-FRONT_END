@@ -26,6 +26,24 @@ const PostComments = ({ maTinDang }) => {
   const { token, user } = useContext(AuthContext);
   const currentUserId = user?.id;
 
+ useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (isModalOpen) {
+    html.classList.add('stop-scrolling');
+    body.classList.add('stop-scrolling');
+  } else {
+    html.classList.remove('stop-scrolling');
+    body.classList.remove('stop-scrolling');
+  }
+
+  return () => {
+    html.classList.remove('stop-scrolling');
+    body.classList.remove('stop-scrolling');
+  };
+}, [isModalOpen]);
+
   // --- HÀM HELPER: ĐẾM ĐỆ QUY SỐ LƯỢNG CON CHÁU ---
   const countRepliesRecursive = useCallback((list) => {
     if (!list || list.length === 0) return 0;

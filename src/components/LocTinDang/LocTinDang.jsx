@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import styles from "./LocTinDang.module.css";
 
 // Contexts
 import { CategoryContext } from "../../context/CategoryContext";
 import { SearchContext } from "../../context/SearchContext";
 import { LocationContext } from "../../context/LocationContext";
+import { AuthContext } from "../../context/AuthContext"; // 1. Thêm AuthContext
 
 // Components
 import TopNavbar from "../TopNavbar/TopNavbar"; 
@@ -53,8 +55,12 @@ const LocTinDang = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const postsPerPage = 10;
+  // --- 2. LOGIC QUẢN LÝ YÊU THÍCH ---
+  const [savedIds, setSavedIds] = useState([]); // Lưu danh sách ID tin đã lưu
+  const { user, token } = useContext(AuthContext); // Lấy thông tin từ Context
+  const isLoggedIn = !!(user && (token || user.token)); // Kiểm tra đăng nhập
 
+  const postsPerPage = 10;
   const { searchTerm } = useContext(SearchContext);
   const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { selectedLocation } = useContext(LocationContext);
@@ -70,6 +76,7 @@ const LocTinDang = () => {
     return { contextCity: selectedLocation, contextDistrict: "" };
   }, [selectedLocation]);
 
+  // Fetch Posts & Categories
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -87,13 +94,64 @@ const LocTinDang = () => {
         setCategories(catsRes.data);
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
-        setError("Không thể tải danh sách tin đăng. Vui lòng kiểm tra kết nối server.");
+        setError("Không thể tải danh sách tin đăng.");
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
   }, []);
+
+  // 3. Fetch danh sách ID tin đăng đã lưu
+  useEffect(() => {
+    const fetchSaved = async () => {
+      const authToken = token || user?.token;
+      if (isLoggedIn && authToken) {
+        try {
+          const res = await axios.get("http://localhost:5133/api/yeuthich/danh-sach", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          setSavedIds(res.data.map((p) => p.maTinDang));
+        } catch (error) {
+          console.error("Error fetching saved IDs:", error);
+        }
+      }
+    };
+    fetchSaved();
+  }, [user, token, isLoggedIn]);
+
+    // --- Logic Lưu / Bỏ lưu tin có thông báo ---
+  const handleToggleSave = async (postId, isSaved) => {
+    const authToken = token || user?.token;
+    
+    if (!isLoggedIn) {
+      toast.error("Vui lòng đăng nhập để lưu tin!", {
+        icon: '🔒',
+        style: { borderRadius: '10px', background: '#333', color: '#fff' }
+      });
+      return;
+    }
+
+    try {
+      if (isSaved) {
+        await axios.delete(`http://localhost:5133/api/yeuthich/xoa/${postId}`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setSavedIds((prev) => prev.filter((id) => id !== postId));
+        toast.success("Đã gỡ khỏi danh sách lưu");
+      } else {
+        await axios.post(`http://localhost:5133/api/yeuthich/luu/${postId}`, {}, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setSavedIds((prev) => [...prev, postId]);
+        toast.success("Đã lưu tin đăng thành công!", {
+          icon: '❤️',
+        });
+      }
+    } catch (err) {
+      toast.error("Thao tác thất bại. Vui lòng thử lại!");
+    }
+  };
 
   const filteredAndSortedPosts = usePostFilter({
     posts, contextCity, contextDistrict, selectedCategory, selectedSubCategory,
@@ -116,12 +174,6 @@ const LocTinDang = () => {
     if (selectedSubCategory) message += ` trong danh mục "${selectedSubCategory}"`;
     else if (selectedCategory) message += ` trong danh mục "${selectedCategory}"`;
     if (searchTerm) message += ` với từ khóa "${searchTerm}"`;
-    
-    if (advancedFilters.minPrice || advancedFilters.maxPrice) {
-       const minStr = formatCurrency(advancedFilters.minPrice || 0);
-       const maxStr = advancedFilters.maxPrice ? formatCurrency(advancedFilters.maxPrice) : '∞';
-       message += ` (Giá: ${minStr} - ${maxStr})`;
-    }
     return message;
   };
 
@@ -152,8 +204,6 @@ const LocTinDang = () => {
             {contextCity && <p>Khu vực: <strong>{contextCity}</strong></p>}
             {(selectedDistrict || contextDistrict) && <p>Quận/Huyện: <strong>{selectedDistrict || contextDistrict}</strong></p>}
             {(selectedSubCategory || selectedCategory) && <p>Danh mục: <strong>{selectedSubCategory || selectedCategory}</strong></p>}
-            {searchTerm && <p>Từ khóa: <strong>{searchTerm}</strong></p>}
-            {advancedFilters.Hang && <p>Hãng: <strong>{advancedFilters.Hang}</strong></p>}
           </div>
 
           {isLoading && <div className={styles.loading}>Đang tải tin đăng...</div>}
@@ -168,7 +218,11 @@ const LocTinDang = () => {
                     <ProductItem 
                         key={post.maTinDang} 
                         post={post} 
-                        viewMode={viewMode} 
+                        viewMode={viewMode}
+                        // 5. TRUYỀN PROPS YÊU THÍCH XUỐNG PRODUCTITEM
+                        isLoggedIn={isLoggedIn}
+                        isSaved={savedIds.includes(post.maTinDang)}
+                        onToggleSave={handleToggleSave}
                     />
                   ))
                 )}

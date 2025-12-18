@@ -42,6 +42,12 @@ const PostDetailsInfo = ({
 }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const handleViewShop = () => {
+  if (post && post.maNguoiBan) {
+    navigate(`/nguoi-dung/${post.maNguoiBan}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
   const scrollRef = useRef(null);
   const connectionRef = useRef(null);
 
@@ -277,37 +283,45 @@ const PostDetailsInfo = ({
       </div>
 
       <div className={styles.sellerInfo}>
-        <div className={styles.sellerContainer}>
-          <div className={styles.avatarWrapper}>
-            <img 
-              src={sellerAvatarUrl} 
-              alt={`Avatar của ${post.nguoiBan}`}
-              className={styles.sellerAvatar}
-              onError={(e) => { e.target.src = defaultAvatar; }} 
-            />
-          </div>
-          
-          <div className={styles.sellerText}>
-            <span className={styles.sellerName}>{post.nguoiBan}</span>
-            <div className={styles.statusWrapper}>
-              {isSellerOnline ? (
-                <>
-                  <span className={`${styles.statusDot} ${styles.online}`}></span>
-                  <span className={styles.statusText}>Đang hoạt động</span>
-                </>
-              ) : (
-                <>
-                   {sellerLastOnline ? (
-                     <span className={styles.statusText}>{getLastOnlineText()}</span>
-                   ) : (
-                      <span className={styles.statusText} style={{opacity: 0.5}}>Ngoại tuyến</span>
-                   )}
-                </>
-              )}
+        {/* HÀNG 1: CHỨA AVATAR VÀ NÚT XEM TRANG */}
+        <div className={styles.sellerHeader}> 
+          <div className={styles.sellerContainer}>
+            <div className={styles.avatarWrapper}>
+              <img 
+                src={sellerAvatarUrl} 
+                alt={`Avatar của ${post.nguoiBan}`}
+                className={styles.sellerAvatar}
+                onError={(e) => { e.target.src = defaultAvatar; }} 
+              />
+            </div>
+            
+            <div className={styles.sellerText}>
+              <span className={styles.sellerName}>{post.nguoiBan}</span>
+              <div className={styles.statusWrapper}>
+                {isSellerOnline ? (
+                  <>
+                    <span className={`${styles.statusDot} ${styles.online}`}></span>
+                    <span className={styles.statusText}>Đang hoạt động</span>
+                  </>
+                ) : (
+                  <>
+                     {sellerLastOnline ? (
+                       <span className={styles.statusText}>{getLastOnlineText()}</span>
+                     ) : (
+                        <span className={styles.statusText} style={{opacity: 0.5}}>Ngoại tuyến</span>
+                     )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
+          <button className={styles.btnViewShop} onClick={handleViewShop}>
+            Xem trang
+          </button>
+        </div> {/* <--- QUAN TRỌNG: Phải đóng div sellerHeader ở đây */}
+
+        {/* HÀNG 2: CHỨA TIN NHẮN NHANH (Nằm riêng biệt phía dưới) */}
         {!isOwner && (
           <div className={styles.quickReplyWrapper}>
             <button className={`${styles.navBtn} ${styles.navPrev}`} onClick={() => scroll('left')}>

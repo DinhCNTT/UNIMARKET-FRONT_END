@@ -205,6 +205,27 @@
   font-size: 13px;
   color: var(--text-secondary);
 }
+/* Class bọc để đẩy nút sang bên phải */
+.sellerHeader {
+  display: flex;
+  justify-content: space-between; /* Đẩy thông tin người bán sang trái, nút sang phải */
+  align-items: center;            /* Căn giữa nút theo chiều dọc với avatar */
+  width: 100%;
+}
+
+/* Style cho nút Xem trang giống hình 2 */
+.btnViewShop {
+  background-color: #f2f2f2;     /* Màu xám nhạt */
+  color: #222;
+  border: none;
+  border-radius: 20px;           /* Bo tròn cực đại */
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;              /* Chữ đậm */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;           /* Không cho chữ xuống dòng */
+}
 
 /* === 7. QUICK REPLY CAROUSEL === */
 .quickReplyWrapper {
