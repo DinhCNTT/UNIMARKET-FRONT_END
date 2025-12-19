@@ -1,7 +1,7 @@
 // File: src/components/SocialChatViewer/ReplyPreview.jsx
 import React from 'react';
 import { X } from 'lucide-react';
-
+import './ReplyPreview.css'
 // Rút gọn nội dung (giống ParentMessagePreview)
 const truncate = (str, len = 50) => {
     if (!str) return "";

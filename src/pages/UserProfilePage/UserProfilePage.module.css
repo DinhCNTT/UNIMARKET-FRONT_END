@@ -195,3 +195,84 @@ body::-webkit-scrollbar-thumb {
 body::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #ff7a00, #ff3d00); /* Gradient hover nổi bật */
 }
+/* =========================================
+   PRIVATE ACCOUNT (Ổ KHÓA) STYLES
+   ========================================= */
+
+.privateAccountContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  
+  /* 👇 ĐÃ SỬA: Chuyển nền sang màu trắng tinh */
+  background-color: var(--bg-primary, #ffffff); 
+  
+  /* 👇 ĐÃ SỬA: Viền màu trắng (hoặc bỏ viền) để đồng bộ */
+  border-top: 1px solid var(--bg-primary, #ffffff); 
+  
+  min-height: 350px; 
+  width: 100%;
+}
+
+/* Phần nội dung chính nằm giữa */
+.privateContent {
+  text-align: center;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; 
+}
+
+/* Vòng tròn bao quanh icon ổ khóa */
+.lockIconWrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary, #333); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: var(--text-primary, #333); 
+}
+
+/* Tiêu đề "Đây là tài khoản riêng tư" */
+.privateTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin: 0;
+}
+
+/* Dòng chữ nhỏ bên dưới */
+.privateSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #666); 
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 10px;
+}
+
+/* --- Responsive cho mobile --- */
+@media (max-width: 768px) {
+  .privateAccountContainer {
+    min-height: 250px;
+    padding: 40px 15px;
+  }
+  
+  .lockIconWrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .privateTitle {
+    font-size: 16px;
+  }
+  
+  .privateSubtitle {
+    font-size: 13px;
+  }
+}

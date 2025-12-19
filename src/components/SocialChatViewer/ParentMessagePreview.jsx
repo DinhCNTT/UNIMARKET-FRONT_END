@@ -1,6 +1,6 @@
 import React from "react";
 import { Video, Image, FileText } from "lucide-react";
-
+import './ParentMessagePreview.css'
 // 🔹 Rút gọn nội dung tin nhắn để preview
 const truncate = (str, len = 50) => {
   if (!str) return "";

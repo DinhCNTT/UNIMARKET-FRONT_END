@@ -1,21 +1,35 @@
-/* src/index.css */
-
+/* --- RESET --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ✅ ĐÂY LÀ CHÌA KHÓA: Sử dụng clip để cắt phần thừa ngang mà không ảnh hưởng Sticky */
-body, html {
-  overflow-x: clip !important; 
-  /* 'clip' tốt hơn 'hidden' vì nó hỗ trợ sticky tốt hơn trên trình duyệt hiện đại */
+/* --- LỚP NGOÀI CÙNG (HTML & BODY) --- */
+html, 
+body {
+  /* Chìa khóa: Chỉ clip trục X (ngang), trục Y (dọc) phải là visible */
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  height: auto;
+  min-height: 100%;
 }
 
-/* ❌ BỎ 'html' và 'body' ra khỏi danh sách dưới đây */
+/* --- CÁC LỚP TRUNG GIAN (ROOT & WRAPPERS) --- */
+/* Bắt buộc tất cả các cấp này phải là 'visible' */
 #root, 
 .marketplace-page, 
 .main-content, 
 .section-wrapper {
-   overflow: visible !important; /* Giữ lại cái này cho các div con để Sticky hoạt động */
+  overflow: visible !important; 
+  /* Nếu dùng Flexbox ở đây, hãy cẩn thận với align-items: stretch */
+  display: block; 
+}
+
+/* --- PHẦN TỬ STICKY --- */
+.your-sticky-element {
+  position: -webkit-sticky; /* Hỗ trợ Safari */
+  position: sticky;
+  top: 0; /* Bắt buộc phải có giá trị top/bottom */
+  z-index: 100;
 }

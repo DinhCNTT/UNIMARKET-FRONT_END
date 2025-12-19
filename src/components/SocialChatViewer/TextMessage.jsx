@@ -2,7 +2,7 @@
 import React, { forwardRef } from 'react';
 import ParentMessagePreview from './ParentMessagePreview';
 import MessageActions from './MessageActions';
-
+import './TextMessage.css'
 // ✅ Dùng forwardRef để cha có thể truy cập DOM của tin nhắn
 const TextMessage = forwardRef(
   (

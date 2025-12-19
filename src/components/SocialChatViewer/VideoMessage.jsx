@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import { PlayCircle } from 'lucide-react';
 import ParentMessagePreview from './ParentMessagePreview';
 import MessageActions from './MessageActions';
-
+import './VideoMessage.css'
 // ✅ Dùng forwardRef để cha (SocialChatViewer) có thể "scroll tới" tin nhắn này
 const VideoMessage = forwardRef(
   (

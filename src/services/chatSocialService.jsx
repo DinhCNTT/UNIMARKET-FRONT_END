@@ -20,8 +20,8 @@ const eventHandlers = {
   MessageRemovedForMe: [],
   BlockStatusChanged: [],
   ReceiveError: [],
-  // ✨ [MỚI] Thêm sự kiện Mute
   MuteStatusChanged: [],
+  ConversationAccepted: [],
 };
 
 // ===================================================
@@ -146,6 +146,11 @@ export const connectToSocialChatHub = () => {
       eventHandlers.MuteStatusChanged.forEach((h) => h(data))
     );
 
+    // ✨ [MỚI] Đăng ký sự kiện ConversationAccepted (Chấp nhận tin nhắn chờ)
+    connection.on("ConversationAccepted", (data) =>
+      eventHandlers.ConversationAccepted.forEach((h) => h(data))
+    );
+
     // ---------------------------------------------------
     // Bắt đầu kết nối
     // ---------------------------------------------------
@@ -267,11 +272,11 @@ const callConversationApi = async (maCuocTroChuyen, action) => {
 // ===================================================
 
 /**
- * ✨ [MỚI] Lấy hoặc tạo cuộc trò chuyện 1-1
+ * ✨ Lấy hoặc tạo cuộc trò chuyện 1-1
  * @param {string} targetUserId - ID của người muốn chat
  */
 export const getOrCreateConversation = async (targetUserId) => {
-  const token = getAuthToken(); // Sử dụng hàm getAuthToken có sẵn để đồng bộ
+  const token = getAuthToken();
   if (!token) throw new Error("Chưa đăng nhập");
 
   try {
@@ -297,6 +302,38 @@ export const getOrCreateConversation = async (targetUserId) => {
   } catch (error) {
     console.error("Lỗi getOrCreateConversation:", error);
     throw error;
+  }
+};
+
+/**
+ * ✨ [MỚI] Chấp nhận tin nhắn chờ
+ * @param {string} maCuocTroChuyen 
+ */
+export const acceptMessageRequest = async (maCuocTroChuyen) => {
+  const token = getAuthToken();
+  if (!token) throw new Error("Token không tồn tại.");
+
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/SocialShare/conversation/${maCuocTroChuyen}/accept`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Lỗi khi chấp nhận cuộc trò chuyện.");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Lỗi acceptMessageRequest:", err);
+    throw err;
   }
 };
 

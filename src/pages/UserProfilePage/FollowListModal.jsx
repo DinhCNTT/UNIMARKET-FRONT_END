@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// 1. Import useNavigate
 import { useNavigate } from 'react-router-dom'; 
 import styles from './FollowListModal.module.css';
 import { IoCloseOutline } from "react-icons/io5";
@@ -15,9 +14,7 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     
-    // 2. Khởi tạo navigate
     const navigate = useNavigate(); 
-    
     const myId = getMyId(); 
 
     // --- LOGIC KHÓA CUỘN (GIỮ NGUYÊN) ---
@@ -43,7 +40,6 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
             window.scrollTo(0, scrollY);
         };
     }, []); 
-    // ------------------------------------
 
     const API_URLS = {
         following: `http://localhost:5133/api/Follow/following`,
@@ -58,18 +54,13 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
         return user.id || user.userId;
     };
 
-    // 3. Hàm xử lý khi click vào user
     const handleUserClick = (targetId) => {
         if (!targetId) return;
-        
-        // Đóng modal trước khi chuyển trang (tùy chọn)
         onClose(); 
-        
-        // Chuyển hướng đến trang UserProfilePage
-        // LƯU Ý: Thay đổi đường dẫn '/nguoi-dung/' khớp với định nghĩa trong App.js của bạn
         navigate(`/nguoi-dung/${targetId}`); 
     };
 
+    // --- 1. Fetch Data: Map thêm trường isPending và isPrivateAccount ---
     useEffect(() => {
         const fetchData = async () => {
             if (!userId) return;
@@ -85,7 +76,9 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
                 
                 const mappedUsers = res.data.map(user => ({
                     ...user,
-                    isFollowed: user.isFollowed || false 
+                    isFollowed: user.isFollowed || false,
+                    isPending: user.isPending || false,         // 🔥 Mới: Trạng thái chờ
+                    isPrivateAccount: user.isPrivateAccount || false // 🔥 Mới: Trạng thái riêng tư
                 }));
 
                 setUsers(mappedUsers);
@@ -99,33 +92,91 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
         fetchData();
     }, [activeTab, userId]); 
 
+    // --- 2. Logic Toggle Follow (Xử lý riêng tư) ---
     const handleFollowToggle = async (targetId) => {
         if (!targetId) return;
 
+        // Optimistic Update (Cập nhật giao diện ngay lập tức)
         setUsers(prevUsers => prevUsers.map(user => {
             const realId = getTargetUserId(user);
-            if (realId === targetId) {
-                return { ...user, isFollowed: !user.isFollowed };
+            if (String(realId) === String(targetId)) {
+                // Logic chuyển trạng thái
+                if (user.isPending) {
+                    // Đang chờ -> Hủy yêu cầu
+                    return { ...user, isPending: false, isFollowed: false };
+                } else if (user.isFollowed) {
+                    // Đang follow -> Unfollow
+                    return { ...user, isFollowed: false, isPending: false };
+                } else {
+                    // Chưa làm gì -> Bấm nút
+                    if (user.isPrivateAccount) {
+                        // Riêng tư -> Thành Pending
+                        return { ...user, isPending: true, isFollowed: false };
+                    } else {
+                        // Công khai -> Thành Followed
+                        return { ...user, isFollowed: true, isPending: false };
+                    }
+                }
             }
             return user;
         }));
 
         try {
-            await axios.post(`http://localhost:5133/api/Follow/toggle?targetUserId=${targetId}`, {}, {
+            const res = await axios.post(`http://localhost:5133/api/Follow/toggle?targetUserId=${targetId}`, {}, {
                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
+
+            // Đồng bộ lại với dữ liệu thật từ Server để đảm bảo chính xác
+            if (res.data && res.data.success) {
+                setUsers(prevUsers => prevUsers.map(user => {
+                    const realId = getTargetUserId(user);
+                    if (String(realId) === String(targetId)) {
+                        return { 
+                            ...user, 
+                            isFollowed: res.data.isFollowed, 
+                            isPending: res.data.isPending 
+                        };
+                    }
+                    return user;
+                }));
+            }
         } catch (err) {
             console.error(err);
             alert("Có lỗi xảy ra, vui lòng thử lại.");
              
+            // Rollback nếu lỗi (Đơn giản là load lại data hoặc revert logic - ở đây chọn revert logic cơ bản)
+            // Để an toàn nhất nên gọi lại fetch data, nhưng ở đây ta revert tạm UI
             setUsers(prevUsers => prevUsers.map(user => {
                 const realId = getTargetUserId(user);
-                if (realId === targetId) {
-                    return { ...user, isFollowed: !user.isFollowed }; 
+                if (String(realId) === String(targetId)) {
+                     // Revert lại trạng thái cũ là rất khó nếu không lưu biến tạm.
+                     // Cách tốt nhất khi lỗi là giữ nguyên trạng thái vừa click hoặc fetch lại.
+                     // Ở đây ta đảo ngược lại isFollowed/isPending dựa trên logic đơn giản
+                     return { ...user, isFollowed: !user.isFollowed, isPending: !user.isPending }; 
                 }
                 return user;
             }));
         }
+    };
+
+    // Helper: Xác định text và style cho nút bấm
+    const getButtonProps = (user) => {
+        if (user.isPending) {
+            return {
+                text: "Đã gửi yêu cầu",
+                className: styles.btnFollowing // Dùng chung class màu xám với Following
+            };
+        }
+        if (user.isFollowed) {
+            return {
+                text: "Đang Follow",
+                className: styles.btnFollowing
+            };
+        }
+        return {
+            text: "Follow",
+            className: styles.btnFollow
+        };
     };
 
     return (
@@ -161,12 +212,13 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
                     ) : (
                         users.length > 0 ? users.map((user) => {
                             const realId = getTargetUserId(user); 
-                            const isFollowing = user.isFollowed;
                             const isMe = myId && String(realId) === String(myId);
+                            
+                            // Lấy thuộc tính hiển thị nút
+                            const btnProps = getButtonProps(user);
 
                             return (
                                 <div key={realId} className={styles.userItem}>
-                                    {/* 4. Thêm onClick vào phần userInfo và style con trỏ chuột */}
                                     <div 
                                         className={styles.userInfo} 
                                         onClick={() => handleUserClick(realId)}
@@ -189,13 +241,15 @@ const FollowListModal = ({ initialTab = 'following', userId, onClose, currentUse
 
                                     {!isMe && (
                                         <button 
-                                            className={`${styles.actionBtn} ${isFollowing ? styles.btnFollowing : styles.btnFollow}`}
+                                            className={`${styles.actionBtn} ${btnProps.className}`}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Ngăn chặn việc click nút Follow thì bị nhảy trang
+                                                e.stopPropagation();
                                                 handleFollowToggle(realId);
                                             }}
+                                            // 🔥 Nếu đang pending có thể style chữ nhỏ hơn chút nếu cần
+                                            style={user.isPending ? { fontSize: '12px' } : {}}
                                         >
-                                            {isFollowing ? "Đang Follow" : "Follow"}
+                                            {btnProps.text}
                                         </button>
                                     )}
                                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import styles from "./PersonalInfo.module.css";
-import { notifyPromise } from "./helpers/notificationService";
-import { updateUserProfile } from "./services/userProfileService";
+import styles from "../Settings.module.css";
+import { notifyPromise } from "../helpers/notificationService";
+import { updateUserProfile } from "../services/userProfileService";
 
 const UserInfoForm = ({ initialData, token, onUpdate }) => {
   const [formData, setFormData] = useState(initialData);

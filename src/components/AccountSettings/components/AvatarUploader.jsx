@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
-import styles from "./PersonalInfo.module.css";
-import defaultAvatar from "../../assets/default-avatar.png";
-import { notifyPromise } from "./helpers/notificationService";
-import { uploadAvatar } from "./services/userProfileService";
-import { AuthContext } from "../../context/AuthContext";
+// 1. Sửa đường dẫn CSS
+import styles from "../Settings.module.css";
+// 2. Sửa đường dẫn Assets (lùi 3 cấp ra src)
+import defaultAvatar from "../../../assets/default-avatar.png"; 
+// 3. Sửa đường dẫn Helpers & Services (lùi 1 cấp ra AccountSettings)
+import { notifyPromise } from "../helpers/notificationService";
+import { uploadAvatar } from "../services/userProfileService";
+// 4. Sửa đường dẫn Context (lùi 3 cấp ra src)
+import { AuthContext } from "../../../context/AuthContext";
 
 const AvatarUploader = ({ initialAvatarUrl, token }) => {
   const { updateUser } = useContext(AuthContext);
@@ -11,7 +15,6 @@ const AvatarUploader = ({ initialAvatarUrl, token }) => {
   const [avatarPreview, setAvatarPreview] = useState(initialAvatarUrl || defaultAvatar);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Cập nhật preview khi avatar từ context (cha) thay đổi
   useEffect(() => {
     setAvatarPreview(initialAvatarUrl || defaultAvatar);
   }, [initialAvatarUrl]);
@@ -37,8 +40,8 @@ const AvatarUploader = ({ initialAvatarUrl, token }) => {
       loading: "Đang cập nhật ảnh...",
       success: (res) => {
         const { avatarUrl } = res.data;
-        updateUser({ avatarUrl }); // Cập nhật context
-        setAvatarFile(null); // Xóa file đã chọn
+        updateUser({ avatarUrl });
+        setAvatarFile(null);
         return "Cập nhật ảnh đại diện thành công!";
       },
       error: "Lỗi khi cập nhật ảnh đại diện!",
@@ -59,7 +62,6 @@ const AvatarUploader = ({ initialAvatarUrl, token }) => {
         className={styles.avatarPreview}
       />
 
-      {/* Input ẩn để chọn file */}
       <input
         id="avatar-upload-input"
         type="file"
@@ -68,29 +70,31 @@ const AvatarUploader = ({ initialAvatarUrl, token }) => {
         style={{ display: "none" }}
       />
 
-      {/* Nút dấu + để mở input */}
+      {/* Nút dấu + */}
       <button
         type="button"
         className={styles.avatarUploadBtn}
         onClick={triggerFileInput}
         title="Tải ảnh đại diện mới"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="12" fill="#2ecc40" />
-          <rect x="11" y="6" width="2" height="12" rx="1" fill="white" />
-          <rect x="6" y="11" width="12" height="2" rx="1" fill="white" />
+          <path d="M12 6V18M6 12H18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       </button>
 
-      {/* Nút Cập nhật ảnh, chỉ hiện khi có file mới */}
+      {/* Nút Lưu (chỉ hiện khi có ảnh mới) */}
       {avatarFile && (
-        <button
-          className={styles.button}
-          onClick={handleAvatarUpload}
-          disabled={isUploading}
-        >
-          {isUploading ? "Đang tải..." : "Cập nhật ảnh"}
-        </button>
+        <div style={{marginTop: 12}}>
+             <button
+              className={styles.button}
+              onClick={handleAvatarUpload}
+              disabled={isUploading}
+              style={{padding: '6px 12px', fontSize: 13}}
+            >
+              {isUploading ? "Đang lưu..." : "Lưu ảnh"}
+            </button>
+        </div>
       )}
     </div>
   );

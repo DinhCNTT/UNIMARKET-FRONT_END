@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import styles from "./UserProfileCard.module.css";
 import ShareButton from "../../components/ShareButton";
 import defaultAvatar from "../../assets/default-avatar.png";
@@ -10,7 +11,10 @@ import EditProfileModal from "./EditProfileModal";
 import SidebarHeader from '../../components/Common/SidebarHeader';
 import { getOrCreateConversation } from "../../services/chatSocialService";
 
-// --- KHU VỰC ĐỊNH NGHĨA ICON (SVG) ---
+// --- IMPORT ICON MẠNG XÃ HỘI (Từ react-icons) ---
+import { FaFacebook, FaGoogle, FaTiktok, FaInstagram } from 'react-icons/fa';
+
+// --- KHU VỰC ĐỊNH NGHĨA ICON (SVG GỐC) ---
 const SettingsIcon = () => (
   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M41.0373 26.8329C41.2721 25.9329 41.3965 24.986 41.3965 24.0156C41.3965 23.0333 41.2692 22.0754 41.0292 21.1651L45.0232 17.2711C45.3995 16.9042 45.5186 16.3477 45.3184 15.8643C44.2096 13.187 42.4828 10.7818 40.2858 8.84157C39.8829 8.4858 39.2934 8.45564 38.854 8.75239L34.1287 11.9442C32.4862 10.8732 30.6548 10.0436 28.7058 9.49962L27.674 3.96144C27.5756 3.43324 27.1166 3.04688 26.5801 3.04688H21.4199C20.8834 3.04688 20.4244 3.43324 20.326 3.96144L19.2942 9.49962C17.3452 10.0436 15.5138 10.8732 13.8713 11.9442L9.14603 8.75239C8.70656 8.45564 8.11714 8.4858 7.71424 8.84157C5.51724 10.7818 3.79043 13.187 2.68165 15.8643C2.48137 16.3477 2.60047 16.9042 2.97682 17.2711L6.97082 21.1651C6.7308 22.0754 6.60352 23.0333 6.60352 24.0156C6.60352 24.986 6.72793 25.9329 6.96272 26.8329L2.97682 30.7289C2.60047 31.0958 2.48137 31.6523 2.68165 32.1357C3.79043 34.813 5.51724 37.2182 7.71424 39.1584C8.11714 39.5142 8.70656 39.5444 9.14603 39.2476L13.8713 36.0558C15.5138 37.1268 17.3452 37.9564 19.2942 38.5004L20.326 44.0386C20.4244 44.5668 20.8834 44.9531 21.4199 44.9531H26.5801C27.1166 44.9531 27.5756 44.5668 27.674 44.0386L28.7058 38.5004C30.6548 37.9564 32.4862 37.1268 34.1287 36.0558L38.854 39.2476C39.2934 39.5444 39.8829 39.5142 40.2858 39.1584C42.4828 37.2182 44.2096 34.813 45.3184 32.1357C45.5186 31.6523 45.3995 31.0958 45.0232 30.7289L41.0373 26.8329ZM24 31.5156C19.8579 31.5156 16.5 28.1578 16.5 24.0156C16.5 19.8735 19.8579 16.5156 24 16.5156C28.1421 16.5156 31.5 19.8735 31.5 24.0156C31.5 28.1578 28.1421 31.5156 24 31.5156Z" fill="currentColor"/></svg>
 );
@@ -41,28 +45,43 @@ const FlagIcon = () => (
 );
 
 const BlockIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24C4 35.0457 12.9543 44 24 44Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/><path d="M15 15L33 33" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C12.9543 4 4 12.9543 4 24 4C12.9543 4 4 12.9543 4 24 44Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/><path d="M15 15L33 33" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
 );
 
+// --- CONFIG SOCIAL ICONS (Màu sắc và Icon tương ứng) ---
+const SOCIAL_ICONS_CONFIG = {
+    Facebook: { icon: <FaFacebook />, color: "#1877F2" },
+    Google:   { icon: <FaGoogle />,   color: "#DB4437" },
+    TikTok:   { icon: <FaTiktok />,   color: "#000000" },
+    Instagram:{ icon: <FaInstagram />,color: "#E1306C" }
+};
+
 const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, totalLikes = 0, isOwner }) => {
-  // ✅ 2. KHỞI TẠO HOOK NAVIGATE
   const navigate = useNavigate();
 
   // --- STATE ---
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState("following");
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-   
   const [showEditModal, setShowEditModal] = useState(false);
+  
+  // State quản lý link mạng xã hội
+  const [socialLinks, setSocialLinks] = useState([]);
 
   const menuRef = useRef(null);
+  
+  // Trạng thái Follow
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [localFollowerCount, setLocalFollowerCount] = useState(followersCount);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // --- 1. Fetch trạng thái Follow thật sự và Sync số lượng khi load trang ---
+  // --- 1. Fetch Follow Status (Tách riêng logic Follow) ---
   useEffect(() => {
+    // 1.1 Sync Follow count
     setLocalFollowerCount(followersCount);
+
+    // 1.2 Check Follow Status
     const checkFollowStatus = async () => {
       if (isOwner || !userInfo?.id) return;
 
@@ -74,16 +93,61 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
         });
         if (res.data) {
               setIsFollowing(res.data.isFollowing);
+              setIsPending(res.data.isPending);
         }
       } catch (error) {
         console.error("Lỗi check follow status:", error);
       }
     };
-
     checkFollowStatus();
   }, [userInfo.id, isOwner, followersCount]);
 
-  const openModal = (tabName) => {
+  // --- 2. Fetch Social Links (Logic mới - Code 2) ---
+  useEffect(() => {
+    const fetchSocialLinks = async () => {
+        // Kiểm tra nếu chưa có ID user thì chưa chạy
+        if (!userInfo?.id) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            let response;
+            const API_BASE_URL = 'http://localhost:5133'; // Check lại port của bạn
+
+            if (isOwner) {
+                // TRƯỜNG HỢP 1: Xem chính mình
+                // Gọi API lấy theo Token để có thể hiển thị cả những cái chưa liên kết (nếu cần xử lý thêm)
+                response = await axios.get(`${API_BASE_URL}/api/userprofile/social-links`, {
+                     headers: { Authorization: `Bearer ${token}` }
+                });
+            } else {
+                // TRƯỜNG HỢP 2: Xem người khác (User Profile Khác)
+                // Gọi API CÔNG KHAI mới tạo, truyền vào userInfo.id
+                response = await axios.get(`${API_BASE_URL}/api/userprofile/public-social-links/${userInfo.id}`, {
+                     headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+
+            // Xử lý dữ liệu trả về
+            if (response.status === 200 && Array.isArray(response.data)) {
+                // Lọc chỉ lấy những tài khoản đã liên kết (isLinked = true)
+                const linkedAccounts = response.data.filter(item => item.isLinked);
+                setSocialLinks(linkedAccounts);
+            }
+        } catch (error) {
+            console.error("Lỗi lấy social links:", error);
+            setSocialLinks([]); // Nếu lỗi thì ẩn phần icon đi
+        }
+    };
+
+    fetchSocialLinks();
+  }, [userInfo.id, isOwner]);
+
+  // --- 3. Logic Interaction (Modal, Click) ---
+  const handleOpenModal = (tabName) => {
+    if (!isOwner && userInfo?.isPrivateAccount && !isFollowing) {
+        toast.error("Tài khoản này là riêng tư. Hãy Follow để xem danh sách.");
+        return;
+    }
     setModalTab(tabName);
     setShowModal(true);
   };
@@ -92,32 +156,52 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
     window.location.reload(); 
   };
 
-  // --- 2. Logic Toggle Follow và Hiển thị Đề Xuất ---
+  // Logic Toggle Follow (Pending, Private Account)
   const handleFollowToggle = async () => {
-    const previousState = isFollowing;
+    const previousFollowing = isFollowing;
+    const previousPending = isPending;
     const previousCount = localFollowerCount;
 
-    const optimisticStatus = !previousState;
-    setIsFollowing(optimisticStatus);
-    setLocalFollowerCount(prev => optimisticStatus ? prev + 1 : prev - 1);
-    setShowSuggestions(optimisticStatus);
+    if (isPending) {
+        setIsPending(false);
+    } 
+    else if (isFollowing) {
+        setIsFollowing(false);
+        setLocalFollowerCount((prev) => Math.max(0, prev - 1)); 
+    } 
+    else {
+        if (userInfo.isPrivateAccount) {
+            setIsPending(true);
+        } else {
+            setIsFollowing(true);
+            setLocalFollowerCount((prev) => prev + 1); 
+        }
+    }
 
     try {
-        const res = await axios.post(`http://localhost:5133/api/Follow/toggle?targetUserId=${userInfo.id}`, {}, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await axios.post(
+        `http://localhost:5133/api/Follow/toggle?targetUserId=${userInfo.id}`,
+        {},
+        {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+        );
 
         if (res.data.success) {
-            setLocalFollowerCount(res.data.newFollowerCount);
-            setIsFollowing(res.data.isFollowed);
-            setShowSuggestions(res.data.isFollowed);
+        setLocalFollowerCount(res.data.newFollowerCount);
+        setIsFollowing(res.data.isFollowed);
+        setIsPending(res.data.isPending);
+        
+        if (res.data.isFollowed) {
+            setShowSuggestions(true);
+        }
         }
     } catch (err) {
         console.error("Lỗi follow:", err);
-        setIsFollowing(previousState);
+        setIsFollowing(previousFollowing);
+        setIsPending(previousPending);
         setLocalFollowerCount(previousCount);
-        setShowSuggestions(previousState);
-        alert("Có lỗi xảy ra, vui lòng thử lại!");
+        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
@@ -139,6 +223,17 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
     }
   };
 
+  // Logic xử lý khi click vào icon mạng xã hội
+  const handleSocialClick = (linkData) => {
+      // Nếu là Google (Email) thì mở mailto, còn lại mở tab mới
+      if (linkData.provider === 'Google') {
+         window.location.href = `mailto:${linkData.profileUrl}`;
+      } else if (linkData.profileUrl) {
+         window.open(linkData.profileUrl, '_blank');
+      }
+  };
+
+  // Logic Click outside menu
   useEffect(() => {
     function handleClickOutside(event) {
         if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -161,7 +256,6 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
           <SidebarHeader />
       </div>
 
-      {/* Thêm position: relative cho khung chứa profile */}
       <div className={styles.profileHeader} style={{ position: 'relative' }}>
         
         {/* ===== KHỐI 1: AVATAR + THÔNG TIN ===== */}
@@ -227,12 +321,19 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
                   <button
                     className={
                       isFollowing
-                        ? styles.btnFollowing
-                        : styles.btnFollow
+                        ? styles.btnFollowing // Style xám
+                        : isPending
+                        ? styles.btnFollowing // Style xám
+                        : styles.btnFollow    // Style xanh
                     }
                     onClick={handleFollowToggle}
                   >
-                    {isFollowing ? "Đang Follow" : "Follow"}
+                    {isFollowing 
+                        ? "Đang Follow" 
+                        : isPending 
+                            ? "Đã gửi yêu cầu" 
+                            : "Follow"
+                    }
                   </button>
 
                   <button 
@@ -246,12 +347,14 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
                     className={`${styles.btnIcon} ${styles.btnSecondary}`}
                     onClick={handleFollowToggle}
                     title={
-                      isFollowing
-                        ? "Hủy follow"
-                        : "Follow người dùng"
+                      isFollowing 
+                        ? "Hủy follow" 
+                        : isPending 
+                            ? "Hủy yêu cầu" 
+                            : "Follow người dùng"
                     }
                   >
-                    {isFollowing ? (
+                    {(isFollowing || isPending) ? (
                       <UserCheckIcon />
                     ) : (
                       <AddUserIcon />
@@ -306,7 +409,7 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
             <div className={styles.statsRow}>
               <div
                 className={styles.statItem}
-                onClick={() => openModal("following")}
+                onClick={() => handleOpenModal("following")}
                 style={{ cursor: "pointer" }}
                 title="Xem danh sách đang theo dõi"
               >
@@ -320,7 +423,7 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
 
               <div
                 className={styles.statItem}
-                onClick={() => openModal("followers")}
+                onClick={() => handleOpenModal("followers")}
                 style={{ cursor: "pointer" }}
                 title="Xem người theo dõi"
               >
@@ -342,17 +445,42 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
               </div>
             </div>
 
-            {/* ===== BIO ===== */}
+            {/* ===== BIO & SOCIAL INFO (FLEXBOX INTEGRATION) ===== */}
             <div className={styles.bioSection}>
               {userInfo.phoneNumber ? (
-                <p className={styles.phoneNumberDisplay}>
-                  LH: {userInfo.phoneNumber}
-                  {userInfo.daXacMinhEmail && (
-                    <span className={styles.phoneVerified}>
-                      (Đã xác minh)
-                    </span>
-                  )}
-                </p>
+                 // Container Flexbox: SĐT + Icon
+                 <div className={styles.contactRow}>
+                    <p className={styles.phoneNumberDisplay}>
+                      LH: {userInfo.phoneNumber}
+                      {userInfo.daXacMinhEmail && (
+                        <span className={styles.phoneVerified}>
+                          (Đã xác minh)
+                        </span>
+                      )}
+                    </p>
+
+                    {/* Danh sách Icon Mạng Xã Hội */}
+                    {socialLinks.length > 0 && (
+                        <div className={styles.socialList}>
+                            <div className={styles.separator}>|</div>
+                            {socialLinks.map((link, idx) => {
+                                const config = SOCIAL_ICONS_CONFIG[link.provider] || { icon: null, color: '#333' };
+                                if (!config.icon) return null;
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        className={styles.socialIcon}
+                                        style={{ color: config.color }}
+                                        onClick={() => handleSocialClick(link)}
+                                        title={`Đến ${link.provider}`}
+                                    >
+                                        {config.icon}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+                 </div>
               ) : (
                 <p className={styles.emptyBio}>
                   No bio yet.
@@ -362,8 +490,8 @@ const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, tot
           </div>
         </div>
 
-        {/* ===== KHỐI 2: SUGGESTED ACCOUNTS (FULL WIDTH) ===== */}
-        {!isOwner && showSuggestions && (
+        {/* ===== KHỐI 2: SUGGESTED ACCOUNTS ===== */}
+        {!isOwner && showSuggestions && (!userInfo.isPrivateAccount || isFollowing) && (
           <SuggestedAccounts
             targetUserId={userInfo.id}
           />

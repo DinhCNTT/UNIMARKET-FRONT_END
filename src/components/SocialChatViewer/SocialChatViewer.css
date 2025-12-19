@@ -1,40 +1,53 @@
 /* ========================================= */
 /* --- CÀI ĐẶT CƠ BẢN & FONT CHUNG --- */
 /* ========================================= */
-.social-chat-panel {
-  width: 100%;
-  /* height: 100%; */ /* <--- XÓA DÒNG NÀY */
-  flex: 1;            /* <--- THAY BẰNG DÒNG NÀY */
-  min-height: 0;      /* <--- THÊM DÒNG NÀY ĐỂ CO GIÃN TỐT HƠN */
-
-  display: flex;
-  flex-direction: column;
-  /* ✅ ĐỔI MÀU: Nền panel chính */
-  background-color: var(--theme-bg-primary);
-
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  /* ✅ ĐỔI MÀU: Viền trái */
-  border-left: 1px solid var(--theme-border-color);
-  
-  /* Thêm transition để đổi màu mượt */
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+:root {
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #f0f2f5;
+  --theme-text-primary: #050505;
+  --theme-text-secondary: #65676b;
+  --theme-border-color: #ddd;
+  --chat-bubble-sent-bg: #0084ff;      
+  --chat-bubble-sent-text: #ffffff;
+  --chat-bubble-received-bg: #e4e6eb;  
+  --chat-bubble-received-text: #050505;
 }
 
+/* --- DARK MODE --- */
+[data-theme="dark"], body.dark, body.dark-mode {
+  --theme-bg-primary: #18191a;      
+  --theme-bg-secondary: #242526;       
+  --theme-text-primary: #e4e6eb;       
+  --theme-text-secondary: #b0b3b8;
+  --theme-border-color: #3e4042;
+  --chat-bubble-sent-bg: #0084ff;
+  --chat-bubble-sent-text: #ffffff;
+  --chat-bubble-received-bg: #3a3b3c;  
+  --chat-bubble-received-text: #e4e6eb;
+}
+
+.social-chat-panel {
+  width: 100%;
+  flex: 1;            
+  min-height: 0;     
+  display: flex;
+  flex-direction: column;
+  background-color: var(--theme-bg-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  border-left: 1px solid var(--theme-border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
 
 /* ========================================= */
 /* --- HEADER (ĐÃ CẬP NHẬT) --- */
 /* ========================================= */
 .chat-viewer-header {
   padding: 10px 16px;
-  /* Làm mềm đường viền */
-  /* ✅ ĐỔI MÀU: Viền dưới header */
   border-bottom: 1px solid var(--theme-border-color);
   display: flex;
   align-items: center;
   gap: 12px;
-  /* Màu nền #f9f9f9 giữ nguyên để tạo sự tách biệt nhẹ -> Đổi sang biến secondary */
-  /* ✅ ĐỔI MÀU: Nền header */
   background-color: var(--theme-bg-secondary); 
   flex-shrink: 0;
   margin-top: -90px;
@@ -45,7 +58,6 @@
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
-  /* Thêm viền nhẹ để avatar tách biệt trong nền tối */
   border: 1px solid var(--theme-border-color); 
 }
 
@@ -58,10 +70,8 @@
 
 .chat-viewer-info h3 {
   margin: 0;
-  /* Giảm kích thước font một chút cho tinh tế hơn */
   font-size: 1.05rem; 
   font-weight: 600;
-  /* ✅ ĐỔI MÀU: Tên người chat */
   color: var(--theme-text-primary); 
   line-height: 1.3;
   white-space: nowrap;
@@ -70,19 +80,17 @@
 }
 
 .chat-viewer-status {
-  /* Tăng kích thước font một chút cho dễ đọc */
   font-size: 0.85rem; 
   line-height: 1.2;
   position: relative;
 }
 
 .chat-viewer-status.online {
-  color: #31a24c; /* Màu xanh online giữ nguyên */
+  color: #31a24c; 
   font-weight: 500;
 }
 
 .chat-viewer-status.offline {
-  /* ✅ ĐỔI MÀU: Trạng thái offline */
   color: var(--theme-text-secondary);
 }
 
@@ -98,7 +106,7 @@
 }
 
 /* ========================================= */
-/* --- KHUNG TIN NHẮN --- */
+/* --- KHUNG TIN NHẮN (LIST) --- */
 /* ========================================= */
 .chat-messages-list {
   flex-grow: 1;
@@ -107,11 +115,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* ✅ ĐỔI MÀU: Nền danh sách tin nhắn */
   background-color: var(--theme-bg-primary);
 }
 
-/* Tinh chỉnh thanh cuộn cho đẹp hơn (trên trình duyệt WebKit) */
 .chat-messages-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -119,15 +125,14 @@
   background: transparent;
 }
 .chat-messages-list::-webkit-scrollbar-thumb {
-  /* ✅ ĐỔI MÀU: Thanh cuộn */
   background-color: var(--theme-border-color);
   border-radius: 6px;
 }
 .chat-messages-list::-webkit-scrollbar-thumb:hover {
-  /* ✅ ĐỔI MÀU: Thanh cuộn khi hover */
   background-color: var(--theme-text-secondary);
 }
 
+/* Avatar chung cho các dòng tin nhắn */
 .message-avatar {
   width: 28px;
   height: 28px;
@@ -136,690 +141,98 @@
   align-self: flex-end;
 }
 
-/* ========================================= */
-/* --- TIN NHẮN VIDEO --- */
-/* ========================================= */
-.video-message-wrapper {
-  display: flex;
-  gap: 6px;
-  max-width: 85%;
-}
-
-.video-message-wrapper.sent {
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-.video-message-wrapper.received {
-  justify-content: flex-start;
-  margin-right: auto;
-}
-
-.video-message-card {
-  width: 180px;
-  height: 320px;
-  border-radius: 12px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: pointer;
-  /* Làm dịu bóng đổ */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.06);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  text-decoration: none;
-  color: white; /* Màu chữ trong video card giữ nguyên white vì nền tối */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  /* Thêm viền mỏng để rõ hơn trong darkmode */
-  border: 1px solid var(--theme-border-color);
-}
-
-.video-message-card:hover {
-  transform: scale(1.02);
-  /* Bóng đổ rõ hơn một chút khi hover */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 6px 12px rgba(0,0,0,0.08);
-}
-
-.video-message-card::before {
-  content: '';
-  position: absolute; 
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
-  z-index: 1;
-}
-
-.video-play-icon {
-  position: absolute; 
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 3rem;
-  color: rgba(255, 255, 255, 0.7);
-  z-index: 2;
-  /* Bóng đổ chữ tinh tế hơn */
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.video-message-card:hover .video-play-icon {
-  transform: translate(-50%, -50%) scale(1.1);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.video-message-content {
-  position: relative; 
-  z-index: 2; 
-  color: white; 
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.video-message-title { 
-  font-weight: 600; 
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.video-message-text { 
-  font-size: 0.8rem;
-  opacity: 0.9;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* ========================================= */
-/* --- TIN NHẮN TEXT --- */
-/* ========================================= */
-.text-message-wrapper { 
-  display: flex;
-  gap: 6px;
-  max-width: 500px; 
-  align-items: flex-end;
-}
-
-.text-message-wrapper.sent { 
-  justify-content: flex-end; 
-  margin-left: auto;
-}
-
-.text-message-wrapper.received { 
-  justify-content: flex-start; 
-  margin-right: auto;
-}
-
-.text-message-bubble {
-  max-width: 100%; 
-  padding: 10px 15px; 
-  border-radius: 18px; 
-  line-height: 1.45; /* Tăng khoảng cách dòng cho dễ đọc */
-  word-break: break-word;
-}
-
-.text-message-wrapper.sent .text-message-bubble { 
-  background-color: #007aff; /* Màu xanh gửi đi giữ nguyên */
-  color: white; 
-}
-
-.text-message-wrapper.received .text-message-bubble { 
-  /* ✅ ĐỔI MÀU: Nền tin nhắn nhận */
-  background-color: var(--theme-bg-secondary);
-  /* ✅ ĐỔI MÀU: Chữ tin nhắn nhận */
-  color: var(--theme-text-primary); 
-}
-
-/* ========================================= */
-/* --- KHUNG NHẬP LIỆU --- */
-/* ========================================= */
-.chat-input-container {
-  padding: 10px 16px;
-  /* Làm mềm đường viền */
-  /* ✅ ĐỔI MÀU: Viền trên input */
-  border-top: 1px solid var(--theme-border-color);
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  /* ✅ ĐỔI MÀU: Nền container input */
-  background-color: var(--theme-bg-primary);
-}
-
-.chat-input-field { /* Bây giờ là <textarea> */
-  flex-grow: 1;
-  /* ✅ ĐỔI MÀU: Nền ô nhập liệu */
-  background-color: var(--theme-bg-secondary);
-  border: none;
-  padding: 10px 16px; /* Padding cho dễ chịu */
-  border-radius: 20px;
-  /* ✅ ĐỔI MÀU: Chữ nhập liệu */
-  color: var(--theme-text-primary);
-  font-size: 1rem;
-  font-family: inherit;
-  transition: box-shadow 0.2s ease;
-  
-  /* --- ✨ [MỚI] CSS quan trọng cho Textarea --- */
-  resize: none; /* Tắt thanh resize của trình duyệt */
-  overflow-y: hidden; /* Sẽ được JS quản lý (ẩn/hiện thanh cuộn) */
-  max-height: 150px;  /* Giới hạn chiều cao tối đa (khoảng 5-6 dòng) */
-  box-sizing: border-box; /* Tính cả padding vào chiều cao */
-  width: 100%; /* Luôn chiếm đủ chiều rộng wrapper */
-  line-height: 1.4;
-  min-height: 42px; /* Chiều cao tối thiểu (10*2 padding + 22 line-height) */
-}
-.chat-input-field:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
-}
-
-.chat-input-field::placeholder {
-  /* ✅ ĐỔI MÀU: Placeholder */
-  color: var(--theme-text-secondary);
-}
-
-.chat-input-counter {
-  position: absolute;
-  bottom: 12px; /* Căn vào góc phải-dưới của textarea */
-  right: 16px;
-  font-size: 0.8rem;
-  /* ✅ ĐỔI MÀU: Số ký tự */
-  color: var(--theme-text-secondary);
-  user-select: none; /* Không cho phép chọn text */
-  pointer-events: none; /* Click xuyên qua nó */
-}
-.chat-input-field[style*="overflow-y: auto"] {
-    /* Thêm padding để thanh cuộn không đè lên chữ */
-    padding-right: 24px; 
-}
-.chat-send-btn {
-  background-color: #007aff;
-  border: none; 
-  color: white; 
-  font-weight: bold;
-  border-radius: 50%;
-  width: 44px; 
-  height: 44px;
-  font-size: 1rem; 
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0; /* ✨ [THÊM] Ngăn nút bị co lại */
-}
-
-.chat-send-btn:hover {
-  background-color: #006ce0;
-}
-
-.chat-send-btn:active {
-  transform: scale(0.95);
-}
-/* ========================================= */
-/* --- TIN NHẮN BỊ THU HỒI --- */
-/* ========================================= */
-.text-message-wrapper.recalled .text-message-bubble {
-  /* ✅ ĐỔI MÀU: Nền tin thu hồi */
-  background-color: var(--theme-bg-secondary); 
-  /* ✅ ĐỔI MÀU: Chữ tin thu hồi */
-  color: var(--theme-text-secondary);
-  font-style: italic;
-  padding: 8px 12px;
-  /* ✅ ĐỔI MÀU: Viền đứt */
-  border: 1px dashed var(--theme-border-color); 
-}
-
-.text-message-wrapper.recalled.sent {
-  justify-content: flex-end;
-}
-
-.text-message-wrapper.recalled.received {
-  justify-content: flex-start;
-}
-
-/* ========================================= */
-/* --- PREVIEW TIN NHẮN TRẢ LỜI (TRONG BONG BÓNG CHAT) --- */
-/* ========================================= */
-.parent-message-preview {
-  background-color: rgba(0, 0, 0, 0.05); /* Giữ nguyên transparency để blend màu */
-  padding: 6px 10px;
-  margin: -10px -15px 8px -15px;
-  border-radius: 18px 18px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.85rem;
-  cursor: pointer; 
-  transition: background-color 0.2s;
-}
-
-/* Fix cho Dark Mode trong bong bóng nhận */
-[data-theme="dark"] .text-message-wrapper.received .parent-message-preview {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.parent-message-preview:hover {
-  background-color: rgba(0, 0, 0, 0.08);
-}
-.text-message-wrapper.sent .parent-message-preview:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.text-message-wrapper.sent .parent-message-preview {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-bottom-color: rgba(255, 255, 255, 0.2);
-}
-.text-message-wrapper.highlighted .text-message-bubble,
-.video-message-wrapper.highlighted .video-message-card {
-  /* Animation kéo dài 2.5 giây */
-  animation: highlight-fade 2.5s ease-out;
-}
+/* Animation highlight (dùng chung cho Video và Text khi tìm kiếm) */
 @keyframes highlight-fade {
   0% {
-    /* Bắt đầu với viền xanh rõ nét */
     outline: 3px solid rgba(0, 122, 255, 0.6); 
     outline-offset: 2px;
   }
   100% {
-    /* Mờ dần viền về trong suốt */
     outline: 3px solid rgba(0, 122, 255, 0);
     outline-offset: 2px;
   }
 }
-.parent-message-sender {
-  font-weight: 600;
-  color: #007aff;
-  font-size: 0.8rem;
+/*nút xác nhận chấp nhận nhắn tin hoặc từ chối */
+.message-request-actions {
+    padding: 14px 20px;
+    background-color: var(--theme-bg-secondary);
+    border-top: 1px solid var(--theme-border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+    position: relative;
+    z-index: 10;
 }
 
-.text-message-wrapper.sent .parent-message-sender {
-  color: #fff;
-  opacity: 0.9;
+/* Text thông báo */
+.message-request-actions p {
+    font-size: 0.9rem; 
+    color: var(--theme-text-primary);
+    margin: 0;
+    font-weight: 500;
+    opacity: 0.8;
+    letter-spacing: 0.35px;
+    line-height: 1.45; 
+    padding-left: 190px; 
+    align-self: flex-start;
+    font-family: -apple-system, BlinkMacSystemFont, 
+                 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.parent-message-content {
-  color: inherit; /* Kế thừa màu từ cha */
-  opacity: 0.9;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.9em; /* Áp dụng kích thước font ở đây */
+/* Container nút */
+.request-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 520px;
+    margin-left: -12px; 
 }
 
-/* --- (MỚI) CSS CHO ICON TRONG PREVIEW --- */
-.parent-message-content svg {
-  width: 14px;
-  height: 14px;
-  margin-right: 4px; /* Giữ margin của bạn */
-  vertical-align: middle;
-  fill: currentColor; /* Tự động đổi màu theo chữ */
+
+/* Style chung cho nút */
+.request-buttons button {
+    flex: 1;
+    min-width: 260px;
+    height: 40px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+/* Active */
+.request-buttons button:active {
+    transform: scale(0.97);
+    box-shadow: none;
 }
 
-/* --- (MỚI) CSS CHO PREVIEW CHIA SẺ --- */
-.parent-share-preview {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  /* Kích thước font và opacity sẽ được kế thừa từ .parent-message-content */
+.btn-accept {
+    background: linear-gradient(135deg, #FFC107, #FF9800);
+    color: #fff;
 }
 
-.parent-share-preview.video-preview {
-  font-weight: 500; /* Làm nổi bật preview video */
+.btn-accept:hover {
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
 }
 
-.parent-share-thumbnail {
-  width: 28px;
-  height: 28px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+.btn-decline {
+    background-color: var(--theme-bg-primary);
+    color: var(--theme-text-secondary);
+    border: 1px solid var(--theme-border-color);
 }
 
-.text-message-wrapper.sent .parent-message-content {
-  color: #fff;
-}
-
-/* --- (MỚI) Đảm bảo viền thumbnail đẹp trên nền tối --- */
-.text-message-wrapper.sent .parent-share-thumbnail {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.parent-in-video {
-  margin-bottom: 4px;
-}
-
-/* ========================================= */
-/* --- PREVIEW TRẢ LỜI (TRONG KHUNG INPUT) --- */
-/* ========================================= */
-.chat-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  /* ✅ ĐỔI MÀU: Nền wrapper input */
-  background-color: var(--theme-bg-primary);
-}
-.chat-input-form-container {
-  padding: 10px 16px;
-  /* ✅ ĐỔI MÀU: Viền */
-  border-top: 1px solid var(--theme-border-color);
-  display: flex;
-  gap: 10px;
-  /* ✨ [SỬA] Căn nút Gửi ở dưới cùng khi textarea dãn ra */
-  align-items: flex-end; 
-  /* ✅ ĐỔI MÀU: Nền form */
-  background-color: var(--theme-bg-primary);
-}
-.chat-input-field-wrapper {
-  flex-grow: 1; /* Chiếm hết không gian còn lại */
-  position: relative; /* Để định vị bộ đếm */
-}
-.reply-preview-container {
-  display: flex;
-  padding: 8px 16px;
-  /* ✅ ĐỔI MÀU: Nền preview trả lời */
-  background-color: var(--theme-bg-secondary);
-  /* Làm mềm đường viền */
-  /* ✅ ĐỔI MÀU: Viền */
-  border-top: 1px solid var(--theme-border-color);
-  position: relative;
-}
-
-.reply-preview-border {
-  width: 3px;
-  background-color: #007aff;
-  border-radius: 3px;
-  margin-right: 10px;
-}
-
-.reply-preview-content {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
-}
-
-.reply-preview-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #007aff;
-}
-
-.reply-preview-text {
-  font-size: 0.85rem;
-  /* ✅ ĐỔI MÀU: Chữ preview */
-  color: var(--theme-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.reply-preview-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  /* ✅ ĐỔI MÀU: Nút đóng */
-  color: var(--theme-text-secondary);
-  padding: 4px;
-  border-radius: 50%; /* Bo tròn nút đóng */
-  transition: background-color 0.2s ease;
-}
-
-.reply-preview-close:hover {
-  /* ✅ ĐỔI MÀU: Hover nút đóng */
-  background-color: var(--theme-bg-hover);
-}
-
-/* ========================================= */
-/* --- MENU HÀNH ĐỘNG (HOVER) --- */
-/* ========================================= */
-.text-message-wrapper,
-.video-message-wrapper {
-  position: relative;
-}
-
-.message-actions-hover {
-  display: flex;
-  align-items: center;
-  /* ✅ GỢI Ý: Nên đổi thành secondary để nó nổi bật hơn so với nền tin nhắn */
-  background-color: var(--theme-bg-secondary); 
-  /* Bóng đổ tinh tế hơn */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Tăng shadow lên chút để rõ hơn trong dark mode */
-  border-radius: 20px;
-  padding: 2px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
-  z-index: 10;
-  /* Thêm viền nhẹ cho dark mode */
-  border: 1px solid var(--theme-border-color);
-}
-
-.text-message-wrapper:hover .message-actions-hover,
-.video-message-wrapper:hover .message-actions-hover {
-  opacity: 1;
-  visibility: visible;
-}
-
-.message-actions-hover.sent {
-  right: 100%;
-  margin-right: 8px;
-}
-
-.message-actions-hover.received {
-  left: 100%;
-  margin-left: 8px;
-}
-
-.action-icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
-  color: var(--theme-text-secondary); 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.action-icon-btn:hover {
-  background-color: var(--theme-bg-hover);
-  color: var(--theme-text-primary); 
-}
-.action-menu-container {
-  position: relative;
-}
-
-.action-menu-dropdown {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  /* ✅ ĐỔI MÀU: Nền dropdown menu */
-  background-color: var(--theme-bg-primary);
-  border-radius: 8px;
-  /* Bóng đổ tinh tế hơn */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 11;
-  overflow: hidden;
-  width: 150px;
-  margin-bottom: 6px;
-  border: 1px solid var(--theme-border-color);
-}
-
-.action-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: none;
-  border: none;
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  /* Kế thừa font chữ */
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  /* ✅ ĐỔI MÀU: Chữ menu item */
-  color: var(--theme-text-primary);
-  transition: background-color 0.15s ease;
-}
-
-.action-menu-item:hover {
-  /* ✅ ĐỔI MÀU: Hover menu item */
-  background-color: var(--theme-bg-hover);
-}
-
-.action-menu-item span {
-  flex-grow: 1;
-}
-
-.action-menu-item svg {
-  opacity: 0.8;
-  color: var(--theme-icon-color);
-}
-
-/* ========================================= */
-/* --- MODAL XÁC NHẬN XÓA --- */
-/* ========================================= */
-.delete-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  /* Overlay giữ nguyên màu tối trong suốt */
-  background-color: rgba(0, 0, 0, 0.5); 
-}
-
-.delete-message-box {
-  /* ✅ ĐỔI MÀU: Nền modal */
-  background-color: var(--theme-bg-primary);
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  position: relative;
-  left: 100px; 
-  transform: translateY(0);
-  border: 1px solid var(--theme-border-color);
-}
-
-.delete-message-box h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 1.25rem;
-  /* ✅ ĐỔI MÀU: Tiêu đề modal */
-  color: var(--theme-text-primary);
-}
-
-.delete-message-box p {
-  margin-bottom: 24px;
-  line-height: 1.5;
-  /* ✅ ĐỔI MÀU: Nội dung modal */
-  color: var(--theme-text-secondary);
-  font-size: 0.95rem;
-}
-
-.delete-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.modal-btn {
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s ease;
-  font-family: inherit;
-}
-
-.modal-btn:active {
-  transform: scale(0.98);
-}
-
-.modal-btn.cancel {
-  /* ✅ ĐỔI MÀU: Nút hủy */
-  background-color: var(--theme-bg-secondary);
-  color: var(--theme-text-primary);
-}
-
-.modal-btn.cancel:hover {
-  background-color: var(--theme-border-color);
-}
-
-.modal-btn.confirm-delete {
-  background-color: #e02f34;
-  color: #fff;
-}
-
-.modal-btn.confirm-delete:hover {
-  background-color: #c92a2e;
-}
-/* ====== VÙNG THÔNG BÁO BỊ CHẶN ====== */
-/* 🌙 KHU VỰC THÔNG BÁO BỊ CHẶN */
-.chat-input-blocked-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 24px;
-  min-height: 72px;
-  /* ✅ ĐỔI MÀU: Nền vùng bị chặn */
-  background: var(--theme-bg-secondary);
-  border-top: 1px solid var(--theme-border-color);
-  box-sizing: border-box;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
-}
-
-.chat-input-blocked-wrapper:hover {
-  /* Làm sáng/tối nhẹ khi hover */
-  filter: brightness(0.98); 
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* 💬 NỘI DUNG THÔNG BÁO */
-.chat-input-blocked-text {
-  max-width: 80%;
-  padding: 10px 18px;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  /* ✅ ĐỔI MÀU: Chữ thông báo */
-  color: var(--theme-text-secondary);
-  text-align: center;
-  font-style: italic;
-  /* ✅ ĐỔI MÀU: Nền thẻ thông báo */
-  background: var(--theme-bg-primary);
-  border: 1px solid var(--theme-border-color);
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  letter-spacing: 0.2px;
-  animation: fadeIn 0.35s ease-out;
-}
-
-/* ✨ HIỆU ỨNG XUẤT HIỆN MƯỢT MÀ */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.btn-decline:hover {
+    background-color: var(--theme-bg-hover);
+    color: var(--theme-text-primary);
+    border-color: var(--theme-text-secondary);
+    transform: translateY(-1px);
 }

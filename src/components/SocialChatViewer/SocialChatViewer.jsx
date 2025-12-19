@@ -11,10 +11,11 @@ import {
     unregisterChatEventHandler,
     recallMessage,
     deleteMessageForMe,
+    acceptMessageRequest, // ✨ Import API mới
 } from "../../services/chatSocialService";
 
 // ==========================================
-// HELPER: useRelativeTime (Giữ nguyên)
+// HELPER: useRelativeTime
 // ==========================================
 const useRelativeTime = (isoDateString, isOnline) => {
     const [relativeTime, setRelativeTime] = useState("");
@@ -70,28 +71,91 @@ const SocialChatViewer = ({ chat, userId }) => {
     const [replyingTo, setReplyingTo] = useState(null);
     const [messageToDelete, setMessageToDelete] = useState(null);
 
-    // --- State quản lý trạng thái chặn ---
+    // --- State: Quản lý xóa cuộc trò chuyện ---
+    const [isDeletingConversation, setIsDeletingConversation] = useState(false);
+
+    // --- State quản lý trạng thái chặn (Block) ---
     const [blockStatus, setBlockStatus] = useState(null);
 
-    // ✨ [MỚI TỪ CODE 2] State quản lý video đang xem (Overlay)
+    // --- State quản lý logic Anti-spam & Follow ---
+    const [canChat, setCanChat] = useState(true);
+    const [restrictionReason, setRestrictionReason] = useState("");
+    const [isFollowingPartner, setIsFollowingPartner] = useState(false); // Mình có fl họ k?
+    const [isFollowedByPartner, setIsFollowedByPartner] = useState(false); // Họ có fl mình k?
+
+    // --- State quản lý video đang xem (Overlay) ---
     const [viewingVideo, setViewingVideo] = useState(null);
 
     // --- Ref để lưu các DOM node của tin nhắn ---
     const messageRefs = useRef(new Map());
 
     // ===================================
-    // ✨ [MỚI TỪ CODE 2] HANDLERS VIDEO
+    // HANDLERS VIDEO
     // ===================================
-    
-    // Hàm mở video (sẽ được truyền xuống VideoMessage)
     const handleOpenVideo = useCallback((videoData) => {
         setViewingVideo(videoData);
     }, []);
 
-    // Hàm đóng video (truyền vào LikedVideoDetailViewer)
     const handleCloseVideo = useCallback(() => {
         setViewingVideo(null);
     }, []);
+
+    // ===================================
+    // HANDLERS CHẤP NHẬN / TỪ CHỐI CHAT
+    // ===================================
+    
+    // ✨ [MỚI] Xử lý chấp nhận tin nhắn chờ (Gọi API)
+    const handleAcceptChat = async () => {
+        try {
+            // Gọi API báo server là đã chấp nhận
+            await acceptMessageRequest(chat.maCuocTroChuyen);
+            
+            // Cập nhật UI Client ngay lập tức: Coi như mình đã follow họ
+            setIsFollowingPartner(true);
+        } catch (error) {
+            console.error("Lỗi chấp nhận chat:", error);
+            alert("Có lỗi xảy ra, vui lòng thử lại.");
+        }
+    };
+
+    // Xử lý khi bấm nút "Xóa" (Từ chối) -> Mở Modal xác nhận
+    const handleDeclineChat = () => {
+        setIsDeletingConversation(true);
+    };
+
+    // Gọi API Xóa cuộc trò chuyện (Khi confirm ở Modal)
+    const handleConfirmDeleteConversation = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(
+                `http://localhost:5133/api/SocialShare/conversation/${chat.maCuocTroChuyen}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                // Xóa thành công -> Đóng modal & Reload lại trang (hoặc redirect)
+                setIsDeletingConversation(false);
+                window.location.reload();
+            } else {
+                const errorData = await response.json();
+                alert(errorData.message || "Lỗi khi xóa cuộc trò chuyện");
+            }
+        } catch (error) {
+            console.error("Lỗi xóa chat:", error);
+            alert("Đã xảy ra lỗi kết nối khi xóa cuộc trò chuyện.");
+        }
+    };
+
+    // Hàm đóng Modal chung (cho cả xóa tin nhắn & xóa cuộc trò chuyện)
+    const handleCloseAnyModal = () => {
+        setMessageToDelete(null);         // Reset state xóa tin nhắn
+        setIsDeletingConversation(false); // Reset state xóa cuộc trò chuyện
+    };
 
     // ===================================
     // LOGIC SCROLL & FETCH DATA
@@ -132,16 +196,56 @@ const SocialChatViewer = ({ chat, userId }) => {
     }, [chat?.partner?.id]);
 
     // ===================================
-    // REALTIME HANDLERS
+    // REALTIME HANDLERS (LOGIC QUAN TRỌNG)
     // ===================================
     const handleReceiveMessage = useCallback(
         (newMessage) => {
             if (newMessage.maCuocTroChuyen === chat?.maCuocTroChuyen) {
-                setMessages((prev) => [...prev, newMessage]);
+
+                // Cập nhật danh sách tin nhắn và kiểm tra logic khóa ngay lập tức
+                setMessages((prevMessages) => {
+                    const updatedMessages = [...prevMessages, newMessage];
+
+                    // --- TRƯỜNG HỢP 1: TIN NHẮN DO MÌNH GỬI ---
+                    if (newMessage.maNguoiGui === userId) {
+                        // Nếu họ chưa follow mình (chưa chấp nhận) -> Kiểm tra Spam 3 tin
+                        if (!isFollowedByPartner) {
+                            const last3 = updatedMessages.slice(-3);
+                            // Nếu có đủ 3 tin VÀ tất cả đều là của mình
+                            const isAllMine = last3.length >= 3 && last3.every(m => m.maNguoiGui === userId);
+
+                            if (isAllMine) {
+                                setCanChat(false);
+                                setRestrictionReason("Đã đạt giới hạn tin nhắn chờ.");
+                            }
+                        }
+                    }
+                    // --- TRƯỜNG HỢP 2: TIN NHẮN TỪ PARTNER ---
+                    else {
+                        // Mở khóa chat ngay lập tức nếu partner nhắn lại
+                        setCanChat(true);
+                        setRestrictionReason("");
+                        // Cập nhật trạng thái ngầm định là họ đã tương tác
+                        setIsFollowedByPartner(true);
+                    }
+
+                    return updatedMessages;
+                });
             }
         },
-        [chat?.maCuocTroChuyen]
+        [chat?.maCuocTroChuyen, userId, isFollowedByPartner]
     );
+
+    // ✨ [MỚI] Xử lý sự kiện Realtime: Partner đã chấp nhận tin nhắn
+    const handleConversationAccepted = useCallback((data) => {
+        if (data.maCuocTroChuyen === chat?.maCuocTroChuyen) {
+            // Mở khóa cho người gửi
+            setCanChat(true);
+            setRestrictionReason("");
+            // Cập nhật trạng thái: Họ đã follow lại mình
+            setIsFollowedByPartner(true);
+        }
+    }, [chat?.maCuocTroChuyen]);
 
     const handlePresenceUpdate = useCallback(
         (presence) => {
@@ -219,7 +323,13 @@ const SocialChatViewer = ({ chat, userId }) => {
             if (!response.ok) throw new Error("Failed to fetch history");
             const data = await response.json();
 
-            console.log("Dữ liệu tin nhắn nhận được:", data.messages);
+            // ✨ CẬP NHẬT TRẠNG THÁI TỪ API
+            if (isInitialLoad) {
+                setCanChat(data.canChat ?? true);
+                setRestrictionReason(data.restrictionReason || "");
+                setIsFollowingPartner(data.isFollowingPartner);
+                setIsFollowedByPartner(data.isFollowedByPartner);
+            }
 
             setMessages((prev) =>
                 isInitialLoad ? data.messages : [...data.messages, ...prev]
@@ -247,13 +357,17 @@ const SocialChatViewer = ({ chat, userId }) => {
             maNguoiChan: chat.maNguoiChan,
         });
 
+        // Đăng ký sự kiện
         registerChatEventHandler("ReceiveMessage", handleReceiveMessage);
         registerChatEventHandler("PresenceUpdated", handlePresenceUpdate);
         registerChatEventHandler("MessageRecalled", handleMessageRecalled);
         registerChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
         registerChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
         registerChatEventHandler("ReceiveError", handleReceiveError);
+        // ✨ Đăng ký sự kiện chấp nhận chat
+        registerChatEventHandler("ConversationAccepted", handleConversationAccepted);
 
+        // Reset & Load dữ liệu
         setMessages([]);
         setHasMore(true);
         fetchMessages(1, true);
@@ -266,6 +380,8 @@ const SocialChatViewer = ({ chat, userId }) => {
             unregisterChatEventHandler("MessageRemovedForMe", handleMessageRemovedForMe);
             unregisterChatEventHandler("BlockStatusChanged", handleBlockStatusChanged);
             unregisterChatEventHandler("ReceiveError", handleReceiveError);
+            // ✨ Hủy đăng ký
+            unregisterChatEventHandler("ConversationAccepted", handleConversationAccepted);
         };
     }, [
         chat?.maCuocTroChuyen,
@@ -278,7 +394,8 @@ const SocialChatViewer = ({ chat, userId }) => {
         handleMessageRecalled,
         handleMessageRemovedForMe,
         handleBlockStatusChanged,
-        handleReceiveError
+        handleReceiveError,
+        handleConversationAccepted // Thêm vào dependencies
     ]);
 
     // Infinite Scroll Observer
@@ -308,15 +425,14 @@ const SocialChatViewer = ({ chat, userId }) => {
     // ===================================
     const handleStartReply = (message) => setReplyingTo(message);
     const handleOpenDeleteModal = (message) => setMessageToDelete(message);
-    const handleCloseDeleteModal = () => setMessageToDelete(null);
-
-    const handleConfirmDelete = async () => {
+    
+    // Hàm xóa tin nhắn (riêng lẻ)
+    const handleConfirmDeleteMessage = async () => {
         if (!messageToDelete) return;
         const { maTinNhan, maNguoiGui } = messageToDelete;
         const conversationId = chat.maCuocTroChuyen;
 
         if (!conversationId) {
-            console.error("Không tìm thấy conversationId!");
             alert("Đã xảy ra lỗi: Không tìm thấy ID cuộc trò chuyện.");
             return;
         }
@@ -329,7 +445,7 @@ const SocialChatViewer = ({ chat, userId }) => {
             } else {
                 await deleteMessageForMe(conversationId, maTinNhan);
             }
-            handleCloseDeleteModal();
+            handleCloseAnyModal();
         } catch (error) {
             console.error("Lỗi khi xóa tin nhắn:", error);
             alert(error.message || "Đã xảy ra lỗi khi xóa tin nhắn.");
@@ -350,10 +466,12 @@ const SocialChatViewer = ({ chat, userId }) => {
         }
     };
 
+    // ===================================
+    // RENDER INPUT LOGIC (QUAN TRỌNG)
+    // ===================================
     const renderChatInput = () => {
-        if (!blockStatus) return null;
-
-        if (blockStatus.isBlocked) {
+        // --- ƯU TIÊN 1: Bị Block hoàn toàn ---
+        if (blockStatus && blockStatus.isBlocked) {
             const isBlocker = blockStatus.maNguoiChan === userId;
             const message = isBlocker
                 ? "Bỏ chặn người dùng này để gửi tin nhắn."
@@ -366,6 +484,43 @@ const SocialChatViewer = ({ chat, userId }) => {
             );
         }
 
+        // --- ƯU TIÊN 2: Giao diện "Yêu cầu tin nhắn" (Message Request) ---
+        // (Khi: Mình chưa follow họ + Họ chưa follow mình + Có tin nhắn từ người lạ)
+        if (!isFollowingPartner && !isFollowedByPartner && messages.length > 0) {
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && lastMsg.maNguoiGui !== userId) {
+                return (
+                    <div className="message-request-actions">
+                        <div className="message-request-content">
+                            <p>Tin nhắn từ người lạ</p>
+                            <div className="request-buttons">
+                                <button className="btn-decline" onClick={handleDeclineChat}>Xóa</button>
+                                <button className="btn-accept" onClick={handleAcceptChat}>Chấp nhận</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        // --- ƯU TIÊN 3: Giao diện Bị giới hạn tin nhắn (Spam Limit) ---
+        // (Khi: Mình gửi quá 3 tin mà họ chưa rep/chấp nhận)
+        if (!canChat) {
+            return (
+                <div className="chat-input-blocked-wrapper spam-limit">
+                    <div className="spam-limit-content">
+                        <p className="chat-input-blocked-text">
+                            {restrictionReason || "Đã đạt giới hạn tin nhắn."}
+                        </p>
+                        <span className="spam-limit-subtext">
+                            (Hãy chờ người dùng này trả lời để tiếp tục trò chuyện)
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- ƯU TIÊN 4: Ô nhập tin nhắn bình thường ---
         return (
             <ChatInput
                 chatId={chat.maCuocTroChuyen}
@@ -378,7 +533,7 @@ const SocialChatViewer = ({ chat, userId }) => {
     if (!chat) return null;
 
     // ===================================
-    // RENDER
+    // RENDER MAIN
     // ===================================
     return (
         <div className="social-chat-panel" style={{ position: 'relative' }}>
@@ -427,7 +582,6 @@ const SocialChatViewer = ({ chat, userId }) => {
                                 onStartReply={handleStartReply}
                                 onOpenDeleteModal={handleOpenDeleteModal}
                                 onJumpToMessage={handleJumpToMessage}
-                                // ✅ [MỚI TỪ CODE 2] Truyền hàm mở video
                                 onPreviewVideo={handleOpenVideo}
                             />
                         ) : (
@@ -446,20 +600,28 @@ const SocialChatViewer = ({ chat, userId }) => {
                 <div ref={messagesEndRef} />
             </main>
 
-            {/* --- Input / Block Message --- */}
+            {/* --- Input / Block Message / Spam Limit / Request Actions --- */}
             {renderChatInput()}
 
-            {/* --- Delete Modal --- */}
-            {messageToDelete && (
+            {/* --- ✨ MODAL DÙNG CHUNG (XÓA TIN NHẮN / XÓA CHAT) --- */}
+            {(messageToDelete || isDeletingConversation) && (
                 <DeleteMessageModal
+                    // Nếu đang xóa chat -> type="conversation", mặc định là "message"
+                    type={isDeletingConversation ? 'conversation' : 'message'}
+
+                    // Truyền message nếu xóa tin nhắn
                     message={messageToDelete}
+
                     currentUserId={userId}
-                    onConfirm={handleConfirmDelete}
-                    onClose={handleCloseDeleteModal}
+
+                    // Logic xác nhận: Nếu đang xóa chat -> gọi hàm xóa chat, ngược lại gọi hàm xóa tin nhắn
+                    onConfirm={isDeletingConversation ? handleConfirmDeleteConversation : handleConfirmDeleteMessage}
+
+                    onClose={handleCloseAnyModal}
                 />
             )}
 
-            {/* ✅ [MỚI TỪ CODE 2] HIỂN THỊ VIDEO OVERLAY NẾU CÓ */}
+            {/* --- Video Overlay --- */}
             {viewingVideo && (
                 <LikedVideoDetailViewer
                     isOverlay={true}

@@ -259,3 +259,38 @@
   height: 12px;
   fill: currentColor;
 }
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.confirmBtn {
+  background-color: #0095f6; /* Màu xanh Facebook/Instagram */
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.confirmBtn:hover {
+  background-color: #0082d6;
+}
+
+.deleteBtn {
+  background-color: #efefef; /* Màu xám nhạt */
+  color: black;
+  border: 1px solid #dbdbdb;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.deleteBtn:hover {
+  background-color: #e0e0e0;
+}

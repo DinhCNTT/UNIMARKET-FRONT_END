@@ -1,7 +1,7 @@
 // File: src/components/SocialChatViewer/MessageActions.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { Reply, MoreHorizontal, Trash2 } from 'lucide-react';
-
+import './MessageActions.css'
 // Hook để bắt click bên ngoài
 const useOutsideClick = (ref, callback) => {
     useEffect(() => {

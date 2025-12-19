@@ -1,16 +1,28 @@
 import React from 'react';
+import './DeleteMessageModal.css';
+const DeleteMessageModal = ({ message, currentUserId, onConfirm, onClose, type = 'message' }) => {
+  
+  if (type === 'message' && !message) return null;
+
+  let title = "";
+  let bodyText = "";
+  let confirmButtonText = "";
 
 
-const DeleteMessageModal = ({ message, currentUserId, onConfirm, onClose }) => {
-  if (!message) return null;
+  if (type === 'conversation') {
+    title = "Xóa cuộc trò chuyện?";
+    bodyText = "Bạn có chắc chắn muốn xóa cuộc trò chuyện này không? Bạn sẽ không còn nhìn thấy nó trong danh sách tin nhắn.";
+    confirmButtonText = "Xóa";
+  } 
 
-  const isMyMessage = message.maNguoiGui === currentUserId;
-
-  const title = isMyMessage ? "Thu hồi tin nhắn?" : "Gỡ tin nhắn ở phía bạn?";
-  const bodyText = isMyMessage
-    ? "Tin nhắn này sẽ bị thu hồi với mọi người trong đoạn chat. Những người khác có thể đã xem hoặc chuyển tiếp tin nhắn đó."
-    : "Tin nhắn này sẽ bị gỡ khỏi thiết bị của bạn, nhưng vẫn hiển thị với các thành viên khác trong đoạn chat.";
-  const confirmButtonText = isMyMessage ? "Thu hồi" : "Gỡ";
+  else {
+    const isMyMessage = message?.maNguoiGui === currentUserId;
+    title = isMyMessage ? "Thu hồi tin nhắn?" : "Gỡ tin nhắn ở phía bạn?";
+    bodyText = isMyMessage
+      ? "Tin nhắn này sẽ bị thu hồi với mọi người trong đoạn chat."
+      : "Tin nhắn này sẽ bị gỡ khỏi thiết bị của bạn, nhưng vẫn hiển thị với người khác.";
+    confirmButtonText = isMyMessage ? "Thu hồi" : "Gỡ";
+  }
 
   return (
     <div className="delete-modal-overlay" onClick={onClose}>

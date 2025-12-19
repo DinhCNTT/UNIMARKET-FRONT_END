@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'; // 
 import { SendHorizonal } from 'lucide-react';
 import { sendMessage } from '../../services/chatSocialService';
 import ReplyPreview from './ReplyPreview';
-
+import "./ChatInput.css";
 // ✨ [MỚI] Giới hạn ký tự bạn yêu cầu
 const MAX_CHARS = 500;
 

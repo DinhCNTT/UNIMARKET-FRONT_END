@@ -4,6 +4,37 @@ import styles from "./NotificationDropdown.module.css";
 import api from "../services/api"; 
 import { GlobalNotificationContext } from "../context/GlobalNotificationContext";
 
+// --- 🔥 COMPONENT MỚI: SafeAvatar ---
+// Giúp xử lý ảnh lỗi an toàn, tránh vòng lặp nháy ảnh (flickering) khi onError
+const SafeAvatar = ({ src, alt, className }) => {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  // Reset lại state nếu src từ props thay đổi (dùng khi list re-render)
+  useEffect(() => {
+    setImgSrc(src);
+    setHasError(false);
+  }, [src]);
+
+  const handleError = () => {
+    if (!hasError) {
+      setHasError(true);
+      // Fallback về ảnh mặc định
+      setImgSrc("/images/default-avatar.png"); 
+    }
+  };
+
+  return (
+    <img 
+      src={imgSrc || "/images/default-avatar.png"} 
+      alt={alt} 
+      className={className} 
+      onError={handleError}
+    />
+  );
+};
+// ----------------------------------------
+
 // Cấu hình các bộ lọc
 const FILTERS = [
   { id: "all", label: "All activity" },
@@ -15,7 +46,7 @@ const FILTERS = [
 export default function NotificationDropdown({ onClose }) {
   // --- 1. STATE & HOOKS ---
 
-  // SỬA: Khởi tạo state từ localStorage để nhớ Tab cũ (mặc định là 'all')
+  // Khởi tạo state từ localStorage để nhớ Tab cũ (mặc định là 'all')
   const [activeFilter, setActiveFilter] = useState(() => {
     return localStorage.getItem("notification_filter_tab") || "all";
   });
@@ -25,11 +56,26 @@ export default function NotificationDropdown({ onClose }) {
   
   // State lưu danh sách ID những người mình đang follow để hiển thị nút đúng
   const [myFollowingIds, setMyFollowingIds] = useState(new Set()); 
-
+  const [myPendingIds, setMyPendingIds] = useState(new Set());
   const navigate = useNavigate();
   const { socket, markAsReadGlobal } = useContext(GlobalNotificationContext);
 
   // --- 2. EFFECTS ---
+
+  // Helper: Map loại thông báo từ Backend sang ID của Filter Tab
+  const mapTypeToFilter = (backendType) => {
+    switch (backendType) {
+      case "Like": return "likes";
+      case "Comment": 
+      case "Reply": return "comments";
+      case "Follow": 
+      case "FollowRequest": 
+      case "FollowAccepted": 
+        return "followers";
+      case "Mention": return "mentions";
+      default: return "all";
+    }
+  };
 
   // Effect phụ: Lưu activeFilter vào localStorage mỗi khi thay đổi
   useEffect(() => {
@@ -50,7 +96,6 @@ export default function NotificationDropdown({ onClose }) {
         setNotifications(notiRes.data);
 
         // Lưu các ID mình đang follow vào Set để tra cứu cho nhanh (O(1))
-        // Giả sử API following trả về mảng object có field `followingId`
         const ids = new Set(followingRes.data.map(item => item.followingId));
         setMyFollowingIds(ids);
 
@@ -80,24 +125,34 @@ export default function NotificationDropdown({ onClose }) {
 
   // --- 3. HANDLERS ---
 
+  // Xử lý Toggle Follow (Cho loại thông báo 'Follow' công khai)
   const handleFollowAction = async (e, targetUserId) => {
-    // Ngăn sự kiện click lan ra ngoài (để không nhảy vào trang profile khi bấm nút follow)
     e.stopPropagation(); 
 
     try {
-      // Gọi API Toggle Follow
       const res = await api.post(`/follow/toggle?targetUserId=${targetUserId}`);
       
       if (res.data.success) {
-        // Cập nhật state cục bộ để đổi nút (Follow -> Friends) ngay lập tức
+        // 1. Cập nhật danh sách Following (Đã chấp nhận)
         setMyFollowingIds(prev => {
           const newSet = new Set(prev);
           if (res.data.isFollowed) {
-            newSet.add(targetUserId); // Đã follow -> Thêm vào list
+            newSet.add(targetUserId); 
           } else {
-            newSet.delete(targetUserId); // Unfollow -> Xóa khỏi list
+            newSet.delete(targetUserId); 
           }
           return newSet;
+        });
+
+        // 2. 🔥 MỚI: Cập nhật danh sách Pending (Đang chờ)
+        setMyPendingIds(prev => {
+            const newSet = new Set(prev);
+            if (res.data.isPending) {
+                newSet.add(targetUserId);
+            } else {
+                newSet.delete(targetUserId);
+            }
+            return newSet;
         });
       }
     } catch (err) {
@@ -105,19 +160,31 @@ export default function NotificationDropdown({ onClose }) {
     }
   };
 
-  // Helper: Map loại thông báo từ Backend sang ID của Filter Tab
-  const mapTypeToFilter = (backendType) => {
-    switch (backendType) {
-      case "Like": return "likes";
-      case "Comment": 
-      case "Reply": return "comments";
-      case "Follow": return "followers";
-      case "Mention": return "mentions";
-      default: return "all";
+  // Xử lý CHẤP NHẬN yêu cầu (Cho loại 'FollowRequest')
+  const handleConfirmRequest = async (e, noti) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/follow/accept-request?requesterId=${noti.senderId}`);
+      
+      // Update UI: Xóa thông báo yêu cầu khỏi list vì đã xử lý xong
+      setNotifications(prev => prev.filter(n => n.id !== noti.id));
+    } catch (err) {
+      console.error("Lỗi chấp nhận:", err);
     }
   };
 
-  // Xử lý khi click vào 1 thông báo
+  // Xử lý TỪ CHỐI / XÓA yêu cầu (Cho loại 'FollowRequest')
+  const handleDeleteRequest = async (e, noti) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/follow/decline-request?requesterId=${noti.senderId}`);
+      setNotifications(prev => prev.filter(n => n.id !== noti.id));
+    } catch (err) {
+      console.error("Lỗi từ chối:", err);
+    }
+  };
+
+  // Xử lý khi click vào 1 thông báo (Điều hướng & Đọc)
   const handleNotificationClick = async (noti) => {
     // 1. Đánh dấu đã đọc
     if (!noti.isRead) {
@@ -131,18 +198,17 @@ export default function NotificationDropdown({ onClose }) {
     }
 
     // 2. Điều hướng
-    if (noti.type === "Follow") {
+    if (noti.type === "Follow" || noti.type === "FollowRequest" || noti.type === "FollowAccepted") {
       navigate(`/nguoi-dung/${noti.senderId}`);
       if (onClose) onClose(); 
     } 
-    // Kiểm tra referenceId cho Video
+    // Kiểm tra referenceId cho Video (Like, Comment, Reply, Mention)
     else if (noti.referenceId || noti.refId) {
       const videoId = noti.referenceId || noti.refId;
       
-      // 🔥 SỬA: Kiểm tra xem có EntityId (ID Comment) không
       let targetUrl = `/video-standalone/${videoId}`;
       
-      // Nếu là thông báo Comment/Reply và có ID cụ thể, thêm vào URL
+      // Nếu là thông báo Comment/Reply và có ID cụ thể, thêm vào URL để scroll tới
       if ((noti.type === 'Comment' || noti.type === 'Reply') && noti.entityId) {
           targetUrl += `?commentId=${noti.entityId}`;
       }
@@ -152,6 +218,7 @@ export default function NotificationDropdown({ onClose }) {
       if (onClose) onClose(); 
     }
   };
+
   // Helper: Render nội dung chữ
   const renderContentText = (noti) => {
     switch (noti.type) {
@@ -163,6 +230,10 @@ export default function NotificationDropdown({ onClose }) {
         return <span>đã trả lời bình luận của bạn: "{noti.content}"</span>;
       case 'Follow': 
         return <span>đã bắt đầu follow bạn.</span>;
+      case 'FollowRequest': 
+        return <span>đã gửi yêu cầu theo dõi bạn.</span>;
+      case 'FollowAccepted': 
+        return <span>đã chấp nhận yêu cầu theo dõi của bạn.</span>;
       case 'Mention': 
         return <span>đã nhắc đến bạn trong một bình luận.</span>;
       default: 
@@ -216,13 +287,13 @@ export default function NotificationDropdown({ onClose }) {
                 className={`${styles.item} ${!noti.isRead ? styles.unread : ""}`}
                 onClick={() => handleNotificationClick(noti)}
               >
-                {/* Avatar */}
-                <img 
-                  src={noti.senderAvatarUrl || "/images/default-avatar.png"} 
+                {/* --- 🔥 SỬA: Thay img bằng SafeAvatar --- */}
+                <SafeAvatar 
+                  src={noti.senderAvatarUrl} 
                   alt="avatar" 
-                  className={styles.avatar} 
-                  onError={(e) => { e.target.src = "/images/default-avatar.png" }}
+                  className={styles.avatar}
                 />
+                {/* --------------------------------------- */}
                 
                 {/* Nội dung */}
                 <div className={styles.contentWrapper}>
@@ -238,27 +309,67 @@ export default function NotificationDropdown({ onClose }) {
                     <img src={noti.postThumbnailUrl} className={styles.postThumb} alt="post thumbnail" />
                 )}
                 
-                {/* Nút Follow/Friends (Chỉ hiện khi loại thông báo là Follow) */}
+                {/* --- ACTION BUTTONS --- */}
+
+                {/* CASE 1: Yêu cầu theo dõi (FollowRequest) -> Hiện nút Xác nhận / Xóa */}
+                {noti.type === 'FollowRequest' && (
+                    <div className={styles.actionButtons}>
+                        <button 
+                            className={styles.confirmBtn} 
+                            onClick={(e) => handleConfirmRequest(e, noti)}
+                        >
+                            Xác nhận
+                        </button>
+                        <button 
+                            className={styles.deleteBtn}
+                            onClick={(e) => handleDeleteRequest(e, noti)}
+                        >
+                            Xóa
+                        </button>
+                    </div>
+                )}
+
+                {/* CASE 2: Follow công khai (Follow) -> Hiện nút Follow Back / Friends */}
+                {/* CASE 2: Follow công khai (Follow) -> Hiện nút Follow Back / Friends / Pending */}
                 {noti.type === 'Follow' && (
-                  isFollowing ? (
-                    // Trạng thái: Đã follow nhau -> Hiện nút Friends
-                    <button 
-                      className={styles.friendBtn}
-                      onClick={(e) => handleFollowAction(e, noti.senderId)} 
-                    >
-                      {/* Icon 2 mũi tên (SVG) */}
-                      <svg className={styles.friendIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 25.5H8.5V11.5H14.5V25.5Z" fill="currentColor" /><path d="M39.5 25.5H33.5V11.5H39.5V25.5Z" fill="currentColor" /><path d="M22.5 35.5H28.5V21.5H22.5V35.5Z" fill="currentColor" transform="rotate(90 25.5 28.5)" /><path fillRule="evenodd" clipRule="evenodd" d="M11.5 13.5H11.5V13.5Z" fill="currentColor"/></svg>
-                      Friends
-                    </button>
-                  ) : (
-                    // Trạng thái: Chưa follow lại -> Hiện nút Follow Back
-                    <button 
-                      className={styles.followBtn}
-                      onClick={(e) => handleFollowAction(e, noti.senderId)}
-                    >
-                      Follow back
-                    </button>
-                  )
+                  (() => {
+                    const isFollowing = myFollowingIds.has(noti.senderId);
+                    const isPending = myPendingIds.has(noti.senderId); // 🔥 Check Pending
+
+                    if (isFollowing) {
+                        // Trạng thái: Đã follow nhau -> Hiện nút Friends
+                        return (
+                            <button 
+                              className={styles.friendBtn}
+                              onClick={(e) => handleFollowAction(e, noti.senderId)} 
+                            >
+                              <svg className={styles.friendIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 25.5H8.5V11.5H14.5V25.5Z" fill="currentColor" /><path d="M39.5 25.5H33.5V11.5H39.5V25.5Z" fill="currentColor" /><path d="M22.5 35.5H28.5V21.5H22.5V35.5Z" fill="currentColor" transform="rotate(90 25.5 28.5)" /><path fillRule="evenodd" clipRule="evenodd" d="M11.5 13.5H11.5V13.5Z" fill="currentColor"/></svg>
+                              Friends
+                            </button>
+                        );
+                    } else if (isPending) {
+                        // 🔥 MỚI: Trạng thái chờ xác nhận -> Hiện nút Đã gửi yêu cầu
+                        return (
+                            <button 
+                              className={styles.friendBtn} // Dùng style xám giống Friend
+                              style={{ padding: '0 10px', fontSize: '12px' }} // Tinh chỉnh style nếu cần
+                              onClick={(e) => handleFollowAction(e, noti.senderId)} 
+                            >
+                              Đã gửi yêu cầu
+                            </button>
+                        );
+                    } else {
+                        // Trạng thái: Chưa follow lại -> Hiện nút Follow Back
+                        return (
+                            <button 
+                              className={styles.followBtn}
+                              onClick={(e) => handleFollowAction(e, noti.senderId)}
+                            >
+                              Follow back
+                            </button>
+                       );
+                    }
+                  })()
                 )}
               </div>
             );

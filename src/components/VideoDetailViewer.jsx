@@ -85,12 +85,12 @@ const VideoDetailViewer = () => {
 
   // Video State
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isPending, setIsPending] = useState(false); 
   const [detailData, setDetailData] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [aspectRatios, setAspectRatios] = useState({});
-
   // Refs
   const videoRef = useRef(null);
   const videoElsRef = useRef([]);      // Ref đến thẻ <video> để play/pause
@@ -290,22 +290,50 @@ const VideoDetailViewer = () => {
         .get(`${API_BASE}/api/follow/is-following/${videoData.nguoiDang.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        .then((res) => setIsFollowing(res.data.isFollowing))
-        .catch(() => setIsFollowing(false));
+        .then((res) => {
+             setIsFollowing(res.data.isFollowing);
+             setIsPending(res.data.isPending);
+        })
+        .catch(() => {
+             setIsFollowing(false);
+             setIsPending(false);
+        });
     } else {
       setIsFollowing(false);
+      setIsPending(false);
     }
   }, [videoData?.nguoiDang?.id, token]);
 
   const handleToggleFollow = async () => {
     if (!token) return alert("Bạn cần đăng nhập để follow!");
     if (!videoData) return;
+
+    const targetId = videoData.nguoiDang.id;
+    const isPrivate = videoData.nguoiDang?.isPrivateAccount || false;
+
+    if (isPending) {
+        setIsPending(false);
+    } else if (isFollowing) {
+        setIsFollowing(false);
+    } else {
+        if (isPrivate) {
+            setIsPending(true); 
+        } else {
+            setIsFollowing(true); 
+        }
+    }
+
     try {
-      const url = `${API_BASE}/api/follow/${
-        isFollowing ? "unfollow" : "follow"
-      }?followingId=${videoData.nguoiDang.id}`;
-      await axios.post(url, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setIsFollowing((prev) => !prev);
+      const res = await axios.post(
+          `${API_BASE}/api/follow/toggle?targetUserId=${targetId}`, 
+          {}, 
+          { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (res.data.success) {
+          setIsFollowing(res.data.isFollowed);
+          setIsPending(res.data.isPending);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -722,6 +750,7 @@ const VideoDetailViewer = () => {
                   user={user}
                   token={token}
                   isFollowing={index === currentIndex ? isFollowing : false}
+                  isPending={index === currentIndex ? isPending : false}
                   formatCount={formatCount}
                   onFollow={handleToggleFollow}
                   onLike={() => handleLike(video)}
