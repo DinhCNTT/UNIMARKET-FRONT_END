@@ -4,9 +4,9 @@ import { useChat } from "../context/ChatContext";
 import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
 import aiSuggestionsStyles from "../../../components/AI/AISuggestions.module.css";
-import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand } from "react-icons/fa";
 import Swal from "sweetalert2";
 import useResizeObserver from "../../../hooks/useResizeObserver";
+import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand, FaMapMarkerAlt } from "react-icons/fa";
 
 const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirstMessage }) => {
 const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, sendMessageService } =    
@@ -379,6 +379,31 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                   <FaExpand />
                 </span>
               </div>
+            </div>
+            ) : message.loaiTinNhan === "location" ? (
+            /* ✅ CODE MỚI: Render tin nhắn vị trí */
+            <div className={styles.locationWrapper}>
+              <a 
+                href={message.noiDung} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={styles.locationLink}
+                onClick={(e) => {
+                    console.log("📌 Đang bấm vào link:", message.noiDung);
+                    if (!message.noiDung || !message.noiDung.startsWith("http")) {
+                        e.preventDefault(); // Chặn lại nếu link sai
+                        alert("Link bị lỗi: " + message.noiDung);
+                    }
+                }}
+              >
+                <div className={styles.locationIconBox}>
+                  <FaMapMarkerAlt size={24} color="#ea4335" />
+                </div>
+                <div className={styles.locationInfo}>
+                  <span className={styles.locationTitle}>Vị trí hiện tại</span>
+                  <span className={styles.locationSub}>Nhấn để xem trên bản đồ</span>
+                </div>
+              </a>
             </div>
           ) : message.loaiTinNhan === "video" ? (
             <div className={styles.mediaWrapper} onClick={handleVideoFullscreen}>

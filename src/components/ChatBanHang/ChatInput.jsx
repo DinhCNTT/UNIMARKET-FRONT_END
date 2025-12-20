@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useChat } from "./context/ChatContext";
-import { FaImage, FaVideo, FaPaperPlane, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
 import styles from './ModuleChatCss/ChatInput.module.css';
+import { FaImage, FaVideo, FaPaperPlane, FaTimes, FaMapMarkerAlt } from "react-icons/fa";
 
 const CLOUDINARY_UPLOAD_PRESET = "unimarket_upload";
 const CLOUDINARY_CLOUD_NAME = "dcwe8drcu";
@@ -90,6 +90,56 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
       }
     }
   }, []);
+
+  const handleSendLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      Swal.fire("Lỗi", "Trình duyệt của bạn không hỗ trợ định vị.", "error");
+      return;
+    }
+
+    setIsUploading(true);
+
+    // ✅ Cấu hình lấy vị trí chính xác nhất
+    const options = {
+      enableHighAccuracy: true, // 🔥 QUAN TRỌNG: Ép dùng GPS (nếu có) thay vì Wifi
+      timeout: 10000,           // Chờ tối đa 10s để lấy vị trí chuẩn
+      maximumAge: 0             // Không dùng vị trí cache cũ, bắt buộc lấy mới
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Log toạ độ ra để kiểm tra
+        console.log(`📍 Toạ độ chính xác: ${latitude}, ${longitude}`);
+        console.log(`🎯 Độ chính xác (mét): ${position.coords.accuracy}`);
+
+        // ✅ Gợi ý: Dùng link chuẩn của Google Maps (ngắn gọn và chuẩn hơn link googleusercontent)
+        // Link này khi bấm vào sẽ hiện cái ghim đỏ đúng chỗ và mở App Maps trên điện thoại
+        const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+        try {
+          await sendMessageService(mapLink, "location");
+          inputRef.current?.focus();
+        } catch (error) {
+          console.error("Lỗi gửi vị trí:", error);
+          Swal.fire("Lỗi", "Không thể gửi vị trí.", "error");
+        } finally {
+          setIsUploading(false);
+        }
+      },
+      (error) => {
+        console.error("Lỗi lấy vị trí:", error);
+        let msg = "Không thể lấy vị trí.";
+        if (error.code === 1) msg = "Bạn cần cấp quyền truy cập vị trí.";
+        else if (error.code === 3) msg = "Hết thời gian lấy vị trí (Timeout).";
+        
+        Swal.fire("Lỗi", msg, "error");
+        setIsUploading(false);
+      },
+      options // 👈 ✅ NHỚ THÊM BIẾN NÀY VÀO CUỐI HÀM
+    );
+  }, [sendMessageService, setIsUploading, inputRef]);
 
   const uploadToCloudinary = useCallback(async (file, onProgress) => {
     if (file.size > MAX_FILE_SIZE) {
@@ -414,6 +464,15 @@ const ChatInput = ({ tinNhan, setTinNhan, isUploading, setIsUploading, isDisable
               disabled={isDisabled}
             />
           </label>
+          <button 
+            className={styles.actionBtn} 
+            title="Gửi vị trí hiện tại"
+            onClick={handleSendLocation}
+            disabled={isDisabled}
+            style={{ border: 'none', background: 'none' }} // Reset style button mặc định
+          >
+            <FaMapMarkerAlt size={20} />
+          </button>
         </div>
 
         <div className={styles.textWrap} style={{ position: 'relative' }}>
