@@ -347,3 +347,36 @@
     /* Có thể thêm màu đỏ hoặc giữ đen tùy thích */
     background-color: rgba(0, 0, 0, 0.7); 
 }
+/* Nút trái tim lưu tin */
+.saveHeartBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20; /* Cao hơn video và ảnh */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+.saveHeartBtn:hover {
+  transform: scale(1.2);
+}
+
+.heartIcon {
+  font-size: 18px;
+}
+
+/* Khi chưa lưu: màu trắng đục có đổ bóng để nổi bật trên nền ảnh */
+.notSaved {
+  color: rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+/* Khi đã lưu: màu đỏ */
+.saved {
+  color: #e5193b;
+}

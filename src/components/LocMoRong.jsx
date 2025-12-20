@@ -42,11 +42,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
   useEffect(() => {
     const detectIntent = async () => {
       setDetectedCategory(null);
-      if (searchTerm && searchTerm.trim().length > 0) {
-          setActiveMode(null);
-          setAdvancedFilters({});
-          if (onAdvancedFilterChange) onAdvancedFilterChange({});
-      }
+      
       if (!searchTerm || searchTerm.trim().length < 2) return;
       try {
         const res = await axios.get(`http://localhost:5133/api/tindang/detect-category?query=${encodeURIComponent(searchTerm.trim())}`);

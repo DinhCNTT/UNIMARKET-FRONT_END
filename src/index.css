@@ -1,35 +1,58 @@
-/* --- RESET --- */
+/* --- 1. RESET CƠ BẢN --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* --- LỚP NGOÀI CÙNG (HTML & BODY) --- */
+/* --- 2. LỚP NGOÀI CÙNG (HTML & BODY) --- */
+/* Giữ nguyên logic visible !important để hỗ trợ Sticky của bạn */
 html, 
 body {
-  /* Chìa khóa: Chỉ clip trục X (ngang), trục Y (dọc) phải là visible */
   overflow-x: clip !important;
   overflow-y: visible !important;
   height: auto;
   min-height: 100%;
 }
 
-/* --- CÁC LỚP TRUNG GIAN (ROOT & WRAPPERS) --- */
-/* Bắt buộc tất cả các cấp này phải là 'visible' */
+/* --- 3. CÁC LỚP TRUNG GIAN (ROOT & WRAPPERS) --- */
+/* Bắt buộc tất cả các cấp này phải là 'visible' để không làm mất vị trí Sticky */
 #root, 
 .marketplace-page, 
 .main-content, 
 .section-wrapper {
   overflow: visible !important; 
-  /* Nếu dùng Flexbox ở đây, hãy cẩn thận với align-items: stretch */
   display: block; 
 }
 
-/* --- PHẦN TỬ STICKY --- */
+/* --- 4. PHẦN TỬ STICKY --- */
 .your-sticky-element {
   position: -webkit-sticky; /* Hỗ trợ Safari */
   position: sticky;
   top: 0; /* Bắt buộc phải có giá trị top/bottom */
   z-index: 100;
+}
+
+/* ============================================================ */
+/* --- 5. LOGIC KHÓA CUỘN (DÙNG CHO MODAL BÌNH LUẬN) --- */
+/* ============================================================ */
+
+/** * TẠI SAO PHẢI VIẾT THẾ NÀY:
+ * Vì ở trên bạn dùng "html, body" với !important, nên ở đây tui phải dùng 
+ * "html.stop-scrolling" để tăng độ ưu tiên (Specificity) lên cao hơn nữa.
+ * Dòng này sẽ đè bẹp cái "visible !important" ở trên khi class được thêm vào.
+ */
+html.stop-scrolling, 
+body.stop-scrolling {
+  /* Ép ẩn thanh cuộn dọc */
+  overflow-y: hidden !important; 
+  /* Khóa chiều cao bằng khung nhìn để không thể cuộn nội dung bên dưới */
+  height: 100vh !important;
+  /* Ngăn chặn các hành vi kéo/vuốt trên mobile */
+  touch-action: none;
+}
+
+/* Tùy chọn: Nếu bạn không muốn trang web bị "giật" sang phải khi thanh cuộn biến mất */
+body.stop-scrolling {
+  padding-right: 0px; /* Bạn có thể chỉnh thành 15px nếu thấy trang bị lệch */
 }
