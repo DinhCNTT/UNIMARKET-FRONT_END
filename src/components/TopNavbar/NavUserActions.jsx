@@ -14,6 +14,7 @@ import {
   FaCommentAlt,
   FaSignOutAlt,
   FaEdit,
+  FaHistory,   // Icon cho Lịch sử xem
   // Đã xóa FaCoins và FaRegCopy vì không còn dùng ví
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
@@ -252,6 +253,10 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
 
                   <div onClick={() => { navigate("/binh-luan-cua-toi"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaCommentDots color="#777" style={{ width: '20px' }} /> Đánh giá từ tôi
+                  </div>
+
+                  <div onClick={() => { navigate("/view-history"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
+                    <FaHistory color="#777" style={{ width: '20px' }} /> Lịch sử xem
                   </div>
 
                   <div className={styles.dropdownDivider}></div>

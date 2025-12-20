@@ -6,6 +6,7 @@ import styles from "./ChiTietTinDang.module.css";
 import { AuthContext } from "../context/AuthContext";
 import { usePostDetails } from "../hooks/usePostDetails";
 import { formatPrice, getMediaUrl } from "../utils/formatters";
+import { viewHistoryService } from "../services/viewHistoryService"; // Import service tracking
 
 // --- IMPORTS COMPONENTS ---
 import TopNavbar from "./TopNavbar/TopNavbar";
@@ -59,6 +60,22 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     };
     fetchSavedIds();
   }, [isLoggedIn, token]);
+
+  // 2. TRACK VIEW - Gọi API tracking khi component mount hoặc khi post thay đổi
+  useEffect(() => {
+    if (post?.maTinDang && isLoggedIn) {
+      // Gọi tracking ngay lập tức
+      console.log(`📍 Tracking view for post: ${post.maTinDang}, isLoggedIn: ${isLoggedIn}`);
+      
+      viewHistoryService.trackView(post.maTinDang)
+        .then(() => {
+          console.log(`✅ Successfully tracked view for post: ${post.maTinDang}`);
+        })
+        .catch((err) => {
+          console.error(`❌ Failed to track view for ${post.maTinDang}:`, err);
+        });
+    }
+  }, [post?.maTinDang, isLoggedIn]);
 
   // 2. Hàm xử lý lưu/bỏ lưu tin dùng chung (Global)
   const handleGlobalToggleSave = async (postId, isCurrentlySaved) => {

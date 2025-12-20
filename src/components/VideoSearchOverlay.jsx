@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./VideoSearchOverlay.css";
 import { FiSearch, FiClock, FiX } from "react-icons/fi";
 import { AuthContext } from '../context/AuthContext';
+import { viewHistoryService } from '../services/viewHistoryService';
 
 export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const [keyword, setKeyword] = useState("");
@@ -13,6 +14,13 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   
   // Lấy thông tin user từ AuthContext
   const { user, token } = useContext(AuthContext);
+
+  // Debug: Log context values khi component mount
+  useEffect(() => {
+    console.log("🎯 VideoSearchOverlay mounted");
+    console.log("👤 AuthContext user:", user);
+    console.log("🔑 AuthContext token:", token ? "exists" : "missing");
+  }, [user, token]);
 
   // Load lịch sử tìm kiếm từ server khi có user
   const loadSearchHistory = async () => {
@@ -140,9 +148,19 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const doSearchAndRedirect = async (kw) => {
     if (!kw.trim()) return;
     
+    console.log("🔍 doSearchAndRedirect called with:", kw);
+    console.log("👤 user:", user, "token:", token ? "exists" : "missing");
+    
     // Chỉ lưu lịch sử nếu user đã đăng nhập
     if (user && token) {
+      console.log("✅ User authenticated, calling saveHistory & trackSearch");
       await saveHistory(kw);
+      // Track search keyword
+      viewHistoryService.trackSearch(kw)
+        .then(() => console.log(`✅ Tracked search from overlay: ${kw}`))
+        .catch((err) => console.error("❌ Failed to track search:", err));
+    } else {
+      console.log("❌ User not authenticated or token missing");
     }
     
     setKeyword("");
@@ -152,10 +170,12 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("🔎 handleSubmit triggered with keyword:", keyword);
     doSearchAndRedirect(keyword);
   };
 
   const onSelectKeyword = (kw) => {
+    console.log("🔎 onSelectKeyword triggered with:", kw);
     doSearchAndRedirect(kw);
   };
 

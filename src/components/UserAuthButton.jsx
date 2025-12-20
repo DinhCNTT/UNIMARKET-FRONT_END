@@ -4,6 +4,7 @@ import { BiIdCard } from "react-icons/bi";
 import { FaSignOutAlt } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FiUser } from "react-icons/fi"; // ✅ Icon đăng nhập mới
+import { MdHistory } from "react-icons/md"; // ✅ Icon lịch sử
 import { AuthContext } from "../context/AuthContext";
 import defaultAvatar from '../assets/default-avatar.png';
 import './UserAuthButton.css';
@@ -35,6 +36,11 @@ const UserAuthButton = () => {
 
   const handleSettingsClick = () => {
     navigate('/cai-dat-tai-khoan');
+    setShowDropdown(false);
+  };
+
+  const handleViewHistoryClick = () => {
+    navigate('/view-history');
     setShowDropdown(false);
   };
 
@@ -94,6 +100,11 @@ const UserAuthButton = () => {
           <button className="userauthbutton-dropdown-item" onClick={handleSettingsClick}>
             <IoSettingsOutline className="userauthbutton-dropdown-icon" />
             Cài đặt tài khoản
+          </button>
+
+          <button className="userauthbutton-dropdown-item" onClick={handleViewHistoryClick}>
+            <MdHistory className="userauthbutton-dropdown-icon" />
+            Lịch sử xem
           </button>
 
           <div className="userauthbutton-dropdown-divider"></div>

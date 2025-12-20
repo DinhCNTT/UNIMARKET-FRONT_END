@@ -44,41 +44,50 @@ api.interceptors.response.use(
   },
   (error) => {
     // Chỉ xử lý nếu có response lỗi từ server và status là 401
-    if (error.response && error.response.status === 401) {
-      console.error("Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.");
+    // ⚠️ Nhưng không phải từ endpoint /viewhistory/* hoặc /trendingkeyword/* để tránh trigger 404->401
+    if (error.response && error.response.status === 401 && error.config) {
+      // Lấy URL của request để kiểm tra
+      const url = error.config.url || "";
+      
+      // Không xử lý 401 cho các endpoint mới (vì chúng chỉ là 404)
+      const shouldHandle401 = !url.includes("/viewhistory/") && !url.includes("/trendingkeyword/");
+      
+      if (shouldHandle401) {
+        console.error("Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.");
 
-      // Xóa tất cả thông tin đăng nhập ở CẢ hai nơi
-      // 1. Xóa từ sessionStorage
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("userId");
-      sessionStorage.removeItem("userEmail");
-      sessionStorage.removeItem("userFullName");
-      sessionStorage.removeItem("userRole");
-      sessionStorage.removeItem("userPhoneNumber");
-      sessionStorage.removeItem("userAvatar");
-      sessionStorage.removeItem("token");
+        // Xóa tất cả thông tin đăng nhập ở CẢ hai nơi
+        // 1. Xóa từ sessionStorage
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("userFullName");
+        sessionStorage.removeItem("userRole");
+        sessionStorage.removeItem("userPhoneNumber");
+        sessionStorage.removeItem("userAvatar");
+        sessionStorage.removeItem("token");
 
-      // 2. Xóa từ localStorage
-      localStorage.removeItem("user");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("userFullName");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("userPhoneNumber");
-      localStorage.removeItem("userAvatar");
-      localStorage.removeItem("token");
+        // 2. Xóa từ localStorage
+        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userFullName");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userPhoneNumber");
+        localStorage.removeItem("userAvatar");
+        localStorage.removeItem("token");
 
-      // Kích hoạt 'logout_signal' để các tab khác cũng tự động đăng xuất
-      localStorage.setItem("logout_signal", Date.now().toString());
-      setTimeout(() => {
-        localStorage.removeItem("logout_signal");
-      }, 100);
+        // Kích hoạt 'logout_signal' để các tab khác cũng tự động đăng xuất
+        localStorage.setItem("logout_signal", Date.now().toString());
+        setTimeout(() => {
+          localStorage.removeItem("logout_signal");
+        }, 100);
 
-      // Thông báo và chuyển hướng
-      alert("Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.");
+        // Thông báo và chuyển hướng
+        alert("Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.");
 
-      // Chuyển hướng về trang đăng nhập
-      window.location.href = "/login";
+        // Chuyển hướng về trang đăng nhập
+        window.location.href = "/login";
+      }
     }
 
     // Trả về lỗi để các hàm .catch() khác có thể xử lý (nếu không phải lỗi 401)
