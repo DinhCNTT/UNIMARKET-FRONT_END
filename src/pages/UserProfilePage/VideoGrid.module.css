@@ -1,5 +1,7 @@
 .tabContent {
   padding: 32px;
+  /* Thêm màu chữ mặc định để đảm bảo hiển thị đúng trong cả 2 chế độ */
+  color: var(--theme-text-primary, #111111);
 }
 
 .sectionHeader {
@@ -13,7 +15,8 @@
 .sectionTitle {
   font-size: 20px;
   font-weight: 700;
-  color: var(--theme-text-primary);
+  /* Thêm fallback #111 cho chế độ sáng */
+  color: var(--theme-text-primary, #111111);
   margin: 0;
 }
 
@@ -53,7 +56,7 @@
 }
 
 .videoCard {
-  background: black;
+  background: black; /* Giữ nguyên màu đen nền video cho cả 2 chế độ */
   border-radius: 8px; /* Bo góc ít hơn cho giống TikTok/Reels */
   overflow: hidden;
   cursor: pointer;
@@ -98,9 +101,9 @@
   align-items: center;
   gap: 5px;
   font-family: -apple-system, BlinkMacSystemFont,
-               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  color: #ffffff;
+  color: #ffffff; /* Giữ nguyên trắng vì nằm trên nền tối */
   font-size: 13px;              
   font-weight: 600;             
   letter-spacing: 0.2px;        
@@ -127,9 +130,12 @@
   justify-content: center;
   gap: 8px;
   padding: 10px 24px;
-  background: var(--theme-bg-hover); /* Màu nhẹ hơn */
-  color: var(--theme-text-primary);
-  border: 1px solid var(--theme-border-color);
+  /* Thêm fallback cho background */
+  background: var(--theme-bg-hover, #f1f1f1); 
+  /* Thêm fallback cho text */
+  color: var(--theme-text-primary, #111111);
+  /* Thêm fallback cho border */
+  border: 1px solid var(--theme-border-color, #e0e0e0);
   border-radius: 25px;
   font-size: 14px;
   font-weight: 500;
@@ -138,5 +144,6 @@
 }
 
 .showMoreBtn:hover {
-  background: var(--theme-border-color);
+  /* Thêm fallback hover */
+  background: var(--theme-border-color, #e0e0e0);
 }

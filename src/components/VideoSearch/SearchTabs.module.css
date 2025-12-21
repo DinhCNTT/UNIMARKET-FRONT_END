@@ -1,39 +1,57 @@
+/* Menu Container */
 .menu {
-  position: relative; /* Để underline hoạt động */
+  margin-top: 30px;
+  position: relative; 
   display: flex;
-  justify-content: flex-start; /* Căn lề trái */
-  gap: 30px; /* Khoảng cách giữa các chữ */
-  width: 100%; /* Chiếm hết chiều rộng khung chứa */
-  margin-bottom: 20px; /* Cách phần video bên dưới ra một chút */
-  padding: 0 10px 10px 10px; /* Padding nhẹ */
-  border-bottom: 1px solid #e0e0e0; 
-  background-color: transparent; /* Bỏ nền trắng đục */
-  box-shadow: none; /* Bỏ bóng đổ */
-  border-radius: 0; /* Bỏ bo tròn kiểu viên thuốc */
-  border: none;
+  justify-content: flex-start; 
+  gap: 30px; 
+  width: 100%; 
+  margin-bottom: 20px; 
+  padding: 0 10px 10px 10px;
+  
+  /* Đã sửa: Dùng biến border-color */
+  border-bottom: 1px solid var(--theme-border-color); 
+  
+  background-color: transparent; 
+  box-shadow: none; 
+  border-radius: 0; 
+  border: none; /* Lưu ý: dòng này đang ghi đè border-bottom ở trên, bạn nên bỏ dòng này hoặc sửa lại */
+  /* Sửa lại cho đúng logic border dưới đây */
+  border-bottom: 1px solid var(--theme-border-color);
+
   font-size: 18px;
   font-weight: 600;
   z-index: 10;
 }
 
+/* Menu Item (Trạng thái bình thường) */
 .menuItem {
   cursor: pointer;
   position: relative;
-  padding: 8px 0; /* Giảm padding ngang để chữ gọn hơn */
-  color: #888; /* Màu xám khi chưa chọn */
+  padding: 8px 0; 
+  
+  /* Đã sửa: Dùng màu chữ phụ (màu xám) */
+  color: var(--theme-text-secondary); 
+  
   transition: color 0.3s ease;
 }
 
+/* Menu Item (Hover hoặc đang chọn) */
 .menuItem:hover, .active {
-  color: #161823; /* Màu đen đậm giống TikTok */
+  /* Đã sửa: Dùng màu chữ chính (Đen ở sáng, Trắng ở tối) */
+  color: var(--theme-text-primary); 
 }
 
+/* Thanh gạch chân (Underline) */
 .underline {
   position: absolute;
-  bottom: 0; /* Dính sát đường kẻ dưới */
+  bottom: 0; 
   left: 0;
-  height: 3px; /* Độ dày gạch chân */
-  background: #161823; /* Màu đen thay vì xanh gradient cho giống TikTok hơn (hoặc giữ màu xanh nếu thích) */
+  height: 3px; 
+  
+  /* Đã sửa: Dùng màu chữ chính (hoặc bạn có thể dùng var(--theme-accent-color) nếu muốn màu cam) */
+  background: var(--theme-text-primary); 
+  
   border-radius: 2px;
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: none;

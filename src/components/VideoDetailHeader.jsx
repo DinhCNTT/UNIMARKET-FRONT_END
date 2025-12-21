@@ -11,12 +11,15 @@ import {
 import { AuthContext } from "../context/AuthContext";
 import styles from "./VideoDetailHeader.module.css";
 
+// ✅ IMPORT ẢNH MẶC ĐỊNH
+import defaultAvatar from "../assets/default-avatar.png";
+
 const VideoDetailHeader = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [showMenu, setShowMenu] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // ✅ State cho Modal
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const timeoutRef = useRef(null);
 
   // 1. Khi ấn nút Đăng xuất trong Menu -> Chỉ hiện Modal
@@ -27,7 +30,7 @@ const VideoDetailHeader = () => {
 
   // 2. Xác nhận Đăng xuất thật -> Gọi hàm logout và reload
   const handleConfirmLogout = () => {
-    logout();
+    if (logout) logout();
     window.location.reload();
   };
 
@@ -46,6 +49,18 @@ const VideoDetailHeader = () => {
     timeoutRef.current = setTimeout(() => {
       setShowMenu(false);
     }, 300);
+  };
+
+  // ✅ HÀM XỬ LÝ ẢNH ĐẠI DIỆN
+  const getUserAvatar = () => {
+    // Ưu tiên profilePicture, sau đó đến avatarUrl
+    const src = user.profilePicture || user.avatarUrl;
+    
+    // Nếu không có link -> dùng ảnh mặc định
+    if (!src) return defaultAvatar;
+
+    // Nếu có link, kiểm tra http (nếu thiếu thì thêm localhost)
+    return src.startsWith("http") ? src : `http://localhost:5133${src}`;
   };
 
   return (
@@ -78,10 +93,16 @@ const VideoDetailHeader = () => {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
           >
+            {/* ✅ CẬP NHẬT THẺ IMG: Dùng hàm getUserAvatar và thêm onError */}
             <img
-              src={user.profilePicture || user.avatarUrl || "https://via.placeholder.com/40"}       
+              src={getUserAvatar()}       
               alt="Avatar"
               className={styles.avatar}
+              onError={(e) => {
+                // Nếu ảnh lỗi (404) -> chuyển về ảnh mặc định
+                e.target.onerror = null;
+                e.target.src = defaultAvatar;
+              }}
             />
 
             {showMenu && (
@@ -90,16 +111,16 @@ const VideoDetailHeader = () => {
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
               >
-                 <div className={styles.menuItem} onClick={() => navigate(`/nguoi-dung/${user.id}`)}>
+                  <div className={styles.menuItem} onClick={() => navigate(`/nguoi-dung/${user.id}`)}>
                     <IoPersonOutline /> Trang cá nhân
-                 </div>
-                 <div className={styles.menuItem} onClick={() => navigate('/cai-dat-tai-khoan')}>   
+                  </div>
+                  <div className={styles.menuItem} onClick={() => navigate('/cai-dat-tai-khoan')}>   
                     <IoSettingsOutline /> Cài đặt
-                 </div>
-                 {/* ✅ Ấn vào đây sẽ gọi Modal */}
-                 <div className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogoutClick}>
+                  </div>
+                  {/* ✅ Ấn vào đây sẽ gọi Modal */}
+                  <div className={`${styles.menuItem} ${styles.logout}`} onClick={handleLogoutClick}>
                     <IoLogOutOutline /> Đăng xuất
-                 </div>
+                  </div>
               </div>
             )}
           </div>
@@ -110,7 +131,7 @@ const VideoDetailHeader = () => {
         )}
       </div>
 
-      {/* --- ✅ MODAL XÁC NHẬN ĐĂNG XUẤT (Thêm mới) --- */}
+      {/* --- ✅ MODAL XÁC NHẬN ĐĂNG XUẤT --- */}
       {showLogoutConfirm && (
         <div className={styles.logoutModalOverlay}>
             <div className={styles.logoutModalContent}>

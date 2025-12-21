@@ -1,37 +1,35 @@
 /* --- CẤU HÌNH PHÔNG CHỮ CHUẨN UI --- */
-/* Thêm class này vào bao ngoài hoặc body, hoặc nó sẽ tự áp dụng vào .card nhờ thừa kế */
 .card {
-  /* Font stack chuẩn "Major Platforms" (giống Facebook/Insta/Github) */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  
-  /* Giữ nguyên layout cũ */
-  width: 100%; 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  width: 100%;
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
-  
-  /* Làm mượt font chữ trên Mac/iOS */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- THUMBNAIL AREA (GIỮ NGUYÊN) --- */
+/* --- KHUNG CHỨA VIDEO (CỐ ĐỊNH TỶ LỆ) --- */
 .thumbnailWrapper {
   position: relative;
   width: 100%;
-  padding-bottom: 133%; 
+  height: 0; 
+  padding-bottom: 133.33%; /* Tỷ lệ khung hình dọc */
   border-radius: 8px; 
-  overflow: hidden;
+  overflow: hidden; 
+  /* Giữ màu đen để tránh bị chói mắt khi video chưa load, bất kể theme */
   background-color: #000; 
+  z-index: 1;
 }
 
+/* --- VIDEO CONTAINER (TUYỆT ĐỐI) --- */
+/* Bắt buộc container này phải trôi nổi đè lên phần padding bên trên */
 .videoContainer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 .videoContainer video {
@@ -39,9 +37,11 @@
   height: 100%;
   object-fit: cover; 
   display: block;
+  border: none;
 }
 
-/* --- OVERLAY TIM (TINH CHỈNH FONT) --- */
+/* --- OVERLAY TIM (NẰM TRÊN VIDEO) --- */
+/* Logic: Luôn là màu trắng vì nằm trên nền video/bóng tối, không đổi theo theme */
 .overlayBottomLeft {
   position: absolute;
   bottom: 10px;
@@ -49,9 +49,10 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #fff;
-  z-index: 2;
+  color: #fff; 
+  z-index: 5; 
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); 
+  pointer-events: none; 
 }
 
 .heartIcon {
@@ -60,24 +61,23 @@
 
 .likeCount {
   font-size: 14px;
-  /* Thay 'ProximaNova' bằng font hệ thống để số hiển thị chuẩn hơn */
   font-weight: 600; 
-  letter-spacing: 0.5px; /* Giãn số ra một chút cho dễ đọc */
 }
 
+/* Lớp phủ bóng mờ bên dưới để chữ dễ đọc */
 .thumbnailWrapper::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 25%;
-  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  height: 30%; /* Tăng nhẹ độ cao bóng mờ */
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* --- INFO AREA (TINH CHỈNH FONT) --- */
+/* --- PHẦN THÔNG TIN BÊN DƯỚI --- */
 .metaData {
   margin-top: 8px;
   padding: 0 2px;
@@ -89,16 +89,13 @@
 
 .videoTitle {
   margin: 0;
-  font-size: 14px; /* Giữ nguyên cỡ chữ */
-  
-  /* SỬA: Line-height chuẩn UI hiện đại */
+  font-size: 14px; 
   line-height: 20px; 
   
-  color: #161823;
+  /* Thay đổi: Màu chữ chính (Đen <-> Trắng) */
+  color: var(--theme-text-primary);
   
-  /* SỬA: Tăng độ đậm lên 600 để tiêu đề nhìn 'xịn' và rõ ràng hơn */
   font-weight: 600; 
-  
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -111,7 +108,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between; 
-  color: #8a8b91; /* Giữ nguyên màu xám chuẩn TikTok */
+  
+  /* Thay đổi: Màu chữ phụ (Xám <-> Xám sáng) */
+  color: var(--theme-text-secondary);
+  
   font-size: 12px;
 }
 
@@ -129,12 +129,17 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+  
+  /* Thay đổi: Nền placeholder khi chưa load ảnh avatar */
+  background-color: var(--theme-bg-hover);
 }
 
 .userName {
-  /* SỬA: Dùng 500 (Medium) thay vì 600 để tên user nhẹ nhàng hơn tiêu đề */
   font-weight: 500; 
-  color: #575757; /* Đậm hơn màu cũ (#8a8b91) một chút để tăng độ tương phản */
+  
+  /* Thay đổi: Màu tên người dùng phụ (Xám đậm <-> Xám nhạt) */
+  color: var(--theme-text-secondary); 
+  
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -143,14 +148,17 @@
 
 .postDate {
   font-size: 12px;
-  color: #8a8b91; /* Ngày tháng nhạt hơn tên user */
+  
+  /* Thay đổi: Màu ngày tháng giống màu phụ */
+  color: var(--theme-text-secondary); 
+  
   flex-shrink: 0;
   margin-left: 8px;
-  font-weight: 400;
 }
 
-/* Hover hiệu ứng */
 .userInfoLeft:hover .userName {
   text-decoration: underline;
-  color: #161823; /* Hover vào thì đen hẳn lên */
+  
+  /* Thay đổi: Khi hover, tên sáng lên thành màu chính (Đen <-> Trắng) */
+  color: var(--theme-text-primary); 
 }

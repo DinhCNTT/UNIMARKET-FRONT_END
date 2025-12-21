@@ -1,20 +1,30 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import "./VideoSearchOverlay.css";
+
+// IMPORT CSS MODULE
+import styles from "./VideoSearchOverlay.module.css";
+
+// Icons
 import { FiSearch, FiClock, FiX } from "react-icons/fi";
+import { FaArrowTrendUp } from "react-icons/fa6"; 
+import { GoDotFill } from "react-icons/go";
+
 import { AuthContext } from '../context/AuthContext';
 
 export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const [keyword, setKeyword] = useState("");
   const [history, setHistory] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const [trending, setTrending] = useState([]);
+  
   const inputRef = useRef(null);
   const navigate = useNavigate();
   
-  // Lấy thông tin user từ AuthContext
   const { user, token } = useContext(AuthContext);
 
-  // Load lịch sử tìm kiếm từ server khi có user
+  // ==========================================
+  // 1. LOGIC LỊCH SỬ TÌM KIẾM
+  // ==========================================
   const loadSearchHistory = async () => {
     if (!user || !token) {
       setHistory([]);
@@ -41,58 +51,6 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
     }
   };
 
-  // Load lịch sử khi component mount hoặc user thay đổi
-  useEffect(() => {
-    loadSearchHistory();
-  }, [user, token]);
-
-  // Listen cho clear search history UI event
-  useEffect(() => {
-    const handleClearSearchHistoryUI = () => {
-      setHistory([]);
-    };
-
-    window.addEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
-    
-    return () => {
-      window.removeEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      const id = setTimeout(() => inputRef.current?.focus(), 200);
-      return () => clearTimeout(id);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!keyword.trim()) {
-      setSuggestions([]);
-      return;
-    }
-    let canceled = false;
-    const fetchSuggestions = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5133/api/Video/suggest-keywords?keyword=${encodeURIComponent(
-            keyword
-          )}&limit=10`
-        );
-        const data = await res.json();
-        if (!canceled) setSuggestions(data);
-      } catch (err) {
-        console.error("Lỗi gợi ý từ khóa:", err);
-        if (!canceled) setSuggestions([]);
-      }
-    };
-    fetchSuggestions();
-    return () => {
-      canceled = true;
-    };
-  }, [keyword]);
-
-  // Lưu lịch sử tìm kiếm lên server
   const saveHistory = async (kw) => {
     if (!kw.trim() || !user || !token) return;
 
@@ -107,7 +65,6 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
       });
 
       if (response.ok) {
-        // Reload lịch sử từ server để đảm bảo đồng bộ
         await loadSearchHistory();
       }
     } catch (error) {
@@ -115,8 +72,10 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
     }
   };
 
-  // Xóa một item khỏi lịch sử
-  const removeHistory = async (kw) => {
+  const removeHistory = async (kw, e) => {
+    // Chặn sự kiện nổi bọt để không kích hoạt tìm kiếm khi bấm nút xóa
+    if (e) e.stopPropagation();
+
     if (!user || !token) return;
 
     try {
@@ -129,7 +88,6 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
       });
 
       if (response.ok) {
-        // Cập nhật UI ngay lập tức
         setHistory(prev => prev.filter(h => h !== kw));
       }
     } catch (error) {
@@ -137,14 +95,92 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
     }
   };
 
+  useEffect(() => {
+    const handleClearSearchHistoryUI = () => {
+      setHistory([]);
+    };
+    window.addEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
+    return () => {
+      window.removeEventListener('clearSearchHistoryUI', handleClearSearchHistoryUI);
+    };
+  }, []);
+
+  // ==========================================
+  // 2. LOGIC TRENDING
+  // ==========================================
+  const loadTrending = async () => {
+    try {
+      const res = await fetch('http://localhost:5133/api/Video/trending');
+      if (res.ok) {
+        const data = await res.json();
+        setTrending(data);
+      }
+    } catch (error) { 
+      console.error("Lỗi load trending:", error); 
+    }
+  };
+
+  // ==========================================
+  // 3. EFFECT TỔNG HỢP
+  // ==========================================
+  useEffect(() => {
+    loadSearchHistory();
+    loadTrending(); 
+  }, [user, token]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const id = setTimeout(() => inputRef.current?.focus(), 200);
+      return () => clearTimeout(id);
+    }
+  }, [isOpen]);
+
+  // ==========================================
+  // 4. LOGIC GỢI Ý (SUGGEST)
+  // ==========================================
+  useEffect(() => {
+    if (!keyword.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    let canceled = false;
+    const fetchSuggestions = async () => {
+      try {
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(
+          `http://localhost:5133/api/Video/suggest-smart?keyword=${encodeURIComponent(keyword)}`,
+          { headers }
+        );
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (!canceled) setSuggestions(data);
+        }
+      } catch (err) {
+        console.error("Lỗi gợi ý từ khóa:", err);
+        if (!canceled) setSuggestions([]);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+        fetchSuggestions();
+    }, 300);
+
+    return () => {
+      canceled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [keyword, token]);
+
+  // ==========================================
+  // 5. EVENT HANDLERS
+  // ==========================================
   const doSearchAndRedirect = async (kw) => {
-    if (!kw.trim()) return;
-    
-    // Chỉ lưu lịch sử nếu user đã đăng nhập
+    if (!kw || !kw.trim()) return;
     if (user && token) {
       await saveHistory(kw);
     }
-    
     setKeyword("");
     onClose();
     navigate(`/search/${encodeURIComponent(kw)}`);
@@ -159,26 +195,43 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
     doSearchAndRedirect(kw);
   };
 
-  // Chặn propagation sự kiện để không ảnh hưởng đến VideoDetailViewer
-  const stopEventPropagation = (e) => {
-    e.stopPropagation();
+  const renderTrendIcon = (index) => {
+    if (index < 3) {
+        return <FaArrowTrendUp className={styles.iconTrendHot} />;
+    }
+    return <GoDotFill className={styles.iconTrendNormal} />;
   };
 
+  // ==========================================
+  // 6. RENDER GIAO DIỆN
+  // ==========================================
   return (
     <div
-      className={`VD-Overlay-video-search-panel ${isOpen ? "open" : ""}`}
-      onWheel={stopEventPropagation}
-      onTouchMove={stopEventPropagation}
-      onScroll={stopEventPropagation}
-      onTouchStart={stopEventPropagation}
-      onTouchEnd={stopEventPropagation}
+      className={`${styles.panel} ${isOpen ? styles.open : ""}`}
+      onWheel={(e) => e.stopPropagation()}
+      onScroll={(e) => e.stopPropagation()}
+      // Giữ lại các event chặn cuộn trang nền nếu cần
+      onTouchMove={(e) => e.stopPropagation()}
     >
-      <form className="VD-Overlay-search-form" onSubmit={handleSubmit}>
-        <div className="VD-Overlay-search-wrapper">
-          <label className="VD-Overlay-search-label">Search</label>
+      <form className={styles.searchForm} onSubmit={handleSubmit}>
+        
+        {/* HEADER */}
+        <div className={styles.headerRow}>
+          <label className={styles.searchLabel}>Search</label>
+          <button 
+            type="button" 
+            className={styles.closePanelBtn} 
+            onClick={onClose}
+          >
+            <FiX size={28} />
+          </button>
+        </div>
+
+        {/* Ô NHẬP LIỆU */}
+        <div className={styles.searchWrapper}>
           <input
             ref={inputRef}
-            className="VD-Overlay-search-input"
+            className={styles.searchInput}
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
@@ -186,61 +239,96 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
             maxLength={80}
             autoComplete="off"
           />
-          {keyword.length > 0 && (
-            <button
-              type="button"
-              className="VD-Overlay-clear-btn"
-              onClick={() => setKeyword("")}
-              aria-label="Xóa"
-            >
-              <FiX size={18} />
-            </button>
-          )}
         </div>
       </form>
-      <div className="VD-Overlay-search-body">
+
+      <div className={styles.searchBody}>
+        {/* TRƯỜNG HỢP 1: HISTORY + TRENDING (Khi chưa nhập gì) */}
         {keyword.trim() === "" ? (
-          <ul className="VD-Overlay-history-list">
-            {!user ? (
-              <li className="VD-Overlay-no-history">Đăng nhập để xem lịch sử tìm kiếm</li>
-            ) : history.length === 0 ? (
-              <li className="VD-Overlay-no-history">Chưa có lịch sử tìm kiếm</li>
-            ) : (
-              history.map((kw, idx) => (
-                <li className="VD-Overlay-history-item" key={idx}>
-                  <button
-                    type="button"
-                    className="VD-Overlay-history-key"
-                    onClick={() => onSelectKeyword(kw)}
-                  >
-                    <FiClock size={16} /> {kw}
-                  </button>
-                  <button
-                    type="button"
-                    className="VD-Overlay-history-remove"
-                    onClick={() => removeHistory(kw)}
-                    aria-label={`Xóa ${kw}`}
-                  >
-                    <FiX size={14} />
-                  </button>
-                </li>
-              ))
+          <div className={styles.defaultContent}>
+            
+            {/* LỊCH SỬ TÌM KIẾM */}
+            {user && history.length > 0 && (
+                <div className={styles.section}>
+                    <div className={styles.sectionTitle}>Lịch sử tìm kiếm</div>
+                    <ul className={styles.historyList}>
+                        {history.map((kw, idx) => (
+                            <li className={styles.historyItem} key={idx}>
+                                {/* Nút Text Lịch sử: Đã gắn hàm onSelectKeyword */}
+                                <button 
+                                    type="button" 
+                                    className={styles.historyKey} 
+                                    onClick={() => onSelectKeyword(kw)}
+                                >
+                                    <FiClock size={16} /> {kw}
+                                </button>
+                                
+                                {/* Nút Xóa Lịch sử: Đã gắn hàm removeHistory */}
+                                <button 
+                                    type="button" 
+                                    className={styles.historyRemove} 
+                                    onClick={(e) => removeHistory(kw, e)}
+                                >
+                                    <FiX size={14} />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
-          </ul>
+            
+            {/* TRENDING */}
+             {trending.length > 0 && (
+                <div className={styles.section} style={{ marginTop: history.length > 0 ? '20px' : '0' }}>
+                    <div className={styles.sectionTitle}>Bạn có thể thích</div>
+                    <ul className={styles.trendingList}>
+                        {trending.map((trend, idx) => (
+                            // Item Trending: Đã gắn hàm onSelectKeyword
+                            <li 
+                                key={idx} 
+                                className={styles.trendingItem} 
+                                onClick={() => onSelectKeyword(trend)}
+                            >
+                                {renderTrendIcon(idx)}
+                                <span className={styles.trendingText}>{trend}</span>
+                                {idx === 0 && <span className={styles.badgeTrend}>Trend</span>}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* Thông báo rỗng */}
+            {!user && trending.length === 0 && (
+                 <div className={styles.noHistory}>Đăng nhập để xem lịch sử tìm kiếm</div>
+            )}
+            {user && history.length === 0 && trending.length === 0 && (
+                 <div className={styles.noHistory}>Hãy thử tìm kiếm gì đó...</div>
+            )}
+          </div>
         ) : (
-          suggestions.length > 0 && (
-            <ul className="VD-Overlay-suggestions-list">
-              {suggestions.map((s, i) => (
-                <li
-                  key={i}
-                  className="VD-Overlay-suggestion-item"
-                  onClick={() => onSelectKeyword(s)}
-                >
-                  <FiSearch size={16} style={{ marginRight: "6px" }} /> {s}
-                </li>
-              ))}
-            </ul>
-          )
+          /* TRƯỜNG HỢP 2: SUGGESTIONS (Khi đang nhập) */
+          <div className={styles.suggestionsContainer}>
+              {suggestions.length > 0 && (
+               <ul className={styles.suggestionsList}>
+                {suggestions.map((s, i) => (
+                  // Item Gợi ý: Đã gắn hàm onSelectKeyword
+                  <li 
+                    key={i} 
+                    className={styles.suggestionItem} 
+                    onClick={() => onSelectKeyword(s)}
+                  >
+                    <div className={styles.suggestionIconWrapper}>
+                      <FiSearch size={18} />
+                    </div>
+                    <div className={styles.suggestionContent}>
+                      {s}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              )}
+          </div>
         )}
       </div>
     </div>

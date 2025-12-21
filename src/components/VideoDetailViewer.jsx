@@ -12,6 +12,7 @@ import VideoDetailHeader from "./VideoDetailHeader";
 import CommentDrawer from "./CommentDrawer";
 import VideoDetailsPanel from "./VideoDetailsPanel";
 import SharePanel from "./SharePanel";
+import VideoContextMenu from "./VideoContextMenu"; // ✅ MỚI: Menu chuột phải
 import { AuthContext } from "../context/AuthContext";
 import { useVideoHub } from "../context/VideoHubContext";
 import { VideoContext } from "../context/VideoContext"; 
@@ -68,11 +69,6 @@ const VideoDetailViewer = () => {
   // Mặc định bắt đầu từ 0
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Debug Logs
-  // console.log("--- [DetailViewer] Render ---");
-  // console.log("👉 Current Index:", currentIndex);
-  // console.log("👉 Video List Length:", videoList.length);
-
   const [showHeart, setShowHeart] = useState(false);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -91,6 +87,7 @@ const VideoDetailViewer = () => {
   const [showControls, setShowControls] = useState(true);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [aspectRatios, setAspectRatios] = useState({});
+  
   // Refs
   const videoRef = useRef(null);
   const videoElsRef = useRef([]);      // Ref đến thẻ <video> để play/pause
@@ -109,6 +106,11 @@ const VideoDetailViewer = () => {
   const videoData = videoList.length > 0 ? videoList[currentIndex] : null;
 
   // =======================
+  // 🖱️ STATE CONTEXT MENU (MỚI)
+  // =======================
+  const [contextMenu, setContextMenu] = useState(null); // { x: 0, y: 0, video: object }
+
+  // =======================
   // VIEW TRACKING
   // =======================
   const { stopViewTracking } = useViewTracking(
@@ -119,13 +121,13 @@ const VideoDetailViewer = () => {
   );
 
   // ======================================================
-  // ✅ LOGIC SCROLL SNAP & OBSERVER (MỚI - TỪ CODE 2)
+  // ✅ LOGIC SCROLL SNAP & OBSERVER
   // ======================================================
   
   // Tự động cập nhật currentIndex khi video lướt vào vùng nhìn thấy
   useEffect(() => {
     const observerOptions = {
-      root: containerRef.current, // null = viewport, hoặc dùng containerRef nếu scroll bên trong div
+      root: containerRef.current,
       threshold: 0.6, // Video phải hiện 60% thì mới tính là đã chuyển slide
     };
 
@@ -137,7 +139,6 @@ const VideoDetailViewer = () => {
             console.log("👀 Scrolled to video index:", index);
             
             // Dừng tracking video cũ trước khi chuyển
-            // Lưu ý: videoList[currentIndex] là video cũ ở thời điểm này
             if (videoList[currentIndex]) {
               stopViewTracking(videoList[currentIndex].maTinDang);
             }
@@ -157,18 +158,16 @@ const VideoDetailViewer = () => {
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoList, stopViewTracking]); // Bỏ currentIndex khỏi dependency để tránh loop Observer
+  }, [videoList, stopViewTracking]); 
 
   // ======================================================
-  // ✅ ĐIỀU HƯỚNG BẰNG NÚT (Sửa lại dùng scrollIntoView)
+  // ✅ ĐIỀU HƯỚNG BẰNG NÚT
   // ======================================================
   const goToIndex = (index) => {
     if (index >= 0 && index < videoList.length) {
       const targetEl = itemRefs.current[index];
       if (targetEl) {
-        // Lệnh này sẽ cuộn mượt đến video đó nhờ CSS scroll-behavior hoặc tham số smooth
         targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
-        // Không cần setCurrentIndex ở đây vì Observer phía trên sẽ tự bắt được và set
       }
     }
   };
@@ -178,14 +177,14 @@ const VideoDetailViewer = () => {
   // ======================================================
   useEffect(() => {
     if (id) {
-       const videoIdNum = parseInt(id);
+       // const videoIdNum = parseInt(id); // (Unused var cleaned)
        const currentFirstVideo = videoList.length > 0 ? videoList[0] : null;
 
        // Kiểm tra xem video đầu tiên hiện tại có khớp ID không
        const isMismatch = !currentFirstVideo || String(currentFirstVideo.maTinDang) !== String(id);
 
        if (isMismatch) {
-          console.log("🛠 Init video:", videoIdNum);
+          console.log("🛠 Init video:", id);
           
           // 1. Ưu tiên lấy dữ liệu từ Router (Seed) để hiển thị NGAY LẬP TỨC
           if (seedVideoFromRouter && String(seedVideoFromRouter.maTinDang) === String(id)) {
@@ -436,26 +435,28 @@ const VideoDetailViewer = () => {
   // CLICK VIDEO
   // =======================
   const handleVideoClick = (e, index) => {
-    e.preventDefault();
-    e.stopPropagation();
-    clickCountRef.current += 1;
+  e.preventDefault();
+  e.stopPropagation();
+  if (contextMenu) setContextMenu(null);
 
-    if (clickCountRef.current === 1) {
-      clickTimeoutRef.current = setTimeout(() => {
-        const video = videoElsRef.current[index];
-        if (video) {
-          video.paused ? video.play() : video.pause();
-        }
-        clickCountRef.current = 0;
-      }, 250);
-    } else if (clickCountRef.current === 2) {
-      clearTimeout(clickTimeoutRef.current);
-      handleLike(videoData);
-      setShowHeart(true);
-      setTimeout(() => setShowHeart(false), 700);
+  clickCountRef.current += 1;
+
+  if (clickCountRef.current === 1) {
+    clickTimeoutRef.current = setTimeout(() => {
+      const video = videoElsRef.current[index];
+      if (video) {
+        video.paused ? video.play() : video.pause();
+      }
       clickCountRef.current = 0;
-    }
-  };
+    }, 250);
+  } else if (clickCountRef.current === 2) {
+    clearTimeout(clickTimeoutRef.current);
+    handleLike(videoData);
+    setShowHeart(true);
+    setTimeout(() => setShowHeart(false), 700);
+    clickCountRef.current = 0;
+  }
+};
 
   // =======================
   // CHI TIẾT VIDEO
@@ -625,6 +626,77 @@ const VideoDetailViewer = () => {
     };
   }, [connection, isConnected, setVideoList]);
 
+  // =======================
+  // 🖱️ XỬ LÝ CHUỘT PHẢI (MỚI)
+  // =======================
+  const handleContextMenu = (e, video) => {
+    e.preventDefault(); // Chặn menu mặc định
+    
+    // Tính toán vị trí để menu không bị tràn ra ngoài màn hình
+    let x = e.clientX;
+    let y = e.clientY;
+
+    setContextMenu({
+      x: x,
+      y: y,
+      video: video
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  // --- 1. Tải Video ---
+  const handleDownloadVideo = async () => {
+    if (!contextMenu?.video?.videoUrl) return;
+    handleCloseContextMenu();
+    
+    const videoUrl = contextMenu.video.videoUrl;
+    try {
+      // Cách 1: Fetch blob để tải
+      const response = await fetch(videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      // Đặt tên file
+      a.download = `video_${contextMenu.video.maTinDang}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Lỗi tải video:", error);
+      // Fallback: Mở tab mới
+      window.open(videoUrl, '_blank');
+    }
+  };
+
+  // --- 2. Gửi đến bạn bè (Mở SharePanel) ---
+  const handleShareContext = () => {
+    handleCloseContextMenu();
+    setShowSharePanel(true);
+  };
+
+  // --- 3. Sao chép liên kết ---
+  const handleCopyLinkContext = () => {
+    if (!contextMenu?.video) return;
+    const link = `${window.location.origin}/video/${contextMenu.video.maTinDang}`;
+    navigator.clipboard.writeText(link);
+    alert("Đã sao chép liên kết vào bộ nhớ tạm!");
+    handleCloseContextMenu();
+  };
+
+  // --- 4. Xem chi tiết (Navigate sang Standalone hoặc Detail Panel) ---
+  const handleViewDetailContext = () => {
+    if (!contextMenu?.video) return;
+    handleCloseContextMenu();
+    // Chuyển hướng sang trang chi tiết
+    navigate(`/video-standalone/${contextMenu.video.maTinDang}`);
+  };
+
+
   // ======================================================
   // RENDER
   // ======================================================
@@ -694,13 +766,14 @@ const VideoDetailViewer = () => {
         </div>
       )}
 
-      {/* ===================== VIDEO LIST (Đã sửa logic cuộn) ===================== */}
+      {/* ===================== VIDEO LIST ===================== */}
       <div
         ref={containerRef}
-        className="video-list-container" // Đảm bảo CSS class này có scroll-snap-type: y mandatory
+        className="video-list-container"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        // 🔥 ĐÃ XÓA transform (quan trọng)
+        // 🔥 Đóng menu chuột phải khi click ra ngoài
+        onClick={() => setContextMenu(null)} 
       >
         <div className="video-list-wrapper">
           {videoList.map((video, index) => {
@@ -718,13 +791,18 @@ const VideoDetailViewer = () => {
               <div
                 key={video.maTinDang || index}
                 className={`video-item ${ratioClass}`}
-                data-index={index} // 🔥 Để Observer đọc được index
-                ref={(el) => (itemRefs.current[index] = el)} // 🔥 Gán ref để Observer bắt
+                data-index={index}
+                ref={(el) => (itemRefs.current[index] = el)}
+                // ❌ ĐÃ XÓA: onContextMenu={(e) => handleContextMenu(e, video)} ở đây
+                // Để tránh click vào vùng đen bên ngoài cũng hiện menu
               >
                 <div
                   className={`vdv-container ${ratioClass} ${
                     showComments ? "comment-open" : ""
                   }`}
+                  // ✅ FIX 2: CHUYỂN VÀO ĐÂY
+                  // Chỉ khi click đúng vào khung chứa video (vdv-container) thì mới hiện menu
+                  onContextMenu={(e) => handleContextMenu(e, video)}
                 >
                   <VideoPlayer
                     video={video}
@@ -807,8 +885,20 @@ const VideoDetailViewer = () => {
         />
       )}
 
+      {/* ===================== MENU CHUỘT PHẢI (MỚI) ===================== */}
+      {contextMenu && (
+        <VideoContextMenu 
+          position={contextMenu}
+          onClose={handleCloseContextMenu}
+          onDownload={handleDownloadVideo}
+          onShareToFriend={handleShareContext}
+          onCopyLink={handleCopyLinkContext}
+          onViewDetail={handleViewDetailContext}
+        />
+      )}
+
       {/* ======================================================== */}
-      {/* ✅ THANH ĐIỀU HƯỚNG BÊN PHẢI (Đã thêm logic shift-for-comments) */}
+      {/* ✅ THANH ĐIỀU HƯỚNG BÊN PHẢI */}
       {/* ======================================================== */}
       <div className={`vdv-right-nav ${showComments ? "shift-for-comments" : ""}`}>
         <button

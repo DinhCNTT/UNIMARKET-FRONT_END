@@ -1,7 +1,9 @@
 .tabsContainer {
   display: flex;
-  background-color: var(--theme-bg-primary);
-  border-bottom: 1px solid var(--theme-border-color);
+  /* Thêm fallback màu trắng cho chế độ sáng */
+  background-color: var(--theme-bg-primary, #ffffff);
+  /* Thêm fallback màu viền xám cho chế độ sáng */
+  border-bottom: 1px solid var(--theme-border-color, #e0e0e0);
   padding-left: 12px;
   /* Đổi gap rộng ra một chút cho thoáng giống TikTok desktop */
   gap: 20px; 
@@ -19,7 +21,8 @@
   left: var(--underline-left, 0);
   width: var(--underline-width, 0);
   height: 2px;
-  background: var(--theme-text-primary); /* TikTok dùng màu đen/trắng theo theme cho underline, hoặc cam nếu bạn muốn giữ style cũ */
+  /* TikTok dùng màu đen/trắng theo theme cho underline -> Fallback là #111 (đen) */
+  background: var(--theme-text-primary, #111111); 
   border-radius: 1px;
   transition: all 0.3s ease;
 }
@@ -34,7 +37,8 @@
   border: none;
   font-size: 16px; /* Font to hơn chút cho giống TikTok Desktop */
   font-weight: 600;
-  color: var(--theme-text-secondary);
+  /* Màu chữ phụ -> Fallback là #555 (xám) */
+  color: var(--theme-text-secondary, #555555);
   cursor: pointer;
   transition: color 0.25s ease;
   position: relative;
@@ -44,11 +48,13 @@
 }
 
 .tab:hover {
-  color: var(--theme-text-primary); /* Hover thành màu đậm thay vì cam */
+  /* Hover thành màu đậm -> Fallback là #111 (đen) */
+  color: var(--theme-text-primary, #111111); 
   background: none;
 }
 
 .tab.active {
-  color: var(--theme-text-primary); /* Active là màu đậm (đen/trắng) */
+  /* Active là màu đậm (đen/trắng) -> Fallback là #111 (đen) */
+  color: var(--theme-text-primary, #111111); 
   background: none;
 }
