@@ -1,6 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Giữ useLocation từ Code 1
 import { toast } from "sonner";
 import axios from "axios";
 import {
@@ -8,14 +8,13 @@ import {
   FaUserCircle,
   FaChevronDown,
   FaHeart,
-  FaVideo,     // Đã import icon Video
+  FaVideo,          // Icon Video
   FaCommentDots,
   FaCog,
   FaCommentAlt,
   FaSignOutAlt,
   FaEdit,
-  FaHistory,   // Icon cho Lịch sử xem
-  // Đã xóa FaCoins và FaRegCopy vì không còn dùng ví
+  FaHistory,        // Icon Lịch sử từ Code 2
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
@@ -52,11 +51,8 @@ const DropdownPortal = ({ children, coords, onClose }) => {
     <div
       ref={dropdownRef}
       style={{
-        position: "fixed",
-        top: coords.top,
-        left: coords.left,
-        zIndex: 999999,
-        width: "300px",
+        position: "fixed", top: coords.top, left: coords.left,
+        zIndex: 999999, width: "300px",
       }}
     >
       {children}
@@ -67,6 +63,8 @@ const DropdownPortal = ({ children, coords, onClose }) => {
 
 const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Hook quan trọng từ Code 1 để check URL
+
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
@@ -113,6 +111,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
     }
   };
 
+  // --- XỬ LÝ ĐĂNG TIN (LOGIC CODE 1 - GIỮ NGUYÊN) ---
   const handlePostClick = async () => {
     if (!user) {
       toast.error("⚠️ Vui lòng đăng nhập.");
@@ -123,13 +122,25 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
     try {
       const validation = await checkUserInfo();
       toast.dismiss(loadingToast);
+      
       if (!validation.valid) {
         toast.error(`❌ ${validation.message}`);
         if (validation.message.includes("hết hạn")) { logout(); navigate("/login"); }
         else { navigate("/cai-dat-tai-khoan"); }
         return;
       }
-      navigate("/dang-tin");
+      
+      // 🔥 LOGIC TỪ CODE 1: Check URL để điều hướng đúng form
+      const currentPath = location.pathname.toLowerCase();
+      
+      // Nếu đang ở khu vực "đồ điện tử", ép về form đăng tin chuyên dụng
+      if (currentPath.includes("do-dien-tu")) {
+        navigate("/dang-tin/do-dien-tu");
+      } else {
+        // Mặc định về trang chọn danh mục
+        navigate("/dang-tin");
+      }
+
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("❌ Có lỗi xảy ra.");
@@ -202,7 +213,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
             <DropdownPortal coords={menuCoords} onClose={() => setShowAccountDropdown(false)}>
               <div className={styles.accountDropdown} style={{ display: 'block', padding: '0', overflow: 'hidden' }}>
                 
-                {/* --- PHẦN HEADER PROFILE --- */}
+                {/* --- HEADER PROFILE --- */}
                 <div className={styles.dropdownProfileHeader} style={{ padding: '15px', textAlign: 'center', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ position: 'relative', display: 'inline-block', marginBottom: '8px' }}>
                     {avatarUrl ? (
@@ -232,9 +243,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                   </div>
                 </div>
 
-                {/* --- ĐÃ XÓA PHẦN VÍ (ĐỒNG TỐT) --- */}
-
-                {/* --- DANH SÁCH TIỆN ÍCH --- */}
+                {/* --- MENU TIỆN ÍCH (GIAO DIỆN TỪ CODE 2) --- */}
                 <div style={{ padding: '10px 0' }}>
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Tiện ích</div>
                   
@@ -243,10 +252,9 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                   </div>
                   
                   <div onClick={() => { setShowAccountDropdown(false); }} className={styles.dropdownItem}>
-                     <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
+                      <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
                   </div>
 
-                  {/* --- ĐÃ KHÔI PHỤC VIDEO ĐÃ TYM --- */}
                   <div onClick={() => { navigate("/video-da-tym"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaVideo color="#3b82f6" style={{ width: '20px' }} /> Video đã tym
                   </div>
@@ -254,9 +262,12 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                   <div onClick={() => { navigate("/binh-luan-cua-toi"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaCommentDots color="#777" style={{ width: '20px' }} /> Đánh giá từ tôi
                   </div>
+                  
+                  {/* TÍNH NĂNG TỪ CODE 2 */}
                   <div onClick={() => { navigate("/view-history"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaHistory color="#777" style={{ width: '20px' }} /> Lịch sử xem
                   </div>
+
                   <div className={styles.dropdownDivider}></div>
                   
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Khác</div>
@@ -270,7 +281,6 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                     <FaSignOutAlt style={{ width: '20px' }} /> Đăng xuất
                   </div>
                 </div>
-
               </div>
             </DropdownPortal>
           )}

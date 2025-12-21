@@ -7,7 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import MarketPage from "../pages/MarketPage";
-// 🔥 [MỚI] IMPORT TRANG ĐỒ ĐIỆN TỬ
+// 🔥 [MỚI] IMPORT TRANG ĐỒ ĐIỆN TỬ (Từ Code 1 & 2)
 import MarketPageElectronic from "../pages/MarketPageElectronic";
 import ErrorBoundary from "../components/ErrorBoundary";
 
@@ -37,6 +37,7 @@ import ChiTietTinDang from "../components/ChiTietTinDang";
 import AccountSettings from "../components/AccountSettings/AccountSettings";
 import UserProfilePage from "../pages/UserProfilePage";
 import TrangChat from "../pages/TrangChat";
+// 🔥 [MỚI] IMPORT TRANG LỊCH SỬ (Từ Code 2)
 import ViewHistoryPage from "../pages/ViewHistory/ViewHistoryPage";
 
 // --- VIDEO COMPONENTS ---
@@ -102,7 +103,13 @@ function AppRoutes() {
           3. USER & PROTECTED ROUTES
       ============================== */}
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
+      
+      {/* Route đăng tin mặc định */}
       <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      
+      {/* 🔥 [QUAN TRỌNG TỪ CODE 1] Route đăng tin với tham số categorySlug (để xử lý đồ điện tử) */}
+      <Route path="/dang-tin/:categorySlug" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
@@ -112,6 +119,8 @@ function AppRoutes() {
 
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
+
+      {/* 🔥 [QUAN TRỌNG TỪ CODE 2] Route xem lịch sử */}
       <Route path="/view-history" element={<ProtectedRoute><ViewHistoryPage /></ProtectedRoute>} />
 
       {/* ==============================
