@@ -44,8 +44,16 @@ api.interceptors.response.use(
   },
   (error) => {
     // Chỉ xử lý nếu có response lỗi từ server và status là 401
-    if (error.response && error.response.status === 401) {
-      console.error("Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.");
+     // ⚠️ Nhưng không phải từ endpoint /viewhistory/* hoặc /trendingkeyword/* để tránh trigger 404->401
+    if (error.response && error.response.status === 401 && error.config) {
+      // Lấy URL của request để kiểm tra
+      const url = error.config.url || "";
+
+      // Không xử lý 401 cho các endpoint mới (vì chúng chỉ là 404)
+      const shouldHandle401 = !url.includes("/viewhistory/") && !url.includes("/trendingkeyword/");
+
+      if (shouldHandle401) {
+        console.error("Lỗi 401: Unauthorized. Token hết hạn hoặc không hợp lệ.");
 
       // Xóa tất cả thông tin đăng nhập ở CẢ hai nơi
       // 1. Xóa từ sessionStorage
@@ -80,6 +88,7 @@ api.interceptors.response.use(
       // Chuyển hướng về trang đăng nhập
       window.location.href = "/login";
     }
+  }
 
     // Trả về lỗi để các hàm .catch() khác có thể xử lý (nếu không phải lỗi 401)
     return Promise.reject(error);

@@ -37,6 +37,7 @@ import ChiTietTinDang from "../components/ChiTietTinDang";
 import AccountSettings from "../components/AccountSettings/AccountSettings";
 import UserProfilePage from "../pages/UserProfilePage";
 import TrangChat from "../pages/TrangChat";
+import ViewHistoryPage from "../pages/ViewHistory/ViewHistoryPage";
 
 // --- VIDEO COMPONENTS ---
 import VideoPage from "../pages/VideoPage"; 
@@ -111,6 +112,7 @@ function AppRoutes() {
 
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
+      <Route path="/view-history" element={<ProtectedRoute><ViewHistoryPage /></ProtectedRoute>} />
 
       {/* ==============================
           4. VIDEO ROUTES

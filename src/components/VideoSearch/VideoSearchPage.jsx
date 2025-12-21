@@ -5,7 +5,7 @@ import SearchTabs from "./SearchTabs";
 import VideoCard from "./VideoCard";
 import UserRow from "./UserRow";
 import styles from "./VideoSearchPage.module.css";
-
+import { viewHistoryService } from "../../services/viewHistoryService";
 export default function VideoSearchPage() {
   const { keyword } = useParams();
   const navigate = useNavigate();
@@ -74,6 +74,15 @@ export default function VideoSearchPage() {
       fetchVideos();
     } else {
       fetchUsers();
+    }
+    // Track search keyword when user lands on search page
+    if (keyword) {
+      const timer = setTimeout(() => {
+        viewHistoryService.trackSearch(keyword)
+          .then(() => console.log(`✅ Tracked search: ${keyword}`))
+          .catch((err) => console.error("❌ Failed to track search:", err));
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [keyword, activeTab]);
 

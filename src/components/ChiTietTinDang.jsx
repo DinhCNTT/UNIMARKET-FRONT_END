@@ -1,31 +1,36 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios"; // Thêm axios
-import toast from "react-hot-toast"; // Thêm toast
+import axios from "axios";
+import toast from "react-hot-toast";
 import styles from "./ChiTietTinDang.module.css";
 import { AuthContext } from "../context/AuthContext";
 import { usePostDetails } from "../hooks/usePostDetails";
 import { formatPrice, getMediaUrl } from "../utils/formatters";
 
+// --- TÍCH HỢP TỪ CODE 2: Service Tracking ---
+import { viewHistoryService } from "../services/viewHistoryService";
+
 // --- IMPORTS COMPONENTS ---
 import TopNavbar from "./TopNavbar/TopNavbar";
 import FloatingProductBox from "../components/FloatingProductBox";
 import PostImageCarousel from "../components/PostImageCarousel";
-import PostDetailsInfo from "../components/PostDetailsInfo"; 
+import PostDetailsInfo from "../components/PostDetailsInfo";
 import PostDescription from "../components/PostDescription";
 import PostTechnicalSpecs from "../components/PostTechnicalSpecs";
-import SimilarPostsSection from "../components/SimilarPostsSection"; 
+import SimilarPostsSection from "../components/SimilarPostsSection";
 import Lightbox from "../components/Lightbox";
 import PostComments from "../components/PostComments";
 
 /**
- * Trang Chi Tiết Tin Đăng (Cập nhật đồng bộ nút Trái tim)
+ * Trang Chi Tiết Tin Đăng (Final Merged Version)
+ * Kết hợp: Logic hiển thị/lưu tin (Code 1) + Tracking lịch sử xem (Code 2)
  */
 const ChiTietTinDang = ({ onOpenChat }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, token } = useContext(AuthContext); // Lấy user và token
+  const { user, token } = useContext(AuthContext);
 
+  // Hook lấy dữ liệu chi tiết bài đăng
   const {
     post,
     similarPostsByCategory,
@@ -34,16 +39,19 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     handleChatWithSeller,
   } = usePostDetails(id, onOpenChat);
 
+  // --- LOCAL STATES ---
   const [showFloatingBox, setShowFloatingBox] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-
-  // --- QUẢN LÝ TRẠNG THÁI LƯU TIN (ĐỒNG BỘ) ---
+  
+  // State quản lý danh sách yêu thích
   const [savedIds, setSavedIds] = useState([]);
   const isLoggedIn = !!(user && token);
 
-  // 1. Tải danh sách ID các tin đã lưu của user
+  // =========================================================
+  // 1. LOGIC LẤY DANH SÁCH YÊU THÍCH (TỪ CODE 1 & 2)
+  // =========================================================
   useEffect(() => {
     const fetchSavedIds = async () => {
       if (isLoggedIn) {
@@ -60,12 +68,41 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     fetchSavedIds();
   }, [isLoggedIn, token]);
 
-  // 2. Hàm xử lý lưu/bỏ lưu tin dùng chung (Global)
+  // =========================================================
+  // 2. LOGIC TRACKING VIEW (TÍCH HỢP TỪ CODE 2)
+  // =========================================================
+  useEffect(() => {
+    // Chỉ track khi đã có thông tin bài đăng và user đã đăng nhập
+    if (post?.maTinDang && isLoggedIn) {
+      console.log(`📍 Tracking view for post: ${post.maTinDang}`);
+      
+      viewHistoryService.trackView(post.maTinDang)
+        .then(() => {
+          console.log(`✅ Successfully tracked view for post: ${post.maTinDang}`);
+        })
+        .catch((err) => {
+          console.error(`❌ Failed to track view for ${post.maTinDang}:`, err);
+        });
+    }
+  }, [post?.maTinDang, isLoggedIn]);
+
+  // =========================================================
+  // 3. LOGIC XỬ LÝ SỰ KIỆN (SCROLL, SAVE, LIGHTBOX, CHAT)
+  // =========================================================
+
+  // Xử lý scroll để hiện Floating Box
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowFloatingBox(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Hàm xử lý Lưu/Bỏ lưu tin (Global)
   const handleGlobalToggleSave = async (postId, isCurrentlySaved) => {
     if (!isLoggedIn) {
-      return toast.error("Vui lòng đăng nhập để lưu tin!", {
-        icon: '🔒',
-      });
+      return toast.error("Vui lòng đăng nhập để lưu tin!", { icon: '🔒' });
     }
 
     try {
@@ -87,18 +124,11 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     }
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowFloatingBox(window.scrollY > 400); 
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const handleOpenLightbox = (index) => {
     setLightboxIndex(index);
     setShowLightbox(true);
   };
+
   const handleCloseLightbox = () => setShowLightbox(false);
 
   const handleChatClick = () => {
@@ -112,6 +142,9 @@ const ChiTietTinDang = ({ onOpenChat }) => {
     }
   };
 
+  // =========================================================
+  // 4. RENDER GIAO DIỆN
+  // =========================================================
   if (loading) return <div className={styles.loading}>Đang tải thông tin...</div>;
   if (!post) return <div className={styles.notFound}>Không tìm thấy tin đăng.</div>;
 
@@ -127,12 +160,18 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           image={getMediaUrl(post.images?.[0])}
           title={post.tieuDe}
           price={formattedPrice}
-          details={<>
-            <span>{post.loaiSanPham || post.tieuDe}</span>
-            {post.dungLuong && <span> | {post.dungLuong}</span>}
-            {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
-          </>}
-          description={post.moTa ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') : ''}
+          details={
+            <>
+              <span>{post.loaiSanPham || post.tieuDe}</span>
+              {post.dungLuong && <span> | {post.dungLuong}</span>}
+              {post.thoiGianBaoHanh && <span> | {post.thoiGianBaoHanh}</span>}
+            </>
+          }
+          description={
+            post.moTa 
+              ? post.moTa.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120) + (post.moTa.length > 120 ? '...' : '') 
+              : ''
+          }
           onShowPhone={() => setShowPhoneNumber((s) => !s)}
           showPhone={showPhoneNumber}
           phoneMasked={`${post.phoneNumber?.substring(0, 6)}****`}
@@ -147,9 +186,9 @@ const ChiTietTinDang = ({ onOpenChat }) => {
       {/* --- HEADER TIN ĐĂNG --- */}
       <div className={styles.tinDangHeader} id="tong-quan">
         <div className={styles.imageContainer}>
-          <PostImageCarousel 
-            images={post.images} 
-            onImageClick={handleOpenLightbox} 
+          <PostImageCarousel
+            images={post.images}
+            onImageClick={handleOpenLightbox}
           />
         </div>
 
@@ -158,9 +197,9 @@ const ChiTietTinDang = ({ onOpenChat }) => {
             post={post}
             formattedPrice={formattedPrice}
             currentUserId={user?.id}
-            onChat={handleChatClick} 
-            // Cập nhật để dùng chung logic lưu tin
-            isSaved={savedIds.includes(post.maTinDang)} 
+            onChat={handleChatClick}
+            // Logic lưu tin
+            isSaved={savedIds.includes(post.maTinDang)}
             onToggleSave={() => handleGlobalToggleSave(post.maTinDang, savedIds.includes(post.maTinDang))}
             showPhoneNumber={showPhoneNumber}
             onTogglePhone={() => setShowPhoneNumber((s) => !s)}
@@ -168,14 +207,14 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         </div>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
+      {/* --- MAIN CONTENT (Mô tả, Thông số, Bình luận) --- */}
       <div className={styles.descriptionAndCommentsWrapper}>
         <div className={styles.descriptionContainer} id="mo-ta-chi-tiet">
           <PostDescription description={post.moTa} />
 
-          <PostTechnicalSpecs 
-            detailsJson={post.ChiTietObj || post.chiTietObj} 
-            TinhTrang={post.TinhTrang || post.tinhTrang}       
+          <PostTechnicalSpecs
+            detailsJson={post.ChiTietObj || post.chiTietObj}
+            TinhTrang={post.TinhTrang || post.tinhTrang}
             CoTheThoaThuan={post.CoTheThoaThuan || post.coTheThoaThuan}
           />
         </div>
@@ -184,15 +223,15 @@ const ChiTietTinDang = ({ onOpenChat }) => {
           <PostComments maTinDang={post.maTinDang} />
         </div>
       </div>
-      
+
       {/* --- CÁC TIN ĐĂNG LIÊN QUAN --- */}
       <div id="cac-tin-dang-khac">
         <SimilarPostsSection
           title={`Các tin đăng khác của ${post.nguoiBan}`}
           posts={similarPostsBySeller}
-          mode="carousel" 
+          mode="carousel"
           onViewShop={handleViewShop}
-          // Truyền Props để hiện nút Trái tim
+          // Logic lưu tin
           isLoggedIn={isLoggedIn}
           savedIds={savedIds}
           onToggleSave={handleGlobalToggleSave}
@@ -203,19 +242,20 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         <SimilarPostsSection
           title="Tin đăng tương tự"
           posts={similarPostsByCategory}
-          mode="grid"    
-          // Truyền Props để hiện nút Trái tim
+          mode="grid"
+          // Logic lưu tin
           isLoggedIn={isLoggedIn}
           savedIds={savedIds}
           onToggleSave={handleGlobalToggleSave}
         />
       </div>
 
+      {/* --- LIGHTBOX --- */}
       {showLightbox && (
         <Lightbox
           images={post.images}
           startIndex={lightboxIndex}
-          onClose={handleCloseLightbox} 
+          onClose={handleCloseLightbox}
         />
       )}
     </div>

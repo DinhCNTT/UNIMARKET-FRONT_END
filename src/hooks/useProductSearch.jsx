@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { SearchContext } from "../context/SearchContext";
 import { LocationContext } from "../context/LocationContext";
+import { viewHistoryService } from "../services/viewHistoryService";
 
 export const useProductSearch = () => {
   // --- Contexts ---
@@ -142,6 +143,13 @@ export const useProductSearch = () => {
     setShowSuggestions(false);
     await saveSearchHistory(queryToSearch);
 
+// Track to trending keywords
+    if (user && token) {
+      console.log("📍 Tracking search from hero header:", queryToSearch);
+      viewHistoryService.trackSearch(queryToSearch)
+        .then(() => console.log(`✅ Tracked search: ${queryToSearch}`))
+        .catch((err) => console.error("❌ Failed to track search:", err));
+    }
     const params = new URLSearchParams();
     params.set("search", queryToSearch);
     

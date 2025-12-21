@@ -11,7 +11,7 @@ import "./MarketPage.css";
 import FloatingAiButton from "../components/AI/FloatingAiButton";
 import Footer from "../components/Footer";
 import FooterBanner from "../components/FooterBanner/FooterBanner"; 
-
+import TrendingKeywords from "../components/TrendingKeywords/TrendingKeywords";
 const MarketplacePage = () => {
   const { user } = useContext(AuthContext);
 
@@ -41,6 +41,10 @@ const MarketplacePage = () => {
 
         <div className="section-wrapper">
           <UniMarketIntro />
+        </div>
+         {/* Đã xóa dòng FeatureSection tiêu đề, chỉ giữ lại nội dung component */}
+        <div className="section-wrapper">
+           <TrendingKeywords />
         </div>
       </div>
       <FooterBanner />
