@@ -1,3 +1,4 @@
+//src/components/TopNavbar/TopNavbar.jsx
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -19,7 +20,7 @@ const TopNavbar = () => {
   
   // Xác định xem trang hiện tại có phải là trang chủ (có banner) hay không
   // Bạn có thể thêm các đường dẫn khác vào đây nếu muốn hiện banner ở đó
-  const isHomePage = location.pathname === "/market" || location.pathname === "/";
+  const isHomePage = location.pathname === "/market" || location.pathname === "/" || location.pathname === "/market/do-dien-tu";
 
   // Nếu không phải Home Page thì mặc định là scrolled (để hiện thanh trắng luôn)
   const [scrolled, setScrolled] = useState(!isHomePage);

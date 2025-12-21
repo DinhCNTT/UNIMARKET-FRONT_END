@@ -14,7 +14,7 @@ const DISTRICTS = {
 
 const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, categories, onSortOrderChange, onAdvancedFilterChange }) => {
   const { selectedLocation } = useContext(LocationContext);
-  const { selectedCategory, setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
+const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { searchTerm } = useContext(SearchContext);
 
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -30,6 +30,25 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
   const [detectedCategory, setDetectedCategory] = useState(null);
   const [activeMode, setActiveMode] = useState(null); 
   const [advancedFilters, setAdvancedFilters] = useState({});
+
+  // Tự động bật chế độ lọc chuyên sâu
+  useEffect(() => {
+    if (selectedSubCategory) {
+      let keyName = selectedSubCategory;
+      if (keyName.toLowerCase().includes("điện thoại")) {
+          keyName = "Điện thoại";
+      }
+
+      // Kiểm tra xem có bộ lọc nào tên là "Điện thoại" không
+      if (FILTER_COMPONENTS && FILTER_COMPONENTS[keyName]) {
+        setActiveMode(keyName);
+      } else {
+        setActiveMode(null);
+      }
+    } else {
+      setActiveMode(null);
+    }
+  }, [selectedSubCategory]);
 
   // 1. State lưu lịch sử chọn để hiển thị Breadcrumb theo thứ tự
   const [filterHistory, setFilterHistory] = useState([]);

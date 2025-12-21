@@ -1,14 +1,15 @@
+// src/components/CategoryList.jsx
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import "./CategoryList.css";
 import { CategoryContext } from "../context/CategoryContext";
-import { useNavigate } from "react-router-dom"; // ✅ THÊM
+import { useNavigate } from "react-router-dom"; 
 
 const CategoryList = () => {
   const [categories, setCategories] = useState([]);
   const placeholderImage = "https://dummyimage.com/150";
   const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
-  const navigate = useNavigate(); // ✅ THÊM
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -34,7 +35,13 @@ const CategoryList = () => {
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory(categoryName);
     setSelectedSubCategory("");
-    navigate("/loc-tin-dang"); // ✅ CHUYỂN TRANG SAU KHI SET CONTEXT
+
+    // 🔥 [MỚI] KIỂM TRA ĐIỀU KIỆN ĐỒ ĐIỆN TỬ
+    if (categoryName && categoryName.toLowerCase().trim() === "đồ điện tử") {
+        navigate("/market/do-dien-tu");
+    } else {
+        navigate("/loc-tin-dang");
+    }
   };
 
   return (

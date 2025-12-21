@@ -1,3 +1,4 @@
+// src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
@@ -6,6 +7,8 @@ import { AuthContext } from "../context/AuthContext";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import MarketPage from "../pages/MarketPage";
+// 🔥 [MỚI] IMPORT TRANG ĐỒ ĐIỆN TỬ
+import MarketPageElectronic from "../pages/MarketPageElectronic";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 // --- ADMIN PAGES & COMPONENTS ---
@@ -38,21 +41,16 @@ import TrangChat from "../pages/TrangChat";
 // --- VIDEO COMPONENTS ---
 import VideoPage from "../pages/VideoPage"; 
 import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; 
-import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer cũ (Giữ nguyên)
-
+import VideoDetailViewer from "../components/VideoDetailViewer";
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
-
-// 🔥 [MỚI] IMPORT TRANG VIDEO STANDALONE
 import VideoStandalonePage from "../pages/VideoStandalone/VideoStandalonePage";
 
 // --- ROUTE GUARDS ---
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
-
   if (user === null) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (role !== "Admin") return <Navigate to="/" />;
-
   return (
     <div className="admin-container">
       <Sidebar />
@@ -78,6 +76,9 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
+
+      {/* 🔥 [MỚI] ROUTE CHO ĐỒ ĐIỆN TỬ */}
+      <Route path="/market/do-dien-tu" element={<MarketPageElectronic />} />
 
       {/* ==============================
           2. MARKETPLACE & POSTS
@@ -114,7 +115,6 @@ function AppRoutes() {
       {/* ==============================
           4. VIDEO ROUTES
       ============================== */}
-      
       <Route
         path="/market/video"
         element={
@@ -123,9 +123,7 @@ function AppRoutes() {
           </ErrorBoundary>
         }
       />
-
       <Route path="/search/:keyword" element={<VideoSearchPage />} />
-
       <Route 
         path="/video-viewer/:maTinDang" 
         element={
@@ -134,17 +132,10 @@ function AppRoutes() {
           </ErrorBoundary>
         } 
       />
-
       <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
       <Route path="/video-search-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
-      
-      {/* ✅ GIỮ NGUYÊN ROUTE CŨ CỦA BẠN (Viewer đơn lẻ mặc định) */}
       <Route path="/video/:id" element={<VideoDetailViewer />} />
-
-      {/* 🔥 [THÊM MỚI] Route này dành riêng cho click từ thông báo */}
-      {/* Tên đường dẫn khác đi để không đụng chạm cái cũ */}
       <Route path="/video-standalone/:id" element={<VideoStandalonePage />} />
-
 
       {/* ==============================
           5. ADMIN ROUTES
