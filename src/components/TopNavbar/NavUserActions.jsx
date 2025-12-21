@@ -1,20 +1,11 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; 
 import { toast } from "sonner";
 import axios from "axios";
 import {
-  FaRegBell,
-  FaUserCircle,
-  FaChevronDown,
-  FaHeart,
-  FaVideo,     // Đã import icon Video
-  FaCommentDots,
-  FaCog,
-  FaCommentAlt,
-  FaSignOutAlt,
-  FaEdit,
-  // Đã xóa FaCoins và FaRegCopy vì không còn dùng ví
+  FaRegBell, FaUserCircle, FaChevronDown, FaHeart, FaVideo,
+  FaCommentDots, FaCog, FaCommentAlt, FaSignOutAlt, FaEdit,
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
@@ -51,11 +42,8 @@ const DropdownPortal = ({ children, coords, onClose }) => {
     <div
       ref={dropdownRef}
       style={{
-        position: "fixed",
-        top: coords.top,
-        left: coords.left,
-        zIndex: 999999,
-        width: "300px",
+        position: "fixed", top: coords.top, left: coords.left,
+        zIndex: 999999, width: "300px",
       }}
     >
       {children}
@@ -66,6 +54,8 @@ const DropdownPortal = ({ children, coords, onClose }) => {
 
 const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
   const navigate = useNavigate();
+  const location = useLocation(); 
+
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
@@ -74,7 +64,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
   const { user, avatarUrl, logout, getStoredToken } = useContext(AuthContext);
   const { fetchNotifications } = useContext(NotificationContext);
 
-  // --- TÍNH VỊ TRÍ MENU ---
+  // --- TÍNH VỊ TRÍ MENU (GIỮ NGUYÊN) ---
   const handleToggleDropdown = () => {
     if (showAccountDropdown) {
       setShowAccountDropdown(false);
@@ -90,7 +80,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
     }
   };
 
-  // --- KIỂM TRA USER ---
+  // --- KIỂM TRA USER (GIỮ NGUYÊN) ---
   const checkUserInfo = async () => {
     try {
       const token = getStoredToken();
@@ -128,7 +118,19 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
         else { navigate("/cai-dat-tai-khoan"); }
         return;
       }
-      navigate("/dang-tin");
+      
+      // 🔥 [LOGIC MỚI - TỐI ƯU URL]
+      const currentPath = location.pathname.toLowerCase();
+      
+      // Nếu đường dẫn hiện tại có chứa "do-dien-tu" (Bất kể là ở Market hay đang ở Form đăng tin của nó)
+      // Thì luôn luôn ép về trang đăng tin bị khóa của Đồ điện tử
+      if (currentPath.includes("do-dien-tu")) {
+        navigate("/dang-tin/do-dien-tu");
+      } else {
+        // Các trường hợp khác (Trang chủ, trang cá nhân...) -> Về trang chọn gốc
+        navigate("/dang-tin");
+      }
+
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("❌ Có lỗi xảy ra.");
@@ -141,6 +143,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
   };
 
   return (
+    // ... HTML GIỮ NGUYÊN KHÔNG ĐỔI ...
     <div className={`${styles.navRight} ${isScrolled ? styles.scrolled : ""}`}>
       {/* Notifications */}
       <div className={styles.iconBtnWrapper}>
@@ -200,8 +203,6 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
           {showAccountDropdown && (
             <DropdownPortal coords={menuCoords} onClose={() => setShowAccountDropdown(false)}>
               <div className={styles.accountDropdown} style={{ display: 'block', padding: '0', overflow: 'hidden' }}>
-                
-                {/* --- PHẦN HEADER PROFILE --- */}
                 <div className={styles.dropdownProfileHeader} style={{ padding: '15px', textAlign: 'center', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ position: 'relative', display: 'inline-block', marginBottom: '8px' }}>
                     {avatarUrl ? (
@@ -231,9 +232,6 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                   </div>
                 </div>
 
-                {/* --- ĐÃ XÓA PHẦN VÍ (ĐỒNG TỐT) --- */}
-
-                {/* --- DANH SÁCH TIỆN ÍCH --- */}
                 <div style={{ padding: '10px 0' }}>
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Tiện ích</div>
                   
@@ -242,10 +240,9 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                   </div>
                   
                   <div onClick={() => { setShowAccountDropdown(false); }} className={styles.dropdownItem}>
-                     <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
+                      <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
                   </div>
 
-                  {/* --- ĐÃ KHÔI PHỤC VIDEO ĐÃ TYM --- */}
                   <div onClick={() => { navigate("/video-da-tym"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaVideo color="#3b82f6" style={{ width: '20px' }} /> Video đã tym
                   </div>
@@ -267,7 +264,6 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                     <FaSignOutAlt style={{ width: '20px' }} /> Đăng xuất
                   </div>
                 </div>
-
               </div>
             </DropdownPortal>
           )}

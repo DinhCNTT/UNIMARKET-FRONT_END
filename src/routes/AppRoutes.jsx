@@ -102,6 +102,8 @@ function AppRoutes() {
       ============================== */}
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
       <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      {/* :categorySlug là biến động, nó sẽ bắt lấy chữ "do-dien-tu" */}
+      <Route path="/dang-tin/:categorySlug" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
