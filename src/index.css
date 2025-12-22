@@ -1,58 +1,56 @@
-/* --- 1. RESET CƠ BẢN --- */
+/* --- RESET --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* --- 2. LỚP NGOÀI CÙNG (HTML & BODY) --- */
-/* Giữ nguyên logic visible !important để hỗ trợ Sticky của bạn */
+/* --- LỚP NGOÀI CÙNG (HTML & BODY) --- */
 html, 
 body {
+  /* Chìa khóa: Chỉ clip trục X (ngang), trục Y (dọc) phải là visible */
   overflow-x: clip !important;
   overflow-y: visible !important;
   height: auto;
   min-height: 100%;
 }
 
-/* --- 3. CÁC LỚP TRUNG GIAN (ROOT & WRAPPERS) --- */
-/* Bắt buộc tất cả các cấp này phải là 'visible' để không làm mất vị trí Sticky */
+/* --- CÁC LỚP TRUNG GIAN (ROOT & WRAPPERS) --- */
+/* Bắt buộc tất cả các cấp này phải là 'visible' */
 #root, 
 .marketplace-page, 
 .main-content, 
 .section-wrapper {
   overflow: visible !important; 
+  /* Nếu dùng Flexbox ở đây, hãy cẩn thận với align-items: stretch */
   display: block; 
 }
 
-/* --- 4. PHẦN TỬ STICKY --- */
+/* --- PHẦN TỬ STICKY --- */
 .your-sticky-element {
-  position: -webkit-sticky; /* Hỗ trợ Safari */
+  position: -webkit-sticky;
   position: sticky;
-  top: 0; /* Bắt buộc phải có giá trị top/bottom */
+  top: 0; 
   z-index: 100;
 }
-
-/* ============================================================ */
-/* --- 5. LOGIC KHÓA CUỘN (DÙNG CHO MODAL BÌNH LUẬN) --- */
-/* ============================================================ */
-
-/** * TẠI SAO PHẢI VIẾT THẾ NÀY:
- * Vì ở trên bạn dùng "html, body" với !important, nên ở đây tui phải dùng 
- * "html.stop-scrolling" để tăng độ ưu tiên (Specificity) lên cao hơn nữa.
- * Dòng này sẽ đè bẹp cái "visible !important" ở trên khi class được thêm vào.
- */
-html.stop-scrolling, 
-body.stop-scrolling {
-  /* Ép ẩn thanh cuộn dọc */
-  overflow-y: hidden !important; 
-  /* Khóa chiều cao bằng khung nhìn để không thể cuộn nội dung bên dưới */
-  height: 100vh !important;
-  /* Ngăn chặn các hành vi kéo/vuốt trên mobile */
-  touch-action: none;
+body::-webkit-scrollbar {
+  width: 5px; 
 }
 
-/* Tùy chọn: Nếu bạn không muốn trang web bị "giật" sang phải khi thanh cuộn biến mất */
-body.stop-scrolling {
-  padding-right: 0px; /* Bạn có thể chỉnh thành 15px nếu thấy trang bị lệch */
+body::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 4px; 
+}
+
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffa366, #ff6600); 
+  border-radius: 8px; 
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+  background-clip: padding-box;
+  transition: background 0.25s ease;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff7a00, #ff3d00); 
 }

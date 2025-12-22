@@ -1,18 +1,18 @@
 ﻿import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
 import { IoPlay, IoHeart, IoChatbubbleEllipses, IoBookmark, IoShareSocial, IoMusicalNotes } from 'react-icons/io5';
-import { FaPlus } from 'react-icons/fa';
-
+import { FaPlus, FaCheck } from 'react-icons/fa';
 import styles from './VideoPlayerSection.module.css';
 import VideoOverlayControls from './VideoOverlayControls';
 import { useVolume } from '../../../context/VolumeContext';
 import SharePanel from "../../../components/SharePanel";
+// 🔥 Import Menu (Lưu ý đường dẫn tùy thuộc vào cấu trúc folder của bạn)
+import VideoContextMenu from "../../../components/VideoContextMenu"; 
+import defaultAvatar from '../../../assets/default-avatar.png'; 
 
 const API_BASE = "http://localhost:5133";
 
-// Thêm prop isActive vào danh sách props
 const VideoPlayerSection = ({ 
     videoData, 
     token, 
@@ -20,7 +20,7 @@ const VideoPlayerSection = ({
     onUpdateVideo, 
     onOpenComments, 
     isActive,
-    onRatioChange // <--- THÊM PROP NÀY
+    onRatioChange
 }) => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
@@ -49,11 +49,12 @@ const VideoPlayerSection = ({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareCount, setShareCount] = useState(videoData?.soLuotChiaSe || 0);
 
+  // 🔥 STATE CHO CONTEXT MENU
+  const [contextMenu, setContextMenu] = useState(null);
+
   // Refs Click
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef(null);
-
-  const iconBaseColor = "#161823"; 
   
   // 1. SYNC DATA TỪ SERVER
   useEffect(() => {
@@ -113,8 +114,8 @@ const VideoPlayerSection = ({
       videoEl.pause();
       videoEl.currentTime = 0; 
       setIsPlaying(false);
-      // Khi không active thì đóng share panel luôn nếu đang mở
       setIsShareOpen(false);
+      setContextMenu(null); // Đóng menu nếu chuyển video
     }
   }, [isActive, videoData]); 
 
@@ -133,12 +134,10 @@ const VideoPlayerSection = ({
         }
     };
 
-    // Nếu video đã có metadata (readyState >= 1), check ngay lập tức
     if (videoEl.readyState >= 1) {
         checkRatio();
     }
 
-    // Vẫn lắng nghe sự kiện đề phòng video chưa load
     videoEl.addEventListener('loadedmetadata', checkRatio);
     
     return () => {
@@ -146,7 +145,7 @@ const VideoPlayerSection = ({
     };
 }, [videoData]);
 
-  // 4. LISTENERS: METADATA, TIME UPDATE
+  // 4. LISTENERS
   useEffect(() => {
       const videoEl = videoRef.current;
       if (!videoEl) return;
@@ -207,7 +206,6 @@ const VideoPlayerSection = ({
       }
   };
 
-  // --- HANDLERS ---
   const handleTogglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) {
@@ -221,9 +219,13 @@ const VideoPlayerSection = ({
   
   const handleVideoClick = (e) => {
     e.stopPropagation();
-    // Nếu đang mở share panel thì đóng nó lại trước
     if (isShareOpen) {
         setIsShareOpen(false);
+        return;
+    }
+    // 🔥 Click trái thì đóng Context Menu
+    if (contextMenu) {
+        setContextMenu(null);
         return;
     }
 
@@ -240,6 +242,48 @@ const VideoPlayerSection = ({
       setTimeout(() => setShowHeart(false), 800);
       clickCountRef.current = 0;
     }
+  };
+
+  // 🔥 XỬ LÝ CONTEXT MENU (CHUỘT PHẢI)
+  const handleContextMenu = (e) => {
+    e.preventDefault(); // Chặn menu mặc định
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const handleDownloadVideo = async () => {
+    handleCloseContextMenu();
+    const videoUrl = videoData.videoUrl;
+    try {
+      const response = await fetch(videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `video_${videoData.maTinDang}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Lỗi tải video:", error);
+      window.open(videoUrl, '_blank');
+    }
+  };
+
+  const handleShareContext = () => {
+    handleCloseContextMenu();
+    setIsShareOpen(true);
+  };
+
+  const handleCopyLinkContext = () => {
+    const link = `${window.location.origin}/video/${videoData.maTinDang}`;
+    navigator.clipboard.writeText(link);
+    alert("Đã sao chép liên kết!");
+    handleCloseContextMenu();
   };
 
   // --- SOCIAL ACTIONS ---
@@ -293,7 +337,7 @@ const VideoPlayerSection = ({
 
   // 🔥 HANDLE SHARE LOGIC
   const handleOpenShare = (e) => {
-    e.stopPropagation(); // Ngăn chặn video bị pause/play khi ấn nút share
+    e.stopPropagation(); 
     setIsShareOpen(true);
   };
 
@@ -302,13 +346,12 @@ const VideoPlayerSection = ({
   };
 
   const handleShareSuccess = () => {
-    // Tăng số lượng share cục bộ
     setShareCount(prev => prev + 1);
-    // Nếu muốn gọi API cập nhật lại thì gọi ở đây, nhưng tăng UI là đủ nhanh
   };
 
   if (!videoData) return null;
-  const avatarUrl = videoData.nguoiDang?.avatarUrl || "https://via.placeholder.com/150";
+
+  const avatarUrl = videoData.nguoiDang?.avatarUrl || defaultAvatar;
 
   return (
     <div className={styles.container}>
@@ -316,6 +359,7 @@ const VideoPlayerSection = ({
           <div 
             className={`${styles.videoWrapper} ${isLandscape ? styles.landscapeWrapper : ''}`} 
             onClick={handleVideoClick}
+            onContextMenu={handleContextMenu} // 🔥 Kích hoạt Menu chuột phải
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
@@ -370,49 +414,77 @@ const VideoPlayerSection = ({
                   <div className={styles.avatarContainer}>
                       <img src={avatarUrl} className={styles.avatarImg} alt="avatar" />
                   </div>
-                  {!isFollowing && currentUser?.id !== videoData.nguoiDang?.id && (
-                      <div className={styles.plusIcon} onClick={(e) => { e.stopPropagation(); handleFollow(); }}>
-                          <FaPlus size={10} color="#fff" />
-                      </div>
+                  
+                  {currentUser?.id !== videoData.nguoiDang?.id && (
+                      <>
+                          {!isFollowing && (
+                              <div className={styles.plusIcon} onClick={(e) => { e.stopPropagation(); handleFollow(); }}>
+                                  <FaPlus size={10} color="#fff" />
+                              </div>
+                          )}
+
+                          {isFollowing && (
+                              <div 
+                                  className={styles.plusIcon} 
+                                  style={{ background: '#fff', border: '1px solid #fe2c55', cursor: 'pointer' }} 
+                                  onClick={(e) => { 
+                                      e.stopPropagation(); 
+                                      handleFollow();
+                                  }}
+                              >
+                                  <FaCheck size={10} color="#fe2c55" />
+                              </div>
+                          )}
+                      </>
                   )}
-              </div>
+            </div>
 
-              <div className={styles.actionItem} onClick={handleLike}>
-                  <div className={styles.iconCircle}>
-                      <IoHeart size={32} color={isLiked ? "#fe2c55" : iconBaseColor} />
-                  </div>
-                  <span className={styles.actionText}>{likeCount}</span>
-              </div>
+            <div className={styles.actionItem} onClick={handleLike}>
+                <div className={styles.iconCircle}>
+                    <IoHeart size={32} color={isLiked ? "#fe2c55" : "currentColor"} />
+                </div>
+                <span className={styles.actionText}>{likeCount}</span>
+            </div>
 
-              <div className={styles.actionItem} onClick={onOpenComments}>
-                  <div className={styles.iconCircle}>
-                      <IoChatbubbleEllipses size={32} color={iconBaseColor} />
-                  </div>
-                  <span className={styles.actionText}>{videoData.soBinhLuan}</span>
-              </div>
+            <div className={styles.actionItem} onClick={onOpenComments}>
+                <div className={styles.iconCircle}>
+                    <IoChatbubbleEllipses size={32} color="currentColor" />
+                </div>
+                <span className={styles.actionText}>{videoData.soBinhLuan}</span>
+            </div>
 
-              <div className={styles.actionItem} onClick={handleSave}>
-                  <div className={styles.iconCircle}>
-                      <IoBookmark size={32} color={isSaved ? "#face15" : iconBaseColor} />
-                  </div>
-                  <span className={styles.actionText}>{saveCount}</span>
-              </div>
+            <div className={styles.actionItem} onClick={handleSave}>
+                <div className={styles.iconCircle}>
+                    <IoBookmark size={32} color={isSaved ? "#face15" : "currentColor"} />
+                </div>
+                <span className={styles.actionText}>{saveCount}</span>
+            </div>
 
-              {/* 🔥 NÚT SHARE ĐÃ ĐƯỢC CẬP NHẬT */}
-              <div className={styles.actionItem} onClick={handleOpenShare}>
-                  <div className={styles.iconCircle}>
-                      <IoShareSocial size={32} color={iconBaseColor} />
-                  </div>
-                  <span className={styles.actionText}>{shareCount}</span>
-              </div>
+            <div className={styles.actionItem} onClick={handleOpenShare}>
+                <div className={styles.iconCircle}>
+                    <IoShareSocial size={32} color="currentColor" />
+                </div>
+                <span className={styles.actionText}>{shareCount}</span>
+            </div>
 
-              <div className={styles.discAnimation}>
-                    <img src={avatarUrl} alt="music-disc" />
-              </div>
+            <div className={styles.discAnimation}>
+                  <img src={avatarUrl} alt="music-disc" />
+            </div>
           </div>
 
-          {/* 🔥 RENDER SHARE PANEL TẠI ĐÂY */}
-          {/* Nó sẽ hiển thị đè lên video nhờ CSS position fixed/absolute trong SharePanel.css */}
+          {/* Render Context Menu */}
+          {/* 🔥 LƯU Ý: Không truyền onViewDetail để nó ẩn đi */}
+          {contextMenu && (
+            <VideoContextMenu 
+              position={contextMenu}
+              onClose={handleCloseContextMenu}
+              onDownload={handleDownloadVideo}
+              onShareToFriend={handleShareContext}
+              onCopyLink={handleCopyLinkContext}
+            />
+          )}
+
+          {/* Render Share Panel */}
           <SharePanel 
               isOpen={isShareOpen}
               onClose={handleCloseShare}
@@ -425,7 +497,7 @@ const VideoPlayerSection = ({
           />
       </div>
     </div>
-  );
+);
 };
 
 export default VideoPlayerSection;

@@ -6,15 +6,19 @@
     display: flex;
     width: 100vw;
     height: 100vh;
-    background-color: #000;
+    /* Thay #000 bằng màu nền chính (Trắng/Đen tùy mode) */
+    background-color: var(--theme-bg-primary); 
     overflow: hidden;
     position: relative; /* Quan trọng để neo absolute con */
+    color: var(--theme-text-primary);
 }
 
 .leftNavColumn {
     width: 72px; 
-    background-color: #fff;
-    border-right: 1px solid #2f2f2f;
+    /* Thay #fff */
+    background-color: var(--theme-bg-primary);
+    /* Thay #2f2f2f bằng viền theo theme */
+    border-right: 1px solid var(--theme-border-color);
     flex-shrink: 0;
     display: flex; 
     flex-direction: column;
@@ -24,7 +28,9 @@
 .videoSection {
     flex: 1;
     position: relative;
-    background: #ffff; /* Nền trắng như yêu cầu */
+    /* Thay #ffff. Dùng bg-secondary (xám nhẹ/đen) để làm nổi bật video nếu cần, 
+       hoặc dùng bg-primary nếu muốn tệp màu nền */
+    background: var(--theme-bg-primary); 
     
     /* Cho phép cuộn dọc */
     overflow-y: scroll; 
@@ -59,8 +65,10 @@
 /* ... Giữ nguyên các class khác như backButton, sidebarSection ... */
 .sidebarSection {
     width: 380px;
-    background-color: #fff;
-    border-left: 1px solid #e0e0e0;
+    /* Thay #fff */
+    background-color: var(--theme-bg-primary);
+    /* Thay #e0e0e0 */
+    border-left: 1px solid var(--theme-border-color);
     flex-shrink: 0;
     position: relative;
     display: flex; 
@@ -71,8 +79,10 @@
 .loadingState, .errorState {
     width: 100vw; 
     height: 100vh;
-    background: #000;
-    color: #fff;
+    /* Thay #000 */
+    background: var(--theme-bg-primary);
+    /* Thay #fff */
+    color: var(--theme-text-primary);
     display: flex; 
     justify-content: center; 
     align-items: center;
@@ -106,13 +116,16 @@
     height: 44px;
     border-radius: 50%;
 
-    /* Glassmorphism */
-    background-color: rgba(22, 24, 35, 0.05);
+    /* Glassmorphism: Dùng theme-bg-secondary để tự đổi màu (xám nhạt / xám tối) */
+    background-color: var(--theme-bg-secondary);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #161823;
+    /* Viền đổi màu theo theme */
+    border: 1px solid var(--theme-border-color);
+    
+    /* Icon đổi màu (đen/trắng) */
+    color: var(--theme-text-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
     cursor: pointer;
@@ -123,10 +136,12 @@
 }
 
 .fixedNavBtn:hover {
-    background-color: rgba(22, 24, 35, 0.1);
+    /* Khi hover dùng bg-hover (đậm hơn chút) */
+    background-color: var(--theme-bg-hover);
     transform: translateY(-2px) scale(1.1);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    color: #000;
+    /* Giữ màu chữ chuẩn */
+    color: var(--theme-text-primary);
 }
 
 .fixedNavBtn:active {
@@ -138,9 +153,11 @@
     opacity: 0.3;
     cursor: default;
     pointer-events: none;
-    background-color: rgba(0, 0, 0, 0.02);
+    /* Nền nhạt đi */
+    background-color: var(--theme-bg-secondary);
     box-shadow: none;
 }
+
 /* ======================================================
    3. RESPONSIVE (GIỮ NGUYÊN LOGIC CŨ)
    ====================================================== */

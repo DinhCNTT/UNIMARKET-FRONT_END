@@ -52,10 +52,9 @@ const BlockIcon = () => (
 const SOCIAL_ICONS_CONFIG = {
     Facebook: { icon: <FaFacebook />, color: "#1877F2" },
     Google:   { icon: <FaGoogle />,   color: "#DB4437" },
-    TikTok:   { icon: <FaTiktok />,   color: "#000000" },
+    TikTok:   { icon: <FaTiktok />,   color: "var(--theme-text-primary)" }, 
     Instagram:{ icon: <FaInstagram />,color: "#E1306C" }
 };
-
 const UserProfileCard = ({ userInfo, followersCount = 0, followingCount = 0, totalLikes = 0, isOwner }) => {
   const navigate = useNavigate();
 

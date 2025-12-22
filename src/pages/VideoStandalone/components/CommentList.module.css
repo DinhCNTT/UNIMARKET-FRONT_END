@@ -11,12 +11,14 @@
     gap: 16px;
     width: 100%;
     box-sizing: border-box;
-    background-color: #fff;
+    /* Sử dụng biến nền chính */
+    background-color: var(--theme-bg-primary); 
 }
 
 .loadingText, .emptyText {
     text-align: center;
-    color: #8a8b91;
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary); 
     font-size: 15px;
     margin-top: 20px;
     width: 100%;
@@ -49,7 +51,8 @@
     object-fit: cover;
     flex-shrink: 0;
     cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    /* Sử dụng biến màu viền */
+    border: 1px solid var(--theme-border-color); 
 }
 
 /* Khối nội dung bên phải avatar */
@@ -64,7 +67,8 @@
 .userName {
     font-size: 14px;
     font-weight: 700;
-    color: #161823;
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary); 
     line-height: 1.2;
     cursor: pointer;
 }
@@ -75,7 +79,8 @@
 
 .text {
     font-size: 15px;
-    color: #292b35;
+    /* Sử dụng biến màu chữ chính (thay cho #292b35) */
+    color: var(--theme-text-primary); 
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-word;
@@ -92,14 +97,16 @@
 
 .time {
     font-size: 13px;
-    color: #8a8b91;
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary); 
     font-weight: 400;
 }
 
 .replyBtn {
     font-size: 13px;
     font-weight: 600;
-    color: #757575;
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary); 
     cursor: pointer;
     background: none;
     border: none;
@@ -109,7 +116,8 @@
 
 .replyBtn:hover {
     text-decoration: none;
-    color: #161823;
+    /* Hover chuyển sang màu chữ chính */
+    color: var(--theme-text-primary); 
 }
 
 /* ======================================================
@@ -127,15 +135,17 @@
 /* Nút icon 3 chấm */
 .menuIconWrapper {
     cursor: pointer;
-    color: #161823;
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary); 
     opacity: 0; /* Mặc định ẩn cho gọn */
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
     padding: 4px;
     border-radius: 50%;
 }
 
 .menuIconWrapper:hover {
-    background-color: rgba(22, 24, 35, 0.03);
+    /* Sử dụng biến nền hover */
+    background-color: var(--theme-bg-hover); 
 }
 
 /* Khi hover vào dòng comment -> Hiện nút 3 chấm */
@@ -154,13 +164,16 @@
     position: absolute;
     top: 30px; /* Đẩy xuống dưới icon một chút */
     right: 0;
-    background: #fff;
+    /* Sử dụng biến nền chính */
+    background: var(--theme-bg-primary); 
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Giữ nguyên box-shadow hoặc dùng var(--theme-shadow) nếu muốn */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
     padding: 4px 0;
     z-index: 99;
     min-width: 120px;
-    border: 1px solid rgba(22, 24, 35, 0.03);
+    /* Sử dụng biến viền */
+    border: 1px solid var(--theme-border-color); 
     animation: fadeInMenu 0.1s ease-out;
 }
 
@@ -172,13 +185,15 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    color: #161823;
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary); 
     transition: background-color 0.2s;
     white-space: nowrap;
 }
 
 .menuOption:hover {
-    background-color: #f8f8f8;
+    /* Sử dụng biến nền hover */
+    background-color: var(--theme-bg-hover); 
 }
 
 .menuOption span {
@@ -188,7 +203,8 @@
 /* Icon trong menu (thùng rác/cờ) */
 .menuOption svg {
     font-size: 16px;
-    color: #161823;
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary); 
 }
 
 @keyframes fadeInMenu {
@@ -229,7 +245,8 @@
 
 .inlineInputWrapper {
     width: 200px;
-    background: #f1f1f2;
+    /* Sử dụng biến nền phụ (hoặc hover/input bg) */
+    background: var(--theme-bg-secondary); 
     border-radius: 18px; 
     padding: 10px 14px;
     display: flex;
@@ -239,8 +256,10 @@
 }
 
 .inlineInputWrapper:focus-within {
-    border-color: #d0d0d5;
-    background: #fff;
+    /* Sử dụng biến viền khi focus */
+    border-color: var(--theme-border-color); 
+    /* Khi focus nền chuyển về màu chính (trắng/đen) */
+    background: var(--theme-bg-primary); 
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
@@ -257,17 +276,20 @@
     margin: 0;
     min-height: 21px;
     max-height: 120px;
-    color: #161823;
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary); 
     font-family: inherit;
 }
 
 .inlineInput::placeholder {
-    color: #9ea0a8;
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary); 
 }
 
 .charCounter {
     font-size: 11px;
-    color: #aeb0b7;
+    /* Sử dụng biến màu chữ phụ (hoặc cụ thể hơn nếu cần) */
+    color: var(--theme-text-secondary); 
     margin-left: 8px;
     white-space: nowrap;
     padding-bottom: 3px;
@@ -286,6 +308,7 @@
 .sendIcon {
     font-size: 14px;
     font-weight: 700;
+    /* Giữ nguyên màu brand TikTok (#fe2c55) hoặc dùng var(--theme-accent-color) nếu muốn đổi sang cam */
     color: #fe2c55; 
     cursor: pointer;
     white-space: nowrap;
@@ -294,7 +317,8 @@
 }
 
 .sendIcon.disabled {
-    color: #d6d6d9;
+    /* Màu xám cho trạng thái disabled */
+    color: #d6d6d9; 
     cursor: default;
 }
 
@@ -304,10 +328,12 @@
 
 .closeIcon {
     font-size: 20px;
-    color: #555;
+    /* Màu icon đóng (dùng text phụ) */
+    color: var(--theme-text-secondary); 
     width: 32px;
     height: 32px;
-    background-color: #f1f1f2;
+    /* Nền icon đóng (dùng nền phụ) */
+    background-color: var(--theme-bg-secondary); 
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -317,8 +343,10 @@
 }
 
 .closeIcon:hover {
-    color: #161823;
-    background-color: #e4e4e6;
+    /* Hover đổi màu chữ chính */
+    color: var(--theme-text-primary); 
+    /* Hover đổi nền (dùng bg-hover) */
+    background-color: var(--theme-bg-hover); 
     transform: scale(1.05);
 }
 
@@ -339,24 +367,28 @@
 .horizontalLine {
     width: 24px;
     height: 1px;
-    background-color: #aeb0b7;
+    /* Dùng màu chữ phụ hoặc border làm màu vạch kẻ */
+    background-color: var(--theme-text-secondary); 
     transition: background-color 0.2s ease;
 }
 
 .viewMoreText {
     font-size: 13px;
     font-weight: 600;
-    color: #8a8b91;
+    /* Dùng màu chữ phụ */
+    color: var(--theme-text-secondary); 
     transition: color 0.2s ease;
 }
 
 .viewRepliesWrapper:hover .viewMoreText {
-    color: #161823;
+    /* Hover đổi màu chữ chính */
+    color: var(--theme-text-primary); 
     text-decoration: underline;
 }
 
 .viewRepliesWrapper:hover .horizontalLine {
-    background-color: #161823;
+    /* Hover đổi màu vạch kẻ */
+    background-color: var(--theme-text-primary); 
 }
 
 /* ======================================================
@@ -377,6 +409,7 @@
 @media (max-width: 768px) {
     .menuIconWrapper {
         opacity: 1; 
-        color: #8a8b91;
+        /* Màu icon mobile */
+        color: var(--theme-text-secondary); 
     }
 }

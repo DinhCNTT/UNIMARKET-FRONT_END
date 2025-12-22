@@ -1,4 +1,4 @@
-/* Style cho layout chính của trang */
+/* --- CONTAINER CHÍNH: QUẢN LÝ VIỆC CUỘN --- */
 .profileContainer {
   position: relative;
   display: flex;
@@ -6,41 +6,29 @@
   align-items: center;
   gap: 1rem;
   padding: 2rem;
-  padding-left: 170px; /* Giữ khoảng trống cho sidebar */
+  padding-left: 170px; 
   width: 100%;
   box-sizing: border-box;
   background-color: var(--theme-bg-secondary);
-  
-  /* --- FIX LỖI DỰT MÀN HÌNH --- */
-  min-height: 100vh;
-  /* Thuộc tính này giữ chỗ cho thanh cuộn ngay cả khi nó chưa xuất hiện */
-  /* Giúp giao diện không bị nhảy sang trái/phải khi chuyển tab dài/ngắn */
+  height: 100vh;       
+  overflow-y: auto;     
+  overflow-x: hidden;   
+  padding-bottom: 150px; 
   scrollbar-gutter: stable; 
-  /* ---------------------------- */
-
   transition: background-color 0.3s ease;
 }
 
+/* --- VÙNG NỘI DUNG: KHÔNG ĐƯỢC CẮT NỘI DUNG --- */
 .contentArea { 
   width: 100%;
   max-width: 1250px;
-  
-  /* 1. Đổi màu nền thành trong suốt */
-  background-color: transparent !important; 
-  
-  /* 2. Tắt hoàn toàn đổ bóng */
-  box-shadow: none !important;
-  
-  /* 3. Đảm bảo không có viền */
-  border: none !important;
-  
+  background-color: transparent ; 
+  box-shadow: none ;
+  border: none ;
   border-radius: 20px; 
-  overflow: hidden;
-
-  /* --- PHẦN CHỈNH SỬA VỊ TRÍ --- */
-  margin-top: -60px;   /* Kéo lên trên */
-  margin-left: 50px;   /* Kéo sang phải */
-  /* ----------------------------- */
+  overflow: visible ; 
+  margin-top: -60px;   
+  margin-left: 50px;   
 
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -51,6 +39,38 @@
   font-size: 1.2rem;
 }
 
+/* =========================================
+   CUSTOM SCROLLBAR (GIỮ NGUYÊN CODE CỦA BẠN)
+   ========================================= */
+.profileContainer::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.profileContainer::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+.profileContainer::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border-color); 
+  border-radius: 10px;
+  border: 2px solid transparent; 
+  background-clip: content-box; 
+}
+
+.profileContainer::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-text-secondary); 
+}
+
+[data-theme='dark'] .profileContainer::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2); 
+}
+
+[data-theme='dark'] .profileContainer::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+/* =========================================
+   NAVIGATION BAR & FILTERS
+   ========================================= */
 .navigationBar {
   display: flex;
   justify-content: space-between; /* Tabs trái, Filter phải */
@@ -75,6 +95,7 @@
   height: 30px; 
   width: fit-content; 
   margin-right: 0;
+  transition: background-color 0.2s ease;
 }
 
 /* Style chung cho nút bấm */
@@ -109,7 +130,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Hỗ trợ Dark Mode --- */
+/* --- Hỗ trợ Dark Mode (Filter) --- */
 [data-theme='dark'] .filterContainer {
   background-color: rgba(255, 255, 255, 0.1); 
 }
@@ -118,11 +139,20 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-[data-theme='dark'] .activeFilter {
-  background-color: #555; 
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+[data-theme='dark'] .filterBtn:not(.activeFilter):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
+
+[data-theme='dark'] .activeFilter {
+  background-color: #333333; 
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================
+   VIEW MODE (GRID/LIST)
+   ========================================= */
 .viewModeContainer {
   display: flex;
   align-items: center;
@@ -137,6 +167,14 @@
 /* Hiệu ứng hover vào cả cụm (tùy chọn) */
 .viewModeContainer:hover {
   background-color: #e4e6eb;
+}
+
+/* --- Dark Mode View Container --- */
+[data-theme='dark'] .viewModeContainer {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme='dark'] .viewModeContainer:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 /* --- NÚT CHUNG (GRID & LIST) --- */
@@ -162,6 +200,15 @@
   color: #050505;
 }
 
+/* --- Dark Mode View Button --- */
+[data-theme='dark'] .viewBtn {
+  color: rgba(255, 255, 255, 0.5);
+}
+[data-theme='dark'] .viewBtn:hover:not(.activeView) {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
 /* --- TRẠNG THÁI ĐANG CHỌN (ACTIVE) --- */
 .activeView {
   background-color: #ffffff; /* Nền trắng nổi bật */
@@ -170,31 +217,23 @@
   transform: scale(1); /* Giữ nguyên kích thước */
 }
 
+/* --- Dark Mode Active View --- */
+[data-theme='dark'] .activeView {
+  background-color: #333333;
+  color: #ffffff; /* Hoặc giữ đỏ nếu muốn: #ff4d4f */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 /* Hiệu ứng click nhẹ (Active click) */
 .viewBtn:active {
   transform: scale(0.95); /* Nhún nhẹ khi nhấn chuột */
 }
-body::-webkit-scrollbar {
-  width: 5px; /* Nhỏ gọn hơn nữa */
-}
 
-body::-webkit-scrollbar-track {
-  background: transparent;
-  margin-block: 4px; /* Tạo khoảng trống đầu/cuối thanh */
-}
+/* =========================================
+   SCROLLBAR STYLES
+   ========================================= */
 
-body::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #ffa366, #ff6600); /* Gradient nhẹ chuyên nghiệp */
-  border-radius: 8px; /* Bo tròn vừa phải */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Tạo chiều sâu nhẹ */
-  background-clip: padding-box;
-  transition: background 0.25s ease;
-  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1); /* Bóng trong tinh tế */
-}
 
-body::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #ff7a00, #ff3d00); /* Gradient hover nổi bật */
-}
 /* =========================================
    PRIVATE ACCOUNT (Ổ KHÓA) STYLES
    ========================================= */
@@ -206,11 +245,11 @@ body::-webkit-scrollbar-thumb:hover {
   justify-content: center;
   padding: 60px 20px;
   
-  /* 👇 ĐÃ SỬA: Chuyển nền sang màu trắng tinh */
-  background-color: var(--bg-primary, #ffffff); 
+  /* Sử dụng biến theme chuẩn để tự động đổi màu khi dark mode */
+  background-color: var(--theme-bg-primary, #ffffff); 
   
-  /* 👇 ĐÃ SỬA: Viền màu trắng (hoặc bỏ viền) để đồng bộ */
-  border-top: 1px solid var(--bg-primary, #ffffff); 
+  /* Viền đồng bộ màu nền */
+  border-top: 1px solid var(--theme-bg-primary, #ffffff); 
   
   min-height: 350px; 
   width: 100%;
@@ -231,26 +270,36 @@ body::-webkit-scrollbar-thumb:hover {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 2px solid var(--text-primary, #333); 
+  
+  /* Sử dụng biến theme text để tự động đổi màu viền/icon */
+  border: 2px solid var(--theme-text-primary, #333); 
+  
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-  color: var(--text-primary, #333); 
+  
+  color: var(--theme-text-primary, #333); 
+}
+
+/* Override riêng cho Dark Mode nếu cần chỉnh viền ổ khóa */
+[data-theme='dark'] .lockIconWrapper {
+  border-color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Tiêu đề "Đây là tài khoản riêng tư" */
 .privateTitle {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #333);
+  color: var(--theme-text-primary, #333);
   margin: 0;
 }
 
 /* Dòng chữ nhỏ bên dưới */
 .privateSubtitle {
   font-size: 14px;
-  color: var(--text-secondary, #666); 
+  color: var(--theme-text-secondary, #666); 
   line-height: 1.5;
   margin: 0;
   padding: 0 10px;

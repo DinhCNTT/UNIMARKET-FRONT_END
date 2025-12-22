@@ -1,6 +1,27 @@
 ﻿/* VideoPlayerSection.module.css */
 
 /* ======================================================
+   0. THEME CONFIGURATION (SCOPED TO CONTAINER)
+   Không dùng :root để tránh ảnh hưởng global
+   ====================================================== */
+.container {
+  /* --- Mặc định (Light Mode) --- */
+  --theme-text-primary: #161823;       /* Màu chữ chính (Đen đậm) */
+  --theme-bg-icon: rgba(22, 24, 35, 0.06); /* Nền nút icon (Xám nhạt) */
+  --theme-bg-icon-hover: rgba(22, 24, 35, 0.15); /* Hover nút icon */
+  
+  /* Các biến khác (dự phòng) */
+  --theme-accent-color: #ff6600;
+}
+
+/* --- Kích hoạt Dark Mode khi thẻ cha (html/body) có data-theme="dark" --- */
+:global([data-theme='dark']) .container {
+  --theme-text-primary: #ffffff;       /* Chữ chuyển sang Trắng */
+  --theme-bg-icon: rgba(255, 255, 255, 0.15); /* Nền nút icon sáng hơn trên nền đen */
+  --theme-bg-icon-hover: rgba(255, 255, 255, 0.3); /* Hover sáng hơn */
+}
+
+/* ======================================================
    1. GLOBAL & CONTAINER
    ====================================================== */
 .container {
@@ -40,16 +61,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
   max-width: 100%;
   max-height: 100%;
-
-  margin-left: 100px; /* Logic cũ: Kéo video qua phải */
-
+  margin-left: 100px; 
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  background: #000;
+  background: #000; 
   transition: all 0.3s ease;
 }
 
@@ -82,10 +100,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Click xuyên qua */
-    z-index: 30; /* Cao hơn video và info overlay */
-
-    /* Gradient nhẹ để nút volume rõ hơn */
+    pointer-events: none; 
+    z-index: 30; 
     background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 20%);
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -162,29 +178,26 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 20px; /* Vùng đệm nhỏ để dễ click */
-
+    height: 20px; 
     display: flex;
-    align-items: flex-end; /* Căn input xuống sát đáy */
+    align-items: flex-end; 
     pointer-events: auto;
     cursor: pointer;
-    z-index: 40; /* Nằm trên cùng */
-    padding-bottom: 0; /* Không padding để sát đáy */
+    z-index: 40; 
+    padding-bottom: 0; 
 }
 
 /* Thanh tua nền */
 .seekSlider {
     -webkit-appearance: none;
     width: 100%;
-    height: 3px; /* Mặc định mỏng */
-    background: rgba(255, 255, 255, 0.2); /* Nền xám mờ */
+    height: 3px; 
+    background: rgba(255, 255, 255, 0.2); 
     border-radius: 0;
     cursor: pointer;
     outline: none;
     transition: height 0.1s ease;
-    margin: 0; /* Quan trọng để sát lề */
-
-    /* Màu trắng cho phần đã chạy (Logic JS xử lý background-size) */
+    margin: 0;
     background-image: linear-gradient(#fff, #fff);
     background-repeat: no-repeat;
 }
@@ -255,7 +268,7 @@
 
   background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
   z-index: 10;
-  color: #fff;
+  color: #fff; /* Luôn là màu trắng vì nằm trên video */
   text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   pointer-events: none;
 }
@@ -329,18 +342,19 @@
 .iconCircle {
   width: 48px; height: 48px;
   border-radius: 50%;
-  background-color: rgba(22, 24, 35, 0.06);
+  background-color: var(--theme-bg-icon);
+  color: var(--theme-text-primary); 
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s ease;
 }
 .iconCircle:hover {
-  background-color: rgba(22, 24, 35, 0.15);
+  background-color: var(--theme-bg-icon-hover);
 }
 
 .actionText {
   font-size: 13px;
   font-weight: 700;
-  color: #161823;
+  color: var(--theme-text-primary);
   margin-top: 6px;
   letter-spacing: 0.2px;
 }
@@ -416,12 +430,15 @@
   }
 
   .actionText {
-    color: #fff;
+    /* Mobile: Chữ nằm trên video nên luôn phải là trắng, không theo theme */
+    color: #fff !important; 
     font-weight: 600;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
   }
 
-  .iconCircle { background: transparent; width: auto; height: auto; }
+  /* Mobile: Icon nằm trên video nên trong suốt */
+  .iconCircle { background: transparent !important; width: auto; height: auto; }
+  .iconCircle:hover { background: transparent !important; }
 
   /* Reset layout video trên mobile */
   .videoWrapper, .landscapeWrapper {

@@ -65,13 +65,18 @@ const VideoStandalonePage = () => {
 
         const excludedIds = currentList.map(v => v.maTinDang);
 
+        // --- SỬA TẠI ĐÂY: Thêm config headers chứa Token ---
         const res = await axios.post(
           `${API_BASE}/api/Recommendation/foryou`,
           {
             PageSize: 5,
             ExcludedIds: excludedIds
+          },
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {} 
           }
         );
+        // ---------------------------------------------------
 
         if (res.data && res.data.length > 0) {
           setVideosList(prev => {
@@ -96,7 +101,7 @@ const VideoStandalonePage = () => {
         setIsLoadingMore(false);
       }
     },
-    [isLoadingMore, hasMore]
+    [isLoadingMore, hasMore, token] 
   );
 
   // ======================================================

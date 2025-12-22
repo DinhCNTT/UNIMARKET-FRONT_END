@@ -7,7 +7,7 @@
   width: 100%;
   max-width: 800px;
   /* Margin giữ nguyên theo yêu cầu căn chỉnh vị trí của bạn */
-  margin: -50px 0 20px -400px;
+   margin: -60px 0 20px -400px;
   padding: 32px 20px;
   background-color: transparent;
   font-family: 'ProximaNova', system-ui, -apple-system, sans-serif;
@@ -91,7 +91,6 @@
 }
 
 /* --- STYLE CHUNG CHO CÁC NÚT LỚN --- */
-/* Đã thêm .btnFollowing vào đây để nhận style chung */
 .btnPrimary, 
 .btnSecondary, 
 .btnFollow, 
@@ -108,6 +107,15 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+/* Override border cho Dark Mode chung */
+[data-theme='dark'] .btnPrimary, 
+[data-theme='dark'] .btnSecondary, 
+[data-theme='dark'] .btnFollow, 
+[data-theme='dark'] .btnMessage, 
+[data-theme='dark'] .btnFollowing {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* 1. Nút Owner: Edit Profile (Đỏ) */
@@ -137,7 +145,7 @@
 }
 .btnFollow:hover { background-color: #E62247; }
 
-/* 4. Nút Following (Dành cho khách ĐÃ follow - Trong suốt, Viền xám) - MỚI */
+/* 4. Nút Following (Dành cho khách ĐÃ follow - Trong suốt, Viền xám) */
 .btnFollowing {
   background-color: transparent;
   color: var(--theme-text-primary);
@@ -146,6 +154,14 @@
   font-size: 18px;
 }
 .btnFollowing:hover { background-color: rgba(22, 24, 35, 0.03); }
+
+/* Dark mode cho nút Following */
+[data-theme='dark'] .btnFollowing {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme='dark'] .btnFollowing:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
 
 /* 5. Nút Tin nhắn (Xám nhạt) */
 .btnMessage {
@@ -161,6 +177,9 @@
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+[data-theme='dark'] .btnMessage:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* 6. Nút Icon nhỏ (Setting, Share, 3 chấm) */
@@ -179,6 +198,14 @@
   color: var(--theme-text-primary);
 }
 .btnIcon:hover { background-color: rgba(22, 24, 35, 0.03); }
+
+/* Dark mode cho nút Icon */
+[data-theme='dark'] .btnIcon {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme='dark'] .btnIcon:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
 
 /* ==========================================================================
    4. MENU POPUP (3 CHẤM / REPORT / BLOCK)
@@ -293,8 +320,18 @@
   box-shadow: none !important;
 }
 
+/* Dark mode override cho border của Share Button */
+[data-theme='dark'] .shareBtnWrapper :global(.UserProfile-ShareButton-mainButton) {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
 .shareBtnWrapper :global(.UserProfile-ShareButton-mainButton):hover {
   background-color: var(--theme-bg-hover, #f1f1f2) !important;
+}
+
+/* Dark mode hover cho Share Button */
+[data-theme='dark'] .shareBtnWrapper :global(.UserProfile-ShareButton-mainButton):hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 .shareBtnWrapper :global(.UserProfile-ShareButton-mainButton) svg {
@@ -393,7 +430,8 @@
 .phoneNumberDisplay {
   margin: 0;
   font-size: 15px;
-  color: #161823;
+  /* Thay đổi từ màu cứng #161823 sang variable để hỗ trợ dark mode tự động */
+  color: var(--theme-text-primary); 
   display: flex;
   align-items: center;
   gap: 4px;
@@ -416,6 +454,9 @@
   font-size: 18px;
   font-weight: 300;
 }
+[data-theme='dark'] .separator {
+  color: #333333;
+}
 
 .socialIcon {
   display: flex;
@@ -427,9 +468,15 @@
   padding: 4px;
   border-radius: 50%;
   background-color: transparent;
+  color: var(--theme-text-primary);
 }
 
 .socialIcon:hover {
   transform: translateY(-2px); /* Hiệu ứng nổi lên khi di chuột vào */
   background-color: rgba(0, 0, 0, 0.03); /* Nền mờ nhẹ khi hover */
+}
+
+/* Dark mode hover cho icon social */
+[data-theme='dark'] .socialIcon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }

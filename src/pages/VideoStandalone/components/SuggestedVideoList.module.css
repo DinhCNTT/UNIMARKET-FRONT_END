@@ -33,8 +33,12 @@
     
     border-radius: 10px;
     overflow: hidden;
-    background-color: #f2f2f2;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04); 
+    
+    /* Sử dụng biến nền phụ (Xám nhạt / Đen) */
+    background-color: var(--theme-bg-secondary);
+    
+    /* Sử dụng biến viền để tạo đường bao nhẹ (tự đổi màu khi Dark mode) */
+    box-shadow: inset 0 0 0 1px var(--theme-border-color); 
 }
 
 .image {
@@ -70,7 +74,10 @@
     font-size: 15px;
     font-weight: 600;
     line-height: 1.4;
-    color: #161823;
+    
+    /* Sử dụng biến màu chữ chính */
+    color: var(--theme-text-primary);
+    
     margin: 0 0 6px 0;
     letter-spacing: -0.01em;
     
@@ -94,15 +101,22 @@
     height: 22px;
     border-radius: 50%;
     object-fit: cover;
-    background-color: #eee;
-    border: 1px solid rgba(0,0,0,0.05);
+    
+    /* Nền phụ cho avatar khi chưa load */
+    background-color: var(--theme-bg-secondary);
+    
+    /* Viền nhẹ quanh avatar */
+    border: 1px solid var(--theme-border-color);
 }
 
 .authorName {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 13px;
     font-weight: 500;
-    color: #555;
+    
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary);
+    
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -114,7 +128,9 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #86878b;
+    
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary);
 }
 
 .statsText {
@@ -131,7 +147,8 @@
 }
 
 .statsRow svg path {
-    stroke: #86878b;
+    /* Stroke lấy theo màu chữ hiện tại của cha (theme-text-secondary) */
+    stroke: currentColor; 
     stroke-width: 3;
 }
 
@@ -145,16 +162,12 @@
     display: flex;
     justify-content: center;
     padding: 30px;
-    color: #999;
+    
+    /* Sử dụng biến màu chữ phụ */
+    color: var(--theme-text-secondary);
+    
     font-size: 14px;
     font-weight: 500;
     width: 100%;
     grid-column: 1 / -1;
 }
-
-/* --- DARK MODE SUPPORT --- */
-:global([data-theme='dark']) .title { color: #f1f1f2; }
-:global([data-theme='dark']) .authorName { color: #aaa; }
-:global([data-theme='dark']) .statsRow,
-:global([data-theme='dark']) .statsRow svg path { color: #777; stroke: #777; }
-:global([data-theme='dark']) .imageWrapper { background-color: #2f2f2f; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }

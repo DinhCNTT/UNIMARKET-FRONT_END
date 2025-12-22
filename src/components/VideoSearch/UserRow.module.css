@@ -14,7 +14,8 @@
 }
 
 .userRow:hover {
-  background-color: rgba(22, 24, 35, 0.03); 
+  /* Thay đổi: Dùng biến hover để thích ứng cả sáng/tối */
+  background-color: var(--theme-bg-hover); 
   border-radius: 8px; 
 }
 
@@ -36,7 +37,8 @@
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(22, 24, 35, 0.12); 
+  /* Thay đổi: Border màu động theo theme */
+  border: 1px solid var(--theme-border-color); 
   flex-shrink: 0;
 }
 
@@ -60,7 +62,8 @@
   font-weight: 700; 
   font-size: 18px; 
   line-height: 24px; 
-  color: #161823;
+  /* Thay đổi: Màu chữ chính (Đen <-> Trắng) */
+  color: var(--theme-text-primary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -68,6 +71,7 @@
 }
 
 .checkIcon {
+  /* Giữ nguyên màu xanh thương hiệu (thường hiển thị tốt trên cả 2 nền) */
   color: #20d5ec; 
   font-size: 15px; 
   flex-shrink: 0;
@@ -76,7 +80,8 @@
 
 .subInfo {
   font-size: 14px; 
-  color: #53545b; 
+  /* Thay đổi: Màu chữ phụ (Xám đậm <-> Xám nhạt) */
+  color: var(--theme-text-secondary); 
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -89,7 +94,8 @@
   gap: 12px; 
   margin-top: 2px;
   font-size: 13px; 
-  color: #75777d; 
+  /* Thay đổi: Màu chữ phụ */
+  color: var(--theme-text-secondary); 
 }
 
 .statItem {
@@ -99,13 +105,15 @@
 }
 
 .statItem strong {
-  color: #161823; 
+  /* Thay đổi: Số liệu quan trọng dùng màu chính */
+  color: var(--theme-text-primary); 
   font-weight: 600;
 }
 
 .dot {
   font-size: 10px; 
-  color: #e3e3e4;
+  /* Thay đổi: Dùng màu border cho dấu chấm để không bị chìm ở nền tối */
+  color: var(--theme-border-color);
 }
 
 /* --- PHẦN BÊN PHẢI (Nút Follow) --- */
@@ -113,7 +121,7 @@
   padding-left: 15px;
 }
 
-/* --- CSS NÚT FOLLOW MỚI (Chuyên nghiệp, Gọn, Không chói) --- */
+/* --- CSS NÚT FOLLOW MỚI --- */
 .followBtn {
   min-width: 105px; 
   height: 38px;     
@@ -131,6 +139,7 @@
 }
 
 /* TRẠNG THÁI CHƯA FOLLOW: MÀU VÀNG CAM "XỊN" */
+/* Giữ nguyên màu cam vì nó là màu Brand, nổi trên cả nền đen và trắng */
 .followBtn.notFollowed {
   background-color: #FF9000; 
   color: #ffffff; 
@@ -144,15 +153,24 @@
 }
 
 /* TRẠNG THÁI ĐÃ FOLLOW */
+/* Logic: Nền xám nhạt/viền xám -> Nền xám đen/viền tối */
 .followBtn.followed {
-  background-color: #F1F1F2;
-  border: 1px solid #E3E3E4;
-  color: #161823;
+  /* Thay đổi: Dùng màu nền phụ (thường là xám nhạt) hoặc màu hover */
+  background-color: var(--theme-bg-hover); /* Sáng: #f1f1f1 | Tối: #1a1a1a */
+  
+  /* Thay đổi: Viền theo theme */
+  border: 1px solid var(--theme-border-color);
+  
+  /* Thay đổi: Chữ chuyển sang màu chính (Trắng ở Dark mode) */
+  color: var(--theme-text-primary);
+  
   font-weight: 600;
   box-shadow: none;
 }
 
 .followBtn.followed:hover {
-  background-color: #E8E8E9;
-  border-color: #d1d1d2;
+  /* Thay đổi: Làm tối/sáng hơn 1 chút. 
+     Mẹo: dùng filter brightness để không phải tạo thêm biến màu */
+  filter: brightness(0.95); 
+  border-color: var(--theme-border-color);
 }

@@ -12,6 +12,9 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import styles from './SidebarHeader.module.css';
 
+// ✅ IMPORT ẢNH MẶC ĐỊNH
+import defaultAvatar from '../../assets/default-avatar.png';
+
 const SidebarHeader = () => {
     const { token, user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -44,7 +47,7 @@ const SidebarHeader = () => {
         navigate('/login');
     };
 
-    // --- 2. LOGIC ĐĂNG XUẤT (THEO CÁCH CỦA BẠN: RELOAD TRANG) ---
+    // --- 2. LOGIC ĐĂNG XUẤT ---
 
     // Mở modal hỏi
     const handleLogoutClick = () => {
@@ -58,7 +61,6 @@ const SidebarHeader = () => {
         if (logout) logout();
 
         // 2. Tải lại trang ngay lập tức
-        // Việc này giúp reset lại toàn bộ giao diện, sửa lỗi kích thước video và xóa avatar        
         window.location.reload();
     };
 
@@ -76,6 +78,19 @@ const SidebarHeader = () => {
         timeoutRef.current = setTimeout(() => {
             setShowUserMenu(false);
         }, 300);
+    };
+
+    // ✅ HÀM LẤY ẢNH ĐẠI DIỆN AN TOÀN
+    const getUserAvatar = () => {
+        // Ưu tiên profilePicture, sau đó đến avatarUrl
+        const src = user.profilePicture || user.avatarUrl;
+        
+        // Nếu không có ảnh nào -> trả về mặc định
+        if (!src) return defaultAvatar;
+
+        // Nếu có ảnh, kiểm tra xem là link online hay link nội bộ server
+        // (Nếu link nội bộ server thường thiếu http://localhost...)
+        return src.startsWith("http") ? src : `http://localhost:5133${src}`;
     };
 
     return (
@@ -106,10 +121,16 @@ const SidebarHeader = () => {
                             onMouseEnter={handleMouseEnter}
                             onMouseLeave={handleMouseLeave}
                         >
+                            {/* ✅ CẬP NHẬT THẺ IMG */}
                             <img
-                                src={user.profilePicture || user.avatarUrl || "https://via.placeholder.com/40"}
+                                src={getUserAvatar()}
                                 alt="Avatar"
                                 className={styles.currentUserAvatar}
+                                onError={(e) => {
+                                    // Nếu ảnh bị lỗi (404), tự động chuyển về ảnh mặc định
+                                    e.target.onerror = null;
+                                    e.target.src = defaultAvatar;
+                                }}
                             />
 
                             {/* Menu thả xuống */}
