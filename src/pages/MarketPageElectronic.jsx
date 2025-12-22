@@ -3,7 +3,6 @@ import React, { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar/TopNavbar";
 import MarketHeroHeader from "../components/MarketHeroHeader";
-// 1. Thay import cũ bằng import mới
 import CategoryListElectronic from "../components/CategoryListElectronic/CategoryListElectronic"; 
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import UniMarketIntro from "../components/UniMarketIntro";
@@ -25,11 +24,12 @@ const MarketPageElectronic = () => {
       <MarketHeroHeader />
       
       <div className="main-content" style={{ minHeight: "200vh" }}>
-        {/* 2. Sử dụng component mới ở đây */}
+        
         <CategoryListElectronic />
 
         <div className="section-wrapper">
-          <TinDangDanhChoBan />
+          {/* ✅ QUAN TRỌNG: Truyền đúng từ khóa Danh Mục Cha cần lọc */}
+          <TinDangDanhChoBan categoryGroup="đồ điện tử" />
         </div>
 
         {!user && (
