@@ -7,7 +7,8 @@ import SearchTabs from "./SearchTabs";
 import VideoCard from "./VideoCard";
 import UserRow from "./UserRow";
 import RelatedSearchSidebar from "./RelatedKeywords"; 
-import SidebarHeader from "../Common/SidebarHeader"; 
+import SidebarHeader from "../Common/SidebarHeader";
+import { viewHistoryService } from "../../services/viewHistoryService"; 
 
 /* --- CSS --- */
 import styles from "./VideoSearchPage.module.css";
@@ -148,7 +149,16 @@ export default function VideoSearchPage() {
     } else {
       fetchUsers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-
+    // Track search keyword when user lands on search page
+    if (keyword) {
+      const timer = setTimeout(() => {
+        viewHistoryService.trackSearch(keyword)
+          .then(() => console.log(`✅ Tracked search: ${keyword}`))
+          .catch((err) => console.error("❌ Failed to track search:", err));
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [keyword, activeTab]);
 
   const handleTabChange = (tab) => {

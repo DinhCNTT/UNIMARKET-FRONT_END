@@ -8,6 +8,7 @@ import { AuthContext } from "../context/AuthContext";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import MarketPage from "../pages/MarketPage";
+import ViewHistoryPage from "../pages/ViewHistory/ViewHistoryPage";
 // 🔥 [MỚI] IMPORT TRANG ĐỒ ĐIỆN TỬ
 import MarketPageElectronic from "../pages/MarketPageElectronic";
 import ErrorBoundary from "../components/ErrorBoundary";
@@ -125,6 +126,7 @@ function AppRoutes() {
 
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
+      <Route path="/view-history" element={<ProtectedRoute><ViewHistoryPage /></ProtectedRoute>} />
 
 
       {/* ==============================

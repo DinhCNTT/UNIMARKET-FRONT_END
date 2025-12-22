@@ -8,7 +8,7 @@ import { AuthContext } from "../context/AuthContext";
 import defaultAvatar from '../assets/default-avatar.png';
 import './UserAuthButton.css';
 import { useTheme } from '../context/ThemeContext';
-
+import { MdHistory } from "react-icons/md"; // ✅ Icon lịch sử
 const UserAuthButton = () => {
   const { user, logout } = useContext(AuthContext);
   const { effectiveTheme } = useTheme();
@@ -35,6 +35,10 @@ const UserAuthButton = () => {
 
   const handleSettingsClick = () => {
     navigate('/cai-dat-tai-khoan');
+    setShowDropdown(false);
+  };
+  const handleViewHistoryClick = () => {
+    navigate('/view-history');
     setShowDropdown(false);
   };
 
@@ -95,7 +99,10 @@ const UserAuthButton = () => {
             <IoSettingsOutline className="userauthbutton-dropdown-icon" />
             Cài đặt tài khoản
           </button>
-
+          <button className="userauthbutton-dropdown-item" onClick={handleViewHistoryClick}>
+            <MdHistory className="userauthbutton-dropdown-icon" />
+            Lịch sử xem
+          </button>
           <div className="userauthbutton-dropdown-divider"></div>
 
           <button

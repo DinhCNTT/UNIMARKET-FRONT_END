@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // IMPORT CSS MODULE
 import styles from "./VideoSearchOverlay.module.css";
+import { viewHistoryService } from '../services/viewHistoryService';
 
 // Icons
 import { FiSearch, FiClock, FiX } from "react-icons/fi";
@@ -21,6 +22,12 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const navigate = useNavigate();
   
   const { user, token } = useContext(AuthContext);
+  // Debug: Log context values khi component mount
+  useEffect(() => {
+    console.log("🎯 VideoSearchOverlay mounted");
+    console.log("👤 AuthContext user:", user);
+    console.log("🔑 AuthContext token:", token ? "exists" : "missing");
+  }, [user, token]);
 
   // ==========================================
   // 1. LOGIC LỊCH SỬ TÌM KIẾM
@@ -179,7 +186,14 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   const doSearchAndRedirect = async (kw) => {
     if (!kw || !kw.trim()) return;
     if (user && token) {
+      console.log("✅ User authenticated, calling saveHistory & trackSearch");
       await saveHistory(kw);
+      // Track search keyword
+      viewHistoryService.trackSearch(kw)
+        .then(() => console.log(`✅ Tracked search from overlay: ${kw}`))
+        .catch((err) => console.error("❌ Failed to track search:", err));
+    } else {
+      console.log("❌ User not authenticated or token missing");
     }
     setKeyword("");
     onClose();

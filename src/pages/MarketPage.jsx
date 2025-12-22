@@ -6,6 +6,7 @@ import TopNavbar from "../components/TopNavbar/TopNavbar";
 import MarketHeroHeader from "../components/MarketHeroHeader";
 import CategoryList from "../components/CategoryList";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
+import TrendingKeywords from "../components/TrendingKeywords/TrendingKeywords";
 import UniMarketIntro from "../components/UniMarketIntro";
 import "./MarketPage.css";
 import FloatingAiButton from "../components/AI/FloatingAiButton";
@@ -47,6 +48,10 @@ const MarketplacePage = () => {
 
         <div className="section-wrapper">
           <UniMarketIntro />
+        </div>
+        {/* Đã xóa dòng FeatureSection tiêu đề, chỉ giữ lại nội dung component */}
+        <div className="section-wrapper">
+           <TrendingKeywords />
         </div>
       </div>
       <FooterBanner />

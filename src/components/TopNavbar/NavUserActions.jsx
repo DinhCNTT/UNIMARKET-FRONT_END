@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import {
   FaRegBell, FaUserCircle, FaChevronDown, FaHeart, FaVideo,
-  FaCommentDots, FaCog, FaCommentAlt, FaSignOutAlt, FaEdit,
+  FaCommentDots, FaCog, FaCommentAlt, FaSignOutAlt, FaEdit,FaHistory,
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
@@ -275,7 +275,10 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                     <FaCommentDots color="#777" style={{ width: '20px' }} /> Đánh giá từ tôi
                   </div>
 
-
+                  <div onClick={() => { navigate("/view-history"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
+                    <FaHistory color="#777" style={{ width: '20px' }} /> Lịch sử xem
+                  </div>
+                  
                   <div className={styles.dropdownDivider}></div>
                  
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Khác</div>
