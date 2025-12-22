@@ -1,20 +1,26 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import styles from "./LocTinDang.module.css";
+
 
 // Contexts
 import { CategoryContext } from "../../context/CategoryContext";
 import { SearchContext } from "../../context/SearchContext";
 import { LocationContext } from "../../context/LocationContext";
+import { AuthContext } from "../../context/AuthContext"; // 1. Thêm AuthContext
+
 
 // Components
-import TopNavbar from "../TopNavbar/TopNavbar"; 
-import LocMoRong from "../LocMoRong"; 
+import TopNavbar from "../TopNavbar/TopNavbar";
+import LocMoRong from "../LocMoRong";
 import ProductItem from "../ProductItem/ProductItem";
 import Pagination from "../Pagination/Pagination";
 
+
 // Hook
 import { usePostFilter } from "../../hooks/usePostFilter";
+
 
 // Icons
 const GridIcon = () => (
@@ -25,6 +31,7 @@ const GridIcon = () => (
     <rect x="3" y="14" width="7" height="7"></rect>
   </svg>
 );
+
 
 const ListIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -37,7 +44,9 @@ const ListIcon = () => (
   </svg>
 );
 
+
 const formatCurrency = (amount) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+
 
 const LocTinDang = () => {
   const [posts, setPosts] = useState([]);
@@ -49,15 +58,22 @@ const LocTinDang = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("newest");
   const [viewMode, setViewMode] = useState("list");
-  
+ 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const postsPerPage = 10;
 
+  // --- 2. LOGIC QUẢN LÝ YÊU THÍCH ---
+  const [savedIds, setSavedIds] = useState([]); // Lưu danh sách ID tin đã lưu
+  const { user, token } = useContext(AuthContext); // Lấy thông tin từ Context
+  const isLoggedIn = !!(user && (token || user.token)); // Kiểm tra đăng nhập
+
+
+  const postsPerPage = 10;
   const { searchTerm } = useContext(SearchContext);
   const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { selectedLocation } = useContext(LocationContext);
+
 
   const { contextCity, contextDistrict } = useMemo(() => {
     if (!selectedLocation || selectedLocation === "Toàn quốc") {
@@ -70,6 +86,8 @@ const LocTinDang = () => {
     return { contextCity: selectedLocation, contextDistrict: "" };
   }, [selectedLocation]);
 
+
+  // Fetch Posts & Categories
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -81,13 +99,13 @@ const LocTinDang = () => {
         ]);
         const parsedPosts = postsRes.data.map(post => ({
             ...post,
-            ChiTietObj: post.chiTietObj || post.ChiTietObj || {} 
+            ChiTietObj: post.chiTietObj || post.ChiTietObj || {}
         }));
         setPosts(parsedPosts);
         setCategories(catsRes.data);
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
-        setError("Không thể tải danh sách tin đăng. Vui lòng kiểm tra kết nối server.");
+        setError("Không thể tải danh sách tin đăng.");
       } finally {
         setIsLoading(false);
       }
@@ -95,18 +113,76 @@ const LocTinDang = () => {
     fetchData();
   }, []);
 
+
+  // 3. Fetch danh sách ID tin đăng đã lưu
+  useEffect(() => {
+    const fetchSaved = async () => {
+      const authToken = token || user?.token;
+      if (isLoggedIn && authToken) {
+        try {
+          const res = await axios.get("http://localhost:5133/api/yeuthich/danh-sach", {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          setSavedIds(res.data.map((p) => p.maTinDang));
+        } catch (error) {
+          console.error("Error fetching saved IDs:", error);
+        }
+      }
+    };
+    fetchSaved();
+  }, [user, token, isLoggedIn]);
+
+
+    // --- Logic Lưu / Bỏ lưu tin có thông báo ---
+  const handleToggleSave = async (postId, isSaved) => {
+    const authToken = token || user?.token;
+   
+    if (!isLoggedIn) {
+      toast.error("Vui lòng đăng nhập để lưu tin!", {
+        icon: '🔒',
+        style: { borderRadius: '10px', background: '#333', color: '#fff' }
+      });
+      return;
+    }
+
+
+    try {
+      if (isSaved) {
+        await axios.delete(`http://localhost:5133/api/yeuthich/xoa/${postId}`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setSavedIds((prev) => prev.filter((id) => id !== postId));
+        toast.success("Đã gỡ khỏi danh sách lưu");
+      } else {
+        await axios.post(`http://localhost:5133/api/yeuthich/luu/${postId}`, {}, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        setSavedIds((prev) => [...prev, postId]);
+        toast.success("Đã lưu tin đăng thành công!", {
+          icon: '❤️',
+        });
+      }
+    } catch (err) {
+      toast.error("Thao tác thất bại. Vui lòng thử lại!");
+    }
+  };
+
+
   const filteredAndSortedPosts = usePostFilter({
     posts, contextCity, contextDistrict, selectedCategory, selectedSubCategory,
     selectedDistrict, minPrice, maxPrice, advancedFilters, searchTerm, sortOrder
   });
 
+
   useEffect(() => {
     setCurrentPage(1);
   }, [filteredAndSortedPosts]);
 
+
   const indexOfLastPost = currentPage * postsPerPage;
   const currentPosts = filteredAndSortedPosts.slice(indexOfLastPost - postsPerPage, indexOfLastPost);
   const totalPages = Math.ceil(filteredAndSortedPosts.length / postsPerPage);
+
 
   const renderNoPostsMessage = () => {
     if (filteredAndSortedPosts.length > 0) return null;
@@ -116,19 +192,14 @@ const LocTinDang = () => {
     if (selectedSubCategory) message += ` trong danh mục "${selectedSubCategory}"`;
     else if (selectedCategory) message += ` trong danh mục "${selectedCategory}"`;
     if (searchTerm) message += ` với từ khóa "${searchTerm}"`;
-    
-    if (advancedFilters.minPrice || advancedFilters.maxPrice) {
-       const minStr = formatCurrency(advancedFilters.minPrice || 0);
-       const maxStr = advancedFilters.maxPrice ? formatCurrency(advancedFilters.maxPrice) : '∞';
-       message += ` (Giá: ${minStr} - ${maxStr})`;
-    }
     return message;
   };
+
 
   return (
     <div className={styles.pageWrapper}>
       <TopNavbar />
-      
+     
       <div className={styles.contentContainer}>
         <LocMoRong
           onDistrictChange={setSelectedDistrict}
@@ -136,28 +207,29 @@ const LocTinDang = () => {
           onParentCategoryChange={(cat) => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
           categories={categories}
           onSortOrderChange={setSortOrder}
-          onAdvancedFilterChange={setAdvancedFilters} 
+          onAdvancedFilterChange={setAdvancedFilters}
         />
+
 
         <div className={styles.listBlock}>
           <div className={styles.headerRow}>
               <h2 className={styles.title}>Tin đăng dành cho bạn</h2>
               <button className={styles.viewToggleBtn} onClick={() => setViewMode(prev => prev === "list" ? "grid" : "list")}>
-                {viewMode === "list" ? <GridIcon /> : <ListIcon />} 
+                {viewMode === "list" ? <GridIcon /> : <ListIcon />}
                 <span>{viewMode === "list" ? "Dạng lưới" : "Dạng danh sách"}</span>
               </button>
           </div>
-          
+         
           <div className={styles.filterInfo}>
             {contextCity && <p>Khu vực: <strong>{contextCity}</strong></p>}
             {(selectedDistrict || contextDistrict) && <p>Quận/Huyện: <strong>{selectedDistrict || contextDistrict}</strong></p>}
             {(selectedSubCategory || selectedCategory) && <p>Danh mục: <strong>{selectedSubCategory || selectedCategory}</strong></p>}
-            {searchTerm && <p>Từ khóa: <strong>{searchTerm}</strong></p>}
-            {advancedFilters.Hang && <p>Hãng: <strong>{advancedFilters.Hang}</strong></p>}
           </div>
+
 
           {isLoading && <div className={styles.loading}>Đang tải tin đăng...</div>}
           {error && <div className={styles.error}>{error}</div>}
+
 
           {!isLoading && !error && (
               <div className={`${styles.list} ${viewMode === "grid" ? styles.gridView : styles.listView}`}>
@@ -165,17 +237,22 @@ const LocTinDang = () => {
                   <p className={styles.noResult}>{renderNoPostsMessage()}</p>
                 ) : (
                   currentPosts.map((post) => (
-                    <ProductItem 
-                        key={post.maTinDang} 
-                        post={post} 
-                        viewMode={viewMode} 
+                    <ProductItem
+                        key={post.maTinDang}
+                        post={post}
+                        viewMode={viewMode}
+                        // 5. TRUYỀN PROPS YÊU THÍCH XUỐNG PRODUCTITEM
+                        isLoggedIn={isLoggedIn}
+                        isSaved={savedIds.includes(post.maTinDang)}
+                        onToggleSave={handleToggleSave}
                     />
                   ))
                 )}
               </div>
           )}
 
-          <Pagination 
+
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -185,5 +262,6 @@ const LocTinDang = () => {
     </div>
   );
 };
+
 
 export default LocTinDang;

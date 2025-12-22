@@ -3,27 +3,50 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-export const useTinDangData = (activeTab) => {
+
+// ✅ Nhận thêm tham số categoryGroup
+export const useTinDangData = (activeTab, categoryGroup) => {
   const [posts, setPosts] = useState([]);
   const [savedIds, setSavedIds] = useState([]);
   const { user, token } = useContext(AuthContext);
 
+
   const getAuthToken = () => user?.token || token;
   const isLoggedIn = !!(user && getAuthToken());
+
 
   // 1. Fetch Posts
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         let url = "http://localhost:5133/api/tindang/get-posts";
-        if (activeTab === "danhchoban") {
-          url = "http://localhost:5133/api/tindang/get-recommended-posts?limit=20";
+       
+        // ✅ Tạo object chứa tham số query
+        const params = {};
+
+
+        // Nếu có categoryGroup, thêm vào params
+        if (categoryGroup) {
+          params.categoryGroup = categoryGroup;
         }
+
+
+        if (activeTab === "danhchoban") {
+          url = "http://localhost:5133/api/tindang/get-recommended-posts";
+          params.limit = 20;
+        }
+
+
+        // ✅ Chuyển object params thành chuỗi query (VD: ?limit=20&categoryGroup=đồ điện tử)
+        const queryString = new URLSearchParams(params).toString();
+        const fullUrl = `${url}?${queryString}`;
+
 
         const authToken = getAuthToken();
         const config = authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {};
 
-        const response = await axios.get(url, config);
+
+        const response = await axios.get(fullUrl, config);
         setPosts(response.data);
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -31,8 +54,10 @@ export const useTinDangData = (activeTab) => {
       }
     };
 
+
     fetchPosts();
-  }, [activeTab, user]);
+  }, [activeTab, user, categoryGroup]); // ✅ Thêm categoryGroup vào dependency
+
 
   // 2. Fetch Saved IDs
   useEffect(() => {
@@ -52,6 +77,7 @@ export const useTinDangData = (activeTab) => {
     fetchSaved();
   }, [user, token]);
 
+
   // 3. Toggle Save Logic
   const handleToggleSave = async (postId, isSaved) => {
     const authToken = getAuthToken();
@@ -59,6 +85,7 @@ export const useTinDangData = (activeTab) => {
       alert("Bạn cần đăng nhập để lưu tin.");
       return;
     }
+
 
     try {
       if (isSaved) {
@@ -75,7 +102,6 @@ export const useTinDangData = (activeTab) => {
         alert("Đã lưu tin đăng.");
       }
     } catch (err) {
-      // Xử lý lỗi chi tiết (giữ nguyên logic của bạn)
       let msg = "Có lỗi xảy ra, vui lòng thử lại.";
       if (err.response?.data?.message) {
          msg = err.response.data.message;
@@ -84,5 +110,7 @@ export const useTinDangData = (activeTab) => {
     }
   };
 
+
   return { posts, savedIds, isLoggedIn, handleToggleSave };
 };
+

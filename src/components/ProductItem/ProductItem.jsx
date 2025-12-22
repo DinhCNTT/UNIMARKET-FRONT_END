@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// 1. Thêm import icon trái tim
+import { FaHeart } from 'react-icons/fa';
 import styles from './ProductItem.module.css';
-import defaultAvatar from '../../assets/default-avatar.png'; 
+import defaultAvatar from '../../assets/default-avatar.png';
+
 
 const LocationIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14px" height="14px" className={styles.locationIcon}>
@@ -9,10 +12,23 @@ const LocationIcon = () => (
   </svg>
 );
 
-const ProductItem = ({ post, viewMode }) => {
-  // --- Helpers ---
-  const formatCurrency = (amount) => 
+
+// 2. Thêm các props: isSaved, onToggleSave, isLoggedIn
+const ProductItem = ({ post, viewMode, isSaved, onToggleSave, isLoggedIn }) => {
+ 
+  // 3. Logic xử lý lưu tin (StopPropagation để không bị nhảy vào trang chi tiết khi bấm tim)
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleSave) {
+      onToggleSave(post.maTinDang, isSaved);
+    }
+  };
+
+
+  const formatCurrency = (amount) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+
 
   const timeAgo = (dateString) => {
     const now = new Date();
@@ -33,30 +49,39 @@ const ProductItem = ({ post, viewMode }) => {
     return "Vừa xong";
   };
 
+
   const getImageUrl = (img) => img?.startsWith("http") ? img : `http://localhost:5133${img}`;
 
-  // --- [LOGIC QUAN TRỌNG] Xử lý hiển thị thông số & Dịch từ ngữ ---
+
   const renderSpecs = () => {
-    // 1. Nếu là Điện thoại di động (Hiện cấu hình)
     if (post.danhMuc === "Điện thoại di động" && post.chiTietObj) {
         const { dongMay, dungLuong, baoHanh } = post.chiTietObj;
         const specs = [dongMay, dungLuong, baoHanh].filter(Boolean);
         return specs.join("  ");
     }
-
-    // 2. Các danh mục khác (Hiện tình trạng & Dịch tiếng Việt)
     if (post.tinhTrang === "Moi") return "Mới";
-    if (post.tinhTrang === "DaSuDung") return "Đã sử dụng"; // <--- Đã sửa ở đây
-    
-    // Fallback: Nếu không khớp 2 cái trên thì hiện nguyên gốc hoặc mặc định
+    if (post.tinhTrang === "DaSuDung") return "Đã sử dụng";
     return post.tinhTrang || "Đã sử dụng";
   };
 
+
   return (
     <div className={`${styles.item} ${viewMode === 'list' ? styles.listMode : styles.gridMode}`}>
+     
+      {/* 4. Thêm nút Trái tim (Nằm ngoài Link để không kích hoạt điều hướng) */}
+      {isLoggedIn && (
+        <div
+          className={`${styles.saveHeartBtn} ${isSaved ? styles.saved : styles.notSaved}`}
+          onClick={handleSaveClick}
+          title={isSaved ? "Bỏ lưu" : "Lưu tin"}
+        >
+          <FaHeart className={styles.heartIcon} />
+        </div>
+      )}
+
+
       <Link to={`/tin-dang/${post.maTinDang}`} className={styles.link}>
         <div className={styles.content}>
-          {/* --- CỘT TRÁI: ẢNH --- */}
           <div className={styles.imageContainer}>
             {post.images && post.images.length > 0 ? (
               <img
@@ -72,28 +97,22 @@ const ProductItem = ({ post, viewMode }) => {
             {post.ngayDang && <span className={styles.time}>{timeAgo(post.ngayDang)}</span>}
           </div>
 
-          {/* --- CỘT PHẢI: THÔNG TIN --- */}
+
           <div className={styles.info}>
             <div className={styles.infoTop}>
-              {/* 1. Tiêu đề */}
               <h3 className={styles.itemTitle}>{post.tieuDe}</h3>
-              
-              {/* 2. Thông số kỹ thuật / Tình trạng */}
               <div className={styles.itemSpecs}>
                  {renderSpecs()}
               </div>
-
-              {/* 3. Giá tiền */}
               <p className={styles.price}>{formatCurrency(post.gia)}</p>
             </div>
-            
-            {/* 4. Footer (Địa điểm + Người bán) */}
+           
             <div className={styles.bottomFooter}>
               <div className={styles.locationRow}>
                 <LocationIcon />
                 <span className={styles.locationText}>{post.tinhThanh} - {post.quanHuyen}</span>
               </div>
-              
+             
               <div className={styles.userRow}>
                 <img
                   src={getImageUrl(post.avatar) || defaultAvatar}
@@ -111,5 +130,6 @@ const ProductItem = ({ post, viewMode }) => {
     </div>
   );
 };
+
 
 export default ProductItem;

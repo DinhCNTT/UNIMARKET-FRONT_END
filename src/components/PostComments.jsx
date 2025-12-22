@@ -6,25 +6,50 @@ import { AuthContext } from '../context/AuthContext';
 import defaultAvatar from '../assets/default-avatar.png';
 import toast from 'react-hot-toast';
 
-// IMPORT MODAL 
+
+// IMPORT MODAL
 import PostCommentModal from './PostCommentModal';
+
 
 const PostComments = ({ maTinDang }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  
+ 
   // State quản lý việc trả lời
   const [activeReplyId, setActiveReplyId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const [expandedThreads, setExpandedThreads] = useState({});
-  
+ 
   // --- STATE MODAL ---
   const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const navigate = useNavigate();
   const pollIntervalRef = useRef(null);
   const { token, user } = useContext(AuthContext);
   const currentUserId = user?.id;
+
+
+ useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+
+  if (isModalOpen) {
+    html.classList.add('stop-scrolling');
+    body.classList.add('stop-scrolling');
+  } else {
+    html.classList.remove('stop-scrolling');
+    body.classList.remove('stop-scrolling');
+  }
+
+
+  return () => {
+    html.classList.remove('stop-scrolling');
+    body.classList.remove('stop-scrolling');
+  };
+}, [isModalOpen]);
+
 
   // --- HÀM HELPER: ĐẾM ĐỆ QUY SỐ LƯỢNG CON CHÁU ---
   const countRepliesRecursive = useCallback((list) => {
@@ -33,6 +58,7 @@ const PostComments = ({ maTinDang }) => {
       return sum + 1 + countRepliesRecursive(item.replies);
     }, 0);
   }, []);
+
 
   // 1. Fetch Comments
   const fetchComments = useCallback(async () => {
@@ -44,6 +70,7 @@ const PostComments = ({ maTinDang }) => {
     }
   }, [maTinDang]);
 
+
   // 2. Polling
   useEffect(() => {
     fetchComments();
@@ -51,18 +78,21 @@ const PostComments = ({ maTinDang }) => {
     return () => clearInterval(pollIntervalRef.current);
   }, [fetchComments]);
 
+
   // Tính tổng số comment (Dùng hàm đệ quy helper ở trên)
   const totalComments = useMemo(() => {
     return countRepliesRecursive(comments);
   }, [comments, countRepliesRecursive]);
+
 
   // 3. Xử lý Gửi Comment
   const handleSubmit = async (parentId = null, content = '') => {
     if (!token) return toast.error("Vui lòng đăng nhập!");
     if (!content.trim()) return;
 
+
     const payload = { content: content.trim(), parentCommentId: parentId };
-    
+   
     // -- Optimistic Update --
     const tempId = Date.now();
     const optimisticComment = {
@@ -75,6 +105,7 @@ const PostComments = ({ maTinDang }) => {
       replies: [],
       isOptimistic: true
     };
+
 
     if (parentId) {
       setComments(prev => prev.map(c => {
@@ -91,27 +122,31 @@ const PostComments = ({ maTinDang }) => {
       setNewComment('');
     }
 
+
     try {
       await axios.post(
         `http://localhost:5133/api/video/${maTinDang}/comment`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      fetchComments(); 
+      fetchComments();
     } catch (err) {
       toast.error("Gửi thất bại");
-      fetchComments(); 
+      fetchComments();
     }
   };
+
 
   const handleTextareaChange = (e) => {
     e.target.style.height = 'auto';
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
+
   // --- HÀM RENDER ĐỆ QUY ---
   const renderRecursiveReplies = (replies, rootId) => {
     if (!replies || replies.length === 0) return null;
+
 
     return replies.map((rep) => (
       <div key={rep.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
@@ -120,33 +155,36 @@ const PostComments = ({ maTinDang }) => {
     ));
   };
 
+
   // 4. Render 1 Item Comment
   const renderItem = (cmt, rootCommentId = null, isPreview = false) => {
     const isMyComment = cmt.userId === currentUserId;
     const parentIdForReply = cmt.id;
-    
-    const containerClass = rootCommentId 
-        ? styles.repliesContainerFlat 
+   
+    const containerClass = rootCommentId
+        ? styles.repliesContainerFlat
         : styles.repliesContainerIndent;
+
 
     // [FIX LỖI]: Tính tổng số phản hồi con cháu để hiển thị ra nút bấm
     const totalRepliesCount = countRepliesRecursive(cmt.replies);
 
+
     return (
         <div key={cmt.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-            
+           
             {/* KHỐI HIỂN THỊ NỘI DUNG COMMENT */}
             <div className={styles.commentItem} style={{ marginBottom: 4 }}>
-                <img 
-                    src={cmt.avatarUrl || defaultAvatar} 
-                    className={styles.avatar} 
+                <img
+                    src={cmt.avatarUrl || defaultAvatar}
+                    className={styles.avatar}
                     onClick={() => navigate(`/nguoi-dung/${cmt.userId}`)}
                     alt="avt"
                 />
                 <div className={styles.contentWrapper}>
                     <div className={styles.bubble}>
-                        <span 
-                            className={styles.userName} 
+                        <span
+                            className={styles.userName}
                             onClick={() => navigate(`/nguoi-dung/${cmt.userId}`)}
                         >
                             {cmt.userName}
@@ -154,14 +192,14 @@ const PostComments = ({ maTinDang }) => {
                         {cmt.isAuthor && <span className={styles.authorBadge}>Người bán</span>}
                         <div className={styles.text}>{cmt.content}</div>
                     </div>
-                    
+                   
                     <div className={styles.actions}>
                         <span className={styles.time}>
                             {new Date(cmt.createdAt).toLocaleDateString('vi-VN')}
                         </span>
-                        
+                       
                         {token && (
-                            <button 
+                            <button
                                 className={styles.actionBtn}
                                 onClick={() => {
                                     if (isPreview) {
@@ -180,9 +218,10 @@ const PostComments = ({ maTinDang }) => {
                             </button>
                         )}
 
+
                         {isMyComment && !cmt.isOptimistic && (
-                            <button 
-                                className={styles.actionBtn} 
+                            <button
+                                className={styles.actionBtn}
                                 style={{color: '#dc3545'}}
                                 onClick={() => {
                                     toast((t) => (
@@ -198,8 +237,8 @@ const PostComments = ({ maTinDang }) => {
                                                         });
                                                         toast.success("Đã xoá bình luận");
                                                         fetchComments();
-                                                    } catch(e) { 
-                                                        toast.error("Lỗi khi xoá"); 
+                                                    } catch(e) {
+                                                        toast.error("Lỗi khi xoá");
                                                     }
                                                 }}>Xoá ngay</button>
                                             </div>
@@ -211,6 +250,7 @@ const PostComments = ({ maTinDang }) => {
                             </button>
                         )}
                     </div>
+
 
                     {/* Form trả lời */}
                     {activeReplyId === cmt.id && !isPreview && (
@@ -234,17 +274,18 @@ const PostComments = ({ maTinDang }) => {
                 </div>
             </div>
 
+
             {/* --- KHỐI HIỂN THỊ REPLIES --- */}
             {cmt.replies && cmt.replies.length > 0 && (
                 <div className={containerClass}>
-                    
+                   
                     {/* Nếu có rootCommentId (tức là comment con/cháu) -> Hiển thị LUÔN */}
                     {rootCommentId ? (
                         renderRecursiveReplies(cmt.replies, rootCommentId)
                     ) : (
                         /* Nếu là Cha gốc -> Giữ logic nút Bật/Tắt */
                         !expandedThreads[cmt.id] || isPreview ? (
-                             <button 
+                             <button
                                 className={styles.toggleRepliesBtn}
                                 onClick={() => {
                                     if (isPreview) setIsModalOpen(true);
@@ -258,8 +299,8 @@ const PostComments = ({ maTinDang }) => {
                         ) : (
                             <>
                                 {renderRecursiveReplies(cmt.replies, cmt.id)}
-                                
-                                <button 
+                               
+                                <button
                                     className={styles.toggleRepliesBtn}
                                     onClick={() => setExpandedThreads(prev => ({...prev, [cmt.id]: false}))}
                                  >
@@ -270,17 +311,19 @@ const PostComments = ({ maTinDang }) => {
                         )
                     )}
 
+
                 </div>
             )}
         </div>
     );
   };
 
+
   // --- HÀM RENDER LIST COMMENT ---
   const renderCommentList = (listToRender, isPreview = false) => (
     <div className={styles.commentList}>
         {listToRender.length === 0 && <div className={styles.noComment}>Chưa có bình luận nào. Hãy là người đầu tiên!</div>}
-        
+       
         {listToRender.map(cmt => (
             <div key={cmt.id}>
                 {renderItem(cmt, null, isPreview)}
@@ -288,6 +331,7 @@ const PostComments = ({ maTinDang }) => {
         ))}
     </div>
   );
+
 
   const renderInputArea = () => (
     <div className={styles.inputArea}>
@@ -304,8 +348,8 @@ const PostComments = ({ maTinDang }) => {
                         maxLength={200}
                     />
                     <div className={styles.inputFooter}>
-                         <button 
-                            className={styles.sendBtn} 
+                         <button
+                            className={styles.sendBtn}
                             disabled={!newComment.trim()}
                             onClick={() => handleSubmit(null, newComment)}
                         >
@@ -322,8 +366,10 @@ const PostComments = ({ maTinDang }) => {
     </div>
   );
 
+
   const previewComments = comments.slice(0, 3);
   const hasMore = comments.length > 3;
+
 
   return (
     <>
@@ -331,10 +377,11 @@ const PostComments = ({ maTinDang }) => {
             <div className={styles.header}>
                 Bình luận <span className={styles.count}>({totalComments})</span>
             </div>
-            
+           
             <div className={styles.previewListWrapper}>
                 {renderCommentList(previewComments, true)}
             </div>
+
 
             {hasMore && (
                 <button className={styles.seeMoreBtn} onClick={() => setIsModalOpen(true)}>
@@ -342,10 +389,12 @@ const PostComments = ({ maTinDang }) => {
                 </button>
             )}
 
+
             {renderInputArea()}
         </div>
 
-        <PostCommentModal 
+
+        <PostCommentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             totalComments={totalComments}
@@ -355,5 +404,6 @@ const PostComments = ({ maTinDang }) => {
     </>
   );
 };
+
 
 export default PostComments;

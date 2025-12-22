@@ -7,15 +7,18 @@ import { SearchContext } from "../context/SearchContext";
 import { FaMobileAlt, FaChevronDown, FaLaptop, FaHome } from "react-icons/fa";
 import { FILTER_COMPONENTS } from "./CategoryFilters/FilterRegistry";
 
+
 const DISTRICTS = {
   "Hồ Chí Minh": ["Quận 1", "Quận 2", "Quận 3", "Quận 4", "Quận 5", "Quận 6", "Quận 7", "Quận 8", "Quận 9", "Quận 10", "Quận 11", "Quận 12", "Tân Bình", "Tân Phú", "Bình Thạnh", "Phú Nhuận", "Gò Vấp", "Bình Tân", "Thủ Đức", "Nhà Bè"],
   "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Đống Đa", "Hai Bà Trưng", "Thanh Xuân", "Cầu Giấy", "Hoàng Mai", "Long Biên", "Tây Hồ", "Nam Từ Liêm", "Bắc Từ Liêm", "Hà Đông", "Thanh Trì", "Gia Lâm", "Đông Anh"]
 };
 
+
 const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, categories, onSortOrderChange, onAdvancedFilterChange }) => {
   const { selectedLocation } = useContext(LocationContext);
-  const { selectedCategory, setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
+const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { searchTerm } = useContext(SearchContext);
+
 
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [showDistricts, setShowDistricts] = useState(false);
@@ -27,26 +30,47 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
   const [appliedMinPrice, setAppliedMinPrice] = useState(0);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState(100000000);
 
+
   const [detectedCategory, setDetectedCategory] = useState(null);
-  const [activeMode, setActiveMode] = useState(null); 
+  const [activeMode, setActiveMode] = useState(null);
   const [advancedFilters, setAdvancedFilters] = useState({});
+
+
+  // Tự động bật chế độ lọc chuyên sâu
+  useEffect(() => {
+    if (selectedSubCategory) {
+      let keyName = selectedSubCategory;
+      if (keyName.toLowerCase().includes("điện thoại")) {
+          keyName = "Điện thoại";
+      }
+
+
+      // Kiểm tra xem có bộ lọc nào tên là "Điện thoại" không
+      if (FILTER_COMPONENTS && FILTER_COMPONENTS[keyName]) {
+        setActiveMode(keyName);
+      } else {
+        setActiveMode(null);
+      }
+    } else {
+      setActiveMode(null);
+    }
+  }, [selectedSubCategory]);
+
 
   // 1. State lưu lịch sử chọn để hiển thị Breadcrumb theo thứ tự
   const [filterHistory, setFilterHistory] = useState([]);
+
 
   useEffect(() => {
     onSortOrderChange(sortOrder);
   }, [sortOrder, onSortOrderChange]);
 
+
   // Detect Category
   useEffect(() => {
     const detectIntent = async () => {
       setDetectedCategory(null);
-      if (searchTerm && searchTerm.trim().length > 0) {
-          setActiveMode(null);
-          setAdvancedFilters({});
-          if (onAdvancedFilterChange) onAdvancedFilterChange({});
-      }
+     
       if (!searchTerm || searchTerm.trim().length < 2) return;
       try {
         const res = await axios.get(`http://localhost:5133/api/tindang/detect-category?query=${encodeURIComponent(searchTerm.trim())}`);
@@ -54,13 +78,14 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
             const catName = res.data.name.toLowerCase();
             if (catName.includes("điện thoại")) {
                 setDetectedCategory({ name: "Điện thoại", original: res.data.name });
-            } 
+            }
         }
       } catch (error) { console.error("Detect error:", error); }
     };
     const timer = setTimeout(() => detectIntent(), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
 
   // --- QUẢN LÝ LỊCH SỬ CHỌN (Breadcrumb Logic) ---
   const updateHistory = (type, action) => {
@@ -74,6 +99,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
       });
   };
 
+
   // Theo dõi Location thay đổi
   useEffect(() => {
       if (selectedLocation && selectedLocation !== "Toàn quốc") {
@@ -82,6 +108,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
           updateHistory('LOCATION', 'remove');
       }
   }, [selectedLocation]);
+
 
   // Theo dõi Category thay đổi (activeMode)
   useEffect(() => {
@@ -93,6 +120,8 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
   }, [activeMode]);
 
 
+
+
   // Handlers
   const handleActivateMode = (modeName) => {
       setActiveMode(modeName);
@@ -100,34 +129,39 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
       // updateHistory được gọi trong useEffect
   };
 
+
   const handleExitMode = () => {
       setActiveMode(null);
       setAdvancedFilters({});
       if (onAdvancedFilterChange) onAdvancedFilterChange({});
-      setSelectedSubCategory(""); 
-      setSelectedCategory(""); 
-      if (onParentCategoryChange) onParentCategoryChange(""); 
+      setSelectedSubCategory("");
+      setSelectedCategory("");
+      if (onParentCategoryChange) onParentCategoryChange("");
   };
+
 
   const handleFilterChange = (key, value) => {
       setAdvancedFilters(prev => {
           const newFilters = { ...prev, [key]: value };
-          if (value === null || value === undefined) delete newFilters[key]; 
+          if (value === null || value === undefined) delete newFilters[key];
           return newFilters;
       });
   };
+
 
   useEffect(() => {
       if (onAdvancedFilterChange) onAdvancedFilterChange(advancedFilters);
   }, [advancedFilters]);
 
+
   // Helpers
   const availableDistricts = useMemo(() => {
     if (!selectedLocation) return [];
     let cityKey = selectedLocation;
-    if (selectedLocation.includes(",")) cityKey = selectedLocation.split(",")[1].trim(); 
+    if (selectedLocation.includes(",")) cityKey = selectedLocation.split(",")[1].trim();
     return DISTRICTS[cityKey] || [];
   }, [selectedLocation]);
+
 
   // --- TÍNH TOÁN BREADCRUMB & SLOGAN LINH HOẠT ---
   const headerInfo = useMemo(() => {
@@ -135,7 +169,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
     let locationStr = "";
     let city = "";
     let district = "";
-    
+   
     if (selectedLocation && selectedLocation !== "Toàn quốc") {
        if (selectedLocation.includes(",")) {
          const parts = selectedLocation.split(",");
@@ -152,17 +186,20 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
        }
     }
 
+
     // 2. Chuẩn bị dữ liệu Category
     const categoryStr = activeMode || selectedCategory || "";
 
+
     // 3. Xây dựng Breadcrumb dựa trên lịch sử
     let parts = ["Unimarket"];
-    
+   
     // Duyệt qua lịch sử để xếp thứ tự
     filterHistory.forEach(type => {
         if (type === 'LOCATION' && locationStr) parts.push(locationStr);
         if (type === 'CATEGORY' && categoryStr) parts.push(categoryStr);
     });
+
 
     // Nếu không có trong lịch sử (VD: load trang lần đầu có sẵn location), fallback
     if (locationStr && !parts.join('/').includes(locationStr.replace(' / ', '/'))) {
@@ -174,7 +211,9 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
         parts.push(categoryStr);
     }
 
+
     const breadcrumb = parts.join(" / ");
+
 
     // 4. Xây dựng Slogan
     let slogan = `Mua Bán Rao Vặt Nhanh Chóng, Uy Tín Tại Unimarket`;
@@ -182,8 +221,10 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
     if (city) slogan += ` ${city}`;
     if (activeMode) slogan += ` - ${activeMode}`;
 
+
     return { breadcrumb, slogan };
   }, [selectedLocation, selectedDistrict, activeMode, selectedCategory, filterHistory]);
+
 
   const handleDistrictSelect = (d) => { setSelectedDistrict(d); onDistrictChange(d); setShowDistricts(false); };
   const handleClearDistrict = () => { setSelectedDistrict(""); onDistrictChange(""); };
@@ -191,7 +232,9 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
   const handleClearPrice = () => { setMinPrice(0); setMaxPrice(100000000); setAppliedMinPrice(0); setAppliedMaxPrice(100000000); onPriceChange(0, 100000000); };
   const handleClearCategory = () => { setSelectedCategory(""); setSelectedSubCategory(""); onParentCategoryChange(""); };
 
+
   const ActiveFilterComponent = activeMode ? FILTER_COMPONENTS[activeMode] : null;
+
 
   // --- RENDER ---
   // Tách phần Header ra để tái sử dụng cho cả 2 trường hợp return
@@ -202,11 +245,12 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
       </div>
   );
 
+
   if (ActiveFilterComponent) {
       return (
           <div className={styles.filterContainer}>
               {renderHeader()}
-              <ActiveFilterComponent 
+              <ActiveFilterComponent
                   activeFilters={advancedFilters}
                   onFilterChange={handleFilterChange}
                   onExit={handleExitMode}
@@ -215,9 +259,11 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
       );
   }
 
+
   return (
     <div className={styles.filterContainer}>
       {renderHeader()}
+
 
       <div className={styles.controlsRow}>
         <div className={styles.filterItem}>
@@ -225,6 +271,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
             {sortOrder === "newest" ? "Mới nhất" : "Cũ nhất"}
           </button>
         </div>
+
 
         <div className={styles.filterItem}>
           <button onClick={() => setShowParentCategories(!showParentCategories)} className={styles.filterBtn}>
@@ -245,6 +292,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
           )}
         </div>
 
+
         {availableDistricts.length > 0 && (
           <div className={styles.filterItem}>
             <button onClick={() => setShowDistricts(!showDistricts)} className={styles.filterBtn}>
@@ -259,6 +307,7 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
             )}
           </div>
         )}
+
 
         <div className={styles.filterItem}>
           <button onClick={() => setShowPriceFilter(!showPriceFilter)} className={styles.filterBtn}>
@@ -284,14 +333,16 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
         </div>
       </div>
 
+
       {detectedCategory && (
         <div className={styles.suggestionBlock}>
             <button className={styles.categoryTileBtn} onClick={() => handleActivateMode(detectedCategory.name)}>
-                <FaMobileAlt size={28} /> 
+                <FaMobileAlt size={28} />
                 <span>{detectedCategory.name}</span>
             </button>
         </div>
       )}
+
 
       {(selectedDistrict || (appliedMinPrice > 0 || appliedMaxPrice < 100000000) || selectedCategory) && (
         <div className={styles.activeFilters}>
@@ -316,5 +367,6 @@ const LocMoRong = ({ onDistrictChange, onPriceChange, onParentCategoryChange, ca
     </div>
   );
 };
+
 
 export default LocMoRong;

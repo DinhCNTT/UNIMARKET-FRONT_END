@@ -6,10 +6,12 @@
   position: relative;
 }
 
+
 .sectionHeader {
   margin-bottom: 20px;
   padding: 0 4px;
 }
+
 
 .title {
   font-size: 20px;
@@ -19,6 +21,7 @@
   text-transform: capitalize;
 }
 
+
 /* ================== GRID MODE STYLES ================== */
 .gridContainer {
   display: grid;
@@ -27,6 +30,7 @@
   width: 100%;
 }
 
+
 .actionButtonsContainer {
   display: flex;
   justify-content: center;
@@ -34,6 +38,7 @@
   margin-top: 30px;
   margin-bottom: 10px;
 }
+
 
 .actionBtn {
   background-color: #fff;
@@ -50,21 +55,25 @@
   min-width: 120px;
 }
 
+
 .actionBtn:hover {
   background-color: #f9f9f9;
   border-color: #999;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+
 .collapseBtn {
   color: #d0021b;
   border-color: #fad1d1;
 }
 
+
 .collapseBtn:hover {
   background-color: #fff5f5;
   border-color: #e5193b;
 }
+
 
 /* ================== CAROUSEL MODE STYLES ================== */
 .carouselWrapper {
@@ -73,13 +82,14 @@
   align-items: center;
 }
 
+
 .postsTrack {
   display: flex;
   gap: 16px;
   overflow-x: auto;
   padding: 10px 4px 20px 4px;
   scroll-behavior: smooth;
-  scroll-snap-type: x mandatory; 
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -87,6 +97,7 @@
 .postsTrack::-webkit-scrollbar {
   display: none;
 }
+
 
 .navBtn {
   position: absolute;
@@ -118,6 +129,7 @@
 .prevBtn { left: -18px; }
 .nextBtn { right: -18px; }
 
+
 /* ================== SHARED CARD STYLES ================== */
 .postCard {
   background-color: #fff;
@@ -130,6 +142,7 @@
   flex-direction: column;
 }
 
+
 .cardGridItem { width: 100%; }
 .cardCarouselItem {
   flex: 0 0 auto;
@@ -137,11 +150,13 @@
   scroll-snap-align: start;
 }
 
+
 .postCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: transparent;
 }
+
 
 .cardImageWrapper {
   width: 100%;
@@ -151,6 +166,7 @@
   position: relative; /* QUAN TRỌNG: Để các overlay hoạt động */
 }
 
+
 .cardImageWrapper img {
   width: 100%;
   height: 100%;
@@ -158,9 +174,11 @@
   transition: transform 0.3s ease;
 }
 
+
 .postCard:hover .cardImageWrapper img {
   transform: scale(1.05);
 }
+
 
 /* --- STYLE MỚI CHO THỜI GIAN & BADGE --- */
 .timeOverlay {
@@ -176,6 +194,7 @@
   pointer-events: none;
 }
 
+
 .mediaBadgesContainer {
   position: absolute;
   bottom: 8px;
@@ -183,6 +202,7 @@
   display: flex;
   gap: 4px;
 }
+
 
 .badgeItem {
   background-color: rgba(0, 0, 0, 0.6);
@@ -195,10 +215,12 @@
   font-weight: 600;
 }
 
+
 .videoBadge {
     /* Có thể thêm màu khác nếu muốn badge video nổi hơn */
 }
 /* --------------------------------------- */
+
 
 .cardContent {
   padding: 10px;
@@ -207,6 +229,7 @@
   gap: 6px;
   flex: 1;
 }
+
 
 .postTitle {
   font-size: 14px;
@@ -221,12 +244,14 @@
   overflow: hidden;
 }
 
+
 .postPrice {
   font-size: 16px;
   font-weight: 700;
   color: #d0021b;
   margin-top: 2px;
 }
+
 
 .postMeta {
   display: flex;
@@ -238,11 +263,13 @@
   overflow: hidden;
 }
 
+
 .metaLocation {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
 }
+
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
@@ -264,6 +291,7 @@
   padding-bottom: 10px;
 }
 
+
 .viewShopBtn {
   background-color: #fff;
   border: 1px solid #e0e0e0;
@@ -278,6 +306,7 @@
   min-width: 120px;
   outline: none;
 }
+
 
 .viewShopBtn:hover {
   background-color: #f7f7f7;
@@ -295,14 +324,16 @@
   background-color: #000; /* Màu nền đen trong lúc load video */
 }
 
+
 /* Cập nhật lại container chứa ảnh để hỗ trợ video absolute */
 .cardImageWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
   background-color: #f8f8f8;
   overflow: hidden;
-  position: relative; 
+  position: relative;
 }
+
 
 /* Cập nhật z-index cho Badge và Time để nó luôn nổi trên video */
 .timeOverlay {
@@ -319,6 +350,7 @@
   z-index: 10; /* ⭐ Quan trọng: Cao hơn video */
 }
 
+
 .mediaBadgesContainer {
   position: absolute;
   bottom: 8px;
@@ -327,6 +359,7 @@
   gap: 6px; /* Tăng khoảng cách giữa icon video và số lượng ảnh */
   z-index: 10; /* ⭐ Quan trọng: Cao hơn video */
 }
+
 
 .badgeItem {
   background-color: rgba(0, 0, 0, 0.6);
@@ -342,8 +375,47 @@
   min-width: 24px;
 }
 
+
 /* Style riêng cho badge Video để giống thiết kế */
 .videoBadge {
     /* Có thể thêm màu đỏ hoặc giữ đen tùy thích */
-    background-color: rgba(0, 0, 0, 0.7); 
+    background-color: rgba(0, 0, 0, 0.7);
 }
+/* Nút trái tim lưu tin */
+.saveHeartBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20; /* Cao hơn video và ảnh */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+
+.saveHeartBtn:hover {
+  transform: scale(1.2);
+}
+
+
+.heartIcon {
+  font-size: 18px;
+}
+
+
+/* Khi chưa lưu: màu trắng đục có đổ bóng để nổi bật trên nền ảnh */
+.notSaved {
+  color: rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+
+/* Khi đã lưu: màu đỏ */
+.saved {
+  color: #e5193b;
+}
+

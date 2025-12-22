@@ -1,32 +1,26 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import {
-  FaRegBell,
-  FaUserCircle,
-  FaChevronDown,
-  FaHeart,
-  FaVideo,     // Đã import icon Video
-  FaCommentDots,
-  FaCog,
-  FaCommentAlt,
-  FaSignOutAlt,
-  FaEdit,
-  // Đã xóa FaCoins và FaRegCopy vì không còn dùng ví
+  FaRegBell, FaUserCircle, FaChevronDown, FaHeart, FaVideo,
+  FaCommentDots, FaCog, FaCommentAlt, FaSignOutAlt, FaEdit,
 } from "react-icons/fa";
 import { MdTableRows } from "react-icons/md";
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
+
 
 import { AuthContext } from "../../context/AuthContext";
 import { NotificationContext } from "../NotificationsModals/context/NotificationContext";
 import NotificationsDropdown from "../NotificationsModals/NotificationsDropdown";
 import styles from "./NavUserActions.module.css";
 
+
 // --- COMPONENT PORTAL (GIỮ NGUYÊN) ---
 const DropdownPortal = ({ children, coords, onClose }) => {
   const dropdownRef = useRef(null);
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -36,9 +30,11 @@ const DropdownPortal = ({ children, coords, onClose }) => {
     }
     function handleScroll() { onClose(); }
 
+
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleScroll);
+
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -47,15 +43,13 @@ const DropdownPortal = ({ children, coords, onClose }) => {
     };
   }, [onClose]);
 
+
   return createPortal(
     <div
       ref={dropdownRef}
       style={{
-        position: "fixed",
-        top: coords.top,
-        left: coords.left,
-        zIndex: 999999,
-        width: "300px",
+        position: "fixed", top: coords.top, left: coords.left,
+        zIndex: 999999, width: "300px",
       }}
     >
       {children}
@@ -64,17 +58,23 @@ const DropdownPortal = ({ children, coords, onClose }) => {
   );
 };
 
+
 const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
   const avatarRef = useRef(null);
 
+
   const { user, avatarUrl, logout, getStoredToken } = useContext(AuthContext);
   const { fetchNotifications } = useContext(NotificationContext);
 
-  // --- TÍNH VỊ TRÍ MENU ---
+
+  // --- TÍNH VỊ TRÍ MENU (GIỮ NGUYÊN) ---
   const handleToggleDropdown = () => {
     if (showAccountDropdown) {
       setShowAccountDropdown(false);
@@ -84,33 +84,37 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
       const rect = avatarRef.current.getBoundingClientRect();
       setMenuCoords({
         top: rect.bottom + 10,
-        left: rect.right - 300 
+        left: rect.right - 300
       });
       setShowAccountDropdown(true);
     }
   };
 
-  // --- KIỂM TRA USER ---
+
+  // --- KIỂM TRA USER (GIỮ NGUYÊN) ---
   const checkUserInfo = async () => {
     try {
       const token = getStoredToken();
       if (!token || !user?.id) return { valid: false, message: "Phiên đăng nhập hết hạn." };
-      
+     
       const response = await axios.get(`http://localhost:5133/api/user/profile/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+
       const serverUser = response.data;
       if (!serverUser.emailConfirmed) return { valid: false, message: "Cần xác minh email." };
-      
+     
       let phone = serverUser.phoneNumber ? String(serverUser.phoneNumber).replace(/[^0-9]/g, "").trim() : "";
       if (phone.length !== 10 || !phone.startsWith("0")) return { valid: false, message: "SĐT không hợp lệ." };
+
 
       return { valid: true };
     } catch (error) {
       return { valid: false, message: "Lỗi xác thực." };
     }
   };
+
 
   const handlePostClick = async () => {
     if (!user) {
@@ -128,19 +132,35 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
         else { navigate("/cai-dat-tai-khoan"); }
         return;
       }
-      navigate("/dang-tin");
+     
+      // 🔥 [LOGIC MỚI - TỐI ƯU URL]
+      const currentPath = location.pathname.toLowerCase();
+     
+      // Nếu đường dẫn hiện tại có chứa "do-dien-tu" (Bất kể là ở Market hay đang ở Form đăng tin của nó)
+      // Thì luôn luôn ép về trang đăng tin bị khóa của Đồ điện tử
+      if (currentPath.includes("do-dien-tu")) {
+        navigate("/dang-tin/do-dien-tu");
+      } else {
+        // Các trường hợp khác (Trang chủ, trang cá nhân...) -> Về trang chọn gốc
+        navigate("/dang-tin");
+      }
+
+
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("❌ Có lỗi xảy ra.");
     }
   };
 
+
   const handleNotifClick = () => {
     setShowNotifPanel((prev) => !prev);
     if (!showNotifPanel) { try { fetchNotifications(); } catch (e) {} }
   };
 
+
   return (
+    // ... HTML GIỮ NGUYÊN KHÔNG ĐỔI ...
     <div className={`${styles.navRight} ${isScrolled ? styles.scrolled : ""}`}>
       {/* Notifications */}
       <div className={styles.iconBtnWrapper}>
@@ -170,11 +190,13 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
         )}
       </div>
 
+
       {/* Chat */}
       <button className={styles.iconBtn} title="Tin nhắn" onClick={() => navigate("/chat")}>
         <IoChatbubbleEllipsesOutline size={20} />
         {chatUnreadCount > 0 && <span className={styles.badge}>{chatUnreadCount > 99 ? "99+" : chatUnreadCount}</span>}
       </button>
+
 
       {/* Manage Posts */}
       {user && (
@@ -182,6 +204,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
           <MdTableRows size={18} /> Quản lý tin
         </button>
       )}
+
 
       {/* User Section */}
       {user ? (
@@ -197,65 +220,64 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
             </div>
           </div>
 
+
           {showAccountDropdown && (
             <DropdownPortal coords={menuCoords} onClose={() => setShowAccountDropdown(false)}>
               <div className={styles.accountDropdown} style={{ display: 'block', padding: '0', overflow: 'hidden' }}>
-                
-                {/* --- PHẦN HEADER PROFILE --- */}
                 <div className={styles.dropdownProfileHeader} style={{ padding: '15px', textAlign: 'center', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ position: 'relative', display: 'inline-block', marginBottom: '8px' }}>
                     {avatarUrl ? (
-                      <img 
-                        src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5133${avatarUrl}`} 
-                        alt="Avatar" 
+                      <img
+                        src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5133${avatarUrl}`}
+                        alt="Avatar"
                         style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
                       />
                     ) : (
                       <FaUserCircle size={60} color="#ccc" />
                     )}
-                    <div style={{ 
-                      position: 'absolute', bottom: '0', right: '0', 
-                      background: '#333', color: '#fff', borderRadius: '50%', 
-                      padding: '4px', fontSize: '10px', cursor: 'pointer' 
+                    <div style={{
+                      position: 'absolute', bottom: '0', right: '0',
+                      background: '#333', color: '#fff', borderRadius: '50%',
+                      padding: '4px', fontSize: '10px', cursor: 'pointer'
                     }} onClick={(e) => { e.stopPropagation(); navigate("/cai-dat-tai-khoan"); }}>
                       <FaEdit />
                     </div>
                   </div>
-                  
+                 
                   <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>
                     {user.fullName || user.userName || "Người dùng"}
                   </div>
-                  
+                 
                   <div style={{ fontSize: '12px', color: '#777', marginTop: '4px' }}>
                     Người theo dõi 0 &nbsp;|&nbsp; Đang theo dõi 0
                   </div>
                 </div>
 
-                {/* --- ĐÃ XÓA PHẦN VÍ (ĐỒNG TỐT) --- */}
 
-                {/* --- DANH SÁCH TIỆN ÍCH --- */}
                 <div style={{ padding: '10px 0' }}>
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Tiện ích</div>
-                  
+                 
                   <div onClick={() => { navigate("/tin-dang-da-luu"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaHeart color="#777" style={{ width: '20px' }} /> Tin đăng đã lưu
                   </div>
-                  
+                 
                   <div onClick={() => { setShowAccountDropdown(false); }} className={styles.dropdownItem}>
-                     <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
+                      <FaRegBell color="#777" style={{ width: '20px' }} /> Tìm kiếm đã lưu
                   </div>
 
-                  {/* --- ĐÃ KHÔI PHỤC VIDEO ĐÃ TYM --- */}
+
                   <div onClick={() => { navigate("/video-da-tym"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaVideo color="#3b82f6" style={{ width: '20px' }} /> Video đã tym
                   </div>
+
 
                   <div onClick={() => { navigate("/binh-luan-cua-toi"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaCommentDots color="#777" style={{ width: '20px' }} /> Đánh giá từ tôi
                   </div>
 
+
                   <div className={styles.dropdownDivider}></div>
-                  
+                 
                   <div className={styles.dropdownHeader} style={{ paddingLeft: '15px' }}>Khác</div>
                   <div onClick={() => { navigate("/cai-dat-tai-khoan"); setShowAccountDropdown(false); }} className={styles.dropdownItem}>
                     <FaCog color="#777" style={{ width: '20px' }} /> Cài đặt tài khoản
@@ -267,7 +289,6 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
                     <FaSignOutAlt style={{ width: '20px' }} /> Đăng xuất
                   </div>
                 </div>
-
               </div>
             </DropdownPortal>
           )}
@@ -279,9 +300,11 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
         </div>
       )}
 
+
       <button className={styles.postBtnHighlight} onClick={handlePostClick}>Đăng tin</button>
     </div>
   );
 };
+
 
 export default NavUserActions;

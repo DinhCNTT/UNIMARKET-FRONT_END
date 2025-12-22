@@ -1,30 +1,46 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaVideo, FaRegImage } from "react-icons/fa"; // Import icon
+import { FaVideo, FaRegImage, FaHeart } from "react-icons/fa"; // Thêm FaHeart
 import styles from "./SimilarPostsSection.module.css";
 import { formatPrice, getMediaUrl } from "../utils/formatters";
-import { formatRelativeTime } from "../utils/dateUtils"; 
+import { formatRelativeTime } from "../utils/dateUtils";
+
 
 /**
  * @param {string} mode - "grid" (Lưới) hoặc "carousel" (Trượt ngang)
  * @param {function} onViewShop - Hàm xử lý khi bấm nút "Xem trang cá nhân"
+ * @param {boolean} isLoggedIn - Trạng thái đăng nhập
+ * @param {Array} savedIds - Danh sách mảng ID các tin đã lưu
+ * @param {function} onToggleSave - Hàm xử lý lưu/bỏ lưu tin
  */
-const SimilarPostsSection = ({ title, posts, mode = "carousel", onViewShop }) => {
+const SimilarPostsSection = ({
+  title,
+  posts,
+  mode = "carousel",
+  onViewShop,
+  isLoggedIn,
+  savedIds = [],
+  onToggleSave
+}) => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
+
   // --- LOGIC CHO GRID MODE (Tin tương tự) ---
-  const [visibleCount, setVisibleCount] = useState(10); 
+  const [visibleCount, setVisibleCount] = useState(10);
+
 
   const handleShowMore = () => {
-    setVisibleCount((prev) => prev + 10); 
+    setVisibleCount((prev) => prev + 10);
   };
 
+
   const handleCollapse = () => {
-    setVisibleCount(10); 
+    setVisibleCount(10);
     const element = document.getElementById("grid-header");
     if (element) element.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+
 
   // --- LOGIC CHO CAROUSEL MODE (Tin người bán) ---
   const handleScroll = (direction) => {
@@ -36,49 +52,51 @@ const SimilarPostsSection = ({ title, posts, mode = "carousel", onViewShop }) =>
     });
   };
 
+
   const handleSimilarPostClick = (postId) => {
     navigate(`/tin-dang/${postId}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+
   if (!posts || posts.length === 0) return null;
+
 
   // 👇 Lọc danh sách hiển thị
   const displayPosts = mode === "carousel" ? posts.slice(0, 8) : posts.slice(0, visibleCount);
 
-  // --- RENDER ---
+
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader} id={mode === "grid" ? "grid-header" : ""}>
         <h2 className={styles.title}>{title}</h2>
       </div>
 
+
       {/* ================= CASE 1: GRID MODE (Tin tương tự) ================= */}
       {mode === "grid" ? (
         <>
           <div className={styles.gridContainer}>
             {displayPosts.map((post) => (
-              <PostCard 
-                key={post.maTinDang} 
-                post={post} 
-                onClick={handleSimilarPostClick} 
+              <PostCard
+                key={post.maTinDang}
+                post={post}
+                onClick={handleSimilarPostClick}
                 isGrid={true}
+                isLoggedIn={isLoggedIn}
+                isSaved={savedIds.includes(post.maTinDang)}
+                onToggleSave={onToggleSave}
               />
             ))}
           </div>
 
-          {/* Nút Action cho Grid */}
+
           <div className={styles.actionButtonsContainer}>
             {visibleCount < posts.length && (
-              <button className={styles.actionBtn} onClick={handleShowMore}>
-                Xem thêm
-              </button>
+              <button className={styles.actionBtn} onClick={handleShowMore}>Xem thêm</button>
             )}
-              
             {visibleCount > 10 && (
-              <button className={`${styles.actionBtn} ${styles.collapseBtn}`} onClick={handleCollapse}>
-                Thu gọn
-              </button>
+              <button className={`${styles.actionBtn} ${styles.collapseBtn}`} onClick={handleCollapse}>Thu gọn</button>
             )}
           </div>
         </>
@@ -86,31 +104,30 @@ const SimilarPostsSection = ({ title, posts, mode = "carousel", onViewShop }) =>
         /* ================= CASE 2: CAROUSEL MODE (Tin người bán) ================= */
         <div className={styles.carouselContainer}>
             <div className={styles.carouselWrapper}>
-            <button className={`${styles.navBtn} ${styles.prevBtn}`} onClick={() => handleScroll("left")}>
-                &#8249;
-            </button>
+              <button className={`${styles.navBtn} ${styles.prevBtn}`} onClick={() => handleScroll("left")}>&#8249;</button>
 
-            <div className={styles.postsTrack} ref={scrollRef}>
-                {displayPosts.map((post) => (
-                <PostCard 
-                    key={post.maTinDang} 
-                    post={post} 
-                    onClick={handleSimilarPostClick} 
-                    isGrid={false}
-                />
-                ))}
+
+              <div className={styles.postsTrack} ref={scrollRef}>
+                  {displayPosts.map((post) => (
+                  <PostCard
+                      key={post.maTinDang}
+                      post={post}
+                      onClick={handleSimilarPostClick}
+                      isGrid={false}
+                      isLoggedIn={isLoggedIn}
+                      isSaved={savedIds.includes(post.maTinDang)}
+                      onToggleSave={onToggleSave}
+                  />
+                  ))}
+              </div>
+
+
+              <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={() => handleScroll("right")}>&#8250;</button>
             </div>
 
-            <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={() => handleScroll("right")}>
-                &#8250;
-            </button>
-            </div>
 
-            {/* 👇 Nút Xem thêm trang cá nhân (Chỉ hiện ở Carousel mode) */}
             <div className={styles.viewShopBtnContainer}>
-                <button className={styles.viewShopBtn} onClick={onViewShop}>
-                    Xem thêm
-                </button>
+                <button className={styles.viewShopBtn} onClick={onViewShop}>Xem thêm</button>
             </div>
         </div>
       )}
@@ -118,36 +135,50 @@ const SimilarPostsSection = ({ title, posts, mode = "carousel", onViewShop }) =>
   );
 };
 
-// ==========================================================
-// COMPONENT CARD ĐÃ FIX ĐẦY ĐỦ (VIDEO PREVIEW & BADGE)
-// ==========================================================
-const PostCard = ({ post, onClick, isGrid }) => {
-  // State quản lý việc hover chuột
-  const [isHovering, setIsHovering] = useState(false);
 
-  // 1. Logic đếm ảnh
+// ==========================================================
+// COMPONENT CARD - TÍCH HỢP NÚT TRÁI TIM
+// ==========================================================
+const PostCard = ({ post, onClick, isGrid, isLoggedIn, isSaved, onToggleSave }) => {
+  const [isHovering, setIsHovering] = useState(false);
   const imageCount = post.images ? post.images.length : 0;
-  
-  // 2. Logic kiểm tra video
   const hasVideo = !!post.videoUrl;
+
+
+  // Logic xử lý khi click nút trái tim
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Ngăn không cho nhảy vào link tin đăng
+    if (onToggleSave) {
+      onToggleSave(post.maTinDang, isSaved);
+    }
+  };
+
 
   return (
     <div
       className={`${styles.postCard} ${isGrid ? styles.cardGridItem : styles.cardCarouselItem}`}
       onClick={() => onClick(post.maTinDang)}
-      // 👇 Bắt sự kiện chuột để chạy video preview
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
       <div className={styles.cardImageWrapper}>
-        
-        {/* ⭐ LOGIC VIDEO PREVIEW: 
-            Nếu có video VÀ đang di chuột -> hiện Video, ngược lại hiện Ảnh 
-        */}
+       
+        {/* ⭐ NÚT TRÁI TIM: Nằm góc trên bên phải hình ảnh */}
+        {isLoggedIn && (
+          <div
+            className={`${styles.saveHeartBtn} ${isSaved ? styles.saved : styles.notSaved}`}
+            onClick={handleSaveClick}
+          >
+            <FaHeart className={styles.heartIcon} />
+          </div>
+        )}
+
+
         {hasVideo && isHovering ? (
             <video
                 src={post.videoUrl}
-                className={styles.previewVideo} // Cần thêm class này trong CSS (xem bên dưới)
+                className={styles.previewVideo}
                 autoPlay
                 muted
                 loop
@@ -156,24 +187,20 @@ const PostCard = ({ post, onClick, isGrid }) => {
         ) : (
             <img src={getMediaUrl(post.images?.[0])} alt={post.tieuDe} loading="lazy" />
         )}
-        
-        {/* --- LOGIC HIỂN THỊ THỜI GIAN TRÊN ẢNH --- */}
-        {formatRelativeTime(post.ngayDang) ? (
+       
+        {formatRelativeTime(post.ngayDang) && (
             <span className={styles.timeOverlay}>
                 {formatRelativeTime(post.ngayDang)}
             </span>
-        ) : null}
+        )}
 
-        {/* --- LOGIC HIỂN THỊ ICON VIDEO & SỐ ẢNH (ĐÃ CẬP NHẬT) --- */}
+
         <div className={styles.mediaBadgesContainer}>
-            {/* 1. Nếu có video -> Hiện icon máy quay riêng */}
             {hasVideo && (
               <div className={`${styles.badgeItem} ${styles.videoBadge}`}>
                 <FaVideo size={10} />
               </div>
             )}
-
-            {/* 2. Nếu có ảnh -> Hiện icon ảnh + số lượng */}
             {imageCount > 0 && (
               <div className={styles.badgeItem}>
                 <FaRegImage size={10} style={{ marginRight: 4 }} />
@@ -182,6 +209,7 @@ const PostCard = ({ post, onClick, isGrid }) => {
             )}
         </div>
       </div>
+
 
       <div className={styles.cardContent}>
         <h3 className={styles.postTitle} title={post.tieuDe}>{post.tieuDe}</h3>
@@ -193,5 +221,6 @@ const PostCard = ({ post, onClick, isGrid }) => {
     </div>
   );
 };
+
 
 export default SimilarPostsSection;

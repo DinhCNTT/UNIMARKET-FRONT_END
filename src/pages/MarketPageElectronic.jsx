@@ -1,10 +1,9 @@
-//src/pages/MarketPage.jsx
+// src/pages/MarketPageElectronic.jsx
 import React, { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import TopNavbar from "../components/TopNavbar/TopNavbar";
 import MarketHeroHeader from "../components/MarketHeroHeader";
-import CategoryList from "../components/CategoryList";
+import CategoryListElectronic from "../components/CategoryListElectronic/CategoryListElectronic";
 import TinDangDanhChoBan from "../components/TinDangDanhChoBan";
 import UniMarketIntro from "../components/UniMarketIntro";
 import "./MarketPage.css";
@@ -13,7 +12,7 @@ import Footer from "../components/Footer";
 import FooterBanner from "../components/FooterBanner/FooterBanner";
 
 
-const MarketplacePage = () => {
+const MarketPageElectronic = () => {
   const { user } = useContext(AuthContext);
 
 
@@ -26,13 +25,15 @@ const MarketplacePage = () => {
     <div className="marketplace-page">
       <TopNavbar />
       <MarketHeroHeader />
-      {/* Removed centered text AI button; using floating icon-only button instead */}
+     
       <div className="main-content" style={{ minHeight: "200vh" }}>
-        <CategoryList />
+       
+        <CategoryListElectronic />
 
 
         <div className="section-wrapper">
-          <TinDangDanhChoBan />
+          {/* ✅ QUAN TRỌNG: Truyền đúng từ khóa Danh Mục Cha cần lọc */}
+          <TinDangDanhChoBan categoryGroup="đồ điện tử" />
         </div>
 
 
@@ -51,7 +52,7 @@ const MarketplacePage = () => {
       </div>
       <FooterBanner />
       <Footer />
-        {/* ✅ FloatingAiButton - Fixed position, always on top */}
+     
       <div style={{ position: 'fixed', right: 0, bottom: 0, zIndex: 99999, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto' }}>
           <FloatingAiButton user={user} />
@@ -62,4 +63,5 @@ const MarketplacePage = () => {
 };
 
 
-export default MarketplacePage;
+export default MarketPageElectronic;
+

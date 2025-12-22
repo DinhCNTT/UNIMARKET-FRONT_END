@@ -4,9 +4,9 @@ import { useChat } from "../context/ChatContext";
 import api from "../../../services/api";
 import styles from "../ModuleChatCss/MessageItem.module.css";
 import aiSuggestionsStyles from "../../../components/AI/AISuggestions.module.css";
-import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand } from "react-icons/fa";
 import Swal from "sweetalert2";
 import useResizeObserver from "../../../hooks/useResizeObserver";
+import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand, FaMapMarkerAlt, FaDirections } from "react-icons/fa";
 
 const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirstMessage }) => {
 const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, sendMessageService } =    
@@ -275,6 +275,22 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
 
   const canRecall = canRecallMessage(message.thoiGianGui);
 
+  // --- Hàm tách tọa độ từ link google map ---
+  const extractCoords = (url) => {
+    if (!url) return null;
+    try {
+      // Tìm 2 số thực đứng cạnh nhau (VD: 10.762, 106.660)
+      const regex = /([-+]?\d{1,2}\.\d+),\s*([-+]?\d{1,3}\.\d+)/;
+      const match = url.match(regex);
+      if (match) {
+        return { lat: match[1], lng: match[2] };
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   return (
     <div
       ref={wrapperRef}
@@ -380,6 +396,52 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                 </span>
               </div>
             </div>
+            ) : message.loaiTinNhan === "location" ? (
+            /* ✅ GIAO DIỆN MAP CARD MỚI */
+            (() => {
+              const coords = extractCoords(message.noiDung);
+              return (
+                <div className={styles.locationCard}>
+                  {/* Map Preview (Iframe) */}
+                  <div className={styles.mapPreview}>
+                    {coords ? (
+                      <iframe
+                        title="location-preview"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        marginHeight="0"
+                        marginWidth="0"
+                        // Link embed map đơn giản (không cần API Key)
+                        src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&hl=vi&z=14&output=embed`}
+                        style={{ border: 0, pointerEvents: "none" }} 
+                      />
+                    ) : (
+                      <div className={styles.mapPlaceholder}>
+                        <FaMapMarkerAlt size={32} color="#ea4335" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer thông tin */}
+                  <div 
+                    className={styles.locationFooter} 
+                    onClick={() => window.open(message.noiDung, "_blank")}
+                  >
+                    <div className={styles.locationInfoText}>
+                      <span className={styles.locationTitle}>Vị trí hiện tại</span>
+                      <span className={styles.locationCoords}>
+                        {coords ? `${coords.lat}, ${coords.lng}` : "Nhấn để xem bản đồ"}
+                      </span>
+                    </div>
+                    <button className={styles.directionBtn}>
+                      <FaDirections size={18} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()
           ) : message.loaiTinNhan === "video" ? (
             <div className={styles.mediaWrapper} onClick={handleVideoFullscreen}>
               <video

@@ -557,3 +557,138 @@
     background: var(--theme-bg-hover);
   }
 }
+/* ========== MODERN LOCATION CARD ========== */
+.locationCard {
+  width: 240px;
+  max-width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--theme-bg-primary);
+  border: 1px solid var(--theme-border-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.locationCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Phần hiển thị bản đồ (Iframe) */
+.mapPreview {
+  width: 100%;
+  height: 140px; /* Chiều cao cố định */
+  background: #e5e7eb;
+  position: relative;
+}
+
+.mapPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+}
+
+/* Phần chân trang (Thông tin + Nút bấm) */
+.locationFooter {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff; /* Mặc định nền trắng */
+  cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.locationInfoText {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.locationTitle {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1e293b;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.locationCoords {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nút chỉ đường (Tròn) */
+.directionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #3b82f6;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.directionBtn:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+/* --- TÙY CHỈNH CHO TIN NHẮN GỬI ĐI (SENT) --- */
+/* Để màu sắc hài hòa với bong bóng chat màu xanh */
+.sent .locationCard {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sent .locationFooter {
+  background: #f8fafc; /* Nền trắng xám */
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  .locationCard {
+    border-color: #334155;
+  }
+  .locationFooter {
+    background: #1e293b;
+    border-top-color: #334155;
+  }
+  .locationTitle {
+    color: #f1f5f9;
+  }
+  .locationCoords {
+    color: #94a3b8;
+  }
+  .directionBtn {
+    background: #334155;
+    color: #60a5fa;
+  }
+  .directionBtn:hover {
+    background: #2563eb;
+    color: white;
+  }
+}
+.sent .locationTitle {
+  color: #1e293b !important;
+}
+
+.sent .locationCoords {
+  color: #64748b !important;
+}

@@ -1,12 +1,17 @@
+// src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+
 
 // --- AUTH & CORE PAGES ---
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import MarketPage from "../pages/MarketPage";
+// 🔥 [MỚI] IMPORT TRANG ĐỒ ĐIỆN TỬ
+import MarketPageElectronic from "../pages/MarketPageElectronic";
 import ErrorBoundary from "../components/ErrorBoundary";
+
 
 // --- ADMIN PAGES & COMPONENTS ---
 import AdminDashboard from "../pages/AdminDashboard";
@@ -20,6 +25,7 @@ import ManageCategories from "../components/ManageCategories";
 import ManagePosts from "../components/ManagePosts";
 import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
 
+
 // --- POST & MARKET COMPONENTS ---
 import PostForm from "../components/PostForm";
 import PostTinDang from "../components/PostTinDang";
@@ -30,29 +36,27 @@ import TinDangDaLuu from "../components/TinDangDaLuu";
 import CapNhatTin from "../components/CapNhatTin/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
 
+
 // --- USER & SETTINGS ---
 import AccountSettings from "../components/AccountSettings/AccountSettings";
 import UserProfilePage from "../pages/UserProfilePage";
 import TrangChat from "../pages/TrangChat";
 
+
 // --- VIDEO COMPONENTS ---
-import VideoPage from "../pages/VideoPage"; 
-import VideoSearchPage from "../components/VideoSearch/VideoSearchPage"; 
-import VideoDetailViewer from "../components/VideoDetailViewer"; // Viewer cũ (Giữ nguyên)
-
+import VideoPage from "../pages/VideoPage";
+import VideoSearchPage from "../components/VideoSearch/VideoSearchPage";
+import VideoDetailViewer from "../components/VideoDetailViewer";
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
-
-// 🔥 [MỚI] IMPORT TRANG VIDEO STANDALONE
 import VideoStandalonePage from "../pages/VideoStandalone/VideoStandalonePage";
+
 
 // --- ROUTE GUARDS ---
 const AdminRoute = ({ children }) => {
   const { user, role } = useContext(AuthContext);
-
   if (user === null) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (role !== "Admin") return <Navigate to="/" />;
-
   return (
     <div className="admin-container">
       <Sidebar />
@@ -61,11 +65,13 @@ const AdminRoute = ({ children }) => {
   );
 };
 
+
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
   if (!user) return <Navigate to="/login" />;
   return children;
 };
+
 
 // --- MAIN APP ROUTES ---
 function AppRoutes() {
@@ -79,42 +85,51 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
 
+
+      {/* 🔥 [MỚI] ROUTE CHO ĐỒ ĐIỆN TỬ */}
+      <Route path="/market/do-dien-tu" element={<MarketPageElectronic />} />
+
+
       {/* ==============================
           2. MARKETPLACE & POSTS
       ============================== */}
       <Route path="/tin-dang-danh-cho-ban" element={<TinDangDanhChoBan />} />
       <Route path="/loc-tin-dang" element={<LocTinDang />} />
-      
+     
       <Route
         path="/tin-dang/:id"
         element={
-          <ChiTietTinDang 
+          <ChiTietTinDang
             onOpenChat={(maCuocTroChuyen) => {
               window.location.href = `/chat/${maCuocTroChuyen}`;
-            }} 
+            }}
           />
         }
       />
+
 
       {/* ==============================
           3. USER & PROTECTED ROUTES
       ============================== */}
       <Route path="/post-tin" element={<ProtectedRoute><PostTinDang /></ProtectedRoute>} />
       <Route path="/dang-tin" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      {/* :categorySlug là biến động, nó sẽ bắt lấy chữ "do-dien-tu" */}
+      <Route path="/dang-tin/:categorySlug" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
-      
+     
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
       <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+
 
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
 
+
       {/* ==============================
           4. VIDEO ROUTES
       ============================== */}
-      
       <Route
         path="/market/video"
         element={
@@ -123,26 +138,18 @@ function AppRoutes() {
           </ErrorBoundary>
         }
       />
-
       <Route path="/search/:keyword" element={<VideoSearchPage />} />
-
-      <Route 
-        path="/video-viewer/:maTinDang" 
+      <Route
+        path="/video-viewer/:maTinDang"
         element={
           <ErrorBoundary>
             <LikedVideoDetailViewer />
           </ErrorBoundary>
-        } 
+        }
       />
-
       <Route path="/liked-videos/:maTinDang" element={<LikedVideoDetailViewer />} />
       <Route path="/video-search-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
-      
-      {/* ✅ GIỮ NGUYÊN ROUTE CŨ CỦA BẠN (Viewer đơn lẻ mặc định) */}
       <Route path="/video/:id" element={<VideoDetailViewer />} />
-
-      {/* 🔥 [THÊM MỚI] Route này dành riêng cho click từ thông báo */}
-      {/* Tên đường dẫn khác đi để không đụng chạm cái cũ */}
       <Route path="/video-standalone/:id" element={<VideoStandalonePage />} />
 
 
@@ -159,8 +166,11 @@ function AppRoutes() {
       <Route path="/admin/manage-posts" element={<AdminRoute><ManagePosts /></AdminRoute>} />
       <Route path="/admin/reports" element={<AdminRoute><QuanLyBaoCao /></AdminRoute>} />
 
+
     </Routes>
   );
 }
 
+
 export default AppRoutes;
+

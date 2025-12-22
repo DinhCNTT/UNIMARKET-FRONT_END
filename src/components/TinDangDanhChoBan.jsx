@@ -1,21 +1,26 @@
 // src/components/TinDangDanhChoBan.jsx
 import React, { useState } from "react";
-import styles from "./TinDangDanhChoBan.module.css"; // Import CSS Module
+import styles from "./TinDangDanhChoBan.module.css";
 import TrangChuNav from "./TrangChuNav";
-import PostItemCard from "./PostItemCard"; 
-import { useTinDangData } from "../hooks/useTinDangData"; 
+import PostItemCard from "./PostItemCard";
+import { useTinDangData } from "../hooks/useTinDangData";
 
-const TinDangDanhChoBan = ({ showNavigation = true }) => {
+
+// ✅ Nhận prop categoryGroup (Mặc định là null để dùng được cho cả Trang Chủ)
+const TinDangDanhChoBan = ({ showNavigation = true, categoryGroup = null }) => {
   const [visiblePostsCount, setVisiblePostsCount] = useState(25);
   const [activeTab, setActiveTab] = useState("danhchoban");
 
-  // Custom hook logic
-  const { posts, savedIds, isLoggedIn, handleToggleSave } = useTinDangData(activeTab);
+
+  // ✅ Truyền categoryGroup vào custom hook
+  const { posts, savedIds, isLoggedIn, handleToggleSave } = useTinDangData(activeTab, categoryGroup);
+
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setVisiblePostsCount(25);
   };
+
 
   const getSortedPosts = () => {
     if (activeTab === "moinhat") {
@@ -24,13 +29,14 @@ const TinDangDanhChoBan = ({ showNavigation = true }) => {
     return posts;
   };
 
+
   const sortedPosts = getSortedPosts();
   const displayedPosts = sortedPosts.slice(0, visiblePostsCount);
 
+
   return (
-    // Sử dụng styles.container thay vì chuỗi string
-    <div className={styles.container}> 
-      
+    <div className={styles.container}>
+     
       {/* Navigation */}
       {showNavigation && (
         <div className={styles.navContainer}>
@@ -38,10 +44,13 @@ const TinDangDanhChoBan = ({ showNavigation = true }) => {
         </div>
       )}
 
+
       {/* Post Grid */}
       <div className={styles.postList}>
         {posts.length === 0 ? (
-          <p style={{ textAlign: "center", width: "100%", color: "#666" }}>Không có tin đăng</p>
+          <p style={{ textAlign: "center", width: "100%", color: "#666" }}>
+            Không có tin đăng {categoryGroup ? "trong danh mục này" : ""}
+          </p>
         ) : (
           displayedPosts.map((post) => (
             <PostItemCard
@@ -55,10 +64,11 @@ const TinDangDanhChoBan = ({ showNavigation = true }) => {
         )}
       </div>
 
+
       {/* Show More Button */}
       {visiblePostsCount < sortedPosts.length && (
-        <button 
-          className={styles.viewMoreBtn} 
+        <button
+          className={styles.viewMoreBtn}
           onClick={() => setVisiblePostsCount((prev) => prev + 25)}
         >
           Xem thêm
@@ -67,5 +77,6 @@ const TinDangDanhChoBan = ({ showNavigation = true }) => {
     </div>
   );
 };
+
 
 export default TinDangDanhChoBan;

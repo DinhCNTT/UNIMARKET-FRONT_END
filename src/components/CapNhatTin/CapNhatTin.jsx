@@ -84,6 +84,7 @@ const CapNhatTin = () => {
         setTinhThanhList(tinhRes);
 
         const tinDang = postRes.data;
+        console.log("Toàn bộ dữ liệu Post từ API:", tinDang); // Thêm dòng này
         setTitle(tinDang.tieuDe);
         setDescription(tinDang.moTa);
         setPrice(tinDang.gia);
@@ -95,18 +96,20 @@ const CapNhatTin = () => {
         setCategoryId(tinDang.maDanhMuc);
         setCategoryName(tinDang.danhMuc?.tenDanhMuc);
 
-        const rawDetails = tinDang.chiTietObj || tinDang.thongTinChiTiet;
+        // Kiểm tra mọi khả năng tên trường có thể trả về từ Backend (C hoặc c)
+const rawDetails = tinDang.chiTietObj || tinDang.ChiTietObj || tinDang.thongTinChiTiet;
 
-        if (rawDetails) {
-          try {
-            const parsed = typeof rawDetails === 'string' 
-              ? JSON.parse(rawDetails) 
-              : rawDetails;
-            setDynamicData(parsed || {});
-          } catch (e) {
-            console.error("Lỗi parse thông tin chi tiết:", e);
-          }
-        }
+if (rawDetails) {
+  // Nếu là chuỗi JSON (string) thì mới parse, nếu là Object rồi thì dùng luôn
+  const dataObject = typeof rawDetails === 'string' ? JSON.parse(rawDetails) : rawDetails;
+  
+  console.log("Dữ liệu chi tiết đã nhận:", dataObject); // Để bạn kiểm tra trong F12
+  
+  // Quan trọng: Đảm bảo set vào dynamicData
+  setDynamicData(dataObject || {});
+} else {
+  console.error("API không trả về thông tin chi tiết (ChiTietObj)!");
+}
         
         if (tinDang.anhTinDangs?.length > 0) {
           const images = [];
@@ -183,20 +186,14 @@ const CapNhatTin = () => {
     const newErrors = {};
     if (!title.trim()) newErrors.title = "Vui lòng nhập tiêu đề";
     if (!price) newErrors.price = "Vui lòng nhập giá";
-    if (!description.trim()) newErrors.description = "Vui lòng nhập mô tả";
-    if (!province) newErrors.province = "Chọn Tỉnh/Thành";
-    if (!district) newErrors.district = "Chọn Quận/Huyện";
-
-    // Validate Dynamic (Mobile)
+    
+    // ✅ SỬA: Check key chữ thường cho đồng bộ với dynamicData
     if (categoryName?.toLowerCase().includes("điện thoại")) {
-      if (!dynamicData.Hang) newErrors.Hang = true;
-      
-      // 👉 THÊM DÒNG NÀY: Bắt buộc chọn dòng máy
-      if (!dynamicData.DongMay) newErrors.DongMay = true; 
-      
-      if (!dynamicData.MauSac) newErrors.MauSac = true;
-      if (!dynamicData.DungLuong) newErrors.DungLuong = true;
-      if (!dynamicData.BaoHanh) newErrors.BaoHanh = true;
+      if (!dynamicData.hang) newErrors.hang = true;
+      if (!dynamicData.dongMay) newErrors.dongMay = true; 
+      if (!dynamicData.mauSac) newErrors.mauSac = true;
+      if (!dynamicData.dungLuong) newErrors.dungLuong = true;
+      if (!dynamicData.baoHanh) newErrors.baoHanh = true;
     }
 
     setErrors(newErrors);
@@ -338,7 +335,7 @@ const CapNhatTin = () => {
             </div>
 
             <div className={styles.formGroup} style={{position: 'relative'}}>
-              <label className={styles.label}>Giá mong muốn <span style={{color:'red'}}>*</span></label>
+              <label className={styles.label}>Giá **** muốn <span style={{color:'red'}}>*</span></label>
               <input 
                 type="text" 
                 className={`${styles.input} ${errors.price ? styles.inputError : ''}`}

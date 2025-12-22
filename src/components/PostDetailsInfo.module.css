@@ -1,10 +1,11 @@
 /* PostDetailsInfo.module.css */
 
+
 /* === 1. VARIABLES & CONSTANTS === */
 :root {
   --max-width-scroll: 645px;
   --nav-btn-offset: 15px;
-  
+ 
   /* Palette */
   --primary-red: #d0021b;
   --accent-yellow: #ffcc00;
@@ -12,15 +13,16 @@
   --text-secondary: #555;
   --bg-secondary: #f0f2f5;
   --border-color: #e0e0e0;
-  
+ 
   /* Status Colors */
   --status-online: #31a24c;
   --status-offline: #a9a9a9;
-  
+ 
   /* Effects */
   --shadow-sm: 0 2px 5px rgba(0,0,0,0.15);
   --transition-std: all 0.2s ease;
 }
+
 
 /* === 2. MAIN LAYOUT === */
 .chiTietTinDangInfo {
@@ -31,6 +33,7 @@
   font-family: 'Reddit Sans', sans-serif; /* Có thể bỏ nếu đã set global */
 }
 
+
 /* === 3. HEADER SECTION === */
 .headerRow {
   display: flex;
@@ -39,6 +42,7 @@
   gap: 15px;
   margin-bottom: 15px;
 }
+
 
 .title {
   flex: 1;
@@ -49,6 +53,7 @@
   margin: 0;
   overflow-wrap: break-word;
 }
+
 
 /* Save Button */
 .saveBtn {
@@ -68,16 +73,19 @@
   flex-shrink: 0;
 }
 
+
 .saveBtn:hover {
   background-color: #f9f9f9;
   border-color: #bbb;
 }
+
 
 .saveBtn.saved {
   border-color: #e5193b;
   color: #e5193b;
   background-color: #fff5f5;
 }
+
 
 /* === 4. INFO CONTENT === */
 .infoLine {
@@ -88,11 +96,13 @@
   color: var(--text-primary);
 }
 
+
 .price {
   font-size: 24px;
   font-weight: 700;
   color: var(--primary-red);
 }
+
 
 .icon {
   margin-right: 8px;
@@ -101,6 +111,7 @@
   flex-shrink: 0;
 }
 
+
 /* === 5. ACTION BUTTONS === */
 .actionButtons {
   display: flex;
@@ -108,7 +119,8 @@
   margin-top: 20px;
 }
 
-.btnPhone, 
+
+.btnPhone,
 .btnChat {
   flex: 1;
   display: flex;
@@ -124,10 +136,12 @@
   white-space: nowrap;
 }
 
+
 .btnPhone {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
+
 
 .btnChat {
   background-color: var(--accent-yellow);
@@ -135,11 +149,13 @@
   gap: 8px;
 }
 
-.btnPhone:hover, 
+
+.btnPhone:hover,
 .btnChat:hover {
   filter: brightness(0.95);
   transform: translateY(-1px);
 }
+
 
 /* === 6. SELLER PROFILE & STATUS === */
 .sellerInfo {
@@ -148,11 +164,13 @@
   border-top: 1px solid #eee;
 }
 
+
 .sellerContainer {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 
 .avatarWrapper {
   position: relative;
@@ -160,6 +178,7 @@
   height: 48px;
   flex-shrink: 0;
 }
+
 
 .sellerAvatar {
   width: 100%;
@@ -170,12 +189,14 @@
   background-color: #f5f5f5;
 }
 
+
 .sellerText {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 2px;
 }
+
 
 .sellerName {
   font-size: 15px;
@@ -184,6 +205,7 @@
   line-height: 1.2;
 }
 
+
 /* Online Status Logic */
 .statusWrapper {
   display: flex;
@@ -191,20 +213,46 @@
   gap: 6px;
 }
 
+
 .statusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
+
 .statusDot.online {
   background-color: var(--status-online);
 }
+
 
 .statusText {
   font-size: 13px;
   color: var(--text-secondary);
 }
+/* Class bọc để đẩy nút sang bên phải */
+.sellerHeader {
+  display: flex;
+  justify-content: space-between; /* Đẩy thông tin người bán sang trái, nút sang phải */
+  align-items: center;            /* Căn giữa nút theo chiều dọc với avatar */
+  width: 100%;
+}
+
+
+/* Style cho nút Xem trang giống hình 2 */
+.btnViewShop {
+  background-color: #f2f2f2;     /* Màu xám nhạt */
+  color: #222;
+  border: none;
+  border-radius: 20px;           /* Bo tròn cực đại */
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;              /* Chữ đậm */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;           /* Không cho chữ xuống dòng */
+}
+
 
 /* === 7. QUICK REPLY CAROUSEL === */
 .quickReplyWrapper {
@@ -215,6 +263,7 @@
   max-width: var(--max-width-scroll);
   margin-top: 15px;
 }
+
 
 .quickRepliesContainer {
   display: flex;
@@ -228,9 +277,11 @@
   -ms-overflow-style: none; /* IE/Edge */
 }
 
+
 .quickRepliesContainer::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
+
 
 .chip {
   flex: 0 0 auto;
@@ -246,11 +297,13 @@
   transition: var(--transition-std);
 }
 
+
 .chip:hover {
   background-color: #e4e6eb;
   border-color: #ccc;
   transform: translateY(-1px);
 }
+
 
 /* Nav Buttons (< >) */
 .navBtn {
@@ -273,6 +326,7 @@
   transform: translateY(-50%);
 }
 
+
 .navBtn:hover {
   background-color: #f9f9f9;
   color: #000;
@@ -280,8 +334,10 @@
   transform: translateY(-50%) scale(1.1);
 }
 
+
 .navPrev { left: calc(-1 * var(--nav-btn-offset)); }
 .navNext { right: calc(-1 * var(--nav-btn-offset)); }
+
 
 /* === 8. RESPONSIVE === */
 @media (max-width: 768px) {
@@ -289,12 +345,13 @@
     min-height: auto;
     padding-right: 0;
   }
-  
+ 
   .title { font-size: 20px; }
-  
+ 
   .quickReplyWrapper { max-width: 100%; }
-  
+ 
   .navBtn { width: 28px; height: 28px; }
   .navPrev { left: -10px; }
   .navNext { right: -10px; }
 }
+
