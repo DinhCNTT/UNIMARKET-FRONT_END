@@ -116,14 +116,17 @@ const ViewHistoryListItem = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
 
       {/* Actions */}
       <div className={styles.actions}>
-        <button
-          className={styles.btnChat}
-          onClick={handleChat}
-          title="Nhắn tin"
-        >
-          <BiMessageSquare size={20} />
-          <span>Chat</span>
-        </button>
+        {/* Nút Chat - Chỉ hiển thị nếu không phải chủ tin đăng */}
+        {user?.id !== post.seller?.id && (
+          <button
+            className={styles.btnChat}
+            onClick={handleChat}
+            title="Nhắn tin"
+          >
+            <BiMessageSquare size={20} />
+            <span>Chat</span>
+          </button>
+        )}
 
         <button
           className={styles.btnHeart}

@@ -14,6 +14,7 @@ import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { AuthContext } from "../../context/AuthContext";
 import { NotificationContext } from "../NotificationsModals/context/NotificationContext";
 import NotificationsDropdown from "../NotificationsModals/NotificationsDropdown";
+import SavedPostsDropdown from "./SavedPostsDropdown";
 import styles from "./NavUserActions.module.css";
 
 
@@ -66,6 +67,7 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
 
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showSavedPostsPanel, setShowSavedPostsPanel] = useState(false);
   const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
   const avatarRef = useRef(null);
 
@@ -154,14 +156,49 @@ const NavUserActions = ({ isScrolled, unreadCount, chatUnreadCount }) => {
 
 
   const handleNotifClick = () => {
+    setShowSavedPostsPanel(false); // Đóng SavedPosts khi mở Notification
     setShowNotifPanel((prev) => !prev);
     if (!showNotifPanel) { try { fetchNotifications(); } catch (e) {} }
+  };
+
+  const handleSavedPostsClick = () => {
+    setShowNotifPanel(false); // Đóng Notification khi mở SavedPosts
+    setShowSavedPostsPanel((prev) => !prev);
   };
 
 
   return (
     // ... HTML GIỮ NGUYÊN KHÔNG ĐỔI ...
     <div className={`${styles.navRight} ${isScrolled ? styles.scrolled : ""}`}>
+      {/* Saved Posts - ICON HEART */}
+      {user && (
+        <div className={styles.iconBtnWrapper}>
+          <button className={styles.iconBtn} title="Tin đã lưu" onClick={handleSavedPostsClick}>
+            <FaHeart size={18} color={showSavedPostsPanel ? "#e74c3c" : "#666"} />
+          </button>
+          {showSavedPostsPanel && createPortal(
+            <div
+              ref={(el) => {
+                if (el) {
+                  const heartBtn = document.querySelector('[title="Tin đã lưu"]');
+                  if (heartBtn) {
+                    const rect = heartBtn.getBoundingClientRect();
+                    el.style.position = 'fixed';
+                    el.style.right = window.innerWidth - rect.right + 'px';
+                    el.style.top = rect.bottom + 10 + 'px';
+                    el.style.zIndex = '10001';
+                  }
+                }
+              }}
+              onMouseLeave={() => setShowSavedPostsPanel(false)}
+            >
+              <SavedPostsDropdown user={user} onClose={() => setShowSavedPostsPanel(false)} />
+            </div>,
+            document.body
+          )}
+        </div>
+      )}
+
       {/* Notifications */}
       <div className={styles.iconBtnWrapper}>
         <button className={styles.iconBtn} title="Thông báo" onClick={handleNotifClick}>
