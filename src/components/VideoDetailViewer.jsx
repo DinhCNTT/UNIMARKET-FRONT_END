@@ -10,7 +10,7 @@ import { IoHeart, IoChevronUp, IoChevronDown } from "react-icons/io5";
 import TopNavbarUniMarket from "./TopNavbarUniMarket";
 import VideoDetailHeader from "./VideoDetailHeader";
 import CommentDrawer from "./CommentDrawer";
-import VideoDetailsPanel from "./VideoDetailsPanel";
+import VideoDetailsPanel from './VideoDetailsPanel/VideoDetailsPanel';
 import SharePanel from "./SharePanel";
 import VideoContextMenu from "./VideoContextMenu"; // ✅ MỚI: Menu chuột phải
 import { AuthContext } from "../context/AuthContext";

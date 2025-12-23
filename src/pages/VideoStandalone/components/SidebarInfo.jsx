@@ -17,7 +17,7 @@ import styles from './SidebarInfo.module.css';
 import SidebarHeader from '../../../components/Common/SidebarHeader';
 import SuggestedVideoList from './SuggestedVideoList';
 import CommentList from './CommentList';
-import VideoDetailsPanel from '../../../components/VideoDetailsPanel';
+import VideoDetailsPanel from '../../../components/VideoDetailsPanel/VideoDetailsPanel';
 
 const API_BASE = "http://localhost:5133";
 

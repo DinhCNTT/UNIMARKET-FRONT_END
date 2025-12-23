@@ -39,6 +39,9 @@ export default function VideoSearchPage() {
   const [videos, setVideos] = useState([]);
   const [users, setUsers] = useState([]);
   const [relatedKeywords, setRelatedKeywords] = useState([]); 
+  // State mới: Lưu thông tin gợi ý giá (Price Suggestion/Stats)
+  const [priceStats, setPriceStats] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -46,7 +49,7 @@ export default function VideoSearchPage() {
   const userListRef = useRef(null);
 
   // ====================================================================
-  // 1. FETCH VIDEOS (ĐÃ CẬP NHẬT HEADER SESSION ID)
+  // 1. FETCH VIDEOS (ĐÃ CẬP NHẬT HEADER SESSION ID & LẤY PRICE STATS)
   // ====================================================================
   const fetchVideos = async () => {
     setLoading(true);
@@ -76,6 +79,13 @@ export default function VideoSearchPage() {
       // Set danh sách video
       setVideos(Array.isArray(data.items) ? data.items : []);
 
+      // 3. LƯU THÔNG TIN KHOẢNG GIÁ TỪ API (MỚI THÊM)
+      if (data.priceSuggestion) {
+        setPriceStats(data.priceSuggestion);
+      } else {
+        setPriceStats(null);
+      }
+
       // Set danh sách từ khóa liên quan (Related Keywords)
       if (data.relatedKeywords && Array.isArray(data.relatedKeywords)) {
         setRelatedKeywords(data.relatedKeywords);
@@ -87,6 +97,7 @@ export default function VideoSearchPage() {
       console.error(err);
       setError("Không tìm thấy video nào.");
       setVideos([]);
+      setPriceStats(null); // Reset price stats khi lỗi
     } finally {
       setLoading(false);
     }
@@ -106,11 +117,13 @@ export default function VideoSearchPage() {
       if (relatedKeywords.length === 0) {
          // Lưu ý: Call phụ này cũng nên gửi header nếu cần, ở đây ta để đơn giản
          fetch(`http://localhost:5133/api/Video/search?keyword=${encodeURIComponent(keyword)}`, {
-            headers: { 'X-Session-ID': sessionId }
+           headers: { 'X-Session-ID': sessionId }
          })
          .then(res => res.json())
          .then(data => {
              if (data.relatedKeywords) setRelatedKeywords(data.relatedKeywords);
+             // Nếu muốn lấy cả priceStats khi user F5 ở tab user thì set ở đây luôn
+             if (data.priceSuggestion) setPriceStats(data.priceSuggestion);
          })
          .catch(() => {}); 
       }
@@ -193,6 +206,8 @@ export default function VideoSearchPage() {
               keyword={keyword}
               activeTab={activeTab}
               data={video}
+              // TRUYỀN DATA GIÁ XUỐNG CARD (MỚI THÊM)
+              priceStats={priceStats} 
             />
           ))}
         </div>
@@ -214,18 +229,32 @@ export default function VideoSearchPage() {
     }
   };
 
-  return (
+ return (
     <div className={styles.pageWrapper}>
       {/* Navbar */}
       <TopNavbarUniMarket />
       
-      {/* Tabs Bar & Header Right */}
+      {/* --- CỤM CỐ ĐỊNH BÊN PHẢI --- */}
+      
+      {/* 1. SidebarHeader (Góc trên cùng bên phải) */}
+      <div className={styles.headerRight}>
+          <SidebarHeader />
+      </div>
+
+      {/* 2. RelatedKeywords (Nằm ngay dưới SidebarHeader) */}
+      {/* Di chuyển ra ngoài layout chính để ghim cố định bên phải */}
+      {relatedKeywords.length > 0 && (
+        <div className={styles.rightFixedSidebar}>
+           <RelatedSearchSidebar keywords={relatedKeywords} />
+        </div>
+      )}
+
+      {/* --- KẾT THÚC CỤM BÊN PHẢI --- */}
+
+      {/* Tabs Bar */}
       <div className={styles.tabsBar}>
         <div className={styles.tabsInner}>
            <SearchTabs activeTab={activeTab} onTabChange={handleTabChange} />
-        </div>
-        <div className={styles.headerRight}>
-            <SidebarHeader />
         </div>
       </div>
       
@@ -234,19 +263,11 @@ export default function VideoSearchPage() {
         {/* Layout chia cột */}
         <div className={styles.layoutFlex}>
           
-          {/* CỘT TRÁI */}
+          {/* CỘT TRÁI (NỘI DUNG CHÍNH) */}
+          {/* Bỏ cột phải trong này đi để layout tự căn giữa */}
           <div className={styles.leftColumn}>
             {renderContent()}
           </div>
-
-          {/* CỘT PHẢI: HIỆN Ở MỌI TAB NẾU CÓ KEYWORDS */}
-          {relatedKeywords.length > 0 && (
-            <div className={styles.rightColumn}>
-              <div className={styles.stickySidebar}>
-                <RelatedSearchSidebar keywords={relatedKeywords} />
-              </div>
-            </div>
-          )}
           
         </div>
       </div>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+// src/components/VideoDetailsPanel/components/StickyInfoBar.jsx
+import React, { useState, useEffect } from "react";
 import { FaPhoneAlt } from "react-icons/fa";
 import { SiMinutemailer } from "react-icons/si";
 import "./StickyInfoBar.css";
@@ -7,68 +8,79 @@ const StickyInfoBar = ({
   data,
   user,
   onOpenChat,
-  panelRef, // ref đến div scroll
+  panelRef, 
 }) => {
   const [showSticky, setShowSticky] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview"); // overview | description
-  const [showPhone, setShowPhone] = useState(false); // ẩn/hiện SĐT
-  const descriptionRef = useRef(null); // Ref này sẽ được gán khi data tải xong
-
+  const [activeTab, setActiveTab] = useState("overview"); 
+  const [showPhone, setShowPhone] = useState(false);
+  
+  // --- 1. LOGIC SCROLL SPY (Tự động đổi màu Tab khi cuộn) ---
   useEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
-
-    let descEl = null;
-    if (data) {
-      descEl = panel.querySelector(".description-section");
-      if (descEl) {
-        descriptionRef.current = descEl;
-      }
-    }
 
     const handleScroll = () => {
       const scrollTop = panel.scrollTop;
       setShowSticky(scrollTop > 100);
 
-      // check highlight tab
-      if (descriptionRef.current) {
-        const descTop = descriptionRef.current.offsetTop;
-        
-        // SỬA LỖI Ở ĐÂY: Tăng giá trị offset
-        // 90 là quá nhỏ, 115 là chiều cao thật của 2 thanh sticky cộng lại
-        const stickyBarOffset = 115; // <-- THAY ĐỔI TỪ 90 LÊN 115
-        
-        // Khi đỉnh của "Mô tả" cách đỉnh scroll 115px, active tab
-        setActiveTab(
-          scrollTop >= descTop - stickyBarOffset ? "description" : "overview"
-        );
+      // Tìm phần tử TRỰC TIẾP mỗi khi cuộn (đảm bảo luôn thấy nếu nó tồn tại)
+      const descEl = document.getElementById("section-description");
+      const specsEl = document.getElementById("section-specs");
+
+      // Offset khoảng 120px (chiều cao header + sticky bar)
+      const offset = 120; 
+
+      let currentTab = "overview";
+
+      // Kiểm tra vị trí
+      if (specsEl && scrollTop >= specsEl.offsetTop - offset) {
+        currentTab = "specs";
+      } else if (descEl && scrollTop >= descEl.offsetTop - offset) {
+        currentTab = "description";
       }
+      
+      setActiveTab(currentTab);
     };
 
     panel.addEventListener("scroll", handleScroll);
-
     return () => panel.removeEventListener("scroll", handleScroll);
-  }, [panelRef, data]);
+  }, [panelRef, data]); // Thêm data vào dependency để update khi data đổi
 
+  // --- 2. LOGIC CLICK NÚT CUỘN (Đã sửa) ---
   const scrollTo = (tab) => {
     if (!panelRef?.current) return;
+    
+    const stickyBarOffset = 115; // Trừ hao chiều cao thanh sticky
 
-    // SỬA LỖI Ở ĐÂY: Dùng chung một giá trị offset
-    const stickyBarOffset = 115; // <-- THAY ĐỔI TỪ 90 LÊN 115
-
-    // Yêu cầu 2: Ấn "Tổng quan" scroll về đầu
+    // Case 1: Tổng quan (Luôn đúng)
     if (tab === "overview") {
       panelRef.current.scrollTo({ top: 0, behavior: "smooth" });
-      return; // Dừng
+      return;
+    } 
+
+    // Case 2: Mô tả chi tiết
+    // TÌM ELEMENT NGAY LÚC CLICK (Thay vì dùng ref cũ)
+    if (tab === "description") {
+        const descEl = document.getElementById("section-description");
+        if (descEl) {
+            panelRef.current.scrollTo({
+                top: descEl.offsetTop - stickyBarOffset,
+                behavior: "smooth",
+            });
+        }
+        return;
     }
 
-    // Yêu cầu 1: Ấn "Mô tả chi tiết"
-    if (tab === "description" && descriptionRef.current) {
-      panelRef.current.scrollTo({
-        // Scroll đến đỉnh của section, trừ đi chiều cao của thanh sticky
-        top: descriptionRef.current.offsetTop - stickyBarOffset,
-        behavior: "smooth",
-      });
+    // Case 3: Thông số kỹ thuật
+    if (tab === "specs") {
+        const specsEl = document.getElementById("section-specs");
+        if (specsEl) {
+            panelRef.current.scrollTo({
+                top: specsEl.offsetTop - stickyBarOffset,
+                behavior: "smooth",
+            });
+        }
+        return;
     }
   };
 
@@ -86,15 +98,14 @@ const StickyInfoBar = ({
     );
   };
 
-  // Logic này giữ nguyên: chỉ render khi có data
   if (!data) return null;
+
+  const hasSpecs = data.thongSoChiTiet || data.ThongSoChiTiet;
 
   return (
     <>
-      {/* Sticky container */}
       {showSticky && (
         <div className="sticky-container">
-          {/* Thanh thông tin chính */}
           <div className="sticky-info-content">
             <div className="sticky-left">
               <img
@@ -124,7 +135,6 @@ const StickyInfoBar = ({
             </div>
           </div>
 
-          {/* Thanh Tab */}
           <div className="sticky-tab-content">
             <button
               className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
@@ -132,14 +142,22 @@ const StickyInfoBar = ({
             >
               Tổng quan
             </button>
+            
             <button
-              className={`tab-btn ${
-                activeTab === "description" ? "active" : ""
-              }`}
+              className={`tab-btn ${activeTab === "description" ? "active" : ""}`}
               onClick={() => scrollTo("description")}
             >
               Mô tả chi tiết
             </button>
+
+            {hasSpecs && (
+              <button
+                className={`tab-btn ${activeTab === "specs" ? "active" : ""}`}
+                onClick={() => scrollTo("specs")}
+              >
+                Thông số
+              </button>
+            )}
           </div>
         </div>
       )}
