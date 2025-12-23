@@ -139,37 +139,47 @@ export default function VideoSearchOverlay({ isOpen, onClose = () => {} }) {
   // 4. LOGIC GỢI Ý (SUGGEST)
   // ==========================================
   useEffect(() => {
+    // 1. Nếu ô trống -> Xóa gợi ý
     if (!keyword.trim()) {
       setSuggestions([]);
       return;
     }
 
-    let canceled = false;
+    // 2. Tạo Controller để hủy request
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchSuggestions = async () => {
       try {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        // TRUYỀN SIGNAL VÀO FETCH
         const res = await fetch(
           `http://localhost:5133/api/Video/suggest-smart?keyword=${encodeURIComponent(keyword)}`,
-          { headers }
+          { headers, signal } // <--- Quan trọng
         );
         
         if (res.ok) {
-            const data = await res.json();
-            if (!canceled) setSuggestions(data);
+           const data = await res.json();
+           setSuggestions(data);
         }
       } catch (err) {
-        console.error("Lỗi gợi ý từ khóa:", err);
-        if (!canceled) setSuggestions([]);
+        // Nếu lỗi do hủy request thì không log lỗi
+        if (err.name !== 'AbortError') {
+           console.error("Suggestion error:", err);
+        }
       }
     };
 
+    // 3. Debounce 300ms (Đợi người dùng ngừng gõ 300ms mới gửi request)
     const timeoutId = setTimeout(() => {
         fetchSuggestions();
     }, 300);
 
+    // 4. Cleanup function: Chạy khi keyword thay đổi
     return () => {
-      canceled = true;
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId); // Hủy bộ đếm giờ
+      controller.abort();      // HỦY REQUEST CŨ NGAY LẬP TỨC
     };
   }, [keyword, token]);
 

@@ -1,14 +1,20 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRegHeart } from "react-icons/fa"; 
+// Import thêm các icon cho nhãn giá
+import { FaRegHeart, FaTag, FaCheckCircle, FaFire } from "react-icons/fa"; 
 import defaultAvatar from "../../assets/default-avatar.png";
 import styles from "./VideoCard.module.css";
 
-const VideoCard = ({ video, allVideos, keyword, activeTab }) => {
+// Nhận thêm prop priceStats từ cha truyền xuống
+const VideoCard = ({ video, allVideos, keyword, activeTab, priceStats }) => {
   const videoRef = useRef(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
+  // ==================================================================
+  // 1. LOGIC CŨ: XỬ LÝ VIDEO & NAVIGATE (GIỮ NGUYÊN)
+  // ==================================================================
+  
   // Xử lý tự động phát video khi rê chuột vào
   const handleMouseEnter = () => {
     if (videoRef.current) {
@@ -50,6 +56,48 @@ const VideoCard = ({ video, allVideos, keyword, activeTab }) => {
     return count;
   };
 
+  // ==================================================================
+  // 2. LOGIC MỚI: XỬ LÝ GIÁ VÀ NHÃN (THÊM VÀO)
+  // ==================================================================
+
+  // Hàm format giá hiển thị (VD: 10.500.000 ₫)
+  const formatPrice = (price) => {
+    if (!price) return "";
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
+  // Logic hiển thị nhãn so sánh giá
+  const renderPriceBadge = () => {
+    // Kiểm tra dữ liệu đầu vào
+    if (!video.gia || video.gia <= 0 || !priceStats) return null;
+
+    const { maxPrice, averagePrice } = priceStats;
+    const price = video.gia;
+
+    // Trường hợp 1: Rẻ hơn hoặc bằng giá trung bình -> Giá Tốt (Highlight mạnh - Icon Lửa)
+    if (price <= averagePrice) {
+      return (
+        <div className={`${styles.priceBadge} ${styles.badgeGood}`}>
+          <FaFire className={styles.badgeIcon} />
+          <span>Giá Tốt</span>
+        </div>
+      );
+    }
+    
+    // Trường hợp 2: Cao hơn trung bình nhưng vẫn trong khoảng Max -> Hợp Lý (Icon Tích xanh)
+    // (Cho phép chênh lệch 1 chút so với max, ví dụ 5%)
+    if (price <= maxPrice * 1.05) {
+      return (
+        <div className={`${styles.priceBadge} ${styles.badgeReasonable}`}>
+          <FaCheckCircle className={styles.badgeIcon} />
+          <span>Hợp Lý</span>
+        </div>
+      );
+    }
+
+    return null; // Giá quá cao hoặc không xác định thì không hiện badge
+  };
+
   return (
     <div className={styles.card} onClick={handleCardClick}>
       {/* --- Phần Video Thumbnail --- */}
@@ -69,14 +117,24 @@ const VideoCard = ({ video, allVideos, keyword, activeTab }) => {
           />
         </div>
         
-        {/* Overlay Tim ở góc trái dưới */}
+        {/* --- [MỚI] NHÃN ĐÁNH GIÁ GIÁ (Góc Trên Cùng Bên Phải) --- */}
+        {renderPriceBadge()}
+
+        {/* --- [MỚI] HIỂN THỊ GIÁ TIỀN (Góc Trên Cùng Bên Trái hoặc Đè lên) --- */}
+        {video.gia > 0 && (
+           <div className={styles.priceTagOverlay}>
+             {formatPrice(video.gia)}
+           </div>
+        )}
+
+        {/* Overlay Tim ở góc trái dưới (GIỮ NGUYÊN) */}
         <div className={styles.overlayBottomLeft}>
           <FaRegHeart className={styles.heartIcon} />
           <span className={styles.likeCount}>{formatLikes(video.soTym)}</span>
         </div>
       </div>
 
-      {/* --- Phần Thông tin bên dưới --- */}
+      {/* --- Phần Thông tin bên dưới (GIỮ NGUYÊN) --- */}
       <div className={styles.metaData}>
         {/* Hàng 1: Tiêu đề video */}
         <div className={styles.titleRow}>
@@ -99,7 +157,7 @@ const VideoCard = ({ video, allVideos, keyword, activeTab }) => {
             </span>
           </div>
           
-          {/* Bên phải: Thời gian đăng (Lấy từ API Backend) */}
+          {/* Bên phải: Thời gian đăng */}
           <span className={styles.postDate}>
             {video.thoiGianHienThi || "Mới đăng"}
           </span>
