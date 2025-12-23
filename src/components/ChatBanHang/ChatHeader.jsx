@@ -1,3 +1,4 @@
+// src/components/ChatBanHang/ChatHeader.jsx
 import React, { useState, useEffect } from "react";
 import { useChat } from "./context/ChatContext";
 import { TfiMenuAlt } from "react-icons/tfi"; // ✅ Đổi icon ở đây

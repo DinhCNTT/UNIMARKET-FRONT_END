@@ -1,4 +1,4 @@
-//src/components/ChatBanHang/ChatBox.jsx
+// src/components/ChatBanHang/ChatBox.jsx
 import React, { useEffect, useContext, useMemo, Suspense, lazy } from "react";
 import { useLocation } from "react-router-dom";
 import "animate.css";
@@ -8,12 +8,12 @@ import styles from "./ModuleChatCss/MessageList.module.css";
 import { AuthContext } from "../../context/AuthContext";
 import { ChatContext } from "./context/ChatContext";
 
-// Existing Hooks
+// Hooks
 import { useSignalR } from "./hooks/useSignalR";
 import { useAiChat } from "./hooks/useAiChat";
 import { useQuickMessages } from "../ChatList/useQuickMessages";
 
-// ✅ NEW REFACTORED HOOKS
+// ✅ HOOKS ĐÃ TÁCH & SỬA
 import { useChatInfo } from "./hooks/useChatInfo";
 import { useChatSignalREvents } from "./hooks/useChatSignalREvents";
 import { useChatUIActions } from "./hooks/useChatUIActions";
@@ -41,28 +41,41 @@ const ChatBox = ({ maCuocTroChuyen }) => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
 
+  // ============================================================================
   // 1. Logic Kết nối & Chat (AI / SignalR)
+  // ============================================================================
   const isAiConversation = maCuocTroChuyen?.startsWith("ai-assistant-");
   const aiChatLogic = useAiChat(maCuocTroChuyen, user);
   const signalRChatLogic = useSignalR(maCuocTroChuyen, user);
+  
   const chatLogic = isAiConversation ? aiChatLogic : signalRChatLogic;
 
   const {
-    danhSachTin, setDanhSachTin, isConnected, recallMessage, recallMedia,
-    markAsRead, sendMessageService, deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore,
+    danhSachTin, setDanhSachTin, 
+    isConnected, // 🔥 (QUAN TRỌNG) Lấy biến này để truyền xuống dưới
+    recallMessage, recallMedia,
+    markAsRead, sendMessageService, deleteLocalMessage, 
+    loadMoreMessages, isLoadingMore, hasMore,
   } = chatLogic;
 
   const connection = !isAiConversation ? signalRChatLogic.connection : null;
 
-  // 2. Logic Thông tin Chat & User (Refactored Hook)
-  const chatInfo = useChatInfo(maCuocTroChuyen, user);
+  // ============================================================================
+  // 2. Logic Thông tin Chat & User
+  // ============================================================================
+  
+  // 🔥 (QUAN TRỌNG) Phải truyền isConnected vào đây thì bên Hook mới chặn được lỗi
+  const chatInfo = useChatInfo(maCuocTroChuyen, user, isConnected);
+  
   const { 
       infoTinDang, setInfoTinDang, infoNguoiConLai, setInfoNguoiConLai, 
       maNguoiConLai, isBlockedByMe, isBlockedByOther, 
       setIsBlockedByMe, setIsBlockedByOther 
   } = chatInfo;
 
-  // 3. Logic UI Actions (Refactored Hook)
+  // ============================================================================
+  // 3. Logic UI Actions
+  // ============================================================================
   const uiActions = useChatUIActions(user, maCuocTroChuyen, maNguoiConLai);
   const { 
       isSidebarOpen, isUploading, tinNhan, setTinNhan, 
@@ -70,14 +83,17 @@ const ChatBox = ({ maCuocTroChuyen }) => {
       inputRef, handleBlockUser, handleUnblockUser 
   } = uiActions;
 
-  // 4. Logic SignalR Events Listeners (Refactored Hook)
-  // Chỉ lắng nghe khi có connection và không phải AI Chat
+  // ============================================================================
+  // 4. Logic SignalR Events
+  // ============================================================================
   useChatSignalREvents({
     connection, maCuocTroChuyen, user, maNguoiConLai,
     setInfoNguoiConLai, setInfoTinDang, setIsBlockedByMe, setIsBlockedByOther, setDanhSachTin
   });
 
-  // 5. Logic Quick Messages (Existing Hook)
+  // ============================================================================
+  // 5. Logic Quick Messages
+  // ============================================================================
   const quickMsgLogic = useQuickMessages(user?.id);
   const { 
       quickMessages, saveQuickMessages, deleteQuickMessage, editingId, 
@@ -94,6 +110,7 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     }
   }, [isConnected, location.state, sendMessageService]);
 
+  // Computed Values
   const isDisabled = useMemo(() => isBlockedByMe || isBlockedByOther || isUploading, [isBlockedByMe, isBlockedByOther, isUploading]);
 
   const handleQuickReplySent = (sentText) => {
@@ -106,14 +123,14 @@ const ChatBox = ({ maCuocTroChuyen }) => {
     setShowQuickMsgModal(true);
   };
 
-  // --- Context Value Construction ---
+  // --- Context Value ---
   const contextValue = useMemo(() => ({
     danhSachTin, isConnected, user, maCuocTroChuyen,
-    ...chatInfo, // Spread chat info (displayAvatar, etc.)
-    ...uiActions, // Spread UI actions (openImageModal, etc.)
+    ...chatInfo, 
+    ...uiActions,
     recallMessage, recallMedia, markAsRead, sendMessageService, 
     deleteLocalMessage, loadMoreMessages, isLoadingMore, hasMore,
-    handleBlockUser, handleUnblockUser // Explicitly pass these if needed for clarity
+    handleBlockUser, handleUnblockUser
   }), [
     danhSachTin, isConnected, user, maCuocTroChuyen, chatInfo, uiActions,
     recallMessage, recallMedia, markAsRead, sendMessageService,

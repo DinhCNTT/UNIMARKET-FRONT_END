@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
-import "./EmployeeList.css";
+import "react-toastify/dist/ReactToastify.css";
+import styles from "./EmployeeList.module.css";
+// Import Icons
+import { 
+  Users, 
+  Lock, 
+  Unlock, 
+  Mail, 
+  Phone, 
+  ShieldCheck, 
+  UserCheck, 
+  AlertCircle 
+} from "lucide-react";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -13,25 +24,21 @@ const EmployeeList = () => {
       setEmployees(response.data);
     } catch (error) {
       console.error("❌ Lỗi khi lấy danh sách nhân viên:", error);
+      toast.error("Không thể tải danh sách nhân viên");
     }
   };
 
   const toggleLock = async (userId, isLocked) => {
-    console.log("🔄 Gửi request:", `/api/admin/toggle-lock/${userId}`);
-
     try {
       await axios.post(`http://localhost:5133/api/admin/toggle-lock/${userId}`);
-      
       if (!isLocked) {
-        toast.success("🔒 Nhân viên đã bị khóa!");
+        toast.warn("🔒 Đã khóa tài khoản nhân viên");
       } else {
-        toast.success("✅ Nhân viên đã được mở khóa!");
+        toast.success("✅ Đã mở khóa tài khoản");
       }
-
-      fetchEmployees(); 
+      fetchEmployees();
     } catch (error) {
-      toast.error("❌ Lỗi khi thay đổi trạng thái tài khoản!");
-      console.error("❌ Lỗi khi thay đổi trạng thái tài khoản:", error.response?.data || error.message);
+      toast.error("❌ Lỗi hệ thống, vui lòng thử lại!");
     }
   };
 
@@ -40,58 +47,90 @@ const EmployeeList = () => {
   }, []);
 
   return (
-    <div className="employee-list-container">
-      <h2 className="employee-title">Quản Lý Nhân Viên</h2>
+    <div className={styles.container}>
+      <ToastContainer position="top-right" autoClose={3000} />
 
-      <ToastContainer 
-      autoClose={3000} />
+      <header className={styles.header}>
+        <h2 className={styles.title}>
+          <Users className={styles.titleIcon} size={28} />
+          Quản Lý Nhân Viên
+        </h2>
+        {/* Nghĩa có thể thêm nút "Thêm nhân viên" ở đây sau này */}
+      </header>
 
-      <div className="employee-table-container">
-        <table className="employee-table">
-          <thead>
-            <tr>
-              <th>Mã NV</th>
-              <th>Họ Tên</th>
-              <th>Email</th>
-              <th>Số điện thoại</th>
-              <th>Chức vụ</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.length > 0 ? (
-              employees.map((emp, index) => (
-                <tr key={index}>
-                  <td>{emp.employeeCode || "N/A"}</td>
-                  <td>{emp.fullName || "Chưa có dữ liệu"}</td>
-                  <td>{emp.email || "N/A"}</td>
-                  <td>{emp.phoneNumber || "N/A"}</td>
-                  <td>{emp.role || "Không rõ"}</td>
-                  <td>
-                    {emp.isLocked ? (
-                      <span className="locked-status">🔒 Bị khóa</span>
-                    ) : (
-                      <span className="active-status">✅ Hoạt động</span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => toggleLock(emp.userId, emp.isLocked)}
-                      className={`toggle-lock-button ${emp.isLocked ? "unlock" : "lock"}`}
-                    >
-                      {emp.isLocked ? "Mở khóa" : "Khóa"}
-                    </button>
+      <div className={styles.card}>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Mã NV</th>
+                <th>Họ Tên</th>
+                <th>Liên Hệ</th>
+                <th>Chức Vụ</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.length > 0 ? (
+                employees.map((emp) => (
+                  <tr key={emp.userId}>
+                    <td><strong>{emp.employeeCode || "---"}</strong></td>
+                    <td>{emp.fullName || "N/A"}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <Mail size={14} color="#888" /> {emp.email}
+                        </span>
+                        <span style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <Phone size={14} color="#888" /> {emp.phoneNumber}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <ShieldCheck size={16} color="#ffca00" />
+                        {emp.role}
+                      </span>
+                    </td>
+                    <td>
+                      {emp.isLocked ? (
+                        <span className={`${styles.badge} ${styles.locked}`}>
+                          <Lock size={12} /> Bị khóa
+                        </span>
+                      ) : (
+                        <span className={`${styles.badge} ${styles.active}`}>
+                          <UserCheck size={12} /> Hoạt động
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => toggleLock(emp.userId, emp.isLocked)}
+                        className={`${styles.btn} ${emp.isLocked ? styles.btnUnlock : styles.btnLock}`}
+                      >
+                        {emp.isLocked ? (
+                          <><Unlock size={16} /> Mở khóa</>
+                        ) : (
+                          <><Lock size={16} /> Khóa</>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6">
+                    <div className={styles.noData}>
+                      <AlertCircle size={48} color="#ccc" style={{ marginBottom: '10px' }} />
+                      <p>Chưa có dữ liệu nhân viên nào để hiển thị.</p>
+                    </div>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="no-data-message">Chưa có nhân viên nào</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

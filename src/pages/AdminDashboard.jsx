@@ -2,164 +2,178 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Sidebar from "../components/Sidebar";
-import "./AdminDashboard.css";
 
-const API_URL = "http://localhost:5133/api/admin"; // Cập nhật đường dẫn backend
+// --- Import React Icons ---
+import { FaLock, FaUnlock, FaTrash, FaSpinner } from "react-icons/fa";
+
+// Import CSS Module
+import styles from "./AdminDashboard.module.css";
+
+const API_URL = "http://localhost:5133/api/admin";
 
 const AdminDashboard = () => {
+    // --- State Management ---
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [processingUser, setProcessingUser] = useState(null); // Xử lý trạng thái
+    const [processingId, setProcessingId] = useState(null); // Lưu ID user đang được xử lý để hiện loading riêng cho dòng đó
 
+    // --- Fetch Data ---
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(`${API_URL}/users`, {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                    withCredentials: true,
-                });
-
-                setUsers(Array.isArray(response.data) ? response.data : []);
-            } catch (error) {
-                console.error("Lỗi khi lấy danh sách người dùng:", error);
-                setError("Không thể lấy danh sách người dùng!");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchUsers();
     }, []);
 
-    // Hàm xóa người dùng
-    const handleDeleteUser = async (userId) => {
-        if (!window.confirm("Bạn có chắc muốn xóa người dùng này?")) return;
-        setProcessingUser(userId);
+    const fetchUsers = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(`${API_URL}/users`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                withCredentials: true,
+            });
+            setUsers(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Fetch error:", error);
+            setError("Không thể tải danh sách người dùng. Vui lòng thử lại sau.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    // --- Handle Delete ---
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm("Cảnh báo: Hành động này không thể hoàn tác!\nBạn có chắc chắn muốn xóa người dùng này?")) return;
+        
+        setProcessingId(userId);
         try {
             const token = localStorage.getItem("token");
             await axios.delete(`${API_URL}/delete-user/${userId}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
                 withCredentials: true,
             });
-
-            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-
-            toast.success("✅ Người dùng đã bị xóa!", {
-                position: "top-right",
-                autoClose: 3000,
-                theme: "light",
-            });
+            
+            // Cập nhật UI ngay lập tức
+            setUsers((prev) => prev.filter((u) => u.id !== userId));
+            toast.success("Đã xóa người dùng thành công!");
         } catch (error) {
-            console.error("Lỗi khi xóa người dùng:", error);
-            toast.error("⛔ Không thể xóa người dùng!", {
-                position: "top-right",
-                autoClose: 4000,
-                theme: "dark",
-            });
+            console.error(error);
+            toast.error("Lỗi: Không thể xóa người dùng.");
         } finally {
-            setProcessingUser(null);
+            setProcessingId(null);
         }
     };
-    
 
-    const handleLogout = () => {
-        console.log("👉 Đang đăng xuất...");
-        localStorage.removeItem("token"); // Xóa token khỏi localStorage
-        window.location.href = "/login"; // Chuyển hướng về trang đăng nhập
-    };
+    // --- Handle Toggle Lock ---
+    const handleToggleLock = async (userId, isLocked) => {
+        const actionName = isLocked ? "mở khóa" : "khóa";
+        if (!window.confirm(`Xác nhận ${actionName} tài khoản này?`)) return;
 
-    const handleToggleLockUser = async (userId, isLocked) => {
-        if (!window.confirm(`Bạn có chắc muốn ${isLocked ? "mở khóa" : "khóa"} người dùng này?`)) return;
-        setProcessingUser(userId);
-    
+        setProcessingId(userId);
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`${API_URL}/toggle-lock/${userId}`, {}, { // ⚠️ Thay PUT → POST
+            // Gọi API toggle-lock (POST)
+            await axios.post(`${API_URL}/toggle-lock/${userId}`, {}, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
                 withCredentials: true,
             });
-    
-            setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                    user.id === userId ? { ...user, isLocked: !isLocked } : user
-                )
+
+            // Cập nhật state cục bộ để UI phản hồi ngay
+            setUsers((prev) => 
+                prev.map((u) => u.id === userId ? { ...u, isLocked: !isLocked } : u)
             );
-    
-            toast.success(`✅ Người dùng đã được ${isLocked ? "mở khóa" : "khóa"}!`, {
-                position: "top-right",
-                autoClose: 3000,
-                theme: "light",
-            });
+            toast.success(`Đã ${actionName} tài khoản thành công!`);
         } catch (error) {
-            console.error("Lỗi khi cập nhật trạng thái người dùng:", error);
-            toast.error("⛔ Không thể cập nhật trạng thái người dùng!", {
-                position: "top-right",
-                autoClose: 4000,
-                theme: "dark",
-            });
+            console.error(error);
+            toast.error(`Lỗi: Không thể ${actionName} tài khoản.`);
         } finally {
-            setProcessingUser(null);
+            setProcessingId(null);
         }
     };
-    if (loading) return <p>Đang tải...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
-    if (users.length === 0) return <p>Không có người dùng nào!</p>;
 
+    // --- Render Loading / Error ---
+    if (loading) return <div className={styles.loading}>Đang tải dữ liệu...</div>;
     
-
+    // --- Render Main Content ---
     return (
-        <div className="admin-dashboard">
-            <Sidebar />
-            <Sidebar onLogout={handleLogout} />
-            <div className="content">
-                <h2 className="tieu-de">Quản Lý Người Dùng</h2>
-                <div className="user-table-container">
-                    <table className="user-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Email</th>
-                                <th>Họ Tên</th>
-                                <th>Số Điện Thoại</th>
-                                <th>Vai Trò</th>
-                                <th>Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user, index) => (
-                                <tr key={user.id}>
-                                    <td>{index + 1}</td>
-                                    <td>{user.email}</td>
-                                    <td>{user.fullName}</td>
-                                    <td>{user.phoneNumber}</td>
-                                    <td>{user.role}</td>
-                                    <td>
-                                        <button
-                                            onClick={() => handleDeleteUser(user.id)}
-                                            className="delete-btn"
-                                            disabled={processingUser === user.id}
-                                        >
-                                            {processingUser === user.id ? "Đang xóa..." : "Xóa"}
-                                        </button>
-                                        <button
-                                            onClick={() => handleToggleLockUser(user.id, user.isLocked)}
-                                            className={`lock-btn ${user.isLocked ? "unlocked" : "locked"}`}
-                                            disabled={processingUser === user.id}
-                                        >
-                                            {processingUser === user.id ? "Đang xử lý..." : (user.isLocked ? "Mở khóa" : "Khóa")}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+        <div className={styles.container}>
+            <ToastContainer autoClose={2000} position="top-right" />
+            
+            <div className={styles.header}>
+                <h2 className={styles.title}>Quản Lý Người Dùng</h2>
             </div>
-            <ToastContainer />
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <div className={styles.tableCard}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th className={styles.th} style={{width: '60px', textAlign: 'center'}}>STT</th>
+                            <th className={styles.th}>Email</th>
+                            <th className={styles.th}>Họ Tên</th>
+                            <th className={styles.th}>Số Điện Thoại</th>
+                            <th className={styles.th} style={{width: '120px', textAlign: 'center'}}>Vai Trò</th>
+                            <th className={styles.th} style={{width: '220px', textAlign: 'right'}}>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {users.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className={styles.empty}>Chưa có người dùng nào.</td>
+                            </tr>
+                        ) : (
+                            users.map((user, index) => {
+                                const isProcessing = processingId === user.id;
+
+                                return (
+                                    <tr key={user.id} className={styles.tr}>
+                                        <td className={styles.td} align="center">{index + 1}</td>
+                                        <td className={styles.td}>
+                                            <strong>{user.email}</strong>
+                                        </td>
+                                        <td className={styles.td}>{user.fullName || "---"}</td>
+                                        <td className={styles.td}>{user.phoneNumber || "---"}</td>
+                                        
+                                        <td className={styles.td} align="center">
+                                            <span className={`${styles.badge} ${user.role === 'Admin' ? styles.badgeAdmin : styles.badgeUser}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+
+                                        <td className={styles.td}>
+                                            <div className={styles.actions}>
+                                                {/* Nút Khóa / Mở Khóa */}
+                                                <button
+                                                    className={`${styles.btn} ${user.isLocked ? styles.btnUnlock : styles.btnLock}`}
+                                                    onClick={() => handleToggleLock(user.id, user.isLocked)}
+                                                    disabled={isProcessing}
+                                                    title={user.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản này"}
+                                                >
+                                                    {/* Icon logic: Nếu đang xử lý thì xoay, không thì hiện icon khóa/mở */}
+                                                    {isProcessing ? <FaSpinner className={styles.spin} /> : (user.isLocked ? <FaUnlock /> : <FaLock />)}
+                                                    
+                                                    {/* Text logic */}
+                                                    {user.isLocked ? "Mở Khóa" : "Khóa"}
+                                                </button>
+                                                
+                                                {/* Nút Xóa */}
+                                                <button
+                                                    className={`${styles.btn} ${styles.btnDelete}`}
+                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    disabled={isProcessing}
+                                                    title="Xóa vĩnh viễn"
+                                                >
+                                                    {isProcessing ? <FaSpinner className={styles.spin} /> : <FaTrash />}
+                                                    {isProcessing ? "Xử lý..." : "Xóa"}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

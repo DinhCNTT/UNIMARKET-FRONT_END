@@ -2,10 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "./ManageParentCategories.css";
+// Import module styles
+import styles from "./ManageParentCategories.module.css"; 
 
 const ManageParentCategories = () => {
     const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true); // Thêm loading state
+    
+    // State cho việc edit
     const [editingCategory, setEditingCategory] = useState(null);
     const [newName, setNewName] = useState("");
     const [newImage, setNewImage] = useState(null);
@@ -13,7 +17,6 @@ const ManageParentCategories = () => {
     const [previewImage, setPreviewImage] = useState("");
     const [previewIcon, setPreviewIcon] = useState("");
 
-    // Địa chỉ baseUrl cho hình ảnh
     const baseUrl = "http://localhost:5133/";
 
     useEffect(() => {
@@ -21,49 +24,60 @@ const ManageParentCategories = () => {
     }, []);
     
     const fetchCategories = async () => {
+        setLoading(true);
         try {
             const res = await axios.get("http://localhost:5133/api/admin/get-parent-categories");
-            console.log("Data from API:", res.data); // Xem dữ liệu có icon chưa
             setCategories(res.data);
         } catch (error) {
             console.error("Lỗi khi lấy danh mục cha:", error);
-            toast.error("Lỗi khi tải danh sách danh mục cha");
+            toast.error("Không thể tải dữ liệu danh mục.");
+        } finally {
+            setLoading(false);
         }
     };
-    
 
     const handleEdit = (category) => {
         setEditingCategory(category);
         setNewName(category.tenDanhMucCha);
-        setPreviewImage(category.anhDanhMucCha);
+        // Nếu là link online thì dùng luôn, nếu link local thì thêm baseUrl (logic hiển thị)
+        setPreviewImage(category.anhDanhMucCha); 
         setPreviewIcon(category.icon);
+        // Reset file input
+        setNewImage(null);
+        setNewIcon(null);
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-        setNewImage(file);
-        setPreviewImage(URL.createObjectURL(file)); // Hiển thị ảnh preview
+        if (file) {
+            setNewImage(file);
+            setPreviewImage(URL.createObjectURL(file));
+        }
     };
 
     const handleIconChange = (e) => {
         const file = e.target.files[0];
-        setNewIcon(file);
-        setPreviewIcon(URL.createObjectURL(file)); // Hiển thị icon preview
+        if (file) {
+            setNewIcon(file);
+            setPreviewIcon(URL.createObjectURL(file));
+        }
     };
 
     const handleUpdate = async () => {
         if (!newName.trim()) {
-            toast.error("Vui lòng nhập tên danh mục!");
+            toast.warning("Tên danh mục không được để trống!");
             return;
         }
 
         const formData = new FormData();
         formData.append("tenDanhMucCha", newName);
-        if (newImage) formData.append("anhDanhMuc", newImage);
+        
+        // Key chuẩn Backend yêu cầu: "anhDanhMucCha"
+        if (newImage) formData.append("anhDanhMucCha", newImage);
         if (newIcon) formData.append("icon", newIcon);
 
         try {
-            const response = await axios.put(
+            await axios.put(
                 `http://localhost:5133/api/admin/update-parent-category/${editingCategory.maDanhMucCha}`,
                 formData,
                 {
@@ -73,127 +87,149 @@ const ManageParentCategories = () => {
                     }
                 }
             );
-            toast.success("Cập nhật danh mục cha thành công!");
+            toast.success("Đã cập nhật thành công!");
             fetchCategories();
+            setEditingCategory(null); // Thoát chế độ edit
         } catch (error) {
-            toast.error("Lỗi khi cập nhật");
+            console.error(error);
+            toast.error("Cập nhật thất bại. Vui lòng thử lại.");
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
+        if (!window.confirm("Xác nhận xóa danh mục này?")) return;
 
         try {
-            // Trước khi xóa, kiểm tra xem có danh mục con nào không
+            // Check logic con (Client side check - giữ nguyên logic của bạn)
             const childCategoriesResponse = await axios.get("http://localhost:5133/api/admin/get-categories");
             const childCategories = childCategoriesResponse.data;
-            
-            // Lọc ra các danh mục con thuộc danh mục cha cần xóa
             const relatedChildCategories = childCategories.filter(
                 (child) => child.maDanhMucCha === id
             );
 
-            // Nếu có danh mục con, hiển thị thông báo chi tiết
             if (relatedChildCategories.length > 0) {
-                const childCategoryNames = relatedChildCategories.map(
-                    (child) => child.tenDanhMuc
-                ).join(", ");
-                
-                toast.error(
-                    `Không thể xóa danh mục vì đang tồn tại các danh mục con: ${childCategoryNames}`
-                );
+                const names = relatedChildCategories.map((child) => child.tenDanhMuc).join(", ");
+                toast.error(`Không thể xóa! Có danh mục con: ${names}`);
                 return;
             }
 
-            // Nếu không có danh mục con, tiến hành xóa
             await axios.delete(`http://localhost:5133/api/admin/delete-parent-category/${id}`);
-            toast.success("Xóa danh mục cha thành công!");
+            toast.success("Đã xóa danh mục!");
             fetchCategories();
         } catch (error) {
-            toast.error("Lỗi khi xóa danh mục cha!");
+            toast.error("Lỗi khi xóa danh mục!");
         }
     };
 
     return (
-        <div className="ManageParentCategoriesPageContainer">
-            <h2>Quản Lý Danh Mục Cha</h2>
-            <ToastContainer autoClose={3000} />
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h2 className={styles.title}>Quản Lý Danh Mục Cha</h2>
+                {/* Có thể thêm nút "Thêm mới" ở đây nếu cần */}
+            </div>
+            
+            <ToastContainer autoClose={2000} position="top-right" />
 
-            <table className="ManageParentCategoriesTable">
-                <thead>
-                    <tr>
-                        <th>Mã DM</th>
-                        <th>Tên Danh Mục</th>
-                        <th>Ảnh</th>
-                        <th>Icon</th>
-                        <th>Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {categories.map((cat) => (
-                        <tr key={cat.maDanhMucCha}>
-                            <td>{cat.maDanhMucCha}</td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <input
-                                        type="text"
-                                        value={newName}
-                                        onChange={(e) => setNewName(e.target.value)}
-                                        className="ManageParentCategoriesEditInput"
-                                    />
-                                ) : (
-                                    cat.tenDanhMucCha
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="ManageParentCategoriesFileUpload">
-                                        <input type="file" onChange={handleImageChange} />
-                                        {previewImage && (
-                                            <img src={previewImage} alt="Preview" className="ManageParentCategoriesImagePreview" />
-                                        )}
-                                    </div>
-                                ) : (
-                                    <img
-                                        src={cat.anhDanhMucCha}
-                                        alt="Ảnh DM"
-                                        className="ManageParentCategoriesCategoryImage"
-                                    />
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <div className="ManageParentCategoriesFileUpload">
-                                        <input type="file" onChange={handleIconChange} />
-                                        {previewIcon && (
-                                            <img src={previewIcon} alt="Icon Preview" className="ManageParentCategoriesIconPreview" />
-                                        )}
-                                    </div>
-                                ) : (
-                                    <img
-                                        src={cat.icon}
-                                        alt="Icon DM"
-                                        className="ManageParentCategoriesCategoryIcon"
-                                    />
-                                )}
-                            </td>
-                            <td>
-                                {editingCategory?.maDanhMucCha === cat.maDanhMucCha ? (
-                                    <>
-                                        <button className="ManageParentCategoriesSaveBtn" onClick={handleUpdate}>💾 Lưu</button>
-                                        <button className="ManageParentCategoriesCancelBtn" onClick={() => setEditingCategory(null)}>❌ Hủy</button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="ManageParentCategoriesEditBtn" onClick={() => handleEdit(cat)}>✏️ Sửa</button>
-                                        <button className="ManageParentCategoriesDeleteBtn" onClick={() => handleDelete(cat.maDanhMucCha)}>🗑️ Xóa</button>
-                                    </>
-                                )}
-                            </td>
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th style={{width: '80px'}}>ID</th>
+                            <th>Tên Danh Mục</th>
+                            <th style={{textAlign: 'center'}}>Hình Ảnh</th>
+                            <th style={{textAlign: 'center'}}>Icon</th>
+                            <th style={{textAlign: 'right'}}>Hành Động</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan="5" className={styles.loading}>Đang tải dữ liệu...</td>
+                            </tr>
+                        ) : (
+                            categories.map((cat) => {
+                                const isEditing = editingCategory?.maDanhMucCha === cat.maDanhMucCha;
+
+                                return (
+                                    <tr key={cat.maDanhMucCha}>
+                                        <td>#{cat.maDanhMucCha}</td>
+                                        
+                                        {/* Cột Tên */}
+                                        <td>
+                                            {isEditing ? (
+                                                <input
+                                                    type="text"
+                                                    value={newName}
+                                                    onChange={(e) => setNewName(e.target.value)}
+                                                    className={styles.inputInfo}
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                <strong>{cat.tenDanhMucCha}</strong>
+                                            )}
+                                        </td>
+
+                                        {/* Cột Ảnh */}
+                                        <td align="center">
+                                            {isEditing ? (
+                                                <div className={styles.uploadGroup}>
+                                                    {previewImage && <img src={previewImage} alt="Preview" className={styles.previewImg} />}
+                                                    <label className={styles.uploadLabel}>
+                                                        Chọn Ảnh
+                                                        <input type="file" onChange={handleImageChange} className={styles.hiddenInput} accept="image/*"/>
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <img src={cat.anhDanhMucCha} alt="Ảnh DM" className={styles.imgThumbnail} onError={(e) => e.target.src = "https://via.placeholder.com/60"} />
+                                            )}
+                                        </td>
+
+                                        {/* Cột Icon */}
+                                        <td align="center">
+                                            {isEditing ? (
+                                                <div className={styles.uploadGroup}>
+                                                    {previewIcon && <img src={previewIcon} alt="Preview" className={styles.previewImg} style={{objectFit: 'contain'}} />}
+                                                    <label className={styles.uploadLabel}>
+                                                        Chọn Icon
+                                                        <input type="file" onChange={handleIconChange} className={styles.hiddenInput} accept="image/*"/>
+                                                    </label>
+                                                </div>
+                                            ) : (
+                                                <img src={cat.icon} alt="Icon DM" className={styles.iconThumbnail} onError={(e) => e.target.src = "https://via.placeholder.com/40"} />
+                                            )}
+                                        </td>
+
+                                        {/* Cột Action */}
+                                        <td align="right">
+                                            <div className={styles.actions} style={{justifyContent: 'flex-end'}}>
+                                                {isEditing ? (
+                                                    <>
+                                                        <button className={`${styles.btn} ${styles.btnSave}`} onClick={handleUpdate}>
+                                                            Lưu
+                                                        </button>
+                                                        <button className={`${styles.btn} ${styles.btnCancel}`} onClick={() => setEditingCategory(null)}>
+                                                            Hủy
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button className={`${styles.btn} ${styles.btnEdit}`} onClick={() => handleEdit(cat)}>
+                                                            Sửa
+                                                        </button>
+                                                        <button className={`${styles.btn} ${styles.btnDelete}`} onClick={() => handleDelete(cat.maDanhMucCha)}>
+                                                            Xóa
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

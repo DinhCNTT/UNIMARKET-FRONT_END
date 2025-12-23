@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import "./ManagePosts.css";
+import { 
+  FaCheck, FaTimes, FaChevronLeft, FaChevronRight, 
+  FaImage, FaVideo 
+} from "react-icons/fa";
+
+// Import CSS Module
+import styles from "./ManagePosts.module.css";
 
 const ManagePosts = () => {
   const [posts, setPosts] = useState([]);
@@ -20,23 +26,19 @@ const ManagePosts = () => {
   const fetchPosts = async () => {
     try {
       const response = await axios.get('http://localhost:5133/api/tindang/get-posts-admin');
-      const data = response.data;
-      if (Array.isArray(data)) {
-        setPosts(data);
-        setTotalPages(Math.ceil(data.length / postsPerPage));
-        updateDisplayedPosts(data, currentPage);
-      } else {
-        console.error("Dữ liệu không phải là mảng");
+      if (Array.isArray(response.data)) {
+        setPosts(response.data);
+        setTotalPages(Math.ceil(response.data.length / postsPerPage));
+        updateDisplayedPosts(response.data, currentPage);
       }
     } catch (error) {
-      console.error("Lỗi khi tải tin đăng", error);
+      console.error("Lỗi:", error);
     }
   };
 
   const updateDisplayedPosts = (postsList, page) => {
     const startIndex = (page - 1) * postsPerPage;
-    const endIndex = startIndex + postsPerPage;
-    setDisplayedPosts(postsList.slice(startIndex, endIndex));
+    setDisplayedPosts(postsList.slice(startIndex, startIndex + postsPerPage));
   };
 
   const handlePageChange = (pageNumber) => {
@@ -48,303 +50,192 @@ const ManagePosts = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year}`;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
   };
 
   const formatCurrency = (value) => {
-    if (!value && value !== 0) return "";
-    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return new Intl.NumberFormat('vi-VN').format(value);
   };
 
   const toggleDescription = (postId) => {
-    setExpandedDescriptions(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
+    setExpandedDescriptions(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
   const handleMediaClick = (mediaList, initialIndex = 0) => {
-    const fullMedias = mediaList.map(media =>
-      media.startsWith("http") ? media : `http://localhost:5133/${media}`
-    );
-    setSelectedMedia({ 
-      medias: fullMedias, 
-      currentIndex: initialIndex 
-    });
-  };
-
-  const closeMediaPopup = () => {
-    setSelectedMedia(null);
+    const fullMedias = mediaList.map(m => m.startsWith("http") ? m : `http://localhost:5133/${m}`);
+    setSelectedMedia({ medias: fullMedias, currentIndex: initialIndex });
   };
 
   const handleApprove = async (id) => {
     const result = await Swal.fire({
-      title: 'Bạn chắc chắn duyệt tin này?',
+      title: 'Duyệt tin đăng này?',
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Duyệt',
-      cancelButtonText: 'Hủy',
+      confirmButtonColor: '#ffca00',
+      confirmButtonText: 'Duyệt ngay',
+      cancelButtonText: 'Đóng'
     });
 
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        const response = await axios.post(`http://localhost:5133/api/admin/approve-post/${id}`);
-        Swal.fire('Thành công', response.data.message, 'success');
-        await fetchPosts();
-      } catch (error) {
-        let message = "Có lỗi khi duyệt tin đăng!";
-        if (error.response?.data?.message) message = error.response.data.message;
-        Swal.fire('Lỗi', message, 'error');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+        const res = await axios.post(`http://localhost:5133/api/admin/approve-post/${id}`);
+        Swal.fire('Thành công', res.data.message, 'success');
+        fetchPosts();
+      } catch (err) {
+        Swal.fire('Lỗi', err.response?.data?.message || "Lỗi duyệt tin", 'error');
+      } finally { setLoading(false); }
     }
   };
 
   const handleReject = async (id) => {
     const result = await Swal.fire({
-      title: 'Bạn chắc chắn từ chối tin này?',
+      title: 'Từ chối tin này?',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#f5222d',
       confirmButtonText: 'Từ chối',
-      cancelButtonText: 'Hủy',
+      cancelButtonText: 'Hủy'
     });
 
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        const response = await axios.post(`http://localhost:5133/api/admin/reject-post/${id}`);
-        Swal.fire('Thành công', response.data.message, 'success');
-        await fetchPosts();
-      } catch (error) {
-        Swal.fire('Lỗi', 'Có lỗi khi từ chối tin đăng!', 'error');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+        const res = await axios.post(`http://localhost:5133/api/admin/reject-post/${id}`);
+        Swal.fire('Đã từ chối', res.data.message, 'success');
+        fetchPosts();
+      } catch (err) {
+        Swal.fire('Lỗi', "Lỗi hệ thống", 'error');
+      } finally { setLoading(false); }
     }
   };
 
-  // Helper function để kiểm tra đuôi file có phải video không
-  const isVideoFile = (url) => {
-    return url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
-  };
+  const isVideoFile = (url) => url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
 
   return (
-    <div className="manage-posts-container">
-      <h2 className="manage-posts-title">Quản Lý Tin Đăng</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Quản Lý Tin Đăng</h2>
 
-      {loading && <div className="loading-overlay">Đang xử lý...</div>}
+      {loading && <div className={styles.loadingOverlay}>Đang xử lý...</div>}
 
-      <table className="manage-posts-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Tiêu Đề</th>
-            <th>Người Bán</th>
-            <th>Ngày Đăng</th>
-            <th>Giá</th>
-            <th>Mô Tả</th>
-            <th>Media</th>
-            <th>Trạng Thái</th>
-            <th>Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedPosts.length > 0 ? displayedPosts.map(post => (
-            <tr key={post.maTinDang}>
-              <td>{post.maTinDang}</td>
-              <td>{post.tieuDe}</td>
-              <td>{post.nguoiBan}</td>
-              <td>{formatDate(post.ngayDang)}</td>
-              <td>{formatCurrency(post.gia)} ₫</td>
-              <td
-                className={`description-cell ${expandedDescriptions[post.maTinDang] ? 'expanded' : ''}`}
-                onClick={() => toggleDescription(post.maTinDang)}
-              >
-                <div
-                  className="description-content"
-                  dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }}
-                />
-              </td>
-              <td>
-                {post.hinhAnh && post.hinhAnh.length > 0 ? (
-                  <div className="media-preview-container">
-                    {/* Hiển thị media đầu tiên */}
-                    <div className="media-thumbnail" onClick={() => handleMediaClick(post.hinhAnh, 0)}>
-                      {isVideoFile(post.hinhAnh[0]) ? (
-                        <video
-                          src={post.hinhAnh[0].startsWith("http") ? post.hinhAnh[0] : `http://localhost:5133/${post.hinhAnh[0]}`}
-                          className="post-media-thumbnail"
-                          muted
-                        />
-                      ) : (
-                        <img
-                          src={post.hinhAnh[0].startsWith("http") ? post.hinhAnh[0] : `http://localhost:5133/${post.hinhAnh[0]}`}
-                          alt="Ảnh đại diện"
-                          className="post-media-thumbnail"
-                        />
-                      )}
-                      {/* Hiển thị số lượng media nếu có nhiều hơn 1 */}
-                      {post.hinhAnh.length > 1 && (
-                        <div className="media-count-badge">
-                          +{post.hinhAnh.length - 1}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <span>Không có media</span>
-                )}
-              </td>
-              <td className={`manage-posts-status-${post.trangThai}`}>
-                {post.trangThai === 1 ? "Đã duyệt" : post.trangThai === 2 ? "Đã từ chối" : "Chờ duyệt"}
-              </td>
-              <td>
-                <button
-                  className="manage-posts-approve-btn"
-                  onClick={() => handleApprove(post.maTinDang)}
-                  disabled={post.trangThai !== 0 || loading}
-                >
-                  Duyệt
-                </button>
-                <button
-                  className="manage-posts-reject-btn"
-                  onClick={() => handleReject(post.maTinDang)}
-                  disabled={post.trangThai !== 0 || loading}
-                >
-                  Từ Chối
-                </button>
-              </td>
-            </tr>
-          )) : (
+      <div className={styles.card}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="9">Không có tin đăng nào để hiển thị.</td>
+              <th style={{width: '60px'}}>ID</th>
+              <th style={{width: '200px'}}>Tiêu Đề</th>
+              <th>Người Bán</th>
+              <th style={{width: '100px'}}>Ngày Đăng</th>
+              <th>Giá</th>
+              <th>Mô Tả</th>
+              <th>Media</th>
+              <th style={{width: '120px'}}>Trạng Thái</th>
+              <th style={{width: '220px', textAlign: 'right'}}>Thao Tác</th>
             </tr>
-          )}
-        </tbody>
-      </table>
-
-      <div className="pagination">
-        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Trước</button>
-        <span>Trang {currentPage} / {totalPages}</span>
-        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Sau</button>
+          </thead>
+          <tbody>
+            {displayedPosts.length > 0 ? displayedPosts.map(post => (
+              <tr key={post.maTinDang}>
+                <td><strong>#{post.maTinDang}</strong></td>
+                <td style={{fontWeight: 600}}>{post.tieuDe}</td>
+                <td>{post.nguoiBan}</td>
+                <td>{formatDate(post.ngayDang)}</td>
+                <td style={{color: '#d32f2f', fontWeight: 700}}>{formatCurrency(post.gia)} ₫</td>
+                <td
+                  className={`${styles.descCell} ${expandedDescriptions[post.maTinDang] ? styles.expanded : ''}`}
+                  onClick={() => toggleDescription(post.maTinDang)}
+                >
+                  <div className={styles.descContent} dangerouslySetInnerHTML={{ __html: (post.moTa || "").replace(/\n/g, "<br/>") }} />
+                </td>
+                <td>
+                  {post.hinhAnh?.[0] ? (
+                    <div className={styles.mediaPreview} onClick={() => handleMediaClick(post.hinhAnh, 0)}>
+                      {isVideoFile(post.hinhAnh[0]) ? 
+                        <video src={post.hinhAnh[0].startsWith("http") ? post.hinhAnh[0] : `http://localhost:5133/${post.hinhAnh[0]}`} className={styles.thumbImg} muted /> :
+                        <img src={post.hinhAnh[0].startsWith("http") ? post.hinhAnh[0] : `http://localhost:5133/${post.hinhAnh[0]}`} className={styles.thumbImg} alt="thumb" />
+                      }
+                      {post.hinhAnh.length > 1 && <div className={styles.countBadge}>+{post.hinhAnh.length - 1}</div>}
+                    </div>
+                  ) : <span style={{color: '#999'}}>Không media</span>}
+                </td>
+                <td>
+                  <span className={`${styles.statusBadge} ${styles['status' + post.trangThai]}`}>
+                    {post.trangThai === 1 ? "Đã duyệt" : post.trangThai === 2 ? "Đã từ chối" : "Chờ duyệt"}
+                  </span>
+                </td>
+                <td>
+                  <div className={styles.actions} style={{justifyContent: 'flex-end'}}>
+                    <button className={styles.btnApprove} onClick={() => handleApprove(post.maTinDang)} disabled={post.trangThai !== 0 || loading}>
+                      <FaCheck /> Duyệt
+                    </button>
+                    <button className={styles.btnReject} onClick={() => handleReject(post.maTinDang)} disabled={post.trangThai !== 0 || loading}>
+                      <FaTimes /> Từ Chối
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )) : (
+              <tr><td colSpan="9" align="center" style={{padding: '30px'}}>Không có tin đăng.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Media popup với carousel giống Chợ Tốt */}
+      <div className={styles.pagination}>
+        <button className={styles.pageBtn} onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+          <FaChevronLeft /> Trước
+        </button>
+        <span style={{fontWeight: 700}}>Trang {currentPage} / {totalPages}</span>
+        <button className={styles.pageBtn} onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+          Sau <FaChevronRight />
+        </button>
+      </div>
+
       {selectedMedia && (
-        <MediaCarousel 
-          medias={selectedMedia.medias}
-          initialIndex={selectedMedia.currentIndex}
-          onClose={closeMediaPopup}
-        />
+        <MediaCarousel medias={selectedMedia.medias} initialIndex={selectedMedia.currentIndex} onClose={() => setSelectedMedia(null)} />
       )}
     </div>
   );
 };
 
-// Component MediaCarousel giống Chợ Tốt
+// Component MediaCarousel
 const MediaCarousel = ({ medias, initialIndex = 0, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  // Xử lý phím ESC để đóng popup
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      } else if (e.key === 'ArrowLeft') {
-        goToPrevious();
-      } else if (e.key === 'ArrowRight') {
-        goToNext();
-      }
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowLeft') setCurrentIndex(prev => (prev === 0 ? medias.length - 1 : prev - 1));
+      else if (e.key === 'ArrowRight') setCurrentIndex(prev => (prev === medias.length - 1 ? 0 : prev + 1));
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const goToPrevious = () => {
-    setCurrentIndex(prevIndex => 
-      prevIndex === 0 ? medias.length - 1 : prevIndex - 1
-    );
-    setIsZoomed(false);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex(prevIndex => 
-      prevIndex === medias.length - 1 ? 0 : prevIndex + 1
-    );
-    setIsZoomed(false);
-  };
-
-  const isVideoFile = (url) => {
-    return url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
-  };
+  }, [onClose, medias.length]);
 
   const currentMedia = medias[currentIndex];
-  const isVideo = isVideoFile(currentMedia);
+  const isVideo = currentMedia.match(/\.(mp4|mov|avi|webm|mkv)$/i);
 
   return (
-    <div className="media-carousel-overlay" onClick={onClose}>
-      <div className="media-carousel-container" onClick={e => e.stopPropagation()}>
-        {/* Nút đóng */}
-        <button className="carousel-close-btn" onClick={onClose}>
-          ✕
-        </button>
-
-        {/* Media chính */}
-        <div className="carousel-media-wrapper">
-          {medias.length > 1 && (
-            <button className="carousel-nav-btn carousel-prev" onClick={goToPrevious}>
-              ❮
-            </button>
-          )}
-
-          <div className={`carousel-media-container ${isZoomed ? 'zoomed' : ''}`}>
-            {isVideo ? (
-              <video
-                src={currentMedia}
-                controls
-                className="carousel-media"
-                key={currentMedia} // Force reload when changing video
-                autoPlay={false}
-              />
-            ) : (
-              <img
-                src={currentMedia}
-                alt={`Media ${currentIndex + 1}`}
-                className="carousel-media"
-                onClick={() => setIsZoomed(!isZoomed)}
-                style={{ cursor: 'zoom-in' }}
-              />
-            )}
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.carouselContainer} onClick={e => e.stopPropagation()}>
+        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <div className={styles.mediaWrapper}>
+          {medias.length > 1 && <button className={styles.navBtn} onClick={() => setCurrentIndex(prev => (prev === 0 ? medias.length - 1 : prev - 1))}>❮</button>}
+          <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
+            {isVideo ? <video src={currentMedia} controls className={styles.mainMedia} key={currentMedia} /> :
+              <img src={currentMedia} className={`${styles.mainMedia} ${isZoomed ? styles.zoomed : ''}`} onClick={() => setIsZoomed(!isZoomed)} alt="Large view" />
+            }
           </div>
-
-          {medias.length > 1 && (
-            <button className="carousel-nav-btn carousel-next" onClick={goToNext}>
-              ❯
-            </button>
-          )}
+          {medias.length > 1 && <button className={styles.navBtn} onClick={() => setCurrentIndex(prev => (prev === medias.length - 1 ? 0 : prev + 1))}>❯</button>}
         </div>
-
-        {/* Thông tin media */}
-        <div className="carousel-info">
-          <div className="carousel-counter">
-            {currentIndex + 1} / {medias.length}
-          </div>
-          {!isVideo && (
-            <div className="carousel-zoom-hint">
-              Click để phóng to/thu nhỏ
-            </div>
-          )}
+        <div className={styles.info}>
+          <div style={{background: 'rgba(0,0,0,0.5)', padding: '5px 15px', borderRadius: '20px'}}>{currentIndex + 1} / {medias.length}</div>
         </div>
       </div>
     </div>
   );
 };
 
-export default ManagePosts; 
+export default ManagePosts;

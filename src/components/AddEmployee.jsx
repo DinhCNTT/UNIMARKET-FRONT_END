@@ -1,162 +1,255 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Select from "react-select"; // 🛠 Import React-Select
+import Select from "react-select";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // 🛠 Import icon mắt
-import Sidebar from "./Sidebar";
-import "./AddEmployee.css";
+
+// --- Import Icons ---
+import { FaUser, FaPhone, FaLock, FaEye, FaEyeSlash, FaBriefcase, FaUserPlus, FaSearch } from "react-icons/fa";
+
+// --- Import CSS Module ---
+import styles from "./AddEmployee.module.css";
 
 const AddEmployee = () => {
-  const [employees, setEmployees] = useState([]); // Danh sách nhân viên
-  const [selectedEmail, setSelectedEmail] = useState(null); // Email được chọn
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Employee");
-  const [showPassword, setShowPassword] = useState(false); // Trạng thái hiển thị mật khẩu
+    const [employees, setEmployees] = useState([]);
+    const [selectedEmail, setSelectedEmail] = useState(null);
+    const [fullName, setFullName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState("Employee");
+    const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:5133/api/admin/users")
-      .then((res) => {
-        console.log("Dữ liệu nhân viên:", res.data); // 🛠 Kiểm tra API có dữ liệu không
-        setEmployees(res.data);
-      })
-      .catch((err) => console.error("Lỗi khi lấy danh sách email", err));
-  }, []);
-
-  // Xử lý chọn email
-  const handleSelectEmail = (selectedOption) => {
-    setSelectedEmail(selectedOption);
-    
-    // Tìm thông tin nhân viên theo email đã chọn
-    const selectedEmployee = employees.find(emp => emp.email === selectedOption.value);
-
-    if (selectedEmployee) {
-      setFullName(selectedEmployee.fullName || ""); // Nếu không có fullName thì để trống
-      setPhoneNumber(selectedEmployee.phoneNumber || "");
-      setPassword(selectedEmployee.password || ""); // 🛠 Hiển thị mật khẩu (nếu API trả về)
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!fullName || !selectedEmail || !phoneNumber || !password) {
-      toast.error("⚠️ Vui lòng điền đầy đủ thông tin!", { position: "top-right" });
-      return;
-    }
-
-    const newEmployee = {
-      fullName,
-      email: selectedEmail.value,
-      phoneNumber,
-      password,
-      role,
+    // --- Style Custom ---
+    const customSelectStyles = {
+        control: (provided, state) => ({
+            ...provided,
+            borderRadius: "8px",
+            borderColor: state.isFocused ? "#ffca00" : "#e0e0e0",
+            boxShadow: state.isFocused ? "0 0 0 3px rgba(255, 202, 0, 0.2)" : "none",
+            padding: "4px",
+            "&:hover": { borderColor: "#ffca00" }
+        }),
+        menu: (provided) => ({
+            ...provided,
+            zIndex: 9999,
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? "#ffca00" : state.isFocused ? "#fff8cc" : "#fff",
+            color: state.isSelected ? "#000" : "#333",
+            cursor: "pointer",
+        }),
+        placeholder: (provided) => ({
+            ...provided,
+            color: "#999",
+            fontSize: "14px"
+        })
     };
 
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://127.0.0.1:5133/api/admin/add-or-update-employee",
-        newEmployee,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+    // --- Hàm fetch data ---
+    const fetchUsers = async () => {
+        try {
+            const res = await axios.get("http://localhost:5133/api/admin/users");
+            setEmployees(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error("Lỗi lấy danh sách user:", err);
         }
-      );
+    };
 
-      toast.success("✅ Thêm nhân viên thành công!", { position: "top-right" });
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-      // Reset form sau khi thêm thành công
-      setSelectedEmail(null);
-      setFullName("");
-      setPhoneNumber("");
-      setPassword("");
-      setRole("Employee");
-    } catch (err) {
-      console.error("Lỗi khi thêm nhân viên:", err.response?.data || err.message);
-      toast.error(`❌ Lỗi: ${err.response?.data?.message || "Không thể thêm nhân viên!"}`);
-    }
-  };
+    // --- XỬ LÝ KHI CHỌN EMAIL ---
+    const handleSelectEmail = (selectedOption) => {
+        console.log("👉 Đã chọn User:", selectedOption.value);
+        setSelectedEmail(selectedOption);
+        
+        const selectedEmployee = employees.find(emp => emp.email === selectedOption.value);
+        
+        if (selectedEmployee) {
+            setFullName(selectedEmployee.fullName || "");
+            setPhoneNumber(selectedEmployee.phoneNumber || "");
+            setPassword(""); // Luôn reset pass
 
-  return (
-    <div className="add-employee-container">
-      <Sidebar />
-      <h2>Thêm Nhân Viên</h2>
-      <form className="add-employee-form" onSubmit={handleSubmit}>
-        {/* Tìm kiếm email */}
-        <div className="form-group">
-          <label>Chọn Email:</label>
-          <Select
-            options={employees.map((emp) => ({
-              value: emp.email,
-              label: emp.email,
-            }))}
-            value={selectedEmail}
-            onChange={handleSelectEmail}
-            placeholder="Tìm email..."
-            isSearchable
-          />
+            // 🔥 FIX LOGIC NHẬN DIỆN ROLE (Chuẩn hóa)
+            const rawRole = selectedEmployee.role || selectedEmployee.Role || "Employee";
+            let normalizedRole = "Employee"; // Mặc định
+
+            // Kiểm tra chuỗi chứa từ khóa (không phân biệt hoa thường)
+            const roleLower = rawRole.toString().toLowerCase();
+            if (roleLower.includes("admin")) normalizedRole = "Admin";
+            else if (roleLower.includes("employee") || roleLower.includes("nhanvien")) normalizedRole = "Employee";
+            else if (roleLower.includes("user")) normalizedRole = "User";
+
+            console.log(`🔍 Role gốc: '${rawRole}' -> Set form thành: '${normalizedRole}'`);
+            setRole(normalizedRole);
+        }
+    };
+
+    // --- XỬ LÝ SUBMIT ---
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // 🛠 LOG DEBUG: Xem chính xác Frontend đang gửi cái gì
+        console.log("🚀 Bắt đầu gửi dữ liệu...");
+        console.log("- Email:", selectedEmail?.value);
+        console.log("- Role đang chọn:", role); // <--- KIỂM TRA DÒNG NÀY TRONG CONSOLE F12
+
+        if (!fullName || !selectedEmail || !phoneNumber) {
+            toast.warning("Vui lòng điền đầy đủ thông tin!");
+            return;
+        }
+
+        const newEmployee = {
+            fullName,
+            email: selectedEmail.value,
+            phoneNumber,
+            password, // Backend sẽ check nếu rỗng thì bỏ qua
+            role,     // Phải chắc chắn biến này là Role mới
+        };
+
+        console.log("📦 Payload gửi đi:", newEmployee);
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.post(
+                "http://localhost:5133/api/admin/add-or-update-employee",
+                newEmployee,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log("✅ Kết quả từ Server:", res.data);
+            toast.success(res.data.message || "Thao tác thành công!");
+            
+            // Reload lại danh sách user để cập nhật role mới nhất từ DB
+            await fetchUsers(); 
+
+            // Reset form
+            setSelectedEmail(null);
+            setFullName("");
+            setPhoneNumber("");
+            setPassword("");
+            setRole("Employee");
+        } catch (err) {
+            console.error("❌ Lỗi API:", err);
+            const msg = err.response?.data?.message || "Có lỗi xảy ra!";
+            toast.error(msg);
+        }
+    };
+
+    return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h2 className={styles.title}>Thêm / Cập Nhật Nhân Viên</h2>
+            </div>
+
+            <div className={styles.card}>
+                <form className={styles.formGrid} onSubmit={handleSubmit}>
+                    
+                    <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                        <label className={styles.label}><FaSearch color="#ffca00"/> Chọn Email Tài Khoản:</label>
+                        <Select
+                            options={employees.map((emp) => ({
+                                value: emp.email,
+                                label: emp.email,
+                            }))}
+                            value={selectedEmail}
+                            onChange={handleSelectEmail}
+                            placeholder="Nhập email để tìm kiếm..."
+                            isSearchable
+                            styles={customSelectStyles}
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}><FaUser color="#ffca00"/> Họ và Tên:</label>
+                        <div className={styles.inputWrapper}>
+                            <FaUser className={styles.inputIcon} />
+                            <input 
+                                className={styles.input}
+                                type="text" 
+                                value={fullName} 
+                                onChange={(e) => setFullName(e.target.value)} 
+                                placeholder="Nhập họ tên..."
+                                required 
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}><FaPhone color="#ffca00"/> Số Điện Thoại:</label>
+                        <div className={styles.inputWrapper}>
+                            <FaPhone className={styles.inputIcon} />
+                            <input 
+                                className={styles.input}
+                                type="text" 
+                                value={phoneNumber} 
+                                onChange={(e) => setPhoneNumber(e.target.value)} 
+                                placeholder="Nhập số điện thoại..."
+                                required 
+                            />
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}><FaLock color="#ffca00"/> Mật Khẩu:</label>
+                        <div className={styles.inputWrapper}>
+                            <FaLock className={styles.inputIcon} />
+                            <input 
+                                className={styles.input}
+                                type={showPassword ? "text" : "password"} 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                placeholder="Nhập pass mới (để trống nếu giữ nguyên)" 
+                            />
+                            <span 
+                                className={styles.togglePass}
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <FaEye /> : <FaEyeSlash />}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}><FaBriefcase color="#ffca00"/> Chức Vụ:</label>
+                        <div className={styles.inputWrapper}>
+                            <FaBriefcase className={styles.inputIcon} />
+                            <select 
+                                className={styles.input} 
+                                value={role} 
+                                onChange={(e) => {
+                                    console.log("🔄 Đổi role thành:", e.target.value);
+                                    setRole(e.target.value);
+                                }} 
+                                required
+                            >
+                                <option value="Admin">Admin (Quản trị viên)</option>
+                                <option value="Employee">Employee (Nhân viên)</option>
+                                <option value="User">User (Người dùng)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                        <button type="submit" className={styles.btnSubmit}>
+                            <FaUserPlus size={20} />
+                            Lưu Thông Tin
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+            
+            <ToastContainer autoClose={2000} position="top-right"/>
         </div>
-
-        {/* Họ và tên */}
-        <div className="form-group">
-          <label>Họ và Tên:</label>
-          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-        </div>
-
-        {/* Số điện thoại */}
-        <div className="form-group">
-          <label>Số Điện Thoại:</label>
-          <input type="text" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
-        </div>
-
-        {/* Mật khẩu có nút Ẩn/Hiện */}
-        <div className="form-group">
-          <label>Mật khẩu:</label>
-          <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
-            <input 
-              type={showPassword ? "text" : "password"}  // Ẩn/hiện mật khẩu
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              style={{ flex: 1, paddingRight: "40px" }} // Chừa chỗ cho icon
-            />
-            <span 
-              onClick={() => setShowPassword(!showPassword)} 
-              style={{
-                position: "absolute",
-                right: "10px",
-                cursor: "pointer",
-                color: "#888"
-              }}
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
-            </span>
-          </div>
-        </div>
-
-        {/* Chức vụ */}
-        <div className="form-group">
-          <label>Chức vụ:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} required>
-            <option value="Admin">Admin</option>
-            <option value="Employee">Employee</option>
-            <option value="User">User</option>
-          </select>
-        </div>
-
-        <button type="submit" className="add-employee-button">
-          Thêm Nhân Viên
-        </button>
-      </form>
-      <ToastContainer autoClose={3000} />
-    </div>
-  );
+    );
 };
 
 export default AddEmployee;

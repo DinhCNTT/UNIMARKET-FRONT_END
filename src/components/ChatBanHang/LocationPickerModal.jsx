@@ -1,87 +1,123 @@
-//src/components/ChatBanHang/LocationPickerModal.jsx
-import React, { useState, useMemo, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+// src/components/ChatBanHang/LocationPickerModal.jsx
+import React, { useState, useRef, useCallback } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import styles from "./ModuleChatCss/LocationPickerModal.module.css";
+// Icon SVG cho nút Close và GPS (Dùng tạm SVG inline cho tiện, bạn có thể thay bằng Icon component của bạn)
+const CloseIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+const GpsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>;
 
-// --- Fix lỗi icon mặc định của Leaflet trong React ---
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
+// Component xử lý logic khi map di chuyển
+const MapController = ({ onMove, center }) => {
+  const map = useMap();
 
-// Component xử lý việc click vào bản đồ để di chuyển ghim
-function LocationMarker({ position, setPosition }) {
-  const markerRef = useRef(null);
+  // Sự kiện khi map dừng kéo
+  React.useEffect(() => {
+    if (!map) return;
+    
+    const handleMoveEnd = () => {
+      onMove(map.getCenter());
+    };
 
-  useMapEvents({
-    click(e) {
-      setPosition(e.latlng);
-    },
-  });
+    map.on('move', handleMoveEnd); // Cập nhật liên tục để UI mượt hơn hoặc dùng 'moveend' để tối ưu
+    return () => {
+      map.off('move', handleMoveEnd);
+    };
+  }, [map, onMove]);
 
-  const eventHandlers = useMemo(
-    () => ({
-      dragend() {
-        const marker = markerRef.current;
-        if (marker != null) {
-          setPosition(marker.getLatLng());
-        }
-      },
-    }),
-    [setPosition]
-  );
+  // Di chuyển map khi center thay đổi từ bên ngoài (ví dụ bấm nút GPS)
+  React.useEffect(() => {
+    if(center) map.setView(center, map.getZoom());
+  }, [center, map]);
 
-  return (
-    <Marker
-      draggable={true}
-      eventHandlers={eventHandlers}
-      position={position}
-      ref={markerRef}
-    >
-      <Popup>Kéo thả ghim hoặc click vào bản đồ để chọn vị trí chính xác.</Popup>
-    </Marker>
-  );
-}
+  return null;
+};
 
 const LocationPickerModal = ({ initialPosition, onConfirm, onClose }) => {
-  // State lưu vị trí ghim hiện tại (bắt đầu bằng vị trí gợi ý từ Wifi)
-  const [position, setPosition] = useState(initialPosition || { lat: 10.762622, lng: 106.660172 });
+  // Mặc định HCM
+  const defaultPos = { lat: 10.762622, lng: 106.660172 };
+  const [position, setPosition] = useState(initialPosition || defaultPos);
+  const [mapCenter, setMapCenter] = useState(initialPosition || defaultPos);
 
   const handleConfirm = () => {
     onConfirm(position);
   };
 
+  const handleLocateMe = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setMapCenter(newPos); // Kích hoạt useEffect trong MapController để bay tới vị trí
+          setPosition(newPos);
+        },
+        () => alert("Không thể lấy vị trí của bạn.")
+      );
+    }
+  };
+
+  // Hàm update vị trí khi kéo map
+  const onMapMove = useCallback((newCenter) => {
+    setPosition(newCenter);
+  }, []);
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h3>📍 Xác nhận vị trí</h3>
-          <p>Định vị tự động có thể chưa chính xác. Vui lòng kéo ghim đến đúng vị trí của bạn.</p>
+        
+        {/* Header đơn giản hóa */}
+        <div className={styles.headerOverlay}>
+          <h3>Chọn vị trí giao hàng</h3>
+          <button className={styles.btnClose} onClick={onClose}>
+            <CloseIcon />
+          </button>
         </div>
 
         <div className={styles.mapWrapper}>
           <MapContainer 
-            center={position} 
-            zoom={16} 
+            center={mapCenter} 
+            zoom={17} 
             scrollWheelZoom={true} 
+            zoomControl={false} // Tắt nút zoom mặc định xấu xí
             style={{ height: "100%", width: "100%" }}
           >
+            {/* Dùng bản đồ CartoDB Voyager cho giao diện sáng, đẹp, hiện đại hơn OSM gốc */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             />
-            <LocationMarker position={position} setPosition={setPosition} />
+            <MapController onMove={onMapMove} center={mapCenter} />
           </MapContainer>
+
+          {/* CÁI GHIM CỐ ĐỊNH Ở GIỮA (Quan trọng) */}
+          <div className={styles.centerPin}>
+            <img 
+              src="https://cdn-icons-png.flaticon.com/512/447/447031.png" 
+              alt="pin" 
+              className={styles.pinImage}
+            />
+            <div className={styles.pinShadow}></div>
+          </div>
+
+          {/* Nút GPS nổi trên bản đồ */}
+          <button className={styles.btnLocate} onClick={handleLocateMe} title="Vị trí của tôi">
+            <GpsIcon />
+          </button>
         </div>
 
-        <div className={styles.modalActions}>
-          <button className={styles.btnCancel} onClick={onClose}>Hủy bỏ</button>
-          <button className={styles.btnConfirm} onClick={handleConfirm}>Gửi vị trí này</button>
+        {/* Footer nổi lên trên map */}
+        <div className={styles.footerPanel}>
+          <div className={styles.coordInfo}>
+            <span className={styles.coordLabel}>Vị trí đã chọn:</span>
+            <span className={styles.coordValue}>
+              {position.lat.toFixed(6)}, {position.lng.toFixed(6)}
+            </span>
+          </div>
+          <button className={styles.btnConfirm} onClick={handleConfirm}>
+            Xác nhận địa điểm
+          </button>
         </div>
+
       </div>
     </div>
   );
