@@ -1,8 +1,10 @@
+// src/components/TrangChuNav.jsx
 import React from 'react';
 import { NavLink, useLocation } from "react-router-dom";
-import styles from "./TrangChuNav.module.css"; // Import styles từ module
+import styles from "./TrangChuNav.module.css";
 
-const TrangChuNav = ({ onTabChange, activeTab }) => {
+// ✅ SỬA: Nhận thêm prop showVideoTab (mặc định là true)
+const TrangChuNav = ({ onTabChange, activeTab, showVideoTab = true }) => {
   const location = useLocation();
   
   const handleDanhChoBanClick = (e) => {
@@ -19,7 +21,6 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
     }
   };
 
-  // Xác định tab nào đang active
   const isDanhChoBanActive = () => {
     if (activeTab !== undefined) {
       return activeTab === 'danhchoban';
@@ -35,7 +36,8 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
     return false;
   };
 
-  const tabs = [
+  // Mảng tabs gốc
+  const allTabs = [
     { 
       key: "danhchoban",
       label: "Dành cho bạn", 
@@ -50,15 +52,22 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
     },
     { 
       path: "/market/video", 
-      label: "Video" 
+      label: "Video",
+      // Đánh dấu tab này là loại video để dễ lọc
+      isVideoTab: true 
     },
   ];
 
+  // ✅ LOGIC MỚI: Lọc bỏ tab Video nếu showVideoTab = false
+  const displayedTabs = showVideoTab 
+    ? allTabs 
+    : allTabs.filter(tab => !tab.isVideoTab); // Loại bỏ tab có cờ isVideoTab
+
   return (
     <div className={styles.container}>
-      {tabs.map((tab) => {
+      {displayedTabs.map((tab) => {
         if (tab.onClick) {
-          // Các tab không chuyển URL - chỉ thay đổi state
+          // Các tab Button (Dành cho bạn, Mới nhất)
           return (
             <button
               key={tab.key}
@@ -69,7 +78,7 @@ const TrangChuNav = ({ onTabChange, activeTab }) => {
             </button>
           );
         } else {
-          // Tab Video - chuyển URL bình thường (sử dụng NavLink)
+          // Tab Link (Video)
           return (
             <NavLink
               key={tab.path}
