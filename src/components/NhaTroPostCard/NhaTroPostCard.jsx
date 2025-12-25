@@ -1,11 +1,11 @@
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaHeart, FaVideo, FaRegImage, FaPlay } from "react-icons/fa";
-import { IoFlameSharp } from "react-icons/io5"; 
-import styles from "./PostItemCard.module.css";
-import { formatCurrency, formatRelativeTime } from "../utils/dateUtils";
+import { IoFlameSharp } from "react-icons/io5";
+import styles from "./NhaTroPostCard.module.css";
+import { formatRelativeTime } from "../../utils/dateUtils";
 
-const PostItemCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
+const NhaTroPostCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -26,6 +26,37 @@ const PostItemCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
 
   const imageCount = post.images ? post.images.length : 0;
   const hasVideo = !!videoUrl;
+
+  // --- 2. Hàm lấy dữ liệu an toàn (Fix lỗi mất m2) ---
+  const getDetail = (key) => {
+    // 1. Ưu tiên tìm trong chiTietObj/ChiTietObj từ MongoDB (dữ liệu mới)
+    const details = post.chiTietObj || post.ChiTietObj || {};
+    const foundKey = Object.keys(details).find(k => k.toLowerCase().includes(key.toLowerCase()));
+    if (foundKey) return details[foundKey];
+    
+    // 2. Fallback: Tìm trực tiếp trong post object (dữ liệu cũ/từ SQL)
+    if (key.toLowerCase().includes('dientich') || key.toLowerCase().includes('dt')) {
+      return post.dienTichPhong || post.DienTichPhong || null;
+    }
+    if (key.toLowerCase().includes('succhua') || key.toLowerCase().includes('nguoi')) {
+      return post.sucChua || post.SucChua || null;
+    }
+    
+    return null;
+  };
+
+  const dienTich = getDetail('dientich') || getDetail('dt');
+  const sucChua = getDetail('sucChua') || getDetail('nguoi');
+
+  // --- 3. Hàm Format Giá (2.000.000 -> 2 tr/tháng) ---
+  const formatPriceNhaTro = (price) => {
+    if (!price) return "Thỏa thuận";
+    if (price >= 1000000) {
+      const millions = price / 1000000;
+      return `${parseFloat(millions.toFixed(2))} tr/tháng`;
+    }
+    return `${(price / 1000).toLocaleString()} k/tháng`;
+  };
 
   const handleMouseEnter = () => {
     if (videoUrl && videoRef.current) {
@@ -74,7 +105,7 @@ const PostItemCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
         </div>
       )}
 
-      <Link to={`/tin-dang/${post.maTinDang}`} className={styles.postLink}>
+      <Link to={`/chi-tiet-tin-dang-nha-tro/${post.maTinDang}`} className={styles.postLink}>
         <div
           className={styles.postImageWrapper}
           onMouseEnter={handleMouseEnter}
@@ -130,17 +161,13 @@ const PostItemCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
           </h3>
 
           <div className={styles.priceRow}>
-            <span className={styles.price}>{formatCurrency(post.gia)}</span>
-            {(post.chiTietObj?.dienTichPhong || post.ChiTietObj?.dienTichPhong) && (
+            <span className={styles.price}>{formatPriceNhaTro(post.gia)}</span>
+            {dienTich && (
               <span className={styles.priceExtra}>
-                {post.chiTietObj?.dienTichPhong || post.ChiTietObj?.dienTichPhong}m²
+                {dienTich}m²
               </span>
             )}
           </div>
-
-          <p className={styles.description}>
-            {post.moTa ? post.moTa : "Không có mô tả chi tiết."}
-          </p>
 
           <div className={styles.location}>
             <span>
@@ -153,4 +180,4 @@ const PostItemCard = ({ post, isSaved, onToggleSave, isLoggedIn }) => {
   );
 };
 
-export default PostItemCard;
+export default NhaTroPostCard;

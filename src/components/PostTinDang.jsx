@@ -3,6 +3,7 @@ import TopNavbar from "./TopNavbar/TopNavbar";
 import styles from "./PostTinDang.module.css";
 import PreviewModal from "./PreviewModal";
 import MobileForm from "./CategoryForms/MobileForm";
+import RoomRentalForm from "./CategoryForms/RoomRentalForm";
 import usePostTinDang from "../hooks/usePostTinDang"; // 👈 Đảm bảo đường dẫn import đúng
 
 const PostTinDang = () => {
@@ -13,7 +14,7 @@ const PostTinDang = () => {
     condition, province, district, canNegotiate,
     statusMessage, tinhThanhList, quanHuyenList,
     previewData, showPreview, activePreviewMedia,
-    dynamicData, isLoading, isMobileCategory,
+    dynamicData, isLoading, isMobileCategory, isRoomRentalCategory,
     imageFiles, videoFiles, previewImages, previewVideos,
     TITLE_MAX_LENGTH, DESCRIPTION_MAX_LENGTH, MAX_IMAGES, MAX_VIDEOS, conditionMap,
     setContactInfo, setCondition, setProvince, setDistrict, setCanNegotiate, setActivePreviewMedia,
@@ -130,6 +131,13 @@ const PostTinDang = () => {
               />
             )}
 
+            {isRoomRentalCategory && (
+              <RoomRentalForm 
+                data={dynamicData} 
+                onChange={handleDynamicDataChange} 
+              />
+            )}
+
             <div className={styles.formGroup}>
               <label>Tiêu đề (tối đa {TITLE_MAX_LENGTH} ký tự)</label>
               <input 
@@ -206,6 +214,8 @@ const PostTinDang = () => {
             </div>
           </div>
         </div>
+
+        {/* ===== FIELDS PHÒNG TRỌ/BẤT ĐỘNG SẢN (CONDITIONAL) ===== */}
         
         <div className={styles.btnGroup}>
           <button

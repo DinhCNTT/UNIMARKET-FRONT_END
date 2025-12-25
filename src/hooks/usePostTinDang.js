@@ -15,6 +15,7 @@ const usePostTinDang = () => {
   // States
   const [categoryId, setCategoryId] = useState(null);
   const [categoryName, setCategoryName] = useState("");
+  const [parentCategory, setParentCategory] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -51,6 +52,7 @@ const usePostTinDang = () => {
 
   // Derived State
   const isMobileCategory = categoryName?.toLowerCase().includes("điện thoại");
+  const isRoomRentalCategory = parentCategory?.toLowerCase().trim() === "nhà trọ";
 
   // Helpers
   const getProvinceName = (id) =>
@@ -75,6 +77,7 @@ const usePostTinDang = () => {
     const queryParams = new URLSearchParams(location.search);
     setCategoryId(queryParams.get("categoryId"));
     setCategoryName(queryParams.get("categoryName"));
+    setParentCategory(queryParams.get("parentCategory"));
   }, [location]);
 
   useEffect(() => {
@@ -196,6 +199,14 @@ const usePostTinDang = () => {
       return;
     }
 
+    // ✅ Kiểm tra field bắt buộc cho phòng trọ/bất động sản
+    if (isRoomRentalCategory) {
+      if (!dynamicData.loaiHinhPhong || !dynamicData.dienTichPhong || !dynamicData.sucChua || !dynamicData.thoiHanChoThue) {
+        alert("Vui lòng điền đầy đủ thông tin phòng (Loại phòng, Diện tích, Sức chứa, Thời hạn cho thuê)!");
+        return;
+      }
+    }
+
     let detailsDisplay = null;
     if (isMobileCategory) {
       detailsDisplay = {
@@ -205,6 +216,17 @@ const usePostTinDang = () => {
         "Dung lượng": dynamicData.DungLuong,
         "Xuất xứ": dynamicData.XuatXu,
         "Bảo hành": dynamicData.BaoHanh
+      };
+    }
+
+    // ✅ Thêm display details cho phòng trọ/bất động sản
+    if (isRoomRentalCategory) {
+      detailsDisplay = {
+        "Loại phòng": dynamicData.loaiHinhPhong,
+        "Diện tích": `${dynamicData.dienTichPhong} m²`,
+        "Sức chứa": `${dynamicData.sucChua} người`,
+        "Thời hạn": `${dynamicData.thoiHanChoThue} tháng`,
+        "Tiện ích": (dynamicData.tienIch || []).join(", ") || "Không"
       };
     }
 
@@ -237,9 +259,19 @@ const usePostTinDang = () => {
       alert("Vui lòng chọn ít nhất 1 hình ảnh!");
       return;
     }
+
+    // ✅ Kiểm tra field bắt buộc cho điện thoại di động
     if (isMobileCategory) {
       if (!dynamicData.Hang || !dynamicData.DongMay || !dynamicData.MauSac || !dynamicData.DungLuong) {
         alert("Vui lòng điền đầy đủ Hãng, Dòng máy, Màu sắc và Dung lượng!");
+        return;
+      }
+    }
+
+    // ✅ Kiểm tra field bắt buộc cho phòng trọ/bất động sản
+    if (isRoomRentalCategory) {
+      if (!dynamicData.loaiHinhPhong || !dynamicData.dienTichPhong || !dynamicData.sucChua || !dynamicData.thoiHanChoThue) {
+        alert("Vui lòng điền đầy đủ: Loại phòng, Diện tích, Sức chứa và Thời hạn cho thuê!");
         return;
       }
     }
@@ -260,6 +292,11 @@ const usePostTinDang = () => {
     formData.append("canNegotiate", canNegotiate);
 
     if (isMobileCategory && Object.keys(dynamicData).length > 0) {
+      formData.append("thongTinChiTiet", JSON.stringify(dynamicData));
+    }
+
+    // Thêm chiTiet cho phòng trọ/bất động sản
+    if (isRoomRentalCategory && Object.keys(dynamicData).length > 0) {
       formData.append("thongTinChiTiet", JSON.stringify(dynamicData));
     }
 
@@ -288,6 +325,7 @@ const usePostTinDang = () => {
     videoInputRef,
     // States
     categoryName,
+    parentCategory,
     title,
     description,
     price,
@@ -305,6 +343,7 @@ const usePostTinDang = () => {
     dynamicData,
     isLoading,
     isMobileCategory,
+    isRoomRentalCategory,
     // Media States
     imageFiles,
     videoFiles,

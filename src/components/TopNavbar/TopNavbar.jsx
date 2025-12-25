@@ -1,6 +1,6 @@
 //src/components/TopNavbar/TopNavbar.jsx
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as signalR from "@microsoft/signalr";
 
@@ -17,14 +17,16 @@ import { CategoryContext } from "../../context/CategoryContext";
 
 import styles from "./TopNavbar.module.css";
 import bannerBg from "../../assets/baner1.jpg";
+import phongTroBanner from "../../assets/phong_tro_banner.jpg";
 
 
 const TopNavbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
  
   // Xác định xem trang hiện tại có phải là trang chủ (có banner) hay không
   // Bạn có thể thêm các đường dẫn khác vào đây nếu muốn hiện banner ở đó
-  const isHomePage = location.pathname === "/market" || location.pathname === "/" || location.pathname === "/market/do-dien-tu";
+  const isHomePage = location.pathname === "/market" || location.pathname === "/" || location.pathname === "/market/do-dien-tu" || location.pathname === "/market/nha-tro";
 
 
   // Nếu không phải Home Page thì mặc định là scrolled (để hiện thanh trắng luôn)
@@ -176,15 +178,31 @@ const TopNavbar = () => {
   //       GIAO DIỆN
   // -------------------------
  
+  // Xác định ảnh banner tùy theo trang
+  const getBannerImage = () => {
+    if (location.pathname === "/market/nha-tro") {
+      return phongTroBanner;
+    }
+    return bannerBg; // Default banner cho trang chủ & đồ điện tử
+  };
+
+  // ✅ Xác định trang hiện tại để highlight link active
+  const isActiveLink = (pathname) => {
+    if (pathname === "unimarket") {
+      return location.pathname === "/market" || location.pathname === "/";
+    }
+    return location.pathname === pathname;
+  };
+
   // Xác định background: Nếu là HomePage và chưa cuộn thì hiện ảnh, còn lại là none (để CSS xử lý màu trắng)
   const bgStyle = (isHomePage && !scrolled)
-    ? { backgroundImage: `url(${bannerBg})` }
+    ? { backgroundImage: `url(${getBannerImage()})` }
     : { backgroundImage: "none" };
 
 
   return (
     <header
-      className={`${styles.topNavbar} ${scrolled ? styles.scrolled : ""}`}
+      className={`${styles.topNavbar} ${scrolled ? styles.scrolled : ""} ${location.pathname === "/market/nha-tro" ? styles.nhaTroVariant : ""}`}
       style={bgStyle}
     >
       {/* Bên trái */}
@@ -197,10 +215,26 @@ const TopNavbar = () => {
         {(isHomePage && !scrolled) ? (
           <div className={styles.bannerTextContainer}>
             <div className={styles.topLinks}>
-              <span className={styles.activeLink}>Unimarket</span>
-              <span>Xe cộ</span>
-              <span>Bất động sản</span>
-              <span>Việc làm</span>
+              <span 
+                className={`${styles.topLink} ${isActiveLink("unimarket") ? styles.active : ""}`}
+                onClick={() => navigate("/market")}
+              >
+                Unimarket
+              </span>
+              <span 
+                className={`${styles.topLink} ${isActiveLink("/market/do-dien-tu") ? styles.active : ""}`}
+                onClick={() => navigate("/market/do-dien-tu")}
+              >
+                Đồ điện tử
+              </span>
+              <span 
+                className={`${styles.topLink} ${isActiveLink("/market/nha-tro") ? styles.active : ""}`}
+                onClick={() => navigate("/market/nha-tro")}
+              >
+                Nhà trọ
+              </span>
+              <span className={styles.topLink}>Xe cộ</span>
+              <span className={styles.topLink}>Việc làm</span>
             </div>
             <h1 className={styles.mainSlogan}>Giá tốt, gần bạn, chốt nhanh!</h1>
           </div>

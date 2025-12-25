@@ -30,8 +30,8 @@ export const useTinDangData = (activeTab, categoryGroup) => {
           params.categoryGroup = categoryGroup;
         }
 
-
-        if (activeTab === "danhchoban") {
+        // ✅ CHỈ dùng get-recommended-posts khi KHÔNG có categoryGroup
+        if (activeTab === "danhchoban" && !categoryGroup) {
           url = "http://localhost:5133/api/tindang/get-recommended-posts";
           params.limit = 20;
         }
@@ -47,6 +47,7 @@ export const useTinDangData = (activeTab, categoryGroup) => {
 
 
         const response = await axios.get(fullUrl, config);
+        console.log("📦 Fetched posts:", response.data);
         setPosts(response.data);
       } catch (error) {
         console.error("Error fetching posts:", error);
