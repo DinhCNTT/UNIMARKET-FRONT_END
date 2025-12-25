@@ -25,6 +25,10 @@ import SidebarInfo from './components/SidebarInfo';
 import VideoPlayerSection from './components/VideoPlayerSection';
 import TopNavbarUniMarket from '../../components/TopNavbarUniMarket';
 
+// --- HOOKS ---
+// 🔥 Import Hook ViewTracking (Logic mới từ Code 2)
+import { useViewTracking } from '../../hooks/useViewTracking';
+
 const API_BASE = 'http://localhost:5133';
 
 const VideoStandalonePage = () => {
@@ -39,6 +43,12 @@ const VideoStandalonePage = () => {
   // --- CONTEXT ---
   const { token, user } = useContext(AuthContext);
 
+  // --- REFS ---
+  // Scroll container
+  const containerRef = useRef(null);
+  // 🔥 Ref để chứa danh sách các thẻ Video/Component (Logic mới từ Code 2)
+  const videoElsRef = useRef([]); 
+
   // --- STATE ---
   const [videosList, setVideosList] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -48,9 +58,6 @@ const VideoStandalonePage = () => {
 
   // Sidebar Tab
   const [activeTab, setActiveTab] = useState('comments');
-
-  // Scroll container
-  const containerRef = useRef(null);
 
   // ======================================================
   // 1. LOAD MORE VIDEOS (Infinite Scroll)
@@ -65,7 +72,7 @@ const VideoStandalonePage = () => {
 
         const excludedIds = currentList.map(v => v.maTinDang);
 
-        // --- SỬA TẠI ĐÂY: Thêm config headers chứa Token ---
+        // --- Config headers chứa Token ---
         const res = await axios.post(
           `${API_BASE}/api/Recommendation/foryou`,
           {
@@ -76,7 +83,6 @@ const VideoStandalonePage = () => {
             headers: token ? { Authorization: `Bearer ${token}` } : {} 
           }
         );
-        // ---------------------------------------------------
 
         if (res.data && res.data.length > 0) {
           setVideosList(prev => {
@@ -179,6 +185,7 @@ const VideoStandalonePage = () => {
         if (isNaN(index)) return;
 
         setActiveIndex(index);
+        
         // Cập nhật URL mà không reload trang
         if (videosList[index]) {
           window.history.replaceState(
@@ -187,6 +194,7 @@ const VideoStandalonePage = () => {
             `/video-standalone/${videosList[index].maTinDang}`
           );
         }
+
         // Nếu lướt gần cuối danh sách (còn 2 video) -> Tải thêm
         if (
           index >= videosList.length - 2 &&
@@ -196,7 +204,8 @@ const VideoStandalonePage = () => {
         }
       });
     }, options);
-  // Gắn observer vào các phần tử video
+
+    // Gắn observer vào các phần tử video
     const elements = document.querySelectorAll(
       `.${styles.videoSnapItem}`
     );
@@ -206,7 +215,18 @@ const VideoStandalonePage = () => {
   }, [videosList, isLoadingMore, loadMoreVideos]);
 
   // ======================================================
-  // 5. HANDLERS
+  // 5. VIEW TRACKING LOGIC (MỚI)
+  // ======================================================
+  // Hook này sẽ tự động chạy khi activeIndex thay đổi hoặc videosList thay đổi
+  useViewTracking(
+    videosList[activeIndex], // Video hiện tại
+    activeIndex,             // Index hiện tại
+    videoElsRef,             // List Ref chứa các thẻ video
+    setVideosList            // Hàm set state để cập nhật view ảo ngay lập tức
+  );
+
+  // ======================================================
+  // 6. HANDLERS
   // ======================================================
   const handleBack = () => {
     if (window.history.length > 2) navigate(-1);
@@ -227,7 +247,6 @@ const VideoStandalonePage = () => {
   };
 
   // 🔥 LOGIC ĐIỀU HƯỚNG BẰNG MŨI TÊN (CỐ ĐỊNH)
-  // Hàm này sẽ tìm phần tử DOM của video tiếp theo và cuộn tới đó
   const handleScrollNavigation = (direction) => {
     let newIndex = activeIndex;
 
@@ -251,7 +270,7 @@ const VideoStandalonePage = () => {
   };
 
   // ======================================================
-  // 6. RENDER
+  // 7. RENDER
   // ======================================================
   if (loading && videosList.length === 0) {
     return <div className={styles.loadingState}></div>;
@@ -299,6 +318,10 @@ const VideoStandalonePage = () => {
             data-index={index}
           >
             <VideoPlayerSection
+              // 🔥 GẮN REF VÀO ĐÂY (Logic mới từ Code 2)
+              // Khi component con render, nó sẽ đẩy tham chiếu vào mảng videoElsRef tại vị trí index
+              ref={(el) => (videoElsRef.current[index] = el)}
+              
               videoData={vid}
               token={token}
               currentUser={user}
@@ -310,8 +333,7 @@ const VideoStandalonePage = () => {
         ))}
       </div>
 
-      {/* 🔥 MŨI TÊN ĐIỀU HƯỚNG CỐ ĐỊNH (FIXED NAVIGATION) */}
-      {/* Nằm ngoài videoSection nên sẽ đứng yên khi cuộn */}
+      {/* 🔥 MŨI TÊN ĐIỀU HƯỚNG CỐ ĐỊNH */}
       <div className={styles.fixedNavigationGroup}>
           <button
             className={`${styles.fixedNavBtn} ${activeIndex === 0 ? styles.disabled : ''}`}

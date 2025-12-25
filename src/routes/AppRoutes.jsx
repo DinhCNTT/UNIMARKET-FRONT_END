@@ -16,7 +16,6 @@ import ErrorBoundary from "../components/ErrorBoundary";
 
 // --- ADMIN PAGES & COMPONENTS ---
 import AdminDashboard from "../pages/AdminDashboard";
-// Lưu ý: Không cần import Sidebar ở đây nữa vì nó nằm trong Layout rồi
 import AddEmployee from "../components/AddEmployee";
 import EmployeeList from "../components/EmployeeList";
 import CategoryForm from "../components/CategoryForm";
@@ -48,20 +47,18 @@ import VideoDetailViewer from "../components/VideoDetailViewer";
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
 import VideoStandalonePage from "../pages/VideoStandalone/VideoStandalonePage";
 
-// --- ROUTE GUARDS ---
+// Import đúng đường dẫn
+import ExplorePage from '../pages/ExplorePage/ExplorePage';
 
-// 1. AdminGuard: Chỉ kiểm tra quyền, KHÔNG render giao diện (giao diện để AdminLayout lo)
+// --- ROUTE GUARDS ---
 const AdminGuard = ({ children }) => {
   const { user, role } = useContext(AuthContext);
-  
-  if (user === null) return null; // Hoặc loading spinner
+  if (user === null) return null; 
   if (!user) return <Navigate to="/login" />;
   if (role !== "Admin") return <Navigate to="/" />;
-  
   return children;
 };
 
-// 2. ProtectedRoute: Bảo vệ các trang user đăng nhập
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
   if (!user) return <Navigate to="/login" />;
@@ -125,19 +122,20 @@ function AppRoutes() {
       <Route path="/video/:id" element={<VideoDetailViewer />} />
       <Route path="/video-standalone/:id" element={<VideoStandalonePage />} />
 
+      {/* 🔥 [QUAN TRỌNG] Thêm Route này để khớp với ExplorePage đã sửa */}
+      <Route path="/liked-video-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
+
+      <Route path="/explore" element={<ExplorePage />} />
+
       {/* ==============================
-          5. ADMIN ROUTES (CẤU TRÚC MỚI)
+          5. ADMIN ROUTES
       ============================== */}
       <Route path="/admin" element={
         <AdminGuard>
-          {/* AdminLayout sẽ bọc tất cả các route con bên dưới */}
           <AdminLayout /> 
         </AdminGuard>
       }>
-        {/* Khi vào /admin, mặc định hiện Dashboard */}
         <Route index element={<AdminDashboard />} />
-        
-        {/* Các trang con: KHÔNG cần Sidebar nữa vì cha đã có */}
         <Route path="add-employee" element={<AddEmployee />} />
         <Route path="employees" element={<EmployeeList />} />
         <Route path="categories" element={<CategoryForm />} />

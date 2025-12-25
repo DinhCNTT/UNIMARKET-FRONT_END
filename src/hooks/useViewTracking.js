@@ -256,21 +256,41 @@ export const useViewTracking = (videoData, currentIndex, videoElsRef, setVideoLi
     const handleBeforeUnload = () => {
       if (videoData) {
         const finalWatchedSeconds = getCurrentWatchedSeconds(videoData.maTinDang);
+        
+        // Chỉ gửi nếu xem trên 3 giây
         if (finalWatchedSeconds >= 3) {
           const tracking = viewTrackingRef.current[videoData.maTinDang] || {};
-          const data = JSON.stringify({
+          const token = localStorage.getItem("token"); // ✅ Lấy Token
+
+          const dataPayload = {
             maTinDang: videoData.maTinDang,
             watchedSeconds: finalWatchedSeconds,
             isCompleted: false,
             rewatchCount: tracking.loopCount || 0,
             skipViewCount: true
-          });
-          const blob = new Blob([data], { type: 'application/json' });
-          navigator.sendBeacon(`${API_BASE}/api/video/track-view`, blob);
-          console.log(`📤 Sent final view tracking for video ${videoData.maTinDang} via beacon: ${finalWatchedSeconds}s`);
+          };
+
+          // Chuẩn bị Header
+          const headers = {
+            'Content-Type': 'application/json'
+          };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`; // ✅ Gắn Token vào Header
+          }
+
+          // ✅ Dùng fetch với keepalive: true thay cho sendBeacon
+          fetch(`${API_BASE}/api/video/track-view`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(dataPayload),
+            keepalive: true // 🔥 QUAN TRỌNG: Giúp request sống sót khi đóng tab
+          }).catch(err => console.error("Error sending final view:", err));
+
+          console.log(`📤 Sent final view tracking for video ${videoData.maTinDang} via fetch-keepalive: ${finalWatchedSeconds}s`);
         }
       }
     };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);

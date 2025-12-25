@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './SuggestedVideoList.module.css';
+import defaultAvatar from '../../../assets/default-avatar.png';
 
-// Component này nhận danh sách video từ cha (VideoStandalonePage -> SidebarInfo -> SuggestedVideoList)
-// Không tự fetch API để tránh mất đồng bộ dữ liệu.
 const SuggestedVideoList = ({ videos, currentVideoId, onLoadMore, hasMore = true }) => {
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState(null);
@@ -72,7 +71,7 @@ const SuggestedVideoList = ({ videos, currentVideoId, onLoadMore, hasMore = true
           {/* A. Thumbnail & Preview */}
           <div className={styles.imageWrapper}>
             <img
-              src={vid.hinhAnh || "/assets/images/placeholder.png"}
+              src={vid.hinhAnh || "https://placehold.co/150x266?text=No+Image"}
               alt={vid.tieuDe}
               className={styles.image}
               onError={(e) => {
@@ -112,12 +111,13 @@ const SuggestedVideoList = ({ videos, currentVideoId, onLoadMore, hasMore = true
             </h3>
 
             <div className={styles.authorRow}>
+              {/* 🔥 SỬ DỤNG DEFAULT AVATAR TẠI ĐÂY */}
               <img
-                src={vid.nguoiDang?.avatarUrl || "/assets/images/default-avatar.png"}
+                src={vid.nguoiDang?.avatarUrl || defaultAvatar}
                 className={styles.smallAvatar}
                 alt=""
                 onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/20";
+                  e.target.src = defaultAvatar; // Fallback về ảnh nội bộ khi link lỗi
                 }}
               />
               <span className={styles.authorName}>

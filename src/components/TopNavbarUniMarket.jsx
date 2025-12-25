@@ -27,25 +27,24 @@ export default function TopNavbarUniMarket() {
   const navigate = useNavigate();
   const location = useLocation();
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
-  
+   
   // Lấy user từ AuthContext
   const { user } = useContext(AuthContext); 
 
   const { unreadCount, fetchNotifications } = useContext(GlobalNotificationContext);
   const isChatRoute = location.pathname.startsWith("/chat");
   const [isMini, setIsMini] = useState(isChatRoute);
+   
+  // Danh sách các tab sẽ mở Panel bên cạnh
   const PANEL_TABS_SET = useMemo(() => new Set(["search", "upload", "activity", "more"]), []);
 
   // ==========================================================
   // [LOGIC MỚI] LẤY TỪ KHÓA TỪ URL ĐỂ HIỂN THỊ TRÊN NÚT
   // ==========================================================
   const getSearchLabel = () => {
-    // Nếu URL bắt đầu bằng /search/
     if (location.pathname.startsWith("/search/")) {
       try {
-        // Cấu trúc /search/iphone -> lấy phần tử thứ 2
         const parts = location.pathname.split("/");
-        // parts[2] là keyword
         if (parts[2]) {
           return decodeURIComponent(parts[2]);
         }
@@ -53,10 +52,9 @@ export default function TopNavbarUniMarket() {
         return "Search";
       }
     }
-    // Mặc định trả về chữ Search
     return "Search";
   };
-  
+   
   const searchLabel = getSearchLabel();
 
   // ==========================================================
@@ -81,7 +79,7 @@ export default function TopNavbarUniMarket() {
   const shouldHideFollowingList = isPanelOpen || activeTab === "messages" || isChatRoute;
 
   // ==========================================================
-  // LOGIC GIỮ "FOR YOU" ACTIVE KHI Ở TRANG VIDEO
+  // LOGIC ĐỒNG BỘ URL VỚI ACTIVE TAB (ĐÃ SỬA VÀ BỔ SUNG)
   // ==========================================================
   useEffect(() => {
     const path = location.pathname;
@@ -92,39 +90,70 @@ export default function TopNavbarUniMarket() {
       "following", 
     ]);
 
+    // 1. Nếu đang ở trang Video chi tiết (VideoDetailViewer - Logic cũ của bạn)
+    // Giả định: Trang Feed chính có đường dẫn bắt đầu bằng /video/
     if (path.startsWith("/video/")) {
       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
         setActiveTab("forYou");
       }
-    } else {
-      if (activeTab === "forYou") {
-        setActiveTab(null);
+    } 
+    // 2. Nếu đang ở trang Explore (Logic cũ)
+    else if (path === "/explore") {
+      if (activeTab !== "explore" && !PANEL_TABS_SET.has(activeTab)) {
+        setActiveTab("explore");
+      }
+    }
+    // 3. Logic cho trang chủ mặc định (Market/Home) cũng coi là For You
+    else if (path === "/" || path === "/market") {
+       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
+         setActiveTab("forYou");
+       }
+    }
+    // 4. [FIX MỚI] CÁC TRƯỜNG HỢP KHÁC (VideoStandalone, v.v...)
+    // Nếu không phải các trang trên, cần tắt màu vàng (set activeTab = null)
+    else {
+      // Chỉ reset nếu tab hiện tại KHÔNG PHẢI là các tab floating (Search, Noti, Message...)
+      // và cũng không phải đang ở trong trang Chat (vì Chat tự xử lý activeTab="messages")
+      if (!floatingTabs.has(activeTab) && !path.startsWith("/chat")) {
+         setActiveTab(null);
       }
     }
   }, [location.pathname, activeTab, setActiveTab, PANEL_TABS_SET]);
 
   // ==========================================================
-  // TOGGLE TAB
+  // TOGGLE TAB (XỬ LÝ CLICK)
   // ==========================================================
   const toggleTab = (tab) => {
-    if (activeTab === tab && tab !== "forYou") {
+    // Nếu click lại tab đang active (trừ forYou/explore reload)
+    if (activeTab === tab && tab !== "forYou" && tab !== "explore") {
       setActiveTab(null);
       setIsMini(location.pathname.startsWith("/chat"));
       return;
     }
 
+    // --- CASE 1: FOR YOU ---
     if (tab === "forYou") {
       setActiveTab("forYou");
       triggerReload(); 
       if (!location.pathname.startsWith("/video/")) {
-        navigate("/video/1");
+        navigate("/video/1"); // Hoặc trang chủ tùy logic
       }
       setIsMini(false); 
       return;
     }
 
+    // --- CASE 2: EXPLORE ---
+    if (tab === "explore") {
+      setActiveTab("explore");
+      navigate("/explore"); // Chuyển hướng sang trang ExplorePage
+      setIsMini(false); // Mở rộng sidebar
+      return;
+    }
+
+    // --- CASE 3: CÁC TAB KHÁC (PANEL/SIDEBAR) ---
     setActiveTab(tab);
-    
+     
+    // Check lại logic mini sidebar khi click
     const TABS_NEED_MINI = ["search", "activity", "messages", "more", "upload"];
     if (TABS_NEED_MINI.includes(tab)) {
         setIsMini(true); 
@@ -172,7 +201,12 @@ export default function TopNavbarUniMarket() {
           
         if (PANEL_TABS_SET.has(activeTab)) {
           setActiveTab(null);
-          setIsMini(location.pathname.startsWith("/chat"));
+          // Khi đóng panel, nếu đang ở explore thì mở rộng sidebar ra lại (nếu ko phải chat)
+          if (location.pathname === "/explore") {
+             setIsMini(false);
+          } else {
+             setIsMini(location.pathname.startsWith("/chat"));
+          }
         }
       }
     };
@@ -208,7 +242,7 @@ export default function TopNavbarUniMarket() {
                 )}
             </div>
 
-            {/* --- NÚT SEARCH ĐÃ CẬP NHẬT --- */}
+            {/* --- NÚT SEARCH --- */}
             <button
                 className={`um-tn-icon-btn search-btn ${
                     activeTab === "search" ? "active" : ""
@@ -236,6 +270,7 @@ export default function TopNavbarUniMarket() {
                     {!isMini && <span>For You</span>}
                 </button>
 
+                {/* --- NÚT EXPLORE --- */}
                 <button
                     className={`um-tn-icon-btn ${activeTab === "explore" ? "active" : ""}`}
                     onClick={() => toggleTab("explore")}
@@ -367,13 +402,13 @@ export default function TopNavbarUniMarket() {
               isOpen={activeTab === "search"}
               onClose={() => {
                   setActiveTab(null);
-                  setIsMini(location.pathname.startsWith("/chat"));
+                  if (location.pathname === "/explore") setIsMini(false); // Mở lại nếu ở explore
+                  else setIsMini(location.pathname.startsWith("/chat"));
               }}
             />
           </div>
         )}
 
-        {/* Cần check user ở đây nữa để tránh panel mở khi không có user (phòng hờ) */}
         {activeTab === "activity" && user && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <NotificationDropdown />
@@ -398,7 +433,8 @@ export default function TopNavbarUniMarket() {
           <div className="um-tn-tab-content" ref={panelRef}>
             <MorePanel onClose={() => {
                 setActiveTab(null);
-                setIsMini(location.pathname.startsWith("/chat"));
+                if (location.pathname === "/explore") setIsMini(false); // Mở lại nếu ở explore
+                else setIsMini(location.pathname.startsWith("/chat"));
             }} />
           </div>
         )}

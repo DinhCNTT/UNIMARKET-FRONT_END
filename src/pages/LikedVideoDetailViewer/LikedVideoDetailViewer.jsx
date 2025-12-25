@@ -15,6 +15,7 @@ import styles from "./LikedVideoDetailViewer.module.css";
 import { useVideoPlayer } from "../../hooks/useVideoPlayer";
 import { useVideoInteractions } from "../../hooks/useVideoInteractions";
 import { useComments } from "../../hooks/useComments.jsx";
+import { useViewTracking } from "../../hooks/useViewTracking"; 
 import { VideoHubContext } from "../../context/VideoHubContext";
 
 // Import Components
@@ -86,8 +87,6 @@ export default function LikedVideoDetailViewer({
   // ==========================================
   // ⚡ FIX LỖI: CHUẨN HÓA DỮ LIỆU (Mapping)
   // ==========================================
-  // Dù dữ liệu đầu vào là 'videoDuongDan' (từ Grid) hay 'videoUrl' (từ API)
-  // thì đều quy về 'videoUrl' để tránh bị undefined gây lỗi Hook.
   const normalizeVideoData = (vid) => {
     if (!vid) return null;
     return {
@@ -101,7 +100,7 @@ export default function LikedVideoDetailViewer({
     () => normalizeVideoData(shallowVideo),
     [shallowVideo]
   );
-  
+
   // ==========================================
   // 2. HOOKS TƯƠNG TÁC
   // ==========================================
@@ -126,9 +125,9 @@ export default function LikedVideoDetailViewer({
 
   // Video cuối cùng để hiển thị (Ưu tiên full > shallow)
   const videoToDisplay = normalizedFull || normalizedShallow;
-  
+
   // Đảm bảo luôn có 1 chuỗi URL, tránh undefined truyền vào hook
-  const safeVideoUrl = videoToDisplay?.videoUrl || ""; 
+  const safeVideoUrl = videoToDisplay?.videoUrl || "";
 
   // --- Hook Player ---
   const {
@@ -156,11 +155,40 @@ export default function LikedVideoDetailViewer({
   } = useComments(videoToDisplay?.maTinDang);
 
   // ==========================================
+  // 🔥 TÍCH HỢP VIEW TRACKING (MỚI THÊM)
+  // ==========================================
+
+  // Tạo ref chứa element video để hook tracking có thể truy cập theo index
+  const videoElsRef = useRef({});
+
+  // Đồng bộ playerRef hiện tại vào videoElsRef đúng vị trí index
+  // Lý do: Hook tracking cần videoElsRef.current[currentIndex]
+  useEffect(() => {
+    if (playerRef.current) {
+      videoElsRef.current[currentIndex] = playerRef.current;
+    }
+  }, [currentIndex, playerRef.current, videoToDisplay]);
+
+  // Gọi Hook Tracking
+  const { stopViewTracking } = useViewTracking(
+    videoToDisplay, // Dữ liệu video hiện tại
+    currentIndex, // Index hiện tại
+    videoElsRef, // Ref chứa element video (đã đồng bộ ở trên)
+    setVideoList // Hàm update list (để cập nhật view realtime)
+  );
+
+  // ==========================================
   // 3. LOGIC SỰ KIỆN
   // ==========================================
 
   const handleGoBack = (e) => {
     e?.stopPropagation();
+    
+    // Gọi stop tracking thủ công khi back (dù hook có cleanup nhưng thêm cho chắc)
+    if (videoToDisplay?.maTinDang) {
+        stopViewTracking(videoToDisplay.maTinDang);
+    }
+
     if (isOverlay && onClose) {
       onClose();
       return;
@@ -239,16 +267,16 @@ export default function LikedVideoDetailViewer({
     if (videoConnection && maTinDangString) {
       // Kiểm tra kết nối trước khi invoke để tránh lỗi ngắt kết nối
       if (videoConnection.state === "Connected") {
-          videoConnection
-            .invoke("JoinVideoGroup", maTinDangString)
-            .catch((err) => console.error("SignalR Join Error:", err));
+        videoConnection
+          .invoke("JoinVideoGroup", maTinDangString)
+          .catch((err) => console.error("SignalR Join Error:", err));
       }
-      
+
       return () => {
         if (videoConnection.state === "Connected") {
-            videoConnection
-              .invoke("LeaveVideoGroup", maTinDangString)
-              .catch((err) => console.error("SignalR Leave Error:", err));
+          videoConnection
+            .invoke("LeaveVideoGroup", maTinDangString)
+            .catch((err) => console.error("SignalR Leave Error:", err));
         }
       };
     }
@@ -285,7 +313,7 @@ export default function LikedVideoDetailViewer({
 
         {/* ✅ FIX: Chỉ render Player khi có URL để tránh component con bị crash */}
         {safeVideoUrl ? (
-            <VideoPlayer
+          <VideoPlayer
             videoUrl={safeVideoUrl}
             playerRef={playerRef}
             bgPlayerRef={bgPlayerRef}
@@ -297,9 +325,9 @@ export default function LikedVideoDetailViewer({
             setIsPlaying={setIsPlaying}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            />
+          />
         ) : (
-            <div className={styles.loading}>Đang tải nguồn video...</div>
+          <div className={styles.loading}>Đang tải nguồn video...</div>
         )}
 
         <div className={styles.volumeWrapper}>
