@@ -33,9 +33,10 @@
 }
 
 .volumeSlider {
-  /* Đảm bảo slider nằm dọc */
-  writing-mode: bt-lr; /* Cho Firefox cũ */
-  -webkit-appearance: slider-vertical; /* Cho Chrome/Safari */
+/* Thay bằng đoạn này: */
+writing-mode: vertical-lr;
+direction: rtl;  /* Quan trọng: Để Volume to nằm ở trên, nhỏ ở dưới */
+appearance: auto; /* Reset lại hiển thị chuẩn */
   width: 6px;
   height: 100px;
   background: rgba(255, 255, 255, 0.3);
