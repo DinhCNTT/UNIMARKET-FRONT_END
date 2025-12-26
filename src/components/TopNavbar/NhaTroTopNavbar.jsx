@@ -1,61 +1,52 @@
-//src/components/TopNavbar/TopNavbar.jsx
+// src/components/TopNavbar/NhaTroTopNavbar.jsx
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as signalR from "@microsoft/signalr";
 
-
 import SearchBar from "../SearchBar";
 import NavCategories from "./NavCategories";
 import NavUserActions from "./NavUserActions";
-
 
 import { AuthContext } from "../../context/AuthContext";
 import { NotificationContext } from "../NotificationsModals/context/NotificationContext";
 import { CategoryContext } from "../../context/CategoryContext";
 
+import styles from "./NhaTroTopNavbar.module.css";
+import phongTroBanner from "../../assets/phong_tro_banner.jpg";
 
-import styles from "./TopNavbar.module.css";
-import bannerBg from "../../assets/baner1.jpg";
-
-
-const TopNavbar = () => {
+// ✅ Component TopNavbar riêng cho trang Nhà Trọ
+const NhaTroTopNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
- 
-  // Xác định xem trang hiện tại có phải là trang chủ (có banner) hay không
-  const isHomePage = location.pathname === "/market" || location.pathname === "/" || location.pathname === "/market/do-dien-tu";
-
-
-  // Nếu không phải Home Page thì mặc định là scrolled (để hiện thanh trắng luôn)
+  
+  const isHomePage = location.pathname === "/market/nha-tro";
   const [scrolled, setScrolled] = useState(!isHomePage);
- 
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const connectionRef = useRef(null);
-
 
   const { user, getStoredToken } = useContext(AuthContext);
   const { unreadCount: notifUnread } = useContext(NotificationContext);
   const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
 
-
-  // Ngưỡng scroll
   const HERO_SCROLL_EXIT = 180;
   const HERO_SCROLL_ENTER = 150;
 
+  // Xác định ảnh banner
+  const getBannerImage = () => {
+    return phongTroBanner;
+  };
 
-  // --- LOGIC SCROLL CHỈ CHẠY KHI Ở TRANG HOME ---
+  // Xác định background: Nếu là HomePage và chưa cuộn thì hiện ảnh, còn lại là none
+  const bgStyle = (isHomePage && !scrolled)
+    ? { backgroundImage: `url(${getBannerImage()})` }
+    : { backgroundImage: "none" };
+
+  // Click outside handler
   useEffect(() => {
-    // Nếu không phải trang chủ, luôn set scrolled = true và không lắng nghe sự kiện cuộn
-    if (!isHomePage) {
-      setScrolled(true);
-      return;
-    }
-
-
-    // Nếu là trang chủ, reset lại trạng thái ban đầu và lắng nghe cuộn
-    setScrolled(window.scrollY >= HERO_SCROLL_EXIT);
-
+    const handleClickOutside = (event) => {
+      // Add logic if needed
+    };
 
     const handleScroll = () => {
       const y = window.scrollY;
@@ -66,24 +57,11 @@ const TopNavbar = () => {
       });
     };
 
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage, location.pathname]); // Chạy lại khi đổi trang
+  }, []);
 
-
-  // Reset category khi đổi trang (Giữ nguyên logic cũ của bạn)
-  useEffect(() => {
-    if (location.pathname !== "/market" && location.pathname !== "/loc-tin-dang") {
-      setSelectedCategory("");
-      setSelectedSubCategory("");
-    }
-  }, [location.pathname, setSelectedCategory, setSelectedSubCategory]);
-
-
-  // -------------------------
-  //   LOGIC CHAT + SIGNALR (Giữ nguyên)
-  // -------------------------
+  // Fetch chat unread count
   const getHiddenAndDeletedChatIds = async () => {
     try {
       if (!user?.id) return [];
@@ -96,26 +74,21 @@ const TopNavbar = () => {
     }
   };
 
-
   const fetchChatUnreadCount = async () => {
     if (!user) return;
     try {
-      console.log("📞 fetchChatUnreadCount called");
       const hiddenChatIds = await getHiddenAndDeletedChatIds();
       const params = new URLSearchParams();
       hiddenChatIds.forEach(id => params.append("hiddenChatIds", id));
 
-
       const res = await axios.get(
         `http://localhost:5133/api/chat/unread-count/${user.id}?${params.toString()}`
       );
-      console.log(`📊 Unread count result: ${res.data.unreadCount}`);
       setChatUnreadCount(res.data.unreadCount || 0);
     } catch (error) {
       console.error("Lỗi lấy số tin nhắn chưa đọc:", error);
     }
   };
-
 
   useEffect(() => {
     if (!user) {
@@ -127,10 +100,8 @@ const TopNavbar = () => {
       return;
     }
 
-
     fetchChatUnreadCount();
     window.addEventListener("refreshChatList", fetchChatUnreadCount);
-
 
     const token = getStoredToken ? getStoredToken() : localStorage.getItem("token");
     const connection = new signalR.HubConnectionBuilder()
@@ -138,9 +109,7 @@ const TopNavbar = () => {
       .withAutomaticReconnect()
       .build();
 
-
     connectionRef.current = connection;
-
 
     connection
       .start()
@@ -161,7 +130,6 @@ const TopNavbar = () => {
       })
       .catch((err) => console.error("SignalR connect error:", err));
 
-
     return () => {
       window.removeEventListener("refreshChatList", fetchChatUnreadCount);
       if (connectionRef.current) {
@@ -171,29 +139,20 @@ const TopNavbar = () => {
     };
   }, [user]);
 
+  // Reset category khi đổi trang
+  useEffect(() => {
+    if (location.pathname !== "/market/nha-tro") {
+      setSelectedCategory("");
+      setSelectedSubCategory("");
+    }
+  }, [location.pathname, setSelectedCategory, setSelectedSubCategory]);
 
-  // -------------------------
-  //       GIAO DIỆN
-  // -------------------------
- 
-  // Xác định ảnh banner tùy theo trang
-  const getBannerImage = () => {
-    return bannerBg; // Default banner cho trang chủ & đồ điện tử
-  };
-
-  // ✅ Xác định trang hiện tại để highlight link active
   const isActiveLink = (pathname) => {
     if (pathname === "unimarket") {
-      return location.pathname === "/market" || location.pathname === "/";
+      return location.pathname === "/market/nha-tro";
     }
     return location.pathname === pathname;
   };
-
-  // Xác định background: Nếu là HomePage và chưa cuộn thì hiện ảnh, còn lại là none (để CSS xử lý màu trắng)
-  const bgStyle = (isHomePage && !scrolled)
-    ? { backgroundImage: `url(${getBannerImage()})` }
-    : { backgroundImage: "none" };
-
 
   return (
     <header
@@ -203,10 +162,8 @@ const TopNavbar = () => {
       {/* Bên trái */}
       <NavCategories isScrolled={scrolled} />
 
-
       {/* Ở giữa */}
       <div className={styles.centerSection}>
-        {/* Nếu là HomePage VÀ chưa cuộn thì hiện Slogan. Các trường hợp còn lại hiện SearchBar */}
         {(isHomePage && !scrolled) ? (
           <div className={styles.bannerTextContainer}>
             <div className={styles.topLinks}>
@@ -231,7 +188,7 @@ const TopNavbar = () => {
               <span className={styles.topLink}>Xe cộ</span>
               <span className={styles.topLink}>Việc làm</span>
             </div>
-            <h1 className={styles.mainSlogan}>Giá tốt, gần bạn, chốt nhanh!</h1>
+            <h1 className={styles.mainSlogan}>Nhà vừa ý, giá hợp lý!</h1>
           </div>
         ) : (
           <div className={styles.navSearchContainer}>
@@ -239,7 +196,6 @@ const TopNavbar = () => {
           </div>
         )}
       </div>
-
 
       {/* Bên phải */}
       <NavUserActions
@@ -251,5 +207,4 @@ const TopNavbar = () => {
   );
 };
 
-
-export default TopNavbar;
+export default NhaTroTopNavbar;

@@ -1,7 +1,7 @@
 // src/pages/MarketPageNhaTro.jsx
 import React, { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
-import TopNavbar from "../components/TopNavbar/TopNavbar";
+import NhaTroTopNavbar from "../components/TopNavbar/NhaTroTopNavbar";
 import NhaTroHeroHeader from "../components/NhaTroHeroHeader/NhaTroHeroHeader";
 import CategoryListNhaTro from "../components/CategoryListNhaTro/CategoryListNhaTro";
 import TinDangDCBNhaTro from "../components/TinDangDCBNhaTro";
@@ -21,7 +21,7 @@ const MarketPageNhaTro = () => {
 
   return (
     <div className="marketplace-page nhaTroVariant">
-      <TopNavbar />
+      <NhaTroTopNavbar />
       <NhaTroHeroHeader />
      
       <div className="main-content" style={{ minHeight: "100vh" }}>

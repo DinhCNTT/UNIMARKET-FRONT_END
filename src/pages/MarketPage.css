@@ -7,14 +7,8 @@
 
 /* Variant cho trang Nhà Trọ */
 .marketplace-page.nhaTroVariant {
-  background-color: #f9bb88;
+  background: linear-gradient(180deg, #f9bb88 0%, #f8a57b 100%);
 }
-
-/* Adjust spacing between UniMarketIntro and FooterBanner for nhà trọ page only */
-.marketplace-page.nhaTroVariant .section-wrapper:last-of-type {
-  margin-bottom: 0;
-}
-
 .login-prompt {
   padding: 20px;
   text-align: center;

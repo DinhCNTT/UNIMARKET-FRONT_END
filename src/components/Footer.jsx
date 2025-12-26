@@ -1,10 +1,14 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import './Footer.css';
 import { FaFacebookF, FaYoutube, FaInstagram, FaTiktok, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Footer = () => {
+  const location = useLocation();
+  const isNhaTroPage = location.pathname === '/market/nha-tro' || location.pathname.includes('/nha-tro');
+
   return (
-    <footer className="footer">
+    <footer className={`footer ${isNhaTroPage ? 'nhaTroVariant' : ''}`}>
       <div className="footer-container">
         <div className="footer-grid">
           {/* Column 1: About */}

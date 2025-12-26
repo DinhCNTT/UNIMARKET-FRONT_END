@@ -1,19 +1,17 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import styles from './FooterBanner.module.css'; 
 import bannerImg from '../../assets/footer_promo_banner.png';
 
-// Bạn hãy tải 2 ảnh nút bấm này về bỏ vào assets hoặc thay tạm bằng link ảnh online
-// Giả sử bạn đã có ảnh trong assets:
-// import appStoreImg from '../../assets/app_store_btn.png';
-// import googlePlayImg from '../../assets/google_play_btn.png';
-
-// Hoặc dùng link ảnh trực tiếp từ mạng (CDN) để test ngay:
 const appStoreUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
 const googlePlayUrl = "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
 
 const FooterBanner = () => {
+  const location = useLocation();
+  const isNhaTroPage = location.pathname === '/market/nha-tro' || location.pathname.includes('/nha-tro');
+
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${isNhaTroPage ? styles.nhaTroVariant : ''}`}>
       <div className={styles.innerContent}>
         
         {/* --- PHẦN BÊN TRÁI: TEXT + BUTTONS --- */}

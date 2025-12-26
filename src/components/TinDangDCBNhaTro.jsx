@@ -24,7 +24,14 @@ const TinDangDCBNhaTro = ({ showNavigation = true }) => {
 
 
   const getSortedPosts = () => {
+    // 1. Kiểm tra nếu posts bị null, undefined hoặc không phải mảy -> Trả về mảng rỗng ngay
+    if (!posts || !Array.isArray(posts)) {
+      return [];
+    }
+
+    // 2. Logic sắp xếp
     if (activeTab === "moinhat") {
+      // Dùng [...posts] để copy ra mảng mới rồi mới sort, tránh lỗi mutate state
       return [...posts].sort((a, b) => new Date(b.ngayDang) - new Date(a.ngayDang));
     }
     return posts;
@@ -48,17 +55,17 @@ const TinDangDCBNhaTro = ({ showNavigation = true }) => {
 
       {/* Post List - Horizontal Cards */}
       <div className={styles.postListBatDongSan}>
-        {posts.length === 0 ? (
+        {sortedPosts.length === 0 ? (
           <p style={{ textAlign: "center", width: "100%", color: "#666" }}>
             Không có tin đăng nhà trọ
           </p>
         ) : (
           displayedPosts.map((post) => (
             <NhaTroPostCard
-              key={post.maTinDang}
+              key={post.maTinDang || Math.random()}
               post={post}
               isLoggedIn={isLoggedIn}
-              isSaved={savedIds.includes(post.maTinDang)}
+              isSaved={Array.isArray(savedIds) && savedIds.includes(post.maTinDang)}
               onToggleSave={handleToggleSave}
             />
           ))

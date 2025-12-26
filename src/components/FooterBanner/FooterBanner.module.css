@@ -7,10 +7,15 @@
     background: linear-gradient(90deg, #ffe08a 0%, #ffd35a 50%, #ffbf2b 100%);
     display: flex;
     justify-content: center;
-    margin-top: 20px;
-    margin-bottom: 0;
+    margin-top: -10px;
+    margin-bottom: -5px;
     padding: 10px 0;
     font-family: 'Roboto', sans-serif; 
+}
+
+/* Variant cho trang Nhà Trọ */
+.container.nhaTroVariant {
+  background: linear-gradient(90deg, #fca259 0%, #f26622 100%);
 }
 
 .innerContent {

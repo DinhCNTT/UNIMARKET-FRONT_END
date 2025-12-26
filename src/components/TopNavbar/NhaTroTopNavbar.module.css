@@ -1,3 +1,5 @@
+/* src/components/TopNavbar/NhaTroTopNavbar.module.css */
+
 .topNavbar {
   display: flex;
   justify-content: space-between;
@@ -6,12 +8,12 @@
   padding-left: 40px;
   padding-right: 40px;
 
-  background-color: #FFEFAE;
-  box-shadow: inset 0 0 45px rgba(255, 200, 70, 0.45),
-              inset 0 -25px 45px rgba(255, 170, 40, 0.28);
+  background-color: #fa870d;
+  box-shadow: inset 0 0 45px rgba(250, 135, 13, 0.3),
+              inset 0 -25px 45px rgba(242, 102, 34, 0.2);
 
-  background-size: 100% 100%;
-  background-position: center top;
+  background-size: 100% 150%;
+  background-position: center -10px;
   background-repeat: no-repeat;
 
   transition: all 0.3s ease;
@@ -31,7 +33,7 @@
   align-items: center !important;
   padding-top: 0 !important;
   background-image: none !important;
-  background-color: #ffffff !important;
+  background: #ffffff !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
   padding: 10px 40px;
   height: 70px;
@@ -47,6 +49,7 @@
     transform: translateY(0);
   }
 }
+
 /* --- PHẦN STYLE CHO CHỮ Ở GIỮA --- */
 .centerSection {
   flex: 1;
@@ -58,9 +61,9 @@
   /* Font đẹp, chuyên nghiệp, rõ ràng */
   font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
   font-weight: 500;
-  color: #111; /* Đen đậm rõ ràng */
-  font-size: 16px; /* Kích thước dễ đọc */
-  line-height: 1.5; /* Khoảng cách dòng thoáng, dễ nhìn */
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .bannerTextContainer {
@@ -74,7 +77,7 @@
   display: flex;
   gap: 30px;
   font-size: 15px;
-  color: #555;
+  color: #ffffff;
   font-weight: 500;
   margin-bottom: 12px;
   font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
@@ -83,29 +86,30 @@
 .topLink {
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #555;
+  color: #ffffff;
   font-weight: 500;
 }
 
 .topLink:hover {
-  color: #000;
+  color: #ffffff;
+  opacity: 0.8;
 }
 
 /* ✅ Style cho link active (in đậm) */
 .topLink.active {
   font-weight: 700 !important;
-  color: #222 !important;
+  color: #ffffff !important;
 }
 
 .activeLink {
   font-weight: 700 !important;
-  color: #222 !important;
+  color: #ffffff !important;
 }
 
 .mainSlogan {
   font-size: 30px;
   font-weight: 700;
-  color: #111; /* Đen đậm */
+  color: #ffffff;
   margin: 0;
   letter-spacing: -0.5px;
   font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
@@ -117,5 +121,40 @@
 }
 
 .navSearch {
-  display: none; /* Ẩn search bar cũ nếu còn class này */
+  display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .topNavbar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .topLinks {
+    gap: 15px;
+    font-size: 13px;
+  }
+
+  .mainSlogan {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topNavbar {
+    padding-left: 12px;
+    padding-right: 12px;
+    height: 180px;
+  }
+
+  .topLinks {
+    gap: 8px;
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .mainSlogan {
+    font-size: 18px;
+  }
 }

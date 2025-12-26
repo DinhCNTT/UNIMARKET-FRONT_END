@@ -61,7 +61,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
   height: 68px;
   background-color: #ffffff;
   border-radius: 16px;
@@ -310,23 +310,23 @@
 
 .option:hover {
   background-color: #fffbf0;
-  color: #e09f00;
+  color: #f87d14;
 }
 
 .backOption {
-  color: #e09f00;
+  color: #f87d14;
   font-weight: 600;
 }
 
 .backOption:hover {
   background-color: #fffbf0;
-  color: #e09f00;
+  color: #f87d14;
 }
 
 /* --- 3. NÚT TÌM KIẾM (SEARCH BUTTON) --- */
 .searchBtn {
-  background-color: #ffba00;
-  color: #222;
+  background-color: #f87d14;
+  color: #fff;
   font-weight: 700;
   font-size: 14px;
   border: none;
@@ -341,11 +341,6 @@
   gap: 8px;
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.searchBtn:hover {
-  background-color: #f4b302;
-  box-shadow: 0 2px 8px rgba(255, 186, 0, 0.3);
 }
 
 .searchBtn svg {
