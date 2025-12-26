@@ -24,7 +24,7 @@ const MarketPageNhaTro = () => {
       <TopNavbar />
       <NhaTroHeroHeader />
      
-      <div className="main-content" style={{ minHeight: "200vh" }}>
+      <div className="main-content" style={{ minHeight: "100vh" }}>
        
         <CategoryListNhaTro />
 

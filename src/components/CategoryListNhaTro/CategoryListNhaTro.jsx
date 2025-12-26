@@ -110,14 +110,6 @@ const CategoryListNhaTro = () => {
       </div>
 
       <div className={styles.carouselWrapper}>
-        <button
-          className={styles.scrollBtn}
-          onClick={() => scroll("left")}
-          aria-label="Scroll left"
-        >
-          <FaChevronLeft />
-        </button>
-
         <div className={styles.list} ref={listRef}>
           {subCategories.map((sub, index) => (
             <div
@@ -149,14 +141,6 @@ const CategoryListNhaTro = () => {
             <p className={styles.name}>Tất cả</p>
           </div>
         </div>
-
-        <button
-          className={styles.scrollBtn}
-          onClick={() => scroll("right")}
-          aria-label="Scroll right"
-        >
-          <FaChevronRight />
-        </button>
       </div>
     </div>
   );

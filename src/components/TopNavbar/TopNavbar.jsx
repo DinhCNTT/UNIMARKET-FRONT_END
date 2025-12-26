@@ -236,7 +236,9 @@ const TopNavbar = () => {
               <span className={styles.topLink}>Xe cộ</span>
               <span className={styles.topLink}>Việc làm</span>
             </div>
-            <h1 className={styles.mainSlogan}>Giá tốt, gần bạn, chốt nhanh!</h1>
+            <h1 className={styles.mainSlogan}>
+              {location.pathname === "/market/nha-tro" ? "Nhà vừa ý, giá hợp lý!" : "Giá tốt, gần bạn, chốt nhanh!"}
+            </h1>
           </div>
         ) : (
           <div className={styles.navSearchContainer}>

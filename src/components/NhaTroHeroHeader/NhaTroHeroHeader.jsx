@@ -203,6 +203,10 @@ const NhaTroHeroHeader = () => {
       ref={heroContainerRef}
     >
       <div className={styles.heroContent}>
+        {/* Subtitle cho trang nhà trọ */}
+        {location.pathname === '/nha-tro' && (
+          <h2 className={styles.heroSubtitle}>Nhà vừa ý, giá hợp lý!</h2>
+        )}
         {/* Search Bar */}
         <div className={styles.searchBar}>
           <div className={styles.inputWrapper}>

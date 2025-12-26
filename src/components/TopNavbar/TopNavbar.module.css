@@ -31,6 +31,23 @@
               inset 0 -25px 45px rgba(201, 78, 7, 0.28);
 }
 
+/* Style chữ trắng cho trang Nhà Trọ */
+.topNavbar.nhaTroVariant .topLinks,
+.topNavbar.nhaTroVariant .topLink,
+.topNavbar.nhaTroVariant .mainSlogan {
+  color: #ffffff !important;
+}
+
+.topNavbar.nhaTroVariant .topLink:hover {
+  color: #ffffff !important;
+  opacity: 0.8;
+}
+
+.topNavbar.nhaTroVariant .topLink.active {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
 .scrolled {
   position: fixed !important; 
   top: 0;

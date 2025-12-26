@@ -1,5 +1,12 @@
 /* src/components/NhaTroPostCard/NhaTroPostCard.module.css */
 
+/* Import font Reddit Sans */
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'Reddit Sans', sans-serif;
+}
+
 /* --- KHUNG THẺ TIN (CARD CONTAINER) --- */
 .postItem {
   background-color: #ffffff;
