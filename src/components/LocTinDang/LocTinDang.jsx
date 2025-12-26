@@ -3,9 +3,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import styles from "./LocTinDang.module.css";
 
-// Icons xịn xò từ react-icons
+// Icons
 import { FiGrid, FiList, FiFilter, FiTrash2, FiSearch, FiMapPin, FiX } from "react-icons/fi";
-import { BiCategory, BiSort } from "react-icons/bi";
+import { BiCategory } from "react-icons/bi";
 import { MdOutlinePriceChange } from "react-icons/md";
 
 // Contexts
@@ -19,6 +19,8 @@ import TopNavbar from "../TopNavbar/TopNavbar";
 import LocMoRong from "../LocMoRong";
 import ProductItem from "../ProductItem/ProductItem";
 import Pagination from "../Pagination/Pagination";
+// 🔥 IMPORT VIDEO CAROUSEL
+import VideoCarousel from "../VideoCarousel/VideoCarousel"; 
 
 const LocTinDang = () => {
   // --- STATE DỮ LIỆU ---
@@ -45,7 +47,6 @@ const LocTinDang = () => {
   const { user, token } = useContext(AuthContext);
   const isLoggedIn = !!(user && (token || user.token));
   
-  // Lấy cả hàm SET để có thể reset được
   const { searchTerm, setSearchTerm } = useContext(SearchContext); 
   const { selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const { selectedLocation, setSelectedLocation } = useContext(LocationContext);
@@ -59,13 +60,14 @@ const LocTinDang = () => {
       : { contextCity: selectedLocation, contextDistrict: "" };
   }, [selectedLocation]);
 
-  // --- FETCH DATA ---
+  // --- FETCH CATEGORIES ---
   useEffect(() => {
     axios.get("http://localhost:5133/api/category/get-categories-with-icon")
       .then(res => setCategories(res.data))
       .catch(console.error);
   }, []);
 
+  // --- FETCH SAVED POSTS ---
   useEffect(() => {
     const fetchSaved = async () => {
       const authToken = token || user?.token;
@@ -119,9 +121,10 @@ const LocTinDang = () => {
         const res = await axios.get("http://localhost:5133/api/tindang/get-posts", { params });
         const data = res.data;
         
-        // Handle response structure
-        const listData = data.Data || data.data || (Array.isArray(data) ? data : []);
-        const pagination = data.Pagination || data.pagination || {};
+        // 🔥 FIX QUAN TRỌNG: Xử lý dữ liệu linh hoạt (cả 'Data' hoa và 'data' thường)
+        // Nếu Backend trả về camelCase (data, pagination) code cũ sẽ bị lỗi -> Fix bằng cách check cả 2
+        const listData = data?.Data || data?.data || (Array.isArray(data) ? data : []);
+        const pagination = data?.Pagination || data?.pagination || {};
 
         setPosts(listData);
         setTotalPages(pagination.totalPages || pagination.TotalPages || 1);
@@ -147,11 +150,10 @@ const LocTinDang = () => {
 
   // --- ACTION HANDLERS ---
   
-  // 🔥 FIX QUAN TRỌNG: Hàm xóa sạch bộ lọc
   const handleClearAllFilters = () => {
     setSearchTerm("");
-    setSelectedLocation(""); // Reset Location Context
-    setSelectedCategory(""); // Reset Category Context
+    setSelectedLocation(""); 
+    setSelectedCategory(""); 
     setSelectedSubCategory("");
     setSelectedDistrictFilter("");
     setMinPrice(null);
@@ -221,7 +223,7 @@ const LocTinDang = () => {
               </div>
           </div>
 
-          {/* 🔥 ACTIVE FILTERS (TAGS) - Giao diện hiện đại */}
+          {/* ACTIVE FILTERS */}
           {hasActiveFilters && (
             <div className={styles.activeFiltersRow}>
               <span className={styles.filterLabel}><FiFilter /> Đang lọc:</span>
@@ -271,7 +273,6 @@ const LocTinDang = () => {
                 <p>{error}</p>
              </div>
           ) : posts.length === 0 ? (
-             // 🔥 EMPTY STATE ĐẸP
              <div className={styles.emptyState}>
                 <img src="https://cdni.iconscout.com/illustration/premium/thumb/search-result-not-found-2130361-1800925.png" alt="No Result" />
                 <h3>Không tìm thấy kết quả nào!</h3>
@@ -283,16 +284,41 @@ const LocTinDang = () => {
           ) : (
             // LIST POSTS
             <div className={`${styles.listGrid} ${viewMode === "grid" ? styles.gridView : styles.listView}`}>
-              {posts.map((post) => (
-                <ProductItem
-                    key={post.maTinDang}
-                    post={post}
-                    viewMode={viewMode}
-                    isLoggedIn={isLoggedIn}
-                    isSaved={savedIds.includes(post.maTinDang)}
-                    onToggleSave={handleToggleSave}
-                />
-              ))}
+              {posts.map((post, index) => {
+                // 🔥 1. Tính toán vị trí chèn (Chèn vào giữa danh sách)
+                const middleIndex = Math.ceil(posts.length / 2);
+                const shouldInsertCarousel = (index + 1) === middleIndex;
+
+                // 🔥 2. Điều kiện hiển thị linh hoạt:
+                // Chỉ cần có chọn Category hoặc SubCategory là cho phép Carousel "thử" load dữ liệu
+                const shouldTryDisplayCarousel = selectedCategory || selectedSubCategory;
+
+                return (
+                  <React.Fragment key={post.maTinDang}>
+                    {/* Render Item Tin Đăng */}
+                    <ProductItem
+                        post={post}
+                        viewMode={viewMode}
+                        isLoggedIn={isLoggedIn}
+                        isSaved={savedIds.includes(post.maTinDang)}
+                        onToggleSave={handleToggleSave}
+                    />
+
+                    {/* 🔥 3. Render Carousel: Truyền thẳng tên danh mục vào */}
+                    {shouldInsertCarousel && shouldTryDisplayCarousel && (
+                      <div style={{ gridColumn: "1 / -1", width: "100%" }}>
+                        <VideoCarousel 
+                           categoryGroup={selectedCategory} 
+                           subCategory={selectedSubCategory}
+                           savedIds={savedIds}           // Truyền danh sách đã lưu
+                            onToggleSave={handleToggleSave} // Truyền hàm xử lý
+                            isLoggedIn={isLoggedIn}         // Truyền trạng thái đăng nhập
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           )}
 

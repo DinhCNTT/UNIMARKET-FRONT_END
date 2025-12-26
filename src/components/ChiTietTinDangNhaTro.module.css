@@ -1,3 +1,6 @@
+
+/* --- FONT REDDIT SANS --- */
+@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 /* --- BIẾN MÀU & STYLE --- */
 :root {
   --primary: #ff9800;
@@ -8,9 +11,6 @@
   --radius: 8px;
   --shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
-
-/* --- FONT REDDIT SANS --- */
-@import url('https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
 .pageWrapper {
   background-color: #f5f5fa;

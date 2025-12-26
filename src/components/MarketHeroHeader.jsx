@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // [NEW] Thêm useLocation
 import axios from 'axios';
 import { FaSearch, FaClock, FaTimes, FaArrowLeft, FaCheck } from "react-icons/fa";
 
@@ -7,7 +7,6 @@ import './MarketHeroHeader.css';
 import "./SearchBar.css"; 
 
 import { CategoryContext } from '../context/CategoryContext';
-// Import Hook (nhớ sửa tên file thành .jsx như đã fix lỗi ở trên)
 import { useProductSearch } from '../hooks/useProductSearch';
 
 // --- Icons SVG (Giữ nguyên) ---
@@ -33,7 +32,7 @@ const IconLocation = () => (
 
 const MarketHeroHeader = () => {
   // =========================================================
-  // 1. SỬ DỤNG HOOK (Thay thế toàn bộ logic Search cũ)
+  // 1. SỬ DỤNG HOOK & CONTEXT
   // =========================================================
   const {
     inputValue, setInputValue,
@@ -45,17 +44,48 @@ const MarketHeroHeader = () => {
     deleteSearchHistoryItem,
     highlightText,
     formatDate,
-    selectedLocation, // Lấy location từ context (qua hook)
-    setSelectedLocation // Lấy hàm set từ context (qua hook)
+    selectedLocation, 
+    setSelectedLocation 
   } = useProductSearch();
 
-  // =========================================================
-  // 2. LOGIC RIÊNG CỦA HERO HEADER (Category, Scroll, Location UI)
-  // =========================================================
-  
   const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const navigate = useNavigate();
+  const location = useLocation(); // [NEW] Lấy thông tin URL hiện tại
 
+  // =========================================================
+  // [QUAN TRỌNG] HÀM WRAPPER: XỬ LÝ CONTEXT TRƯỚC KHI SEARCH
+  // =========================================================
+  const onTriggerSearch = (keywordInput) => {
+    // 1. Xác định từ khóa (nếu click gợi ý thì dùng keywordInput, nếu enter thì dùng inputValue)
+    const finalKeyword = keywordInput || inputValue;
+
+    console.log("--- HERO HEADER SEARCH ---");
+    console.log("URL:", location.pathname);
+
+    // 2. Logic Set Context theo URL
+    let categoryToSet = null;
+
+    if (location.pathname.includes("/market/do-dien-tu")) {
+        categoryToSet = "Đồ điện tử";
+    } else if (location.pathname.includes("/market/nha-tro")) {
+        categoryToSet = "Bất động sản";
+    }
+
+    // 3. Thực hiện Set Context nếu cần
+    if (categoryToSet) {
+        console.log(`Auto-setting Category: ${categoryToSet}`);
+        setSelectedCategory(categoryToSet);
+        setSelectedSubCategory(""); // Reset sub category
+    }
+
+    // 4. Gọi hàm search gốc để chuyển trang
+    handleSearch(finalKeyword);
+  };
+
+  // =========================================================
+  // 2. LOGIC RIÊNG CỦA HERO HEADER
+  // =========================================================
+  
   // Refs
   const bannerRef = useRef(null);
   const dropdownLocationRef = useRef(null);
@@ -66,11 +96,11 @@ const MarketHeroHeader = () => {
   const [categories, setCategories] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
-  // Location UI States (Logic Popup đặc thù của Header này)
+  // Location UI States
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [provinces, setProvinces] = useState([]); 
   const [tempCity, setTempCity] = useState(null); 
-  const [popupView, setPopupView] = useState('PROVINCE'); // 'PROVINCE' | 'DISTRICT'
+  const [popupView, setPopupView] = useState('PROVINCE'); 
   const [locationSearchText, setLocationSearchText] = useState(""); 
 
   // Constants
@@ -110,9 +140,9 @@ const MarketHeroHeader = () => {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [setShowSuggestions]); // Thêm dependency
+  }, [setShowSuggestions]);
 
-  // --- API: Categories & Provinces (Riêng của Header này) ---
+  // --- API ---
   useEffect(() => {
     let mounted = true;
     const fetchCategories = async () => {
@@ -143,7 +173,7 @@ const MarketHeroHeader = () => {
         setLocationSearchText("");
     }
     setShowLocationDropdown(!showLocationDropdown);
-    setShowSuggestions(false); // Đóng search suggestion
+    setShowSuggestions(false); 
   };
 
   const handleSelectNationwide = () => {
@@ -253,7 +283,7 @@ const MarketHeroHeader = () => {
 
             <div className="search-divider"></div>
 
-            {/* 2. Ô nhập liệu (Đã dùng logic từ Hook) */}
+            {/* 2. Ô nhập liệu (Đã dùng logic Wrapper) */}
             <div className="search-input-area" ref={suggestionsRef} style={{ position: 'relative' }}>
               <span className="search-icon"><IconSearch /></span>
               
@@ -265,7 +295,8 @@ const MarketHeroHeader = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
+                    // [NEW] Sử dụng hàm Wrapper
+                    if (e.key === "Enter") onTriggerSearch();
                     else if (e.key === "Escape") setShowSuggestions(false);
                 }}
                 onFocus={() => {
@@ -289,7 +320,7 @@ const MarketHeroHeader = () => {
                           className="SearchBarSuggestionItem SearchBarHistoryItem"
                           onClick={() => {
                               setInputValue(historyItem.keyword);
-                              handleSearch(historyItem.keyword);
+                              onTriggerSearch(historyItem.keyword); // [NEW] Dùng Wrapper
                           }}
                         >
                           <FaClock className="SearchBarSuggestionIcon SearchBarHistoryIcon" />
@@ -327,7 +358,7 @@ const MarketHeroHeader = () => {
                             className="SearchBarSuggestionItem"
                             onClick={() => {
                                 setInputValue(suggestion.tieuDe);
-                                handleSearch(suggestion.tieuDe);
+                                onTriggerSearch(suggestion.tieuDe); // [NEW] Dùng Wrapper
                             }}
                           >
                             <FaSearch className="SearchBarSuggestionIcon" />
@@ -359,7 +390,7 @@ const MarketHeroHeader = () => {
               )}
             </div>
 
-            {/* 3. Nút Địa điểm (Logic UI đặc thù giữ nguyên, logic data lấy từ hook) */}
+            {/* 3. Nút Địa điểm */}
             <div className="search-location-wrapper" ref={dropdownLocationRef} style={{ position: 'relative' }}>
                 <button className="location-btn" onClick={handleLocationClick}>
                   <IconLocation />
@@ -447,7 +478,7 @@ const MarketHeroHeader = () => {
             </div>
 
             {/* 4. Nút Tìm kiếm */}
-            <button className="hero-search-btn" onClick={() => handleSearch()}>
+            <button className="hero-search-btn" onClick={() => onTriggerSearch()}> {/* [NEW] Dùng Wrapper */}
               Tìm kiếm
             </button>
 
