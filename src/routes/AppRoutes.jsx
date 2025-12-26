@@ -3,8 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
+
 // --- LAYOUTS ---
 import AdminLayout from "../layouts/AdminLayout";
+
 
 // --- AUTH & CORE PAGES ---
 import Login from "../pages/Login";
@@ -15,9 +17,9 @@ import MarketPageElectronic from "../pages/MarketPageElectronic";
 import MarketPageBatDongSan from "../pages/MarketPageNhaTro";
 import ErrorBoundary from "../components/ErrorBoundary";
 
+
 // --- ADMIN PAGES & COMPONENTS ---
 import AdminDashboard from "../pages/AdminDashboard";
-// Lưu ý: Không cần import Sidebar ở đây nữa vì nó nằm trong Layout rồi
 import AddEmployee from "../components/AddEmployee";
 import EmployeeList from "../components/EmployeeList";
 import CategoryForm from "../components/CategoryForm";
@@ -26,6 +28,7 @@ import ManageParentCategories from "../components/ManageParentCategories";
 import ManageCategories from "../components/ManageCategories";
 import ManagePosts from "../components/ManagePosts";
 import QuanLyBaoCao from "../pages/Admin/QuanLyBaoCao";
+
 
 // --- POST & MARKET COMPONENTS ---
 import PostForm from "../components/PostForm";
@@ -39,10 +42,12 @@ import ChiTietTinDang from "../components/ChiTietTinDang";
 import ChiTietTinDangNhaTro from "../components/ChiTietTinDangNhaTro";
 import ChiTietTinDangRouter from "../components/ChiTietTinDangRouter";
 
+
 // --- USER & SETTINGS ---
 import AccountSettings from "../components/AccountSettings/AccountSettings";
 import UserProfilePage from "../pages/UserProfilePage";
 import TrangChat from "../pages/TrangChat";
+
 
 // --- VIDEO COMPONENTS ---
 import VideoPage from "../pages/VideoPage";
@@ -51,25 +56,27 @@ import VideoDetailViewer from "../components/VideoDetailViewer";
 import LikedVideoDetailViewer from "../pages/LikedVideoDetailViewer/LikedVideoDetailViewer";
 import VideoStandalonePage from "../pages/VideoStandalone/VideoStandalonePage";
 
-// --- ROUTE GUARDS ---
 
-// 1. AdminGuard: Chỉ kiểm tra quyền, KHÔNG render giao diện (giao diện để AdminLayout lo)
+// Import đúng đường dẫn
+import ExplorePage from '../pages/ExplorePage/ExplorePage';
+
+
+// --- ROUTE GUARDS ---
 const AdminGuard = ({ children }) => {
   const { user, role } = useContext(AuthContext);
-  
-  if (user === null) return null; // Hoặc loading spinner
+  if (user === null) return null;
   if (!user) return <Navigate to="/login" />;
   if (role !== "Admin") return <Navigate to="/" />;
-  
   return children;
 };
 
-// 2. ProtectedRoute: Bảo vệ các trang user đăng nhập
+
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
   if (!user) return <Navigate to="/login" />;
   return children;
 };
+
 
 // --- MAIN APP ROUTES ---
 function AppRoutes() {
@@ -84,6 +91,7 @@ function AppRoutes() {
       <Route path="/market" element={<MarketPage />} />
       <Route path="/market/do-dien-tu" element={<MarketPageElectronic />} />
       <Route path="/market/nha-tro" element={<MarketPageBatDongSan />} />
+
 
       {/* ==============================
           2. MARKETPLACE & POSTS
@@ -111,6 +119,7 @@ function AppRoutes() {
         }
       />
 
+
       {/* ==============================
           3. USER & PROTECTED ROUTES
       ============================== */}
@@ -120,13 +129,15 @@ function AppRoutes() {
       <Route path="/quan-ly-tin" element={<ProtectedRoute><QuanLyTin /></ProtectedRoute>} />
       <Route path="/tin-dang-da-luu" element={<ProtectedRoute><TinDangDaLuu /></ProtectedRoute>} />
       <Route path="/cap-nhat-tin/:id" element={<ProtectedRoute><CapNhatTin /></ProtectedRoute>} />
-      
+     
       <Route path="/chat" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
       <Route path="/chat/:maCuocTroChuyen" element={<ProtectedRoute><TrangChat /></ProtectedRoute>} />
+
 
       <Route path="/cai-dat-tai-khoan" element={<AccountSettings />} />
       <Route path="/nguoi-dung/:userId" element={<UserProfilePage />} />
       <Route path="/view-history" element={<ProtectedRoute><ViewHistoryPage /></ProtectedRoute>} />
+
 
       {/* ==============================
           4. VIDEO ROUTES
@@ -139,19 +150,23 @@ function AppRoutes() {
       <Route path="/video/:id" element={<VideoDetailViewer />} />
       <Route path="/video-standalone/:id" element={<VideoStandalonePage />} />
 
+
+      {/* 🔥 [QUAN TRỌNG] Thêm Route này để khớp với ExplorePage đã sửa */}
+      <Route path="/liked-video-detail/:maTinDang" element={<LikedVideoDetailViewer />} />
+
+
+      <Route path="/explore" element={<ExplorePage />} />
+
+
       {/* ==============================
-          5. ADMIN ROUTES (CẤU TRÚC MỚI)
+          5. ADMIN ROUTES
       ============================== */}
       <Route path="/admin" element={
         <AdminGuard>
-          {/* AdminLayout sẽ bọc tất cả các route con bên dưới */}
-          <AdminLayout /> 
+          <AdminLayout />
         </AdminGuard>
       }>
-        {/* Khi vào /admin, mặc định hiện Dashboard */}
         <Route index element={<AdminDashboard />} />
-        
-        {/* Các trang con: KHÔNG cần Sidebar nữa vì cha đã có */}
         <Route path="add-employee" element={<AddEmployee />} />
         <Route path="employees" element={<EmployeeList />} />
         <Route path="categories" element={<CategoryForm />} />
@@ -162,8 +177,11 @@ function AppRoutes() {
         <Route path="reports" element={<QuanLyBaoCao />} />
       </Route>
 
+
     </Routes>
   );
 }
 
+
 export default AppRoutes;
+

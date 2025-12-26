@@ -11,11 +11,14 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeftCircle, FiChevronUp, FiChevronDown } from "react-icons/fi";
 import styles from "./LikedVideoDetailViewer.module.css";
 
+
 // Import Hooks
 import { useVideoPlayer } from "../../hooks/useVideoPlayer";
 import { useVideoInteractions } from "../../hooks/useVideoInteractions";
 import { useComments } from "../../hooks/useComments.jsx";
+import { useViewTracking } from "../../hooks/useViewTracking";
 import { VideoHubContext } from "../../context/VideoHubContext";
+
 
 // Import Components
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
@@ -23,6 +26,7 @@ import VideoInfo from "../../components/VideoDetails/VideoInfo";
 import VideoActions from "../../components/VideoDetails/VideoActions";
 import CommentSection from "../../components/CommentSection/CommentSection";
 import VideoVolumeControl from "../../components/VideoPlayer/VideoVolumeControl";
+
 
 export default function LikedVideoDetailViewer({
   isOverlay = false,
@@ -33,9 +37,11 @@ export default function LikedVideoDetailViewer({
   const navigate = useNavigate();
   const { maTinDang: paramMaTinDang } = useParams();
 
+
   // ==========================================
   // 1. KHỞI TẠO DỮ LIỆU
   // ==========================================
+
 
   const {
     videos: stateVideos,
@@ -44,10 +50,12 @@ export default function LikedVideoDetailViewer({
     returnPath,
   } = location.state || {};
 
+
   const initialVideos =
     isOverlay && passedVideoData
       ? [passedVideoData]
       : stateVideos || stateVideoList || null;
+
 
   const [videoList, setVideoList] = useState(initialVideos);
   const [currentIndex, setCurrentIndex] = useState(
@@ -55,7 +63,9 @@ export default function LikedVideoDetailViewer({
   );
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+
   const { videoConnection } = useContext(VideoHubContext);
+
 
   // --- Logic lấy video ban đầu (Shallow) ---
   const getInitialShallowVideo = () => {
@@ -68,6 +78,7 @@ export default function LikedVideoDetailViewer({
     return null;
   };
 
+
   // Cập nhật nếu passedVideoData thay đổi
   useEffect(() => {
     if (isOverlay && passedVideoData) {
@@ -76,18 +87,19 @@ export default function LikedVideoDetailViewer({
     }
   }, [passedVideoData, isOverlay]);
 
+
   const [initialShallowVideo] = useState(getInitialShallowVideo());
+
 
   // Video từ List (dữ liệu sơ sài)
   const shallowVideo = videoList
     ? videoList[currentIndex]
     : initialShallowVideo;
 
+
   // ==========================================
   // ⚡ FIX LỖI: CHUẨN HÓA DỮ LIỆU (Mapping)
   // ==========================================
-  // Dù dữ liệu đầu vào là 'videoDuongDan' (từ Grid) hay 'videoUrl' (từ API)
-  // thì đều quy về 'videoUrl' để tránh bị undefined gây lỗi Hook.
   const normalizeVideoData = (vid) => {
     if (!vid) return null;
     return {
@@ -97,14 +109,17 @@ export default function LikedVideoDetailViewer({
     };
   };
 
+
   const normalizedShallow = useMemo(
     () => normalizeVideoData(shallowVideo),
     [shallowVideo]
   );
-  
+
+
   // ==========================================
   // 2. HOOKS TƯƠNG TÁC
   // ==========================================
+
 
   // Hook lấy dữ liệu đầy đủ từ API
   const {
@@ -118,17 +133,21 @@ export default function LikedVideoDetailViewer({
     handleToggleSave,
   } = useVideoInteractions(normalizedShallow, currentIndex);
 
+
   // Chuẩn hóa video đầy đủ (nếu đã tải xong)
   const normalizedFull = useMemo(
     () => normalizeVideoData(fullVideo),
     [fullVideo]
   );
 
+
   // Video cuối cùng để hiển thị (Ưu tiên full > shallow)
   const videoToDisplay = normalizedFull || normalizedShallow;
-  
+
+
   // Đảm bảo luôn có 1 chuỗi URL, tránh undefined truyền vào hook
-  const safeVideoUrl = videoToDisplay?.videoUrl || ""; 
+  const safeVideoUrl = videoToDisplay?.videoUrl || "";
+
 
   // --- Hook Player ---
   const {
@@ -146,6 +165,7 @@ export default function LikedVideoDetailViewer({
     setIsPlaying,
   } = useVideoPlayer(safeVideoUrl); // ✅ Truyền URL đã chuẩn hóa
 
+
   // --- Hook Comments ---
   const {
     comments,
@@ -155,12 +175,48 @@ export default function LikedVideoDetailViewer({
     deleteComment,
   } = useComments(videoToDisplay?.maTinDang);
 
+
+  // ==========================================
+  // 🔥 TÍCH HỢP VIEW TRACKING (MỚI THÊM)
+  // ==========================================
+
+
+  // Tạo ref chứa element video để hook tracking có thể truy cập theo index
+  const videoElsRef = useRef({});
+
+
+  // Đồng bộ playerRef hiện tại vào videoElsRef đúng vị trí index
+  // Lý do: Hook tracking cần videoElsRef.current[currentIndex]
+  useEffect(() => {
+    if (playerRef.current) {
+      videoElsRef.current[currentIndex] = playerRef.current;
+    }
+  }, [currentIndex, playerRef.current, videoToDisplay]);
+
+
+  // Gọi Hook Tracking
+  const { stopViewTracking } = useViewTracking(
+    videoToDisplay, // Dữ liệu video hiện tại
+    currentIndex, // Index hiện tại
+    videoElsRef, // Ref chứa element video (đã đồng bộ ở trên)
+    setVideoList // Hàm update list (để cập nhật view realtime)
+  );
+
+
   // ==========================================
   // 3. LOGIC SỰ KIỆN
   // ==========================================
 
+
   const handleGoBack = (e) => {
     e?.stopPropagation();
+   
+    // Gọi stop tracking thủ công khi back (dù hook có cleanup nhưng thêm cho chắc)
+    if (videoToDisplay?.maTinDang) {
+        stopViewTracking(videoToDisplay.maTinDang);
+    }
+
+
     if (isOverlay && onClose) {
       onClose();
       return;
@@ -172,14 +228,17 @@ export default function LikedVideoDetailViewer({
     }
   };
 
+
   const clickTimeoutRef = useRef(null);
   const clickCountRef = useRef(0);
+
 
   const handleClickVideo = useCallback(() => {
     clickCountRef.current++;
     if (clickCountRef.current >= 2) {
       if (!isLiked) handleLike(showHeart);
       else showHeart();
+
 
       clickCountRef.current = 0;
       clearTimeout(clickTimeoutRef.current);
@@ -193,11 +252,13 @@ export default function LikedVideoDetailViewer({
     }
   }, [isLiked, handleLike, showHeart, togglePlayPause]);
 
+
   const handleWheelOnVideo = (e) => {
     if (isTransitioning || !videoList || videoList.length <= 1) return;
     const delta = e.deltaY;
     const SCROLL_THRESHOLD = 30;
     if (Math.abs(delta) < SCROLL_THRESHOLD) return;
+
 
     let nextIndex = currentIndex;
     if (delta > 0 && nextIndex < videoList.length - 1) {
@@ -208,12 +269,14 @@ export default function LikedVideoDetailViewer({
       return;
     }
 
+
     if (nextIndex !== currentIndex) {
       setIsTransitioning(true);
       setCurrentIndex(nextIndex);
       setTimeout(() => setIsTransitioning(false), 800);
     }
   };
+
 
   const handleNextVideo = (e) => {
     e.stopPropagation();
@@ -222,6 +285,7 @@ export default function LikedVideoDetailViewer({
     }
   };
 
+
   const handlePrevVideo = (e) => {
     e.stopPropagation();
     if (currentIndex > 0) {
@@ -229,34 +293,40 @@ export default function LikedVideoDetailViewer({
     }
   };
 
+
   // ==========================================
   // 4. SIGNALR & RENDER
   // ==========================================
 
+
   const maTinDangString = videoToDisplay?.maTinDang?.toString();
+
 
   useEffect(() => {
     if (videoConnection && maTinDangString) {
       // Kiểm tra kết nối trước khi invoke để tránh lỗi ngắt kết nối
       if (videoConnection.state === "Connected") {
-          videoConnection
-            .invoke("JoinVideoGroup", maTinDangString)
-            .catch((err) => console.error("SignalR Join Error:", err));
+        videoConnection
+          .invoke("JoinVideoGroup", maTinDangString)
+          .catch((err) => console.error("SignalR Join Error:", err));
       }
-      
+
+
       return () => {
         if (videoConnection.state === "Connected") {
-            videoConnection
-              .invoke("LeaveVideoGroup", maTinDangString)
-              .catch((err) => console.error("SignalR Leave Error:", err));
+          videoConnection
+            .invoke("LeaveVideoGroup", maTinDangString)
+            .catch((err) => console.error("SignalR Leave Error:", err));
         }
       };
     }
   }, [videoConnection, maTinDangString]);
 
+
   // Nếu chưa có thông tin cơ bản (maTinDang), hiển thị Loading
   if (!videoToDisplay?.maTinDang)
     return <div className={styles.loading}>Đang tải video...</div>;
+
 
   const overlayStyle = isOverlay
     ? {
@@ -271,6 +341,7 @@ export default function LikedVideoDetailViewer({
       }
     : {};
 
+
   const content = (
     <div className={styles.container} style={overlayStyle}>
       {/* --- CỘT TRÁI: VIDEO PLAYER --- */}
@@ -283,9 +354,10 @@ export default function LikedVideoDetailViewer({
           <FiArrowLeftCircle size={24} />
         </button>
 
+
         {/* ✅ FIX: Chỉ render Player khi có URL để tránh component con bị crash */}
         {safeVideoUrl ? (
-            <VideoPlayer
+          <VideoPlayer
             videoUrl={safeVideoUrl}
             playerRef={playerRef}
             bgPlayerRef={bgPlayerRef}
@@ -297,10 +369,11 @@ export default function LikedVideoDetailViewer({
             setIsPlaying={setIsPlaying}
             toggleMute={toggleMute}
             handleVolumeChange={handleVolumeChange}
-            />
+          />
         ) : (
-            <div className={styles.loading}>Đang tải nguồn video...</div>
+          <div className={styles.loading}>Đang tải nguồn video...</div>
         )}
+
 
         <div className={styles.volumeWrapper}>
           <VideoVolumeControl
@@ -309,6 +382,7 @@ export default function LikedVideoDetailViewer({
             handleVolumeChange={handleVolumeChange}
           />
         </div>
+
 
         {videoList && videoList.length > 1 && (
           <div className={styles.navButtons}>
@@ -330,6 +404,7 @@ export default function LikedVideoDetailViewer({
         )}
       </div>
 
+
       {/* --- CỘT PHẢI: INFO & COMMENTS --- */}
       <div className={styles.sidebarSide}>
         <CommentSection
@@ -342,6 +417,7 @@ export default function LikedVideoDetailViewer({
           <div className={styles.infoHeader}>
             {/* Truyền video đã chuẩn hóa vào Info */}
             <VideoInfo video={videoToDisplay} />
+
 
             <div className={styles.actionWrapper}>
               <VideoActions
@@ -362,9 +438,12 @@ export default function LikedVideoDetailViewer({
     </div>
   );
 
+
   if (isOverlay) {
     return createPortal(content, document.body);
   }
 
+
   return content;
 }
+

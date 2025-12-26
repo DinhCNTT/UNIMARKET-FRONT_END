@@ -8,7 +8,7 @@ import {
   FiMessageSquare,
   FiMoreHorizontal,
   FiUsers,
-  FiLogIn, 
+  FiLogIn,
 } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import VideoSearchOverlay from "./VideoSearchOverlay";
@@ -18,8 +18,9 @@ import SmartFollowingList from "./SmartFollowingList";
 import "./TopNavbarUniMarket.css";
 import { GlobalNotificationContext } from "../context/GlobalNotificationContext";
 import { VideoContext } from "../context/VideoContext";
-import { AuthContext } from "../context/AuthContext"; 
+import { AuthContext } from "../context/AuthContext";
 import defaultAvatar from "../assets/default-avatar.png";
+
 
 export default function TopNavbarUniMarket() {
   const navRef = useRef(null);
@@ -27,25 +28,26 @@ export default function TopNavbarUniMarket() {
   const navigate = useNavigate();
   const location = useLocation();
   const { activeTab, setActiveTab, triggerReload } = useContext(VideoContext);
-  
+   
   // Lấy user từ AuthContext
-  const { user } = useContext(AuthContext); 
+  const { user } = useContext(AuthContext);
+
 
   const { unreadCount, fetchNotifications } = useContext(GlobalNotificationContext);
   const isChatRoute = location.pathname.startsWith("/chat");
   const [isMini, setIsMini] = useState(isChatRoute);
+   
+  // Danh sách các tab sẽ mở Panel bên cạnh
   const PANEL_TABS_SET = useMemo(() => new Set(["search", "upload", "activity", "more"]), []);
+
 
   // ==========================================================
   // [LOGIC MỚI] LẤY TỪ KHÓA TỪ URL ĐỂ HIỂN THỊ TRÊN NÚT
   // ==========================================================
   const getSearchLabel = () => {
-    // Nếu URL bắt đầu bằng /search/
     if (location.pathname.startsWith("/search/")) {
       try {
-        // Cấu trúc /search/iphone -> lấy phần tử thứ 2
         const parts = location.pathname.split("/");
-        // parts[2] là keyword
         if (parts[2]) {
           return decodeURIComponent(parts[2]);
         }
@@ -53,35 +55,38 @@ export default function TopNavbarUniMarket() {
         return "Search";
       }
     }
-    // Mặc định trả về chữ Search
     return "Search";
   };
-  
+   
   const searchLabel = getSearchLabel();
+
 
   // ==========================================================
   // EFFECT: XỬ LÝ MINI SIDEBAR
   // ==========================================================
   useEffect(() => {
     const TABS_NEED_MINI = ["search", "activity", "messages", "more", "upload"];
-    
+   
     if (TABS_NEED_MINI.includes(activeTab)) {
-        setIsMini(true); 
+        setIsMini(true);
     } else {
-        setIsMini(isChatRoute); 
+        setIsMini(isChatRoute);
     }
   }, [isChatRoute, activeTab]);
+
 
   const getAvatarSrc = (url) => {
     if (!url) return defaultAvatar;
     return url.startsWith("http") ? url : `http://localhost:5133${url}`;
   };
 
+
   const isPanelOpen = PANEL_TABS_SET.has(activeTab);
   const shouldHideFollowingList = isPanelOpen || activeTab === "messages" || isChatRoute;
 
+
   // ==========================================================
-  // LOGIC GIỮ "FOR YOU" ACTIVE KHI Ở TRANG VIDEO
+  // LOGIC ĐỒNG BỘ URL VỚI ACTIVE TAB (ĐÃ SỬA VÀ BỔ SUNG)
   // ==========================================================
   useEffect(() => {
     const path = location.pathname;
@@ -89,53 +94,91 @@ export default function TopNavbarUniMarket() {
       ...PANEL_TABS_SET,
       "messages",
       "profile",
-      "following", 
+      "following",
     ]);
 
+
+    // 1. Nếu đang ở trang Video chi tiết (VideoDetailViewer - Logic cũ của bạn)
+    // Giả định: Trang Feed chính có đường dẫn bắt đầu bằng /video/
     if (path.startsWith("/video/")) {
       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
         setActiveTab("forYou");
       }
-    } else {
-      if (activeTab === "forYou") {
-        setActiveTab(null);
+    }
+    // 2. Nếu đang ở trang Explore (Logic cũ)
+    else if (path === "/explore") {
+      if (activeTab !== "explore" && !PANEL_TABS_SET.has(activeTab)) {
+        setActiveTab("explore");
+      }
+    }
+    // 3. Logic cho trang chủ mặc định (Market/Home) cũng coi là For You
+    else if (path === "/" || path === "/market") {
+       if (!floatingTabs.has(activeTab) && activeTab !== "forYou") {
+         setActiveTab("forYou");
+       }
+    }
+    // 4. [FIX MỚI] CÁC TRƯỜNG HỢP KHÁC (VideoStandalone, v.v...)
+    // Nếu không phải các trang trên, cần tắt màu vàng (set activeTab = null)
+    else {
+      // Chỉ reset nếu tab hiện tại KHÔNG PHẢI là các tab floating (Search, Noti, Message...)
+      // và cũng không phải đang ở trong trang Chat (vì Chat tự xử lý activeTab="messages")
+      if (!floatingTabs.has(activeTab) && !path.startsWith("/chat")) {
+         setActiveTab(null);
       }
     }
   }, [location.pathname, activeTab, setActiveTab, PANEL_TABS_SET]);
 
+
   // ==========================================================
-  // TOGGLE TAB
+  // TOGGLE TAB (XỬ LÝ CLICK)
   // ==========================================================
   const toggleTab = (tab) => {
-    if (activeTab === tab && tab !== "forYou") {
+    // Nếu click lại tab đang active (trừ forYou/explore reload)
+    if (activeTab === tab && tab !== "forYou" && tab !== "explore") {
       setActiveTab(null);
       setIsMini(location.pathname.startsWith("/chat"));
       return;
     }
 
+
+    // --- CASE 1: FOR YOU ---
     if (tab === "forYou") {
       setActiveTab("forYou");
-      triggerReload(); 
+      triggerReload();
       if (!location.pathname.startsWith("/video/")) {
-        navigate("/video/1");
+        navigate("/video/1"); // Hoặc trang chủ tùy logic
       }
-      setIsMini(false); 
+      setIsMini(false);
       return;
     }
 
+
+    // --- CASE 2: EXPLORE ---
+    if (tab === "explore") {
+      setActiveTab("explore");
+      navigate("/explore"); // Chuyển hướng sang trang ExplorePage
+      setIsMini(false); // Mở rộng sidebar
+      return;
+    }
+
+
+    // --- CASE 3: CÁC TAB KHÁC (PANEL/SIDEBAR) ---
     setActiveTab(tab);
-    
+     
+    // Check lại logic mini sidebar khi click
     const TABS_NEED_MINI = ["search", "activity", "messages", "more", "upload"];
     if (TABS_NEED_MINI.includes(tab)) {
-        setIsMini(true); 
+        setIsMini(true);
     } else {
         setIsMini(location.pathname.startsWith("/chat"));
     }
+
 
     if (tab === 'activity') {
       try { fetchNotifications(); } catch (e) { console.warn(e); }
     }
   };
+
 
   // ==========================================================
   // XỬ LÝ TAB MESSAGE KHI Ở TRANG CHAT
@@ -151,11 +194,13 @@ export default function TopNavbarUniMarket() {
     }
   }, [location.pathname, activeTab, setActiveTab]);
 
+
   const handleChatClick = () => {
     navigate("/chat");
     setActiveTab("messages");
-    setIsMini(true); 
+    setIsMini(true);
   };
+
 
   // ==========================================================
   // CLICK OUTSIDE TO CLOSE PANEL
@@ -165,21 +210,29 @@ export default function TopNavbarUniMarket() {
       const nav = navRef.current;
       const panel = panelRef.current;
 
+
       const clickedOutsideNav = nav && !nav.contains(e.target);
       const clickedOutsidePanel = !panel || !panel.contains(e.target);
       if (clickedOutsideNav && clickedOutsidePanel) {
         if (isChatRoute && !PANEL_TABS_SET.has(activeTab)) return;
-          
+         
         if (PANEL_TABS_SET.has(activeTab)) {
           setActiveTab(null);
-          setIsMini(location.pathname.startsWith("/chat"));
+          // Khi đóng panel, nếu đang ở explore thì mở rộng sidebar ra lại (nếu ko phải chat)
+          if (location.pathname === "/explore") {
+             setIsMini(false);
+          } else {
+             setIsMini(location.pathname.startsWith("/chat"));
+          }
         }
       }
     };
 
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeTab, isChatRoute, PANEL_TABS_SET, setActiveTab, location.pathname]);
+
 
   // ==========================================================
   // RENDER
@@ -197,7 +250,7 @@ export default function TopNavbarUniMarket() {
                 setActiveTab("forYou");
                 triggerReload();
                 navigate("/market");
-                setIsMini(false); 
+                setIsMini(false);
             }}
             style={{ cursor: "pointer" }}
             >
@@ -208,7 +261,8 @@ export default function TopNavbarUniMarket() {
                 )}
             </div>
 
-            {/* --- NÚT SEARCH ĐÃ CẬP NHẬT --- */}
+
+            {/* --- NÚT SEARCH --- */}
             <button
                 className={`um-tn-icon-btn search-btn ${
                     activeTab === "search" ? "active" : ""
@@ -225,6 +279,7 @@ export default function TopNavbarUniMarket() {
             </button>
         </div>
 
+
         {/* === PHẦN 2: CUỘN (MENU ICONS + FOLLOWING + FOOTER) === */}
         <div className="um-tn-scroll-section custom-scrollbar">
             <div className="um-tn-icons">
@@ -236,6 +291,8 @@ export default function TopNavbarUniMarket() {
                     {!isMini && <span>For You</span>}
                 </button>
 
+
+                {/* --- NÚT EXPLORE --- */}
                 <button
                     className={`um-tn-icon-btn ${activeTab === "explore" ? "active" : ""}`}
                     onClick={() => toggleTab("explore")}
@@ -244,13 +301,15 @@ export default function TopNavbarUniMarket() {
                     {!isMini && <span>Explore</span>}
                 </button>
 
-                <button 
-                    className={`um-tn-icon-btn ${activeTab === "following" ? "active" : ""}`} 
+
+                <button
+                    className={`um-tn-icon-btn ${activeTab === "following" ? "active" : ""}`}
                     onClick={() => toggleTab("following")}
                 >
                     <FiUsers size={24} />
                     {!isMini && <span>Friends</span>}
                 </button>
+
 
                 <button
                     className={`um-tn-icon-btn ${activeTab === "upload" ? "active" : ""}`}
@@ -259,6 +318,7 @@ export default function TopNavbarUniMarket() {
                     <FiUpload size={24} />
                     {!isMini && <span>Upload</span>}
                 </button>
+
 
                 {/* ✅ CHỈ HIỆN THÔNG BÁO (ACTIVITY) KHI ĐÃ ĐĂNG NHẬP */}
                 {user && (
@@ -278,6 +338,7 @@ export default function TopNavbarUniMarket() {
                     </button>
                 )}
 
+
                 {/* ✅ CHỈ HIỆN TIN NHẮN (MESSAGES) KHI ĐÃ ĐĂNG NHẬP */}
                 {user && (
                     <button
@@ -288,6 +349,7 @@ export default function TopNavbarUniMarket() {
                         {!isMini && <span>Messages</span>}
                     </button>
                 )}
+
 
                 {/* LOGIC HIỂN THỊ AVATAR HOẶC LOGIN */}
                 {user ? (
@@ -305,7 +367,7 @@ export default function TopNavbarUniMarket() {
                             alt="avatar"
                             className="um-tn-avatar"
                             onError={(e) => {
-                                e.target.onerror = null; 
+                                e.target.onerror = null;
                                 e.target.src = defaultAvatar;
                             }}
                         />
@@ -315,7 +377,7 @@ export default function TopNavbarUniMarket() {
                     <button
                         className="um-tn-icon-btn"
                         onClick={() => {
-                            navigate("/login"); 
+                            navigate("/login");
                             setActiveTab(null);
                         }}
                     >
@@ -323,6 +385,7 @@ export default function TopNavbarUniMarket() {
                         {!isMini && <span>Log in</span>}
                     </button>
                 )}
+
 
                 <button
                     className={`um-tn-icon-btn ${activeTab === "more" ? "active" : ""}`}
@@ -333,6 +396,7 @@ export default function TopNavbarUniMarket() {
                 </button>
             </div>
 
+
             {!shouldHideFollowingList && (
                 <>
                     {/* ✅ CHỈ HIỆN DANH SÁCH FOLLOW NẾU ĐÃ ĐĂNG NHẬP */}
@@ -341,6 +405,7 @@ export default function TopNavbarUniMarket() {
                             <SmartFollowingList isMini={isMini} />
                         </div>
                     )}
+
 
                     {/* FOOTER */}
                     {!isMini && (
@@ -356,6 +421,7 @@ export default function TopNavbarUniMarket() {
         </div>
       </nav>
 
+
       {/* PANEL WRAPPER */}
       <div
         className={`um-tn-panel-wrapper ${isPanelOpen ? "open" : ""}`}
@@ -367,18 +433,20 @@ export default function TopNavbarUniMarket() {
               isOpen={activeTab === "search"}
               onClose={() => {
                   setActiveTab(null);
-                  setIsMini(location.pathname.startsWith("/chat"));
+                  if (location.pathname === "/explore") setIsMini(false); // Mở lại nếu ở explore
+                  else setIsMini(location.pathname.startsWith("/chat"));
               }}
             />
           </div>
         )}
 
-        {/* Cần check user ở đây nữa để tránh panel mở khi không có user (phòng hờ) */}
+
         {activeTab === "activity" && user && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <NotificationDropdown />
           </div>
         )}
+
 
         {activeTab === "upload" && (
           <div className="um-tn-tab-content" ref={panelRef}>
@@ -387,6 +455,7 @@ export default function TopNavbarUniMarket() {
           </div>
         )}
 
+
         {activeTab === "messages" && user && !isChatRoute && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <h3>Tin nhắn</h3>
@@ -394,11 +463,13 @@ export default function TopNavbarUniMarket() {
           </div>
         )}
 
+
         {activeTab === "more" && (
           <div className="um-tn-tab-content" ref={panelRef}>
             <MorePanel onClose={() => {
                 setActiveTab(null);
-                setIsMini(location.pathname.startsWith("/chat"));
+                if (location.pathname === "/explore") setIsMini(false); // Mở lại nếu ở explore
+                else setIsMini(location.pathname.startsWith("/chat"));
             }} />
           </div>
         )}
@@ -406,3 +477,4 @@ export default function TopNavbarUniMarket() {
     </div>
   );
 }
+
