@@ -6,13 +6,12 @@ import styles from "../ModuleChatCss/MessageItem.module.css";
 import aiSuggestionsStyles from "../../../components/AI/AISuggestions.module.css";
 import Swal from "sweetalert2";
 import useResizeObserver from "../../../hooks/useResizeObserver";
-import { FaEllipsisV, FaTrash, FaClock, FaUndo, FaExpand, FaMapMarkerAlt, FaDirections } from "react-icons/fa";
+import { FaEllipsisV, FaTrash, FaUndo, FaExpand, FaMapMarkerAlt, FaDirections } from "react-icons/fa";
 
 const MessageItem = ({ message, showSeenStatus, onResize, onMediaLoaded, isFirstMessage }) => {
-const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, sendMessageService } =    
-    useChat();
+  const { user, openImageModal, deleteLocalMessage, sendMessageService } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+
   const menuRef = useRef(null);
   const menuTriggerRef = useRef(null);
   const [menuStyle, setMenuStyle] = useState(null);
@@ -27,25 +26,18 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
   const handleMediaLoad = () => {
     try {
       if (typeof onMediaLoaded === "function") onMediaLoaded(message.maTinNhan);
-    } catch (e) {
-      /* ignore */
-    }
+    } catch (e) { /* ignore */ }
 
     try {
       if (typeof onResize === "function") onResize();
-    } catch (e) {
-      /* ignore */
-    }
+    } catch (e) { /* ignore */ }
   };
 
-  // When a message is recalled or its content/type changes, ask parent to re-measure
+  // Giữ lại effect này để layout update nếu nội dung thay đổi
   useEffect(() => {
     try {
       if (typeof onResize === "function") onResize();
-    } catch (e) {
-      /* ignore */
-    }
-    // Intentionally watch these fields so layout changes trigger a re-measure
+    } catch (e) { /* ignore */ }
   }, [message.isRecalled, message.noiDung, message.loaiTinNhan, onResize]);
 
   const formatTime = (time) => {
@@ -58,33 +50,7 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
     );
   };
 
-  const canRecallMessage = (messageTime) => {
-    if (!messageTime) return false;
-    const now = new Date();
-    const msgTime = new Date(messageTime);
-    const diffInMinutes = (now - msgTime) / (1000 * 60);
-    return diffInMinutes <= 5;
-  };
-
-  const getRecallTimeRemaining = (messageTime) => {
-    if (!messageTime) return 0;
-    const now = new Date();
-    const msgTime = new Date(messageTime);
-    const diffInMinutes = (now - msgTime) / (1000 * 60);
-    return Math.max(0, 5 - diffInMinutes);
-  };
-
-  useEffect(() => {
-    if (!isSentByMe || !canRecallMessage(message.thoiGianGui)) return;
-
-    const updateTimer = () => {
-      setTimeRemaining(getRecallTimeRemaining(message.thoiGianGui));
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [message.thoiGianGui, isSentByMe]);
+  // ✅ Đã xóa toàn bộ hàm canRecallMessage, getRecallTimeRemaining và useEffect đếm giờ
 
   const handleVideoFullscreen = () => {
     if (videoRef.current) {
@@ -106,17 +72,14 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
     e.stopPropagation();
     setIsMenuOpen((prev) => {
       const next = !prev;
-      // If opening and this is the first message, compute fixed position
       if (next && isFirstMessage && menuTriggerRef.current) {
         try {
           const rect = menuTriggerRef.current.getBoundingClientRect();
-          const MENU_W = 200; // approximate menu width (matches CSS max-width for menuBelow)
+          const MENU_W = 200;
           const padding = 8;
-          // Place the menu below the trigger and open to the left: align menu's right edge near trigger.right
           let left = rect.right - MENU_W - padding;
-          // clamp left so menu fits in viewport
           left = Math.min(Math.max(left, padding), window.innerWidth - MENU_W - padding);
-          const top = rect.bottom + 6; // show below trigger
+          const top = rect.bottom + 6;
           setMenuStyle({ position: "fixed", left: `${left}px`, top: `${top}px` });
         } catch (err) {
           setMenuStyle(null);
@@ -124,7 +87,6 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
       } else {
         setMenuStyle(null);
       }
-
       return next;
     });
   };
@@ -158,9 +120,7 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
 
       try {
         deleteLocalMessage(message.maTinNhan);
-      } catch (e) {
-        /* ignore */
-      }
+      } catch (e) { /* ignore */ }
 
       if (response.data?.lastMessage) {
         window.dispatchEvent(
@@ -191,66 +151,7 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
     closeMenu();
   };
 
-  const handleRecall = async () => {
-    if (!canRecallMessage(message.thoiGianGui)) {
-      Swal.fire({
-        icon: "error",
-        title: "Không thể thu hồi",
-        text: "Chỉ có thể thu hồi tin nhắn trong vòng 5 phút sau khi gửi.",
-        confirmButtonColor: "#ef4444",
-      });
-      closeMenu();
-      return;
-    }
-
-    const remainingMinutes = Math.floor(timeRemaining);
-    const remainingSeconds = Math.floor((timeRemaining - remainingMinutes) * 60);
-    const isMedia =
-      message.loaiTinNhan === "image" || message.loaiTinNhan === "video";
-    const mediaType = message.loaiTinNhan === "image" ? "ảnh" : "video";
-
-    const result = await Swal.fire({
-      title: `Thu hồi ${isMedia ? mediaType : "tin nhắn"}?`,
-      html: `
-        <p style="margin-bottom: 12px;">Bạn có chắc chắn muốn thu hồi?</p>
-        <div style="background: #fef3c7; color: #f59e0b; padding: 8px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;">
-          <i class="fa fa-clock"></i> 
-          Còn lại: ${remainingMinutes}:${remainingSeconds
-        .toString()
-        .padStart(2, "0")}
-        </div>`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#64748b",
-      confirmButtonText: "Thu hồi",
-      cancelButtonText: "Hủy",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        if (isMedia) {
-          await recallMedia(message.maTinNhan);
-        } else {
-          await recallMessage(message.maTinNhan);
-        }
-        Swal.fire({
-          icon: "success",
-          title: "Đã thu hồi",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Lỗi thu hồi",
-          text: error.message || "Không thể thu hồi. Vui lòng thử lại.",
-          confirmButtonColor: "#ef4444",
-        });
-      }
-    }
-    closeMenu();
-  };
+  // ✅ Đã xóa hàm handleRecall
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -262,7 +163,6 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
       closeMenu();
     };
     document.addEventListener("click", handleClickOutside);
-    // If menu is fixed (first message), close on resize to avoid mismatch
     const handleResize = () => {
       if (isFirstMessage) closeMenu();
     };
@@ -273,13 +173,10 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
     };
   }, [isMenuOpen]);
 
-  const canRecall = canRecallMessage(message.thoiGianGui);
-
   // --- Hàm tách tọa độ từ link google map ---
   const extractCoords = (url) => {
     if (!url) return null;
     try {
-      // Tìm 2 số thực đứng cạnh nhau (VD: 10.762, 106.660)
       const regex = /([-+]?\d{1,2}\.\d+),\s*([-+]?\d{1,3}\.\d+)/;
       const match = url.match(regex);
       if (match) {
@@ -323,45 +220,16 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                   className={`${styles.messageMenu} ${isFirstMessage ? styles.menuBelow : ""}`}
                   style={menuStyle || undefined}
                 >
-                  {isSentByMe ? (
-                    <>
-                      <button
-                        className={`${styles.menuItem} ${
-                          canRecall ? styles.recallItem : styles.disabledItem
-                        }`}
-                        onClick={canRecall ? handleRecall : null}
-                        disabled={!canRecall}
-                      >
-                        <FaUndo className={styles.menuIcon} />
-                        <span className={styles.menuText}>Thu hồi</span>
-                        {canRecall && (
-                          <span className={styles.timer}>
-                            <FaClock />
-                            {Math.floor(timeRemaining)}:
-                            {Math.floor((timeRemaining % 1) * 60)
-                              .toString()
-                              .padStart(2, "0")}
-                          </span>
-                        )}
-                      </button>
-                      <div className={styles.menuDivider} />
-                      <button
-                        className={`${styles.menuItem} ${styles.deleteItem}`}
-                        onClick={handleDelete}
-                      >
-                        <FaTrash className={styles.menuIcon} />
-                        <span className={styles.menuText}>Xóa</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      className={`${styles.menuItem} ${styles.deleteItem}`}
-                      onClick={handleDelete}
-                    >
-                      <FaTrash className={styles.menuIcon} />
-                      <span className={styles.menuText}>Xóa tin nhắn</span>
-                    </button>
-                  )}
+                  {/* ✅ MENU ĐÃ ĐƯỢC LÀM GỌN: CHỈ CÒN NÚT XÓA */}
+                  <button
+                    className={`${styles.menuItem} ${styles.deleteItem}`}
+                    onClick={handleDelete}
+                  >
+                    <FaTrash className={styles.menuIcon} />
+                    <span className={styles.menuText}>
+                        {isSentByMe ? "Xóa" : "Xóa tin nhắn"}
+                    </span>
+                  </button>
                 </div>
               );
 
@@ -390,19 +258,17 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                 onClick={() => openImageModal(message.noiDung)}
               />
               <div className={styles.mediaOverlay}>
-                {/* DÒNG NÀY ĐÃ ĐƯỢC SỬA THEO YÊU CẦU CỦA BẠN */}
                 <span className={styles.zoomIcon}>
                   <FaExpand />
                 </span>
               </div>
             </div>
-            ) : message.loaiTinNhan === "location" ? (
-            /* ✅ GIAO DIỆN MAP CARD MỚI */
+          ) : message.loaiTinNhan === "location" ? (
+            /* ✅ GIAO DIỆN MAP CARD */
             (() => {
               const coords = extractCoords(message.noiDung);
               return (
                 <div className={styles.locationCard}>
-                  {/* Map Preview (Iframe) */}
                   <div className={styles.mapPreview}>
                     {coords ? (
                       <iframe
@@ -413,9 +279,8 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                         scrolling="no"
                         marginHeight="0"
                         marginWidth="0"
-                        // Link embed map đơn giản (không cần API Key)
                         src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&hl=vi&z=14&output=embed`}
-                        style={{ border: 0, pointerEvents: "none" }} 
+                        style={{ border: 0, pointerEvents: "none" }}
                       />
                     ) : (
                       <div className={styles.mapPlaceholder}>
@@ -423,10 +288,8 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                       </div>
                     )}
                   </div>
-
-                  {/* Footer thông tin */}
-                  <div 
-                    className={styles.locationFooter} 
+                  <div
+                    className={styles.locationFooter}
                     onClick={() => window.open(message.noiDung, "_blank")}
                   >
                     <div className={styles.locationInfoText}>
@@ -460,11 +323,9 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
             <div>
               <p className={styles.textContent}>{message.noiDung}</p>
 
-              {/* Render AI suggestion boxes when present */}
               {message.isAi && Array.isArray(message.aiSuggestions) && message.aiSuggestions.length > 0 && (
                 <div className={aiSuggestionsStyles.aiSuggestions}>
                   {message.aiSuggestions.slice(0, 8).map((s, idx) => {
-                    // tolerant field lookup
                     const title = s?.ten || s?.Ten || s?.title || s?.name || "Sản phẩm";
                     const price = s?.gia || s?.Gia || s?.price || null;
                     const image = s?.anhDaiDien || s?.AnhDaiDien || s?.image || s?.Anh || null;
@@ -475,7 +336,6 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
 
                     return (
                       <div key={idx} className={aiSuggestionsStyles.aiCard} onClick={() => {
-                        // Navigate to product detail page using the correct route
                         if (productId) {
                           window.location.href = `/tin-dang/${productId}`;
                         }
@@ -521,7 +381,6 @@ const { user, openImageModal, recallMessage, recallMedia, deleteLocalMessage, se
                 </div>
               )}
 
-              {/* Render clarifying question with quick-reply action */}
               {message.isAi && message.clarifyingQuestion && (
                 <div className={aiSuggestionsStyles.aiClarify}>
                   <div className={aiSuggestionsStyles.aiClarifyText}>{message.clarifyingQuestion}</div>

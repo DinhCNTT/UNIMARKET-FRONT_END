@@ -208,12 +208,18 @@ const ChiTietTinDang = ({ onOpenChat }) => {
         <div className={styles.descriptionContainer} id="mo-ta-chi-tiet">
           <PostDescription description={post.moTa} />
 
-
-          <PostTechnicalSpecs
-            detailsJson={post.ChiTietObj || post.chiTietObj}
-            TinhTrang={post.TinhTrang || post.tinhTrang}      
-            CoTheThoaThuan={post.CoTheThoaThuan || post.coTheThoaThuan}
-          />
+          {/* ✅ AUTO-DETECT: Nếu danh mục cha là "Nhà trọ" -> hiển thị NhaTroDetails */}
+          {post.danhMucCha?.toLowerCase().includes("nhà trọ") ? (
+            <NhaTroDetails
+              detailsJson={post.ChiTietObj || post.chiTietObj}
+            />
+          ) : (
+            <PostTechnicalSpecs
+              detailsJson={post.ChiTietObj || post.chiTietObj}
+              TinhTrang={post.TinhTrang || post.tinhTrang}      
+              CoTheThoaThuan={post.CoTheThoaThuan || post.coTheThoaThuan}
+            />
+          )}
         </div>
 
 

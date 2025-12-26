@@ -22,6 +22,7 @@ const PostForm = () => {
   const slugToNameMap = {
     "do-dien-tu": "Đồ điện tử",
     "xe-co": "Xe cộ",
+    "nha-tro": "Nhà trọ",
     "bat-dong-san": "Bất động sản",
     // ... thêm các mục khác nếu cần
   };
@@ -102,8 +103,8 @@ const PostForm = () => {
         setShowSubCategories(false);
     }
 
-
-    navigate(`/post-tin?categoryId=${subCategory.id}&categoryName=${subCategory.tenDanhMucCon}`);
+    // Gửi cả parent category name (danh mục cha)
+    navigate(`/post-tin?categoryId=${subCategory.id}&categoryName=${subCategory.tenDanhMucCon}&parentCategory=${selectedCategory.tenDanhMucCha}`);
   };
 
 

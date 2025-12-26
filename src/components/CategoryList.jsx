@@ -36,9 +36,13 @@ const CategoryList = () => {
     setSelectedCategory(categoryName);
     setSelectedSubCategory("");
 
-    // 🔥 [MỚI] KIỂM TRA ĐIỀU KIỆN ĐỒ ĐIỆN TỬ
-    if (categoryName && categoryName.toLowerCase().trim() === "đồ điện tử") {
+    // 🔥 KIỂM TRA ĐIỀU KIỆN ĐỒ ĐIỆN TỬ & BẤT ĐỘNG SẢN
+    const lowerCategoryName = categoryName?.toLowerCase().trim();
+    
+    if (lowerCategoryName === "đồ điện tử") {
         navigate("/market/do-dien-tu");
+    } else if (lowerCategoryName === "bất động sản" || lowerCategoryName === "nhà trọ") {
+        navigate("/market/nha-tro");
     } else {
         navigate("/loc-tin-dang");
     }

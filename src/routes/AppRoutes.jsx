@@ -12,6 +12,7 @@ import Register from "../pages/Register";
 import MarketPage from "../pages/MarketPage";
 import ViewHistoryPage from "../pages/ViewHistory/ViewHistoryPage";
 import MarketPageElectronic from "../pages/MarketPageElectronic";
+import MarketPageBatDongSan from "../pages/MarketPageNhaTro";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 // --- ADMIN PAGES & COMPONENTS ---
@@ -34,6 +35,8 @@ import QuanLyTin from "../components/QuanLyTin";
 import TinDangDaLuu from "../components/TinDangDaLuu";
 import CapNhatTin from "../components/CapNhatTin/CapNhatTin";
 import ChiTietTinDang from "../components/ChiTietTinDang";
+import ChiTietTinDangNhaTro from "../components/ChiTietTinDangNhaTro";
+import ChiTietTinDangRouter from "../components/ChiTietTinDangRouter";
 
 // --- USER & SETTINGS ---
 import AccountSettings from "../components/AccountSettings/AccountSettings";
@@ -77,6 +80,7 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/market" element={<MarketPage />} />
       <Route path="/market/do-dien-tu" element={<MarketPageElectronic />} />
+      <Route path="/market/nha-tro" element={<MarketPageBatDongSan />} />
 
       {/* ==============================
           2. MARKETPLACE & POSTS
@@ -86,7 +90,17 @@ function AppRoutes() {
       <Route
         path="/tin-dang/:id"
         element={
-          <ChiTietTinDang
+          <ChiTietTinDangRouter
+            onOpenChat={(maCuocTroChuyen) => {
+              window.location.href = `/chat/${maCuocTroChuyen}`;
+            }}
+          />
+        }
+      />
+      <Route
+        path="/chi-tiet-tin-dang-nha-tro/:id"
+        element={
+          <ChiTietTinDangNhaTro
             onOpenChat={(maCuocTroChuyen) => {
               window.location.href = `/chat/${maCuocTroChuyen}`;
             }}

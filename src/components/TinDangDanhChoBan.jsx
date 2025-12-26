@@ -23,7 +23,14 @@ const TinDangDanhChoBan = ({ showNavigation = true, categoryGroup = null }) => {
 
 
   const getSortedPosts = () => {
+    // 1. Kiểm tra nếu posts bị null, undefined hoặc không phải mảng -> Trả về mảng rỗng ngay
+    if (!posts || !Array.isArray(posts)) {
+        return [];
+    }
+
+    // 2. Logic sắp xếp
     if (activeTab === "moinhat") {
+      // Dùng [...posts] để copy ra mảng mới rồi mới sort, tránh lỗi mutate state
       return [...posts].sort((a, b) => new Date(b.ngayDang) - new Date(a.ngayDang));
     }
     return posts;
@@ -40,24 +47,30 @@ const TinDangDanhChoBan = ({ showNavigation = true, categoryGroup = null }) => {
       {/* Navigation */}
       {showNavigation && (
         <div className={styles.navContainer}>
-          <TrangChuNav onTabChange={handleTabChange} activeTab={activeTab} />
+          <TrangChuNav 
+            onTabChange={handleTabChange} 
+            activeTab={activeTab} 
+            showVideoTab={!categoryGroup} 
+          />
         </div>
       )}
 
 
       {/* Post Grid */}
       <div className={styles.postList}>
-        {posts.length === 0 ? (
-          <p style={{ textAlign: "center", width: "100%", color: "#666" }}>
+        {/* SỬA: Dùng sortedPosts.length thay vì posts.length để an toàn */}
+        {sortedPosts.length === 0 ? (
+          <p style={{ textAlign: "center", width: "100%", color: "#666", padding: "20px" }}>
             Không có tin đăng {categoryGroup ? "trong danh mục này" : ""}
           </p>
         ) : (
           displayedPosts.map((post) => (
             <PostItemCard
-              key={post.maTinDang}
+              key={post.maTinDang || Math.random()} // Fallback key nếu lỡ maTinDang bị lỗi
               post={post}
               isLoggedIn={isLoggedIn}
-              isSaved={savedIds.includes(post.maTinDang)}
+              // Kiểm tra savedIds có tồn tại không trước khi gọi includes
+              isSaved={Array.isArray(savedIds) && savedIds.includes(post.maTinDang)}
               onToggleSave={handleToggleSave}
             />
           ))

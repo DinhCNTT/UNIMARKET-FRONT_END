@@ -1,4 +1,4 @@
-/* src/components/PostItemCard.module.css */
+/* src/components/NhaTroPostCard/NhaTroPostCard.module.css */
 
 /* --- KHUNG THẺ TIN (CARD CONTAINER) --- */
 .postItem {
@@ -15,7 +15,6 @@
   width: 100%;
   max-width: 235px; 
 }
-
 
 /* Hiệu ứng khi di chuột vào thẻ */
 .postItem:hover {
@@ -78,7 +77,6 @@
   pointer-events: none;
 }
 
-
 /* --- ICON SỐ LƯỢNG (Góc phải dưới ảnh) --- */
 .mediaBadgesContainer {
   position: absolute;
@@ -96,18 +94,17 @@
   color: #fff;
   padding: 3px 7px;
   border-radius: 5px;
-  font-size: 11px;                                /* Tăng nhẹ cho dễ đọc */
-  font-weight: 700;                               /* Sắc nét */
-  font-family: 'Inter', 'Poppins', sans-serif;    /* Phông hiện đại */
-  letter-spacing: -0.2px;                         /* Chữ sắc hơn */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.7);         /* Đọc rõ trên nền video */
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 26px;
-  backdrop-filter: blur(2px);                      /* Hiệu ứng kính mờ */
+  backdrop-filter: blur(2px);
 }
-
 
 /* --- OVERLAY PLAY BUTTON (Khi video chưa chạy) --- */
 .playOverlay {
@@ -211,20 +208,19 @@
 
 /* Tiêu đề: Tối đa 2 dòng */
 .title {
-  font-size: 15px;                         
-  font-weight: 700;                        
-  color: #222;                              
+  font-size: 15px;
+  font-weight: 700;
+  color: #222;
   font-family: 'Poppins', 'Inter', sans-serif; 
   margin: 0 0 6px 0;
   line-height: 1.45em;
-  height: 2.9em;                           
+  height: 2.9em;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  letter-spacing: -0.2px;                   
+  letter-spacing: -0.2px;
 }
-
 
 /* Hàng giá */
 .priceRow {
@@ -237,11 +233,11 @@
 
 /* Giá nổi bật */
 .price {
-  font-size: 20px;        /* Tăng kích thước */
-  font-weight: 800;       /* Đậm hơn */
-  color: #ff2c45;         /* Đỏ tươi hiện đại */
-  font-family: 'Poppins', 'Inter', sans-serif; /* Font hiện đại */
-  letter-spacing: -0.5px; /* Giá nhìn sắc hơn */
+  font-size: 20px;
+  font-weight: 800;
+  color: #ff2c45;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 /* Thông tin thêm (m², tháng) */
@@ -257,22 +253,22 @@
 
 /* Mô tả: 1 dòng */
 .description {
-  font-size: 12px;                            
-  font-weight: 500;                           
-  color: #555;                                
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
   font-family: 'Inter', 'Poppins', sans-serif;
   margin: 0 0 6px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.1px;                      
-  opacity: 0.9;                                
+  letter-spacing: -0.1px;
+  opacity: 0.9;
 }
 
 /* Địa chỉ */
 .location {
-  font-size: 12px;                             
-  color: #777;                                   
+  font-size: 12px;
+  color: #777;
   font-family: 'Inter', 'Poppins', sans-serif;
   margin-top: 2px;
   display: flex;
