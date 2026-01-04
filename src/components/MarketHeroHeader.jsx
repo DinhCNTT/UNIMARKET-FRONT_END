@@ -3,14 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom'; // [NEW] Thêm useL
 import axios from 'axios';
 import { FaSearch, FaClock, FaTimes, FaArrowLeft, FaCheck } from "react-icons/fa";
 
-
 import './MarketHeroHeader.css';
-import "./SearchBar.css";
-
+import "./SearchBar.css"; 
 
 import { CategoryContext } from '../context/CategoryContext';
 import { useProductSearch } from '../hooks/useProductSearch';
-
 
 // --- Icons SVG (Giữ nguyên) ---
 const IconChevronDown = () => (
@@ -19,7 +16,6 @@ const IconChevronDown = () => (
   </svg>
 );
 
-
 const IconSearch = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -27,14 +23,12 @@ const IconSearch = () => (
   </svg>
 );
 
-
 const IconLocation = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#FFC107"/>
     <circle cx="12" cy="9" r="2.5" fill="#fff"/>
   </svg>
 );
-
 
 const MarketHeroHeader = () => {
   // =========================================================
@@ -50,15 +44,13 @@ const MarketHeroHeader = () => {
     deleteSearchHistoryItem,
     highlightText,
     formatDate,
-    selectedLocation,
-    setSelectedLocation
+    selectedLocation, 
+    setSelectedLocation 
   } = useProductSearch();
-
 
   const { setSelectedCategory, setSelectedSubCategory } = useContext(CategoryContext);
   const navigate = useNavigate();
   const location = useLocation(); // [NEW] Lấy thông tin URL hiện tại
-
 
   // =========================================================
   // [QUAN TRỌNG] HÀM WRAPPER: XỬ LÝ CONTEXT TRƯỚC KHI SEARCH
@@ -67,21 +59,17 @@ const MarketHeroHeader = () => {
     // 1. Xác định từ khóa (nếu click gợi ý thì dùng keywordInput, nếu enter thì dùng inputValue)
     const finalKeyword = keywordInput || inputValue;
 
-
     console.log("--- HERO HEADER SEARCH ---");
     console.log("URL:", location.pathname);
 
-
     // 2. Logic Set Context theo URL
     let categoryToSet = null;
-
 
     if (location.pathname.includes("/market/do-dien-tu")) {
         categoryToSet = "Đồ điện tử";
     } else if (location.pathname.includes("/market/nha-tro")) {
         categoryToSet = "Bất động sản";
     }
-
 
     // 3. Thực hiện Set Context nếu cần
     if (categoryToSet) {
@@ -90,40 +78,35 @@ const MarketHeroHeader = () => {
         setSelectedSubCategory(""); // Reset sub category
     }
 
-
     // 4. Gọi hàm search gốc để chuyển trang
     handleSearch(finalKeyword);
   };
 
-
   // =========================================================
   // 2. LOGIC RIÊNG CỦA HERO HEADER
   // =========================================================
- 
+  
   // Refs
   const bannerRef = useRef(null);
   const dropdownLocationRef = useRef(null);
   const suggestionsRef = useRef(null);
   const hoverTimerRef = useRef(null);
 
-
   // UI States
   const [categories, setCategories] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
- 
+  
   // Location UI States
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [provinces, setProvinces] = useState([]);
-  const [tempCity, setTempCity] = useState(null);
-  const [popupView, setPopupView] = useState('PROVINCE');
-  const [locationSearchText, setLocationSearchText] = useState("");
-
+  const [provinces, setProvinces] = useState([]); 
+  const [tempCity, setTempCity] = useState(null); 
+  const [popupView, setPopupView] = useState('PROVINCE'); 
+  const [locationSearchText, setLocationSearchText] = useState(""); 
 
   // Constants
   const HOVER_CLOSE_DELAY_MS = 300;
   const HERO_SCROLL_ENTER = 400;
   const HERO_SCROLL_EXIT = 440;
-
 
   // --- Scroll Logic ---
   useEffect(() => {
@@ -145,7 +128,6 @@ const MarketHeroHeader = () => {
     };
   }, []);
 
-
   // --- Click Outside Logic ---
   useEffect(() => {
     function handleClickOutside(event) {
@@ -160,7 +142,6 @@ const MarketHeroHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowSuggestions]);
 
-
   // --- API ---
   useEffect(() => {
     let mounted = true;
@@ -174,7 +155,6 @@ const MarketHeroHeader = () => {
     return () => { mounted = false; };
   }, []);
 
-
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
@@ -186,8 +166,6 @@ const MarketHeroHeader = () => {
   }, []);
 
 
-
-
   // --- Handlers: Location Popup UI ---
   const handleLocationClick = () => {
     if (!showLocationDropdown) {
@@ -195,9 +173,8 @@ const MarketHeroHeader = () => {
         setLocationSearchText("");
     }
     setShowLocationDropdown(!showLocationDropdown);
-    setShowSuggestions(false);
+    setShowSuggestions(false); 
   };
-
 
   const handleSelectNationwide = () => {
     setSelectedLocation("Toàn quốc");
@@ -205,19 +182,16 @@ const MarketHeroHeader = () => {
     setShowLocationDropdown(false);
   };
 
-
   const handleSelectCity = (city) => {
     setTempCity(city);
     setLocationSearchText("");
     setPopupView('DISTRICT');
   };
 
-
   const handleBackToProvinces = () => {
     setPopupView('PROVINCE');
     setLocationSearchText("");
   };
-
 
   const handleSelectDistrict = (districtName) => {
     let finalLocation = "";
@@ -230,17 +204,14 @@ const MarketHeroHeader = () => {
     setShowLocationDropdown(false);
   };
 
-
   // Filter Logic for Location
-  const filteredProvinces = provinces.filter(p =>
+  const filteredProvinces = provinces.filter(p => 
     p.tenTinhThanh.toLowerCase().includes(locationSearchText.toLowerCase())
   );
-  const filteredDistricts = tempCity ? tempCity.quanHuyens.filter(d =>
+  const filteredDistricts = tempCity ? tempCity.quanHuyens.filter(d => 
     d.tenQuanHuyen.toLowerCase().includes(locationSearchText.toLowerCase())
   ) : [];
   const shouldShowNationwide = "toàn quốc".includes(locationSearchText.toLowerCase());
-
-
 
 
   // =========================================================
@@ -257,15 +228,13 @@ const MarketHeroHeader = () => {
         </div>
       </header>
 
-
       {/* SEARCH ROW */}
       <div className="mp-search-row">
         <div className="mp-search-inner">
           <div className="hero-search-bar">
 
-
             {/* 1. Danh mục Dropdown */}
-            <div
+            <div 
               className="search-category-wrapper"
               onMouseEnter={() => {
                 if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
@@ -281,7 +250,6 @@ const MarketHeroHeader = () => {
                 Danh mục <span className="icon-chevron"><IconChevronDown /></span>
               </button>
 
-
               {showCategoryDropdown && (
                 <div className="hero-dropdown-content">
                   {categories.map((parent) => (
@@ -293,7 +261,7 @@ const MarketHeroHeader = () => {
                         {parent.icon && <img src={parent.icon} alt="" className="hero-cat-icon" />}
                         {parent.tenDanhMucCha}
                       </div>
-                     
+                      
                       {parent.danhMucCon && parent.danhMucCon.length > 0 && (
                         <div className="hero-sub-menu">
                           {parent.danhMucCon.map((child) => (
@@ -313,14 +281,12 @@ const MarketHeroHeader = () => {
               )}
             </div>
 
-
             <div className="search-divider"></div>
-
 
             {/* 2. Ô nhập liệu (Đã dùng logic Wrapper) */}
             <div className="search-input-area" ref={suggestionsRef} style={{ position: 'relative' }}>
               <span className="search-icon"><IconSearch /></span>
-             
+              
               <input
                 type="text"
                 className="hero-input-field"
@@ -339,9 +305,9 @@ const MarketHeroHeader = () => {
                     }
                 }}
               />
-             
+              
               {showSuggestions && (
-                <div className="SearchBarSuggestionsDropdown" style={{ top: '45px', left: '-40px', width: '140%' }}>
+                <div className="SearchBarSuggestionsDropdown" style={{ top: '45px', left: '-40px', width: '140%' }}> 
                   {/* Lịch sử tìm kiếm */}
                   {!inputValue.trim() && user && searchHistory.length > 0 && (
                     <>
@@ -374,14 +340,13 @@ const MarketHeroHeader = () => {
                     </>
                   )}
 
-
                   {/* Gợi ý API */}
                   {inputValue.trim() && (
                     <>
                       <div className="SearchBarSuggestionsHeader">
                         <span className="SearchBarSuggestionsTitle">Tìm kiếm từ khóa "{inputValue}"</span>
                       </div>
-                     
+                      
                       {loadingSuggestions ? (
                         <div className="SearchBarSuggestionLoading">
                           <span>Đang tìm kiếm...</span>
@@ -415,7 +380,6 @@ const MarketHeroHeader = () => {
                     </>
                   )}
 
-
                   {!inputValue.trim() && user && searchHistory.length === 0 && !loadingHistory && (
                     <div className="SearchBarSuggestionEmpty"><span>Chưa có lịch sử tìm kiếm</span></div>
                   )}
@@ -426,7 +390,6 @@ const MarketHeroHeader = () => {
               )}
             </div>
 
-
             {/* 3. Nút Địa điểm */}
             <div className="search-location-wrapper" ref={dropdownLocationRef} style={{ position: 'relative' }}>
                 <button className="location-btn" onClick={handleLocationClick}>
@@ -436,7 +399,6 @@ const MarketHeroHeader = () => {
                   </span>
                   <IconChevronDown />
                 </button>
-
 
                 {showLocationDropdown && (
                   <div className="LocationPopupCard">
@@ -451,11 +413,10 @@ const MarketHeroHeader = () => {
                         </span>
                     </div>
 
-
                     <div className="LocationSearchWrapper">
                         <FaSearch className="LocationSearchIcon" />
-                        <input
-                            type="text"
+                        <input 
+                            type="text" 
                             className="LocationSearchInput"
                             placeholder={popupView === 'PROVINCE' ? "Tìm tỉnh thành" : "Tìm quận huyện"}
                             value={locationSearchText}
@@ -464,7 +425,6 @@ const MarketHeroHeader = () => {
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
-
 
                     <div className="LocationListWrapper">
                         {/* DANH SÁCH TỈNH */}
@@ -496,7 +456,6 @@ const MarketHeroHeader = () => {
                             </>
                         )}
 
-
                         {/* DANH SÁCH HUYỆN */}
                         {popupView === 'DISTRICT' && (
                             <>
@@ -518,12 +477,10 @@ const MarketHeroHeader = () => {
                 )}
             </div>
 
-
             {/* 4. Nút Tìm kiếm */}
             <button className="hero-search-btn" onClick={() => onTriggerSearch()}> {/* [NEW] Dùng Wrapper */}
               Tìm kiếm
             </button>
-
 
           </div>
         </div>
@@ -532,6 +489,4 @@ const MarketHeroHeader = () => {
   );
 };
 
-
 export default MarketHeroHeader;
-

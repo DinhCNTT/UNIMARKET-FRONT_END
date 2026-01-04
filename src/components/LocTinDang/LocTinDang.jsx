@@ -35,6 +35,7 @@ const LocTinDang = () => {
   const [maxPrice, setMaxPrice] = useState(null);
   const [advancedFilters, setAdvancedFilters] = useState({});
   const [sortOrder, setSortOrder] = useState("newest");
+  const [selectedSubId, setSelectedSubId] = useState(null); // <-- Thêm dòng này
 
   // --- STATE UI ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,6 +89,9 @@ const LocTinDang = () => {
 
   useEffect(() => {
     const fetchFilteredPosts = async () => {
+      console.log("--- [2] CHUẨN BỊ GỌI API ---");
+      console.log("Context Category:", selectedCategory);
+      console.log("Context SubCategory:", selectedSubCategory);
       setIsLoading(true);
       setError(null);
       try {
@@ -111,12 +115,15 @@ const LocTinDang = () => {
             SearchTerm: searchTerm, 
             CategoryGroup: selectedCategory,
             SubCategory: selectedSubCategory,
+            CategoryId: selectedSubId,
             MinPrice: finalMinPrice,
             MaxPrice: finalMaxPrice,
             ProvinceName: contextCity, 
             DistrictName: selectedDistrictFilter || contextDistrict,
             AdvancedFilters: JSON.stringify(mongoFilters)
         };
+
+        console.log("--- [3] PARAMS GỬI ĐI:", params);
 
         const res = await axios.get("http://localhost:5133/api/tindang/get-posts", { params });
         const data = res.data;
@@ -143,7 +150,7 @@ const LocTinDang = () => {
 
     return () => clearTimeout(timeoutRef.current);
 
-  }, [currentPage, searchTerm, selectedCategory, selectedSubCategory, selectedDistrictFilter, minPrice, maxPrice, advancedFilters, sortOrder, contextCity, contextDistrict]);
+  }, [currentPage, searchTerm, selectedCategory, selectedSubCategory, selectedSubId, selectedDistrictFilter, minPrice, maxPrice, advancedFilters, sortOrder, contextCity, contextDistrict]);
 
   // Reset trang 1 khi filter đổi
   useEffect(() => setCurrentPage(1), [searchTerm, selectedCategory, selectedSubCategory, selectedDistrictFilter, minPrice, maxPrice, advancedFilters, sortOrder, contextCity]);
@@ -158,6 +165,7 @@ const LocTinDang = () => {
     setSelectedDistrictFilter("");
     setMinPrice(null);
     setMaxPrice(null);
+    setSelectedSubId(null);
     setAdvancedFilters({});
     setSortOrder("newest");
     toast.success("Đã xóa toàn bộ bộ lọc!");
@@ -191,10 +199,15 @@ const LocTinDang = () => {
         <LocMoRong
           onDistrictChange={setSelectedDistrictFilter}
           onPriceChange={(min, max) => { setMinPrice(min); setMaxPrice(max); }}
-          onParentCategoryChange={(cat) => { setSelectedCategory(cat); setSelectedSubCategory(""); }}
+          onParentCategoryChange={(cat) => { 
+              setSelectedCategory(cat); 
+              setSelectedSubCategory(""); 
+              setSelectedSubId(null); 
+          }}
           categories={categories}
           onSortOrderChange={setSortOrder}
           onAdvancedFilterChange={setAdvancedFilters} 
+          onSelectSubId={(id) => setSelectedSubId(id)}
         />
 
         <div className={styles.mainContent}>
