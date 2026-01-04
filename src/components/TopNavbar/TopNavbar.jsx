@@ -16,7 +16,7 @@ import { CategoryContext } from "../../context/CategoryContext";
 
 
 import styles from "./TopNavbar.module.css";
-import bannerBg from "../../assets/baner1.jpg";
+import bannerBg from "../../assets/baner1.png";
 
 
 const TopNavbar = () => {

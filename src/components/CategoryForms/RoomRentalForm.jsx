@@ -47,6 +47,7 @@ const RoomRentalForm = ({ data, onChange }) => {
             <option value="phòng trọ">Phòng trọ</option>
             <option value="căn hộ mini">Căn hộ mini</option>
             <option value="nhà nguyên căn">Nhà nguyên căn</option>
+            <option value="ký túc xá">Ký túc xá</option>
             <option value="chung cư">Chung cư</option>
           </select>
         </div>
