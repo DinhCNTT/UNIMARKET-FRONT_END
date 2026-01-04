@@ -48,25 +48,23 @@
 .suggestionBlock {
   display: flex;
   gap: 15px;
-  margin-top: 8px; /* Cách hàng trên một chút */
+  margin-top: 8px;
   padding-top: 12px;
-  border-top: 1px dashed #eee; /* Đường kẻ mờ ngăn cách cho đẹp */
+  border-top: 1px dashed #eee;
 }
 
-/* --- [MỚI] NÚT ICON ĐƠN GIẢN (Thay thế nút vàng cũ) --- */
+/* --- [MỚI] NÚT ICON ĐƠN GIẢN --- */
 .categoryTileBtn {
   background: none;
-  border: 1px solid transparent; /* Viền trong suốt */
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   color: #6b7280;
-  
   display: flex;
-  flex-direction: column; /* Icon trên, chữ dưới */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Khoảng cách giữa icon và chữ */
-  
+  gap: 8px;
   padding: 10px 15px;
   min-width: 80px;
   transition: all 0.2s ease;
@@ -79,10 +77,9 @@
   color: #333;
 }
 
-/* Hover effect nhẹ nhàng (màu xám nhạt, không vàng) */
 .categoryTileBtn:hover {
   background-color: #f8f9fa;
-  transform: translateY(-2px); /* Nhấc nhẹ lên */
+  transform: translateY(-2px);
 }
 
 @keyframes fadeIn {
@@ -90,7 +87,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Các nút thường (Giữ nguyên) --- */
+/* --- Các nút thường --- */
 .filterItem {
   position: relative;
 }
@@ -152,7 +149,7 @@
   font-family: 'Reddit Sans', sans-serif;
 }
 
-/* --- Dropdown Styles (Giữ nguyên) --- */
+/* --- Dropdown Styles Cơ Bản (Dùng cho Khu vực) --- */
 .dropdownBase {
   position: absolute;
   top: calc(100% + 6px);
@@ -184,6 +181,90 @@
 .option:hover {
   background-color: #f2f2f2;
 }
+
+/* =========================================
+   🔥 [NEW] MENU DANH MỤC 2 CỘT (FLYOUT)
+   ========================================= */
+.categoryDropdownWrapper {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  z-index: 200;
+  border: 1px solid #eee;
+  display: flex; /* Xếp 2 cột ngang hàng */
+  overflow: hidden;
+  font-family: 'Reddit Sans', sans-serif;
+  min-width: 480px; /* Đủ rộng cho 2 cột */
+  min-height: 320px;
+}
+
+/* CỘT TRÁI: DANH MỤC CHA */
+.leftColumn {
+  width: 200px;
+  background-color: #f8f9fa; /* Màu nền xám nhẹ */
+  border-right: 1px solid #eee;
+  overflow-y: auto;
+  max-height: 450px;
+  padding: 4px 0;
+}
+
+.parentItem {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.parentItem:hover, .parentItem.active {
+  background-color: #fff;
+  color: #d35400; /* Màu cam đậm */
+  font-weight: 500;
+  /* Hiệu ứng chìmm vào cột phải */
+  box-shadow: -2px 0 0 #d35400 inset; 
+}
+
+/* CỘT PHẢI: DANH MỤC CON */
+.rightColumn {
+  flex: 1; /* Chiếm hết phần còn lại */
+  padding: 12px;
+  overflow-y: auto;
+  max-height: 450px;
+  background-color: #fff;
+}
+
+.subHeader {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  color: #222;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+.subItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+
+.subItem:hover {
+  background-color: #fff5e0; /* Nền cam rất nhạt */
+  color: #d35400;
+}
+
+/* ========================================= */
 
 .priceDropdown {
   composes: dropdownBase;
