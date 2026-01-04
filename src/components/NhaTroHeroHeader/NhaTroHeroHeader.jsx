@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaTimes, FaMapMarkerAlt, FaChevronDown } from "react-icons/fa";
-import baner1 from '../../assets/baner1.jpg';
+import baner1 from '../../assets/baner1.png';
 import phongTroBanner from '../../assets/phong_tro_banner.jpg';
 import styles from './NhaTroHeroHeader.module.css';
 
