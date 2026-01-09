@@ -1,74 +1,172 @@
 .chartContainer {
   background: #ffffff;
-  border-radius: 12px; /* Bo góc mềm mại hơn */
-  padding: 12px 16px;  /* Giảm padding để gọn gàng */
-  border: 1px solid #f3f4f6;
+  border-radius: 20px;
+  padding: 24px;
+  /* Shadow 2 lớp tạo độ nổi 3D nhẹ */
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 10px 15px -3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0,0,0,0.03);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin-top: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+/* --- HEADER MỚI --- */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px; /* Kéo sát header với biểu đồ hơn */
+  margin-bottom: 30px;
 }
 
-.title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+.leftInfo {
+    display: flex;
+    flex-direction: column;
 }
 
-.badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background-color: var(--theme-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  line-height: 1.4;
+.mainStat {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
 }
 
-/* KÍCH THƯỚC BIỂU ĐỒ - QUAN TRỌNG */
+.bigPrice {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #111827;
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.subStat {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+/* INSIGHT BOX (Cái khung màu bên phải) */
+.insightBox {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-left: 3px solid var(--theme-color); /* Viền màu động */
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    min-width: 140px;
+}
+
+.insightHeader {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--theme-color);
+    text-transform: uppercase;
+}
+
+.insightSub {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* --- CHART AREA --- */
 .chartWrapper {
   width: 100%;
-  height: 120px; /* Chiều cao cố định nhỏ gọn (Gốc là 180px) */
-  position: relative;
+  height: 200px; /* Cao hơn để nhìn curve đẹp hơn */
 }
 
+/* TOOLTIP SIÊU CẤP */
 .customTooltip {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 4px 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  min-width: 160px;
 }
 
-.tooltipLabel {
-  color: #6b7280;
+.tooltipHeader {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
 }
 
-.tooltipValue {
-  font-weight: 700;
+.tooltipPrice {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-feature-settings: "tnum";
 }
 
-.footer {
-  margin-top: 4px;
-  text-align: center;
-  font-size: 10px;
-  color: #9ca3af;
-  font-style: italic;
+.tooltipRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.tooltipPulseBadge {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pulseDot {
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse-green 2s infinite;
+}
+
+/* ANIMATION "NHỊP TIM" CHO CỘT CỦA BẠN */
+/* Đây là class được dùng trong code JS: className={styles.radarPing} */
+.radarPing {
+    transform-origin: center;
+    animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    fill-opacity: 0.5;
+}
+
+@keyframes radar-ping {
+    75%, 100% {
+        transform: scale(3); /* Phóng to gấp 3 lần */
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-green {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
 }

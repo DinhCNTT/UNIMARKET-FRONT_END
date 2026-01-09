@@ -1,161 +1,204 @@
 import React, { useMemo } from 'react';
 import {
-  AreaChart,
+  ComposedChart, // Dùng loại này để vẽ cả Cột lẫn Đường
+  Bar,
   Area,
   XAxis,
-  YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
-  Label,
+  Cell,
+  LabelList
 } from 'recharts';
-// Import icons từ lucide-react
-import { TrendingUp, TrendingDown, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Zap, BarChart3, Clock } from 'lucide-react';
 import { formatPrice } from '../utils/formatters'; 
 import styles from './MarketWaveChart.module.css';
 
 const MarketWaveChart = ({ data }) => {
-  if (!data) return null;
+  if (!data || !data.histogramData) return null;
 
-  const { minPrice, maxPrice, averagePrice, currentPrice, status, differencePercent, sampleSize } = data;
+  const { currentPrice, status, differencePercent, sampleSize, histogramData } = data;
 
-  // 1. Cấu hình màu sắc & ICON tương ứng
-  const theme = useMemo(() => {
-    if (status === "Rẻ hơn thị trường") {
-      return { 
-        color: "#3b82f6", 
-        id: "colorBlue", 
-        rgb: "59, 130, 246",
-        Icon: TrendingDown // Icon giảm
-      }; 
-    }
-    if (status === "Cao hơn thị trường") {
-      return { 
-        color: "#ef4444", 
-        id: "colorRed", 
-        rgb: "239, 68, 68",
-        Icon: TrendingUp // Icon tăng
-      }; 
-    }
+  // 1. Logic "AI Insight": Dự đoán khả năng thanh khoản
+  const marketInsight = useMemo(() => {
+    if (status === "Rẻ hơn thị trường") return { 
+        text: "Dễ bán cực nhanh", 
+        color: "#10b981", 
+        icon: Zap,
+        sub: "Dự kiến bay màu trong 24h"
+    };
+    if (status === "Cao hơn thị trường") return { 
+        text: "Kén người mua", 
+        color: "#f59e0b", 
+        icon: Clock,
+        sub: "Có thể mất >7 ngày để bán"
+    };
     return { 
-      color: "#10b981", 
-      id: "colorGreen", 
-      rgb: "16, 185, 129",
-      Icon: CheckCircle2 // Icon tích xanh
-    }; 
+        text: "Thanh khoản tốt", 
+        color: "#3b82f6", 
+        icon: TrendingUp,
+        sub: "Dự kiến bán trong 2-3 ngày"
+    };
   }, [status]);
 
-  // 2. Tạo dữ liệu Bell Curve
-  const chartData = useMemo(() => [
-    { price: minPrice, density: 0.15, label: 'thấp nhất' },
-    { price: averagePrice, density: 1, label: 'hợp lý' },
-    { price: maxPrice, density: 0.15, label: 'cao nhất' },
-  ], [minPrice, averagePrice, maxPrice]);
+  const InsightIcon = marketInsight.icon;
 
-  // 3. Mở rộng trục X
-  const xDomain = [
-    Math.min(minPrice, currentPrice) * 0.95,
-    Math.max(maxPrice, currentPrice) * 1.05
-  ];
+  // 2. Xử lý dữ liệu cho ComposedChart
+  const chartData = useMemo(() => {
+    return histogramData.map((bucket, index) => {
+      let isUserPrice = currentPrice >= bucket.min && currentPrice < bucket.max;
+      if (index === histogramData.length - 1 && currentPrice >= bucket.min) isUserPrice = true;
 
-  // Tooltip
+      return {
+        ...bucket,
+        // Tạo dữ liệu giả lập cho đường cong (Curve) dựa trên chiều cao cột
+        // Thêm chút random hoặc smoothing nếu muốn, ở đây lấy chính count để vẽ đỉnh núi
+        curveValue: bucket.count, 
+        rangeLabel: `${formatPrice(bucket.min)} - ${formatPrice(bucket.max)}`,
+        tickLabel: bucket.min >= 1000000 ? `${(bucket.min/1000000).toFixed(1)}` : bucket.min,
+        isUserPrice: isUserPrice
+      };
+    });
+  }, [histogramData, currentPrice]);
+
+  // Tooltip xịn sò
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
+      // payload[0] là Area, payload[1] là Bar (tùy thứ tự vẽ)
+      // Ta tìm cái nào có data thật
+      const item = payload.find(p => p.payload.min)?.payload; 
+      if (!item) return null;
+
       return (
         <div className={styles.customTooltip}>
-          <span className={styles.tooltipLabel}>Mức giá {payload[0].payload.label}: </span>
-          <span className={styles.tooltipValue} style={{ color: theme.color }}>
-            {formatPrice(payload[0].payload.price)}
-          </span>
+          <div className={styles.tooltipHeader}>
+             KHOẢNG GIÁ PHỔ BIẾN
+          </div>
+          <div className={styles.tooltipPrice}>
+            {formatPrice(item.min)} - {formatPrice(item.max)}
+          </div>
+          <div className={styles.tooltipBody}>
+            <div className={styles.tooltipRow}>
+               <span style={{color: '#6b7280'}}>Số lượng:</span>
+               <strong>{item.count} tin đăng</strong>
+            </div>
+            {item.isUserPrice && (
+                <div className={styles.tooltipPulseBadge}>
+                    <span className={styles.pulseDot}></span>
+                    Bạn đang ở đây
+                </div>
+            )}
+          </div>
         </div>
       );
     }
     return null;
   };
 
-  // Lấy ra Icon Component để render
-  const StatusIcon = theme.Icon;
+  // Label trên đỉnh cột
+  const renderCustomBarLabel = (props) => {
+    const { x, y, width, value, index } = props;
+    const isUserPrice = chartData[index].isUserPrice;
+    if (value === 0) return null;
+    
+    // Nếu là cột của User -> Vẽ Icon thay vì số, hoặc vẽ cả hai
+    if (isUserPrice) {
+        return (
+            <g>
+                <circle cx={x + width/2} cy={y - 12} r="3" fill={marketInsight.color} className={styles.radarPing} />
+                <text x={x + width / 2} y={y - 20} fill={marketInsight.color} textAnchor="middle" fontSize={12} fontWeight={700}>
+                    Tôi
+                </text>
+            </g>
+        );
+    }
+
+    return (
+      <text x={x + width / 2} y={y - 5} fill="#9ca3af" textAnchor="middle" fontSize={11} fontWeight={500}>
+        {value}
+      </text>
+    );
+  };
 
   return (
-    <div className={styles.chartContainer} style={{ '--theme-color': theme.color }}>
-      {/* --- HEADER --- */}
+    <div className={styles.chartContainer}>
+      {/* --- HEADER CAO CẤP --- */}
       <div className={styles.header}>
-        <span className={styles.title}>Khoảng giá AI</span>
+        <div className={styles.leftInfo}>
+           <div className={styles.mainStat}>
+              <span className={styles.bigPrice}>{differencePercent > 0 ? '+' : ''}{differencePercent}%</span>
+              <span className={styles.statLabel}>so với thị trường</span>
+           </div>
+           <div className={styles.subStat}>
+              Dữ liệu từ {sampleSize} tin đăng (iPhone 14 PM)
+           </div>
+        </div>
         
-        {/* Badge trạng thái với Icon mới */}
-        <div className={styles.badge}>
-          <StatusIcon size={14} strokeWidth={2.5} /> {/* Render Icon ở đây */}
-          <span style={{ marginLeft: 4 }}>{Math.abs(differencePercent)}%</span>
+        {/* Insight Badge */}
+        <div className={styles.insightBox} style={{ '--theme-color': marketInsight.color }}>
+            <div className={styles.insightHeader}>
+                <InsightIcon size={14} />
+                <span>{marketInsight.text}</span>
+            </div>
+            <div className={styles.insightSub}>{marketInsight.sub}</div>
         </div>
       </div>
 
-      {/* --- CHART AREA --- */}
+      {/* --- HYBRID CHART AREA --- */}
       <div className={styles.chartWrapper}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={chartData}
-            margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
-          >
+          <ComposedChart data={chartData} margin={{ top: 30, right: 10, left: 10, bottom: 0 }}>
             <defs>
-              <linearGradient id={theme.id} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={theme.color} stopOpacity={0.5} />
-                <stop offset="95%" stopColor={theme.color} stopOpacity={0} />
+              {/* Gradient cho Area (Đường cong nền) */}
+              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+              {/* Gradient cho Cột của User */}
+              <linearGradient id="userBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={marketInsight.color} stopOpacity={1}/>
+                <stop offset="100%" stopColor={marketInsight.color} stopOpacity={0.6}/>
               </linearGradient>
             </defs>
 
             <XAxis 
-              dataKey="price" 
-              type="number" 
-              domain={xDomain} 
-              tickFormatter={(value) => value >= 1000000 ? `${(value/1000000).toFixed(1)}tr` : value}
-              tick={{ fontSize: 9, fill: '#9ca3af' }}
-              tickMargin={4}
-              axisLine={false}
-              tickLine={false}
-              interval="preserveStartEnd"
+              dataKey="tickLabel" 
+              axisLine={false} 
+              tickLine={false} 
+              tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 500 }}
+              dy={10}
+              unit="tr"
             />
-            
-            <YAxis hide type="number" domain={[0, 1.2]} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} />
 
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: theme.color, strokeWidth: 1, strokeDasharray: '2 2' }} />
-
-            <Area
-              type="monotone"
-              dataKey="density"
-              stroke={theme.color}
-              strokeWidth={2}
-              fill={`url(#${theme.id})`}
-              animationDuration={1000}
+            {/* 1. Lớp Nền: Area Chart (Đường cong mềm mại) */}
+            <Area 
+                type="monotone" 
+                dataKey="curveValue" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                strokeOpacity={0.3}
+                fill="url(#areaGradient)" 
+                activeDot={false}
+                animationDuration={1500}
             />
 
-            <ReferenceLine x={currentPrice} stroke={theme.color} strokeDasharray="2 2">
-              <Label 
-                value="Bạn ở đây" 
-                position="top" 
-                fill={theme.color} 
-                fontSize={10} 
-                fontWeight="700"
-                offset={2}
-              />
-            </ReferenceLine>
+            {/* 2. Lớp Chính: Bar Chart */}
+            <Bar dataKey="count" barSize={32} radius={[6, 6, 6, 6]} animationDuration={1000}>
+              <LabelList dataKey="count" content={renderCustomBarLabel} />
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  // Nếu là cột User -> Dùng gradient màu theme. Cột khác -> Xám nhạt
+                  fill={entry.isUserPrice ? `url(#userBarGradient)` : '#f3f4f6'} 
+                  // Nếu không phải User, làm mờ đi để nổi bật User
+                  opacity={entry.isUserPrice ? 1 : 1}
+                  style={{ transition: 'all 0.3s ease', cursor: 'pointer' }}
+                />
+              ))}
+            </Bar>
 
-            <ReferenceLine x={currentPrice} stroke="none">
-               <Label 
-                 content={({ viewBox }) => {
-                   const { x, height } = viewBox; 
-                   return (
-                     <circle cx={x} cy={height - 15} r={3.5} fill="#fff" stroke={theme.color} strokeWidth={2} />
-                   )
-                 }}
-               />
-            </ReferenceLine>
-
-          </AreaChart>
+          </ComposedChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className={styles.footer}>
-        Dựa trên {sampleSize} tin đăng 3 tháng qua
       </div>
     </div>
   );
